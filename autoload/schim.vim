@@ -501,7 +501,7 @@ function! schim#readfile(filename) abort
   return schim#read_all(join(readfile(a:filename), "\n"))
 endfunction
 
-function! schim#load(filename, ...)
+function! schim#source(filename, ...)
   for expr in schim#readfile(a:filename)
     call call('schim#eval', [expr] + a:000)
   endfor
