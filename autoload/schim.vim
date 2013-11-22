@@ -229,12 +229,11 @@ function! schim#set_bang(sym, val)
 endfunction
 
 function! schim#eval(x, ...) abort
-  if !a:0
-    let envs = [g:schim#global_env, 'schim#core']
-  elseif type(a:1) == type([])
+  let envs = [g:schim#global_env, 'schim#core']
+  if a:0 && type(a:1) == type([])
     let envs = a:1
-  else
-    let envs = [a:1, g:schim#global_env, 'schim#core']
+  elseif a:0
+    let envs = [a:1] + envs
   endif
   return s:eval(a:x, envs)
 endfunction
@@ -635,12 +634,16 @@ function! schim#list_p(val)
 endfunction
 
 function! schim#dict(...)
-  if len(a:000) % 2 !=# 0
+  let list = copy(a:000)
+  while len(a:000) % 2 !=# 0 && schim#list_p(list[-1])
+    call extend(list, remove(list, -1))
+  endwhile
+  if len(list) % 2 !=# 0
     throw 'schim.vim: dict requires a even number of arguments'
   endif
   let dict = {}
-  for i in range(0, len(a:000)-1, 2)
-    let dict[a:000[i]] = a:000[i+1]
+  for i in range(0, len(list)-1, 2)
+    let dict[list[i]] = list[i+1]
   endfor
   return dict
 endfunction
@@ -749,6 +752,7 @@ SchimAssert g:schim_set_bang ==# 3
 unlet! g:schim_set_bang
 
 SchimAssert schim#re('(dict "a" 1 "b" 2)') ==# {"a": 1, "b": 2}
+SchimAssert schim#re('(dict "a" 1 (list "b" 2))') ==# {"a": 1, "b": 2}
 SchimAssert schim#re('(length "abc")') ==# 3
 
 SchimAssert schim#re('(reduce + 0 (list 1 2 3))') ==# 6
