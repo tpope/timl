@@ -25,33 +25,18 @@ function! schim#nil_p(val)
   return empty(a:val)
 endfunction
 
-function! schim#string(...) abort
-  let acc = ''
-  let _ = {}
-  for _.x in a:000
-    if schim#symbol_p(_.x)
-      let acc .= _.x[0]
-    elseif type(_.x) == type('')
-      let acc .= _.x
-    elseif type(_.x) == type(function('tr'))
-      let name = join([_.x])
-      let acc .= (name =~# '^\d' ? '{' . name . '}' : name)
-    else
-      let acc .= string(_.x)
-    endif
-  endfor
-  return acc
+function! s:string(val) abort
+  if schim#symbol_p(a:val)
+    return a:val[0]
+  elseif type(a:val) == type('')
+    return a:val
+  elseif type(a:val) == type(function('tr'))
+    let name = join([a:val])
+    return (name =~# '^\d' ? '{' . name . '}' : name)
+  else
+    return string(a:val)
+  endif
 endfunction
-
-function! schim#identity(x) abort
-  return a:x
-endfunction
-
-call extend(g:schim#global_env, {
-      \ "nil": g:schim#nil,
-      \ "nil?": function('schim#nil_p'),
-      \ "string": function('schim#string'),
-      \ "identity": function('schim#identity')})
 
 " }}}1
 " Section: Symbols {{{1
@@ -106,12 +91,12 @@ endfor
 unlet! s:key
 
 function! schim#munge(var) abort
-  let var = schim#string(a:var)
+  let var = s:string(a:var)
   return tr(substitute(var, '[^[:alnum:]#_-]', '\=get(s:munge,submatch(0))', 'g'), '-', '_')
 endfunction
 
 function! schim#demunge(var) abort
-  let var = schim#string(a:var)
+  let var = s:string(a:var)
   return tr(substitute(a:var, '_\(\u\+\)_', '\=get(s:demunge, submatch(0), submatch(0))', 'g'), '_', '-')
 endfunction
 
@@ -125,9 +110,6 @@ function! schim#a2env(a)
   endfor
   return env
 endfunction
-
-call extend(g:schim#global_env, {
-      \ "symbol": function('schim#symbol_p')})
 
 " }}}1
 " Section: Garbage collection {{{1
@@ -261,7 +243,7 @@ function! schim#set_bang(envs, sym, val)
 endfunction
 
 function! schim#eval(x, ...) abort
-  let envs = [g:schim#global_env, 'schim#core']
+  let envs = [g:schim#global_env, 'schim#core', 'schim#runtime']
   if a:0 && type(a:1) == type([])
     let envs = a:1
   elseif a:0
@@ -319,7 +301,7 @@ function! s:eval(x, envs) abort
     if len(x) != 3
       throw 'schim.vim:E119: defvar requires 2 arguments'
     endif
-    let var = schim#string(x[1])
+    let var = s:string(x[1])
     let Val = s:eval(x[2], envs)
     if type(envs[0]) == type({})
       let envs[0][var] = Val
@@ -357,7 +339,7 @@ function! s:eval(x, envs) abort
     return get(map(x[1:-1], 's:eval(v:val, envs)'), -1, g:schim#nil)
 
   elseif schim#symbol_p(x[0]) && x[0][0] =~# '^:'
-    let strings = map(x[1:-1], 'schim#string(s:eval(v:val, envs))')
+    let strings = map(x[1:-1], 's:string(s:eval(v:val, envs))')
     execute x[0][0] . ' ' . join(strings, ' ')
     return g:schim#nil
 
@@ -452,6 +434,8 @@ function! s:read_one(tokens, i) abort
       if a:tokens[i] ==# '}'
         return [dict, i+1]
       endif
+    elseif a:tokens[i] ==# 'nil'
+      return [g:schim#nil, i+1]
     elseif a:tokens[i] ==# "'"
         let [val, i] = s:read_one(a:tokens, i+1)
         return [[schim#symbol('quote'), val], i]
@@ -582,185 +566,6 @@ function! schim#pr_str(x)
     return string(a:x)
   endif
 endfunction
-
-" }}}1
-" Section: Operators {{{1
-
-function! schim#plus(...) abort
-  let acc = 0
-  for elem in a:000
-    let acc += elem
-  endfor
-  return acc
-endfunction
-
-function! schim#multiply(...) abort
-  let acc = 1
-  for elem in a:000
-    let acc = acc * elem
-  endfor
-  return acc
-endfunction
-
-function! schim#minus(x, ...) abort
-  if a:0
-    let acc = a:x
-    for elem in a:000
-      let acc -= elem
-    endfor
-    return acc
-  else
-    return -a:x
-  endif
-endfunction
-
-function! schim#divide(x, ...) abort
-  if a:0
-    let acc = a:x
-    for elem in a:000
-      let acc = acc / elem
-    endfor
-    return acc
-  else
-    return 1 / a:x
-  endif
-endfunction
-
-function! schim#gt(x, y) abort
-  return a:x > a:y
-endfunction
-
-function! schim#lt(x, y) abort
-  return a:x < a:y
-endfunction
-
-function! schim#gte(x, y) abort
-  return a:x >= a:y
-endfunction
-
-function! schim#lte(x, y) abort
-  return a:x <= a:y
-endfunction
-
-function! schim#equal(x, y) abort
-  return type(a:x) == type(a:y) && a:x ==# a:y
-endfunction
-
-function! schim#eq_p(x, y) abort
-  return a:x is# a:y
-endfunction
-
-call extend(g:schim#global_env, {
-      \ "+": function('schim#plus'),
-      \ "*": function('schim#multiply'),
-      \ "/": function('schim#divide'),
-      \ "-": function('schim#minus'),
-      \ ">": function('schim#gt'),
-      \ "<": function('schim#lt'),
-      \ ">=": function('schim#gte'),
-      \ "<=": function('schim#lte'),
-      \ "=": function('schim#equal'),
-      \ "eq?": function('schim#eq_p'),
-      \ "equal?": function('schim#equal')})
-
-" }}}1
-" Section: Lists {{{1
-
-function! schim#car(list) abort
-  return a:list[0]
-endfunction
-
-function! schim#cdr(list) abort
-  return a:list[1:-1]
-endfunction
-
-function! schim#list(...)
-  return a:000
-endfunction
-
-function! schim#list_p(val)
-  return !schim#symbol_p(a:val) && type(a:val) == type([])
-endfunction
-
-function! schim#dict(...)
-  let list = copy(a:000)
-  while len(a:000) % 2 !=# 0 && schim#list_p(list[-1])
-    call extend(list, remove(list, -1))
-  endwhile
-  if len(list) % 2 !=# 0
-    throw 'schim.vim: dict requires a even number of arguments'
-  endif
-  let dict = {}
-  for i in range(0, len(list)-1, 2)
-    let dict[list[i]] = list[i+1]
-  endfor
-  return dict
-endfunction
-
-function! schim#dict_p(val)
-  return type(a:val) == type({})
-endfunction
-
-function! schim#sublist(list, start, ...)
-  if a:0
-    return a:list[a:start : a:1]
-  else
-    return a:list[a:start :]
-  endif
-endfunction
-
-function! schim#append(...)
-  let acc = []
-  for elem in a:000
-    call extend(acc, elem)
-  endfor
-  return acc
-endfunction
-
-function! schim#cons(val, list)
-  return [a:val] + a:list
-endfunction
-
-function! schim#map(f, list)
-  return map(copy(a:list), 'call(a:f, [v:val], {})')
-endfunction
-
-function! schim#filter(f, list)
-  return filter(copy(a:list), 'call(a:f, [v:val], {})')
-endfunction
-
-function! schim#reduce(f, val_or_list, ...)
-  let _ = {}
-  if a:0
-    let _.val = a:val_or_list
-    let list = a:1
-  elseif empty(a:val_or_list)
-    return g:schim#nil
-  else
-    let list = copy(a:val_or_list)
-    let _.val = remove(list, 0)
-  endif
-  for _.elem in list
-    let _.val = call(a:f, [_.val, _.elem], {})
-  endfor
-  return _.val
-endfunction
-
-call extend(g:schim#global_env, {
-      \ "car": function('schim#car'),
-      \ "cdr": function('schim#cdr'),
-      \ "cons": function('schim#cons'),
-      \ "length": function('len'),
-      \ "list": function('schim#list'),
-      \ "list?": function('schim#list_p'),
-      \ "dict": function('schim#dict'),
-      \ "dict?": function('schim#dict_p'),
-      \ "get": function('get'),
-      \ "sublist": function('schim#sublist'),
-      \ "append": function('schim#append'),
-      \ "map": function('schim#map'),
-      \ "filter": function('schim#filter'),
-      \ "reduce": function('schim#reduce')})
 
 " }}}1
 " Section: Tests {{{1
