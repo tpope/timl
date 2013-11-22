@@ -407,9 +407,10 @@ function! s:read_one(tokens, i) abort
         call add(list, val)
         unlet! val
       endwhile
-      if a:tokens[i] ==# ')'
-        return [list, i+1]
+      if i >= len(a:tokens)
+        break
       endif
+      return [list, i+1]
     elseif a:tokens[i] ==# '{'
       let i += 1
       let dict = {}
@@ -424,9 +425,10 @@ function! s:read_one(tokens, i) abort
         let dict[key] = val
         unlet! key val
       endwhile
-      if a:tokens[i] ==# '}'
-        return [dict, i+1]
+      if i >= len(a:tokens)
+        break
       endif
+      return [dict, i+1]
     elseif a:tokens[i] ==# 'nil'
       return [g:schim#nil, i+1]
     elseif a:tokens[i] ==# "'"

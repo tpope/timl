@@ -22,7 +22,16 @@ function! s:repl(...)
   while !empty(input)
     echo "\n"
     try
-      let result = schim#rep(input, ns)
+      while 1
+        try
+          let read = schim#read_all(input)
+          break
+        catch /^schim.vim: unexpected EOF/
+          let input .= "\n" . input(ns.'=>> ')
+          echo "\n"
+        endtry
+      endwhile
+      let result = schim#pr_str(schim#eval([schim#symbol('begin')] + read, ns))
       echo result
     catch
       echohl ErrorMSG
