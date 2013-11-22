@@ -281,17 +281,17 @@ function! s:eval(x, envs) abort
     endif
     let var = schim#symbol(x[1])[0]
     let params = x[2]
-    if type(envs[0]) == type({})
-      let envs[0][var] = s:lambda(x[2], x[3], envs)
-      return envs[0][var]
-    else
-      let name = schim#munge(envs[0].'#'.var)
-      let file = s:file4ns(envs[0])
-      call writefile(split(s:build_function(name, x[2]),"\n"), file)
-      execute 'source '.file
-      let g:schim#closures[name] = {'envs': envs, 'exp': x[3]}
-      return function(name)
-    endif
+    let i = 0
+    while i < len(envs) && type(envs[i]) != type('')
+      let i += 1
+    endwhile
+    let ns = envs[i]
+    let name = schim#munge(ns.'#'.var)
+    let file = s:file4ns(ns)
+    call writefile(split(s:build_function(name, x[2]),"\n"), file)
+    execute 'source '.file
+    let g:schim#closures[name] = {'envs': envs, 'exp': x[3]}
+    return function(name)
 
   elseif schim#symbol('define') is x[0] || schim#symbol('defvar') is x[0]
     if len(x) != 3
@@ -299,11 +299,11 @@ function! s:eval(x, envs) abort
     endif
     let var = s:string(x[1])
     let Val = s:eval(x[2], envs)
-    if type(envs[0]) == type({})
-      let envs[0][var] = Val
-    else
-      let g:{schim#munge(envs[0].'#'.var)} = Val
-    endif
+    let i = 0
+    while i < len(envs) && type(envs[i]) != type('')
+      let i += 1
+    endwhile
+    let g:{schim#munge(envs[i].'#'.var)} = Val
     return Val
 
   elseif schim#symbol('defmacro') is x[0]
@@ -591,7 +591,7 @@ SchimAssert schim#read(",foo") ==# [schim#symbol('unquote'), schim#symbol('foo')
 
 SchimAssert schim#re('(+ 1 2 3)') == 6
 
-SchimAssert schim#re('(define forty-two 42)')
+SchimAssert schim#re('(let () (defvar forty-two 42))')
 SchimAssert schim#re('forty-two') ==# 42
 
 SchimAssert schim#re('(if 1 forty-two 69)') ==# 42
