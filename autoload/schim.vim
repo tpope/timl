@@ -253,16 +253,22 @@ function! s:eval(x, envs) abort
     return get(x, 1, g:schim#nil)
 
   elseif schim#symbol('set!') is x[0]
-    if len(x) < 2
-      throw 'schim.vim: set! requires 2 arguments'
+    if len(x) != 3
+      throw 'schim.vim:E119: set! requires 2 arguments'
     endif
-    return schim#set_bang(x[1], schim#eval(get(x, 2, g:schim#nil)))
+    return schim#set_bang(x[1], schim#eval(x[2]))
 
   elseif schim#symbol('if') is x[0]
+    if len(x) < 3
+      throw 'schim.vim:E119: if requires 2 or 3 arguments'
+    endif
     let cond = schim#eval(x[1], envs)
     return schim#eval(get(x, empty(cond) || cond is 0 ? 3 : 2, g:schim#nil), envs)
 
   elseif schim#symbol('defun') is x[0]
+    if len(x) != 4
+      throw 'schim.vim:E119: defun requires 3 arguments'
+    endif
     let var = schim#symbol(x[1])[0]
     let params = x[2]
     if type(envs[0]) == type({})
@@ -278,7 +284,10 @@ function! s:eval(x, envs) abort
     endif
 
   elseif schim#symbol('define') is x[0] || schim#symbol('defvar') is x[0]
-    let var = schim#symbol(x[1])[0]
+    if len(x) != 3
+      throw 'schim.vim:E119: defvar requires 2 arguments'
+    endif
+    let var = schim#string(x[1])
     let Val = schim#eval(x[2], envs)
     if type(envs[0]) == type({})
       let envs[0][var] = Val
@@ -288,10 +297,16 @@ function! s:eval(x, envs) abort
     return Val
 
   elseif schim#symbol('defmacro') is x[0]
+    if len(x) != 4
+      throw 'schim.vim:E119: defmacro requires 3 arguments'
+    endif
     let [_, var, bindings, exp] = x
     let s:macros[var[0]] = exp
 
   elseif schim#symbol('lambda') is x[0] || schim#symbol("\u03bb") is x[0]
+    if len(x) < 3
+      throw 'schim.vim:E119: lambda requires at least 2 arguments'
+    endif
     return s:lambda(x[1], x[2], envs)
 
   elseif schim#symbol('let') is x[0]
