@@ -549,7 +549,7 @@ function! schim#pr_str(x)
   elseif type(a:x) == type({})
     let acc = []
     for [k, V] in items(a:x)
-      call add(acc, schim#pr_str(k), schim#pr_str(v))
+      call add(acc, schim#pr_str(k) . ' ' . schim#pr_str(V))
       unlet! V
     endfor
     return '{' . join(acc, ' ') . '}'
