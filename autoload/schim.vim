@@ -73,21 +73,53 @@ function! schim#symbol_p(symbol)
         \ get(g:schim#symbols, a:symbol[0], 0) is a:symbol
 endfunction
 
-function! schim#encode(var) abort
+" From clojure/lange/Compiler.java
+let s:munge = {
+      \ ':': "_COLON_",
+      \ '+': "_PLUS_",
+      \ '>': "_GT_",
+      \ '<': "_LT_",
+      \ '=': "_EQ_",
+      \ '~': "_TILDE_",
+      \ '!': "_BANG_",
+      \ '@': "_CIRCA_",
+      \ '#': "_SHARP_",
+      \ "'": "_SINGLEQUOTE_",
+      \ '"': "_DOUBLEQUOTE_",
+      \ '%': "_PERCENT_",
+      \ '^': "_CARET_",
+      \ '&': "_AMPERSAND_",
+      \ '*': "_STAR_",
+      \ '|': "_BAR_",
+      \ '{': "_LBRACE_",
+      \ '}': "_RBRACE_",
+      \ '[': "_LBRACK_",
+      \ ']': "_RBRACK_",
+      \ '/': "_SLASH_",
+      \ '\\': "_BSLASH_",
+      \ '?': "_QMARK_"}
+
+let s:demunge = {}
+for s:key in keys(s:munge)
+  let s:demunge[s:munge[s:key]] = s:key
+endfor
+unlet! s:key
+
+function! schim#munge(var) abort
   let var = schim#string(a:var)
-  return substitute(var, '^\d\|[^[:alnum:]#]', '\="_".char2nr(submatch(0))."_"', 'g')
+  return tr(substitute(var, '[^[:alnum:]#_-]', '\=get(s:munge,submatch(0))', 'g'), '-', '_')
 endfunction
 
-function! schim#decode(var) abort
+function! schim#demunge(var) abort
   let var = schim#string(a:var)
-  return substitute(type(a:var) == type([]) ? a:var[0] : a:var, '_\(\d\+\)_', '\=nr2char(submatch(1))', 'g')
+  return tr(substitute(a:var, '_\(\u\+\)_', '\=get(s:demunge, submatch(0), submatch(0))', 'g'), '_', '-')
 endfunction
 
 function! schim#a2env(a)
   let env = {'...': a:a['000']}
   for [k,V] in items(a:a)
     if k !~# '^\d'
-      let env[schim#decode(k)] = V
+      let env[schim#demunge(k)] = V
     endif
     unlet! V
   endfor
@@ -136,7 +168,7 @@ function! schim#lookup(envs, sym) abort
   elseif sym =~# '^&.\|^\w:' && exists(sym)
     return eval(sym)
   elseif sym =~# '#'
-    let sym = schim#encode(sym)
+    let sym = schim#munge(sym)
     call schim#autoload(sym)
     if exists('g:'.sym)
       return g:{sym}
@@ -150,11 +182,11 @@ function! schim#lookup(envs, sym) abort
   if type(env) ==# type({})
     return env[sym]
   else
-    let target = schim#encode(env.'#'.sym)
+    let target = schim#munge(env.'#'.sym)
     if exists('*'.target)
       return function(target)
     else
-      return {target}
+      return g:{target}
     endif
   endif
 endfunction
@@ -165,7 +197,7 @@ function! schim#find(envs, sym) abort
     if type(env) == type({}) && has_key(env, sym)
       return env
     elseif type(env) == type('')
-      let target = schim#encode(env.'#'.sym)
+      let target = schim#munge(env.'#'.sym)
       call schim#autoload(target)
       if exists('*'.target) || exists('g:'.target)
         return env
@@ -179,7 +211,7 @@ endfunction
 let s:macros = {}
 
 function! s:build_function(name, params) abort
-  let params = map(copy(a:params), 'v:val is schim#symbol("...") ? "..." : schim#encode(v:val[0])')
+  let params = map(copy(a:params), 'v:val is schim#symbol("...") ? "..." : schim#munge(v:val[0])')
   let dict = {}
   return 'function! '.a:name.'('.join(params, ',').")\n"
         \ . "let g:file = expand('<sfile>')\n"
@@ -275,7 +307,7 @@ function! s:eval(x, envs) abort
       let envs[0][var] = s:lambda(x[2], x[3], envs)
       return envs[0][var]
     else
-      let name = schim#encode(envs[0].'#'.var)
+      let name = schim#munge(envs[0].'#'.var)
       let file = s:file4ns(envs[0])
       call writefile(split(s:build_function(name, x[2]),"\n"), file)
       execute 'source '.file
@@ -292,7 +324,7 @@ function! s:eval(x, envs) abort
     if type(envs[0]) == type({})
       let envs[0][var] = Val
     else
-      let g:{schim#encode(envs[0].'#'.var)} = Val
+      let g:{schim#munge(envs[0].'#'.var)} = Val
     endif
     return Val
 
