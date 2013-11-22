@@ -520,7 +520,7 @@ function! schim#autoload(function, ...) abort
       execute 'runtime! autoload/'.tr(ns,'#','/').'.vim'
     endif
     for file in findfile('autoload/'.tr(ns,'#','/').'.schim', &rtp, -1)
-      call schim#load(file, ns)
+      call schim#source(file, ns)
     endfor
   endif
 endfunction
