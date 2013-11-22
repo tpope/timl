@@ -209,7 +209,7 @@ function! s:file4ns(ns) abort
   return file
 endfunction
 
-function! schim#set_bang(sym, val)
+function! schim#set_bang(envs, sym, val)
     let sym = schim#symbol(a:sym)[0]
     let val = a:val
     if sym =~# '^&'
@@ -222,7 +222,7 @@ function! schim#set_bang(sym, val)
       exe 'unlet! '.sym
       exe 'let ' . sym . ' = val'
     else
-      let env = schim#find(envs, sym)
+      let env = schim#find(a:envs, sym)
       let env[sym] = val
     endif
     return val
@@ -256,7 +256,7 @@ function! s:eval(x, envs) abort
     if len(x) != 3
       throw 'schim.vim:E119: set! requires 2 arguments'
     endif
-    return schim#set_bang(x[1], schim#eval(x[2]))
+    return schim#set_bang(envs, x[1], schim#eval(x[2]))
 
   elseif schim#symbol('if') is x[0]
     if len(x) < 3
