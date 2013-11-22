@@ -531,6 +531,8 @@ function! schim#pr_str(x)
   " TODO: guard against recursion
   if schim#symbol_p(a:x)
     return a:x[0]
+  elseif a:x is# g:schim#nil
+    return 'nil'
   elseif type(a:x) == type([])
     return '(' . join(map(copy(a:x), 'schim#pr_str(v:val)'), ' ') . ')'
   elseif type(a:x) == type({})
