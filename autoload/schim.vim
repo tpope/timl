@@ -285,7 +285,7 @@ function! s:eval(x, envs) abort
     if len(x) != 4
       throw 'schim.vim:E119: defun requires 3 arguments'
     endif
-    let var = schim#string(x[1])
+    let var = s:string(x[1])
     let params = x[2]
     let name = schim#munge(ns.'#'.var)
     let file = s:file4ns(ns)
