@@ -288,14 +288,14 @@ function! s:eval(x, envs) abort
     if len(x) != 3
       throw 'schim.vim:E119: set! requires 2 arguments'
     endif
-    return schim#set_bang(envs, x[1], schim#eval(x[2]))
+    return schim#set_bang(envs, x[1], s:eval(x[2], envs))
 
   elseif schim#symbol('if') is x[0]
     if len(x) < 3
       throw 'schim.vim:E119: if requires 2 or 3 arguments'
     endif
-    let cond = schim#eval(x[1], envs)
-    return schim#eval(get(x, empty(cond) || cond is 0 ? 3 : 2, g:schim#nil), envs)
+    let cond = s:eval(x[1], envs)
+    return s:eval(get(x, empty(cond) || cond is 0 ? 3 : 2, g:schim#nil), envs)
 
   elseif schim#symbol('defun') is x[0]
     if len(x) != 4
@@ -320,7 +320,7 @@ function! s:eval(x, envs) abort
       throw 'schim.vim:E119: defvar requires 2 arguments'
     endif
     let var = schim#string(x[1])
-    let Val = schim#eval(x[2], envs)
+    let Val = s:eval(x[2], envs)
     if type(envs[0]) == type({})
       let envs[0][var] = Val
     else
@@ -346,23 +346,23 @@ function! s:eval(x, envs) abort
     let env = {}
     for i in range(0, len(bindings)-1, 2)
       if bindings[i][0] ==# '_'
-        call schim#eval(bindings[i+1], [env] + envs)
+        call s:eval(bindings[i+1], [env] + envs)
       else
-        let env[bindings[i][0]] = schim#eval(bindings[i+1], [env] + envs)
+        let env[bindings[i][0]] = s:eval(bindings[i+1], [env] + envs)
       endif
     endfor
-    return schim#eval([schim#symbol('begin')] + body, [env] + envs)
+    return s:eval([schim#symbol('begin')] + body, [env] + envs)
 
   elseif schim#symbol('begin') is x[0]
-    return get(map(x[1:-1], 'schim#eval(v:val, envs)'), -1, g:schim#nil)
+    return get(map(x[1:-1], 's:eval(v:val, envs)'), -1, g:schim#nil)
 
   elseif schim#symbol_p(x[0]) && x[0][0] =~# '^:'
-    let strings = map(x[1:-1], 'schim#string(schim#eval(v:val, envs))')
+    let strings = map(x[1:-1], 'schim#string(s:eval(v:val, envs))')
     execute x[0][0] . ' ' . join(strings, ' ')
     return g:schim#nil
 
   else
-    let evaled = map(copy(x), 'schim#eval(v:val, envs)')
+    let evaled = map(copy(x), 's:eval(v:val, envs)')
     if type(evaled[0]) == type({})
       let dict = evaled[0]
       if type(evaled[1]) == type(function('tr'))
