@@ -253,6 +253,12 @@ function! s:eval(x, envs) abort
   let x = schim#expand_quotes(a:x)
   let envs = a:envs
 
+  let i = 0
+  while i < len(envs) && type(envs[i]) != type('')
+    let i += 1
+  endwhile
+  let ns = envs[i]
+
   if schim#symbol_p(x)
     return schim#lookup(envs, x)
 
@@ -279,13 +285,8 @@ function! s:eval(x, envs) abort
     if len(x) != 4
       throw 'schim.vim:E119: defun requires 3 arguments'
     endif
-    let var = schim#symbol(x[1])[0]
+    let var = schim#string(x[1])
     let params = x[2]
-    let i = 0
-    while i < len(envs) && type(envs[i]) != type('')
-      let i += 1
-    endwhile
-    let ns = envs[i]
     let name = schim#munge(ns.'#'.var)
     let file = s:file4ns(ns)
     call writefile(split(s:build_function(name, x[2]),"\n"), file)
@@ -299,11 +300,7 @@ function! s:eval(x, envs) abort
     endif
     let var = s:string(x[1])
     let Val = s:eval(x[2], envs)
-    let i = 0
-    while i < len(envs) && type(envs[i]) != type('')
-      let i += 1
-    endwhile
-    let g:{schim#munge(envs[i].'#'.var)} = Val
+    let g:{schim#munge(ns.'#'.var)} = Val
     return Val
 
   elseif schim#symbol('defmacro') is x[0]
