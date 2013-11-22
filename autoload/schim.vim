@@ -272,7 +272,7 @@ endfunction
 
 function! s:eval(x, envs) abort
 
-  let x = a:x " schim#expand_quotes(a:x)
+  let x = schim#expand_quotes(a:x)
   let envs = a:envs
 
   if schim#symbol_p(x)
@@ -796,9 +796,12 @@ SchimAssert schim#re('forty-two') ==# 42
 SchimAssert schim#re('(if 1 forty-two 69)') ==# 42
 SchimAssert schim#re('(if 0 "boo" "yay")') ==# "yay"
 SchimAssert schim#re('(begin 1 2)') ==# 2
+
 SchimAssert schim#re('(set! g:schim_set_bang (+ 1 2))') == 3
 SchimAssert g:schim_set_bang ==# 3
 unlet! g:schim_set_bang
+SchimAssert schim#re('(let (a 1) (let (b 2) (set! a 3)) a)') == 3
+SchimAssert schim#re('(let (a 1) (let (a 2) (set! a 3)) a)') == 1
 
 SchimAssert schim#re('(dict "a" 1 "b" 2)') ==# {"a": 1, "b": 2}
 SchimAssert schim#re('(dict "a" 1 (list "b" 2))') ==# {"a": 1, "b": 2}
