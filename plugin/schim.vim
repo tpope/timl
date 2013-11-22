@@ -14,14 +14,15 @@ augroup schim
 augroup END
 
 command! -bar -nargs=1 -complete=file Woad :call schim#load(expand(<q-args>))
-command! -bar Wepl :call s:repl()
+command! -bar -nargs=? Wepl :call s:repl(<f-args>)
 
-function! s:repl()
-  let input = input('schim> ')
+function! s:repl(...)
+  let ns = a:0 ? a:1 : 'user'
+  let input = input(ns.'=> ')
   while !empty(input)
     echo "\n"
     try
-      let result = schim#pr_str(schim#re(input))
+      let result = schim#rep(input, ns)
       echo result
     catch
       echohl ErrorMSG
@@ -29,7 +30,7 @@ function! s:repl()
       echo v:throwpoint
       echohl NONE
     endtry
-    let input = input('schim> ')
+    let input = input(ns.'=> ')
   endwhile
 endfunction
 

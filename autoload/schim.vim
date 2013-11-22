@@ -5,10 +5,6 @@ if exists("g:autoloaded_schim") || &cp || v:version < 700
 endif
 let g:autoloaded_schim = 1
 
-if !exists('g:schim#global_env')
-  let g:schim#global_env = {}
-endif
-
 " Section: Misc {{{1
 
 function! s:funcname(name) abort
@@ -243,11 +239,11 @@ function! schim#set_bang(envs, sym, val)
 endfunction
 
 function! schim#eval(x, ...) abort
-  let envs = [g:schim#global_env, 'schim#core', 'schim#runtime']
+  let envs = ['user', 'schim#core', 'schim#runtime']
   if a:0 && type(a:1) == type([])
     let envs = a:1
   elseif a:0
-    let envs = [a:1] + envs
+    let envs[0] = a:1
   endif
   return s:eval(a:x, envs)
 endfunction
@@ -494,12 +490,12 @@ function! schim#read(str) abort
   return s:read_one(s:tokenize(a:str), 0)[0]
 endfunction
 
-function! schim#re(str) abort
-  return schim#eval(schim#read(a:str))
+function! schim#re(str, ...) abort
+  return call('schim#eval', [schim#read(a:str)] + a:000)
 endfunction
 
-function! schim#rep(str) abort
-  return schim#pr_str(schim#re(a:str))
+function! schim#rep(...) abort
+  return schim#pr_str(call('schim#re', a:000))
 endfunction
 
 function! schim#readfile(filename) abort
