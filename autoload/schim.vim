@@ -372,7 +372,7 @@ function! schim#tokenize(str)
   return s:tokenize(a:str)
 endfunction
 
-function! s:read_one(tokens, i)
+function! s:read_one(tokens, i) abort
   let error = 'schim.vim: unexpected EOF'
   let i = a:i
   while i < len(a:tokens)
@@ -490,13 +490,13 @@ function! schim#autoload(function, ...) abort
   let ns = matchstr(a:function, '.*\ze#')
 
   if !has_key(s:requires, ns)
+    let s:requires[ns] = 1
     if !a:0
       execute 'runtime! autoload/'.tr(ns,'#','/').'.vim'
     endif
     for file in findfile('autoload/'.tr(ns,'#','/').'.schim', &rtp, -1)
       call schim#load(file, ns)
     endfor
-    let s:requires[ns] = 1
   endif
 endfunction
 

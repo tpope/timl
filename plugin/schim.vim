@@ -26,6 +26,7 @@ function! s:repl()
     catch
       echohl ErrorMSG
       echo v:exception
+      echo v:throwpoint
       echohl NONE
     endtry
     let input = input('schim> ')
