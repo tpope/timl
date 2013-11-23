@@ -13,7 +13,7 @@ augroup schim
   autocmd FuncUndefined *#* call schim#autoload(expand('<amatch>'), 'noruntime')
 augroup END
 
-command! -bar -nargs=1 -complete=file TLsourc :call schim#source(expand(<q-args>))
+command! -bar -nargs=1 -complete=file TLsource :call schim#source(expand(<q-args>))
 command! -bar -nargs=? TLrepl :call s:repl(<f-args>)
 
 function! s:repl(...)
