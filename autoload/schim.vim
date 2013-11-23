@@ -550,13 +550,17 @@ function! schim#autoload(function, ...) abort
 
   if !has_key(s:requires, ns)
     let s:requires[ns] = 1
-    if !a:0
-      execute 'runtime! autoload/'.tr(ns,'#','/').'.vim'
-    endif
-    for file in findfile('autoload/'.tr(ns,'#','/').'.schim', &rtp, -1)
-      call schim#source(file, ns)
-    endfor
+    call call('schim#source', [ns] + a:000)
   endif
+endfunction
+
+function! schim#load(ns, ...) abort
+  if !a:0
+    execute 'runtime! autoload/'.tr(a:ns,'#','/').'.vim'
+  endif
+  for file in findfile('autoload/'.tr(a:ns,'#','/').'.schim', &rtp, -1)
+    call schim#source(file, a:ns)
+  endfor
 endfunction
 
 " }}}1

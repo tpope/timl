@@ -15,6 +15,7 @@ augroup END
 
 command! -bar -nargs=1 -complete=file TLsource :call schim#source(expand(<q-args>))
 command! -bar -nargs=? TLrepl :call s:repl(<f-args>)
+command! -bar -nargs=1 TLload :call schim#load(<f-args>)
 
 function! s:repl(...)
   let ns = a:0 ? a:1 : 'user'
