@@ -254,9 +254,7 @@ function! schim#eval(x, ...) abort
     let envs[0] = a:1
   endif
 
-  let x = schim#macroexpand(a:x, envs)
-
-  return s:eval(x, envs)
+  return s:eval(a:x, envs)
 endfunction
 
 function! s:eval(x, envs) abort
@@ -346,6 +344,9 @@ function! s:eval(x, envs) abort
     execute x[0][0] . ' ' . join(strings, ' ')
     return g:schim#nil
 
+  elseif has_key(s:macros, join([schim#lookup(envs, x[0])]))
+    let x2 = call(schim#lookup(envs, x[0]), x[1:-1])
+    return s:eval(x2, envs)
   else
     let evaled = map(copy(x), 's:eval(v:val, envs)')
     if type(evaled[0]) == type({})
@@ -470,30 +471,6 @@ function! s:read_one(tokens, i) abort
     endif
   endwhile
   throw error
-endfunction
-
-function! schim#macroexpand(token, envs) abort
-  if type(a:token) == type({})
-    let dict = {}
-    for [k, V] in items(a:token)
-      let dict[k] = schim#macroexpand(V, a:envs)
-      unlet! V
-    endfor
-    return dict
-  elseif schim#symbol_p(a:token) || type(a:token) !=# type([]) || empty(a:token)
-    return a:token
-  elseif schim#symbol_p(a:token[0])
-    try
-      let M = schim#lookup(a:envs, a:token[0])
-    catch /^schim.vim.*undefined/
-      let M = ''
-    endtry
-    if type(M) == type(function('tr')) && has_key(s:macros, join([M]))
-      let V = call(M, a:token[1:-1], {})
-      return schim#macroexpand(V, a:envs)
-    endif
-  endif
-  return map(copy(a:token), 'schim#macroexpand(v:val, a:envs)')
 endfunction
 
 function! s:quasiquote(token, envs, id) abort
