@@ -334,9 +334,9 @@ function! s:eval(x, envs) abort
         let env[bindings[i][0]] = s:eval(bindings[i+1], [env] + envs)
       endif
     endfor
-    return s:eval([schim#symbol('begin')] + body, [env] + envs)
+    return s:eval([schim#symbol('do')] + body, [env] + envs)
 
-  elseif schim#symbol('begin') is x[0]
+  elseif schim#symbol('do') is x[0]
     return get(map(x[1:-1], 's:eval(v:val, envs)'), -1, g:schim#nil)
 
   elseif schim#symbol_p(x[0]) && x[0][0] =~# '^:'
@@ -624,7 +624,7 @@ SchimAssert schim#re('forty-two') ==# 42
 
 SchimAssert schim#re('(if 1 forty-two 69)') ==# 42
 SchimAssert schim#re('(if 0 "boo" "yay")') ==# "yay"
-SchimAssert schim#re('(begin 1 2)') ==# 2
+SchimAssert schim#re('(do 1 2)') ==# 2
 
 SchimAssert schim#re('(set! g:schim_set_bang (+ 1 2))') == 3
 SchimAssert g:schim_set_bang ==# 3

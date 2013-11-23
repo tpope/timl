@@ -23,7 +23,7 @@
     x))
 
 (defmacro when (test ...)
-  `(if ,test (begin ,@...)))
+  `(if ,test (do ,@...)))
 
 (defmacro if-let (binding ...)
   (let (form (first binding)

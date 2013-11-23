@@ -49,7 +49,7 @@ function! s:repl(...)
             echo "\n"
           endtry
         endwhile
-        let result = schim#pr_str(schim#eval([schim#symbol('begin')] + read, ns))
+        let result = schim#pr_str(schim#eval([schim#symbol('do')] + read, ns))
         echo result
       catch
         echohl ErrorMSG
