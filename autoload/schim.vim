@@ -346,7 +346,7 @@ function! s:eval(x, envs) abort
     execute x[0][0] . ' ' . join(strings, ' ')
     return g:schim#nil
 
-  elseif schim#symbol_p(x[0])
+  else
     let evaled = map(copy(x), 's:eval(v:val, envs)')
     if type(evaled[0]) == type({})
       let dict = evaled[0]
@@ -356,15 +356,15 @@ function! s:eval(x, envs) abort
         let Func = evaled[0][schim#symbol(evaled[1])[0]]
       endif
       let args = evaled[2:-1]
-    else
+    elseif type(evaled[0]) == type(function('tr')) || schim#symbol_p(evaled[0])
       let dict = {}
       let Func = evaled[0]
       let args = evaled[1:-1]
+    else
+      throw 'schim.vim: can''t call ' . schim#pr_str(x)
     endif
 
     return call(Func, args, dict)
-  else
-    throw 'schim.vim: can''t call ' . schim#pr_str(x[0])
   endif
 endfunction
 
