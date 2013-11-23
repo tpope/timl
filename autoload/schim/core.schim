@@ -8,6 +8,7 @@
 (defun second (xs) (get xs 1 nil))
 (defun last (xs) (get xs -1 nil))
 (defun butlast (xs) (sublist xs 0 -2))
+(defun get-in (m ks) (reduce get m ks))
 (defun apply (f x ...)
   (let (args (append (list x) ...))
     (f:call f (append (butlast args) (last args)) {})))

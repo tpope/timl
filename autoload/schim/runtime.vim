@@ -145,8 +145,11 @@ function! schim#runtime#list(...) abort
   return a:000
 endfunction
 
-function! schim#runtime#get(...) abort
-  return call('get', a:000)
+function! schim#runtime#get(coll, key, ...) abort
+  if type(a:coll) == type([]) && type(a:key) != type(0)
+    return g:schim#nil
+  endif
+  return get(a:coll, a:key, a:0 ? a:1 : g:schim#nil)
 endfunction
 
 function! schim#runtime#sublist(list, start, ...) abort
