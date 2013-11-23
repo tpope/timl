@@ -188,7 +188,19 @@ function! schim#find(envs, sym) abort
     endif
     unlet! env
   endfor
-  throw 'schim.vim: ' . sym . ' undefined'
+  throw 'schim.vim: ' . sym . ' undefined'.string(a:envs)
+endfunction
+
+function! schim#qualify(envs, sym)
+  let sym = type(a:sym) == type([]) ? a:sym[0] : a:sym
+  try
+    let ns = schim#find(a:envs, a:sym)
+    if type(ns) == type('')
+      return schim#symbol(ns . '#' . sym)
+    endif
+  catch /^schim.vim:/
+  endtry
+  return a:sym
 endfunction
 
 if !exists('s:macros')
@@ -485,7 +497,11 @@ function! s:quasiquote(token, envs, id) abort
     endfor
     return dict
   elseif schim#symbol_p(a:token)
-    return schim#symbol(substitute(a:token[0], '#$', '__'.a:id.'__', ''))
+    if a:token[0] =~# '#$'
+      return schim#symbol(substitute(a:token[0], '#$', '__'.a:id.'__', ''))
+    else
+      return schim#qualify(a:envs, a:token)
+    endif
   elseif type(a:token) !=# type([]) || empty(a:token)
     return a:token
   elseif schim#symbol('unquote') is a:token[0]
