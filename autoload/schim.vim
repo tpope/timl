@@ -292,8 +292,8 @@ function! s:eval(x, envs) abort
     if len(x) < 3
       throw 'schim.vim:E119: if requires 2 or 3 arguments'
     endif
-    let cond = s:eval(x[1], envs)
-    return s:eval(get(x, empty(cond) || cond is 0 ? 3 : 2, g:schim#nil), envs)
+    let Cond = s:eval(x[1], envs)
+    return s:eval(get(x, empty(Cond) || Cond is 0 ? 3 : 2, g:schim#nil), envs)
 
   elseif schim#symbol('defun') is x[0] || schim#symbol('defmacro') is x[0]
     if len(x) != 4
