@@ -33,30 +33,35 @@ function! s:autoload(function) abort
 endfunction
 
 function! s:repl(...)
-  let ns = a:0 ? a:1 : 'user'
-  let input = input(ns.'=> ')
-  while !empty(input)
-    echo "\n"
-    try
-      while 1
-        try
-          let read = schim#read_all(input)
-          break
-        catch /^schim.vim: unexpected EOF/
-          let input .= "\n" . input(ns.'=>> ')
-          echo "\n"
-        endtry
-      endwhile
-      let result = schim#pr_str(schim#eval([schim#symbol('begin')] + read, ns))
-      echo result
-    catch
-      echohl ErrorMSG
-      echo v:exception
-      echo v:throwpoint
-      echohl NONE
-    endtry
+  let more = &more
+  try
+    let ns = a:0 ? a:1 : 'user'
     let input = input(ns.'=> ')
-  endwhile
+    while !empty(input)
+      echo "\n"
+      try
+        while 1
+          try
+            let read = schim#read_all(input)
+            break
+          catch /^schim.vim: unexpected EOF/
+            let input .= "\n" . input(ns.'=>> ')
+            echo "\n"
+          endtry
+        endwhile
+        let result = schim#pr_str(schim#eval([schim#symbol('begin')] + read, ns))
+        echo result
+      catch
+        echohl ErrorMSG
+        echo v:exception
+        echo v:throwpoint
+        echohl NONE
+      endtry
+      let input = input(ns.'=> ')
+    endwhile
+  finally
+    let &more = more
+  endtry
 endfunction
 
 " vim:set et sw=2:
