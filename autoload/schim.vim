@@ -37,7 +37,9 @@ endfunction
 " }}}1
 " Section: Symbols {{{1
 
-let g:schim#symbols = {}
+if !exists('g:schim#symbols')
+  let g:schim#symbols = {}
+endif
 
 function! schim#symbol(str)
   let str = type(a:str) == type([]) ? a:str[0] : a:str
@@ -186,7 +188,11 @@ function! schim#find(envs, sym) abort
   throw 'schim.vim: ' . sym . ' undefined'
 endfunction
 
-let s:macros = {}
+if !exists('s:macros')
+  let s:macros = {}
+endif
+
+let g:schim#macros = s:macros
 
 function! s:build_function(name, params) abort
   let params = map(copy(a:params), 'v:val is schim#symbol("...") ? "..." : schim#munge(v:val[0])')
@@ -247,12 +253,14 @@ function! schim#eval(x, ...) abort
   elseif a:0
     let envs[0] = a:1
   endif
-  return s:eval(a:x, envs)
+
+  let x = schim#macroexpand(a:x, envs)
+
+  return s:eval(x, envs)
 endfunction
 
 function! s:eval(x, envs) abort
-
-  let x = schim#expand_quotes(a:x)
+  let x = a:x
   let envs = a:envs
 
   let i = 0
@@ -270,6 +278,10 @@ function! s:eval(x, envs) abort
   elseif schim#symbol('quote') is x[0]
     return get(x, 1, g:schim#nil)
 
+  elseif schim#symbol('quasiquote') is x[0]
+    let s:gensym_id = get(s:, 'gensym_id', 0) + 1
+    return s:quasiquote(get(x, 1, g:schim#nil), envs, s:gensym_id)
+
   elseif schim#symbol('set!') is x[0]
     if len(x) != 3
       throw 'schim.vim:E119: set! requires 2 arguments'
@@ -283,7 +295,7 @@ function! s:eval(x, envs) abort
     let cond = s:eval(x[1], envs)
     return s:eval(get(x, empty(cond) || cond is 0 ? 3 : 2, g:schim#nil), envs)
 
-  elseif schim#symbol('defun') is x[0]
+  elseif schim#symbol('defun') is x[0] || schim#symbol('defmacro') is x[0]
     if len(x) != 4
       throw 'schim.vim:E119: defun requires 3 arguments'
     endif
@@ -294,6 +306,9 @@ function! s:eval(x, envs) abort
     call writefile(split(s:build_function(name, x[2]),"\n"), file)
     execute 'source '.file
     let g:schim#closures[name] = {'envs': envs, 'exp': x[3]}
+    if schim#symbol('defmacro') is x[0]
+      let s:macros[name] = 1
+    endif
     return function(name)
 
   elseif schim#symbol('define') is x[0] || schim#symbol('defvar') is x[0]
@@ -304,13 +319,6 @@ function! s:eval(x, envs) abort
     let Val = s:eval(x[2], envs)
     let g:{schim#munge(ns.'#'.var)} = Val
     return Val
-
-  elseif schim#symbol('defmacro') is x[0]
-    if len(x) != 4
-      throw 'schim.vim:E119: defmacro requires 3 arguments'
-    endif
-    let [_, var, bindings, exp] = x
-    let s:macros[var[0]] = exp
 
   elseif schim#symbol('lambda') is x[0] || schim#symbol("\u03bb") is x[0]
     if len(x) < 3
@@ -338,7 +346,7 @@ function! s:eval(x, envs) abort
     execute x[0][0] . ' ' . join(strings, ' ')
     return g:schim#nil
 
-  else
+  elseif schim#symbol_p(x[0])
     let evaled = map(copy(x), 's:eval(v:val, envs)')
     if type(evaled[0]) == type({})
       let dict = evaled[0]
@@ -355,6 +363,8 @@ function! s:eval(x, envs) abort
     endif
 
     return call(Func, args, dict)
+  else
+    throw 'schim.vim: can''t call ' . schim#pr_str(x[0])
   endif
 endfunction
 
@@ -455,24 +465,46 @@ function! s:read_one(tokens, i) abort
   throw error
 endfunction
 
-function! schim#expand_quotes(token) abort
+function! schim#macroexpand(token, envs) abort
   if type(a:token) == type({})
     let dict = {}
     for [k, V] in items(a:token)
-      let dict[k] = schim#expand_quotes(V)
+      let dict[k] = schim#macroexpand(V, a:envs)
       unlet! V
     endfor
     return dict
   elseif schim#symbol_p(a:token) || type(a:token) !=# type([]) || empty(a:token)
     return a:token
-  elseif schim#symbol_p(a:token[0]) && has_key(s:macros, a:token[0][0])
-      throw "MACRO CALLED!!!!!!!!!1!"
-    " else token[0] is schim#symbol_p('quasiquote')
+  elseif schim#symbol_p(a:token[0])
+    try
+      let M = schim#lookup(a:envs, a:token[0])
+    catch /^schim.vim.*undefined/
+      let M = ''
+    endtry
+    if type(M) == type(function('tr')) && has_key(s:macros, join([M]))
+      let V = call(M, a:token[1:-1], {})
+      return schim#macroexpand(V, a:envs)
+    endif
+  endif
+  return map(copy(a:token), 'schim#macroexpand(v:val, a:envs)')
+endfunction
 
-    " else token[0] is schim#symbol_p('unquote')
-
-  else
+function! s:quasiquote(token, envs, id) abort
+  if type(a:token) == type({})
+    let dict = {}
+    for [k, V] in items(a:token)
+      let dict[k] = s:quasiquote(V, a:envs, a:id)
+      unlet! V
+    endfor
+    return dict
+  elseif schim#symbol_p(a:token)
+    return schim#symbol(substitute(a:token[0], '#$', '__'.a:id.'__', ''))
+  elseif type(a:token) !=# type([]) || empty(a:token)
     return a:token
+  elseif schim#symbol('unquote') is a:token[0]
+    return s:eval(a:token[1], a:envs)
+  else
+    return map(copy(a:token), 's:quasiquote(v:val, a:envs, a:id)')
   endif
 endfunction
 
