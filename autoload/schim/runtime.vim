@@ -82,7 +82,7 @@ function! schim#runtime#_SLASH_(x, ...) abort
   endif
 endfunction
 
-function schim#runtime#_PERCENT_(x, y) abort
+function! schim#runtime#_PERCENT_(x, y) abort
   return a:x % a:y
 endfunction
 
