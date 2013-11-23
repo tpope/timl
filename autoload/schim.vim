@@ -322,7 +322,7 @@ function! s:eval(x, envs) abort
     endif
     return function(name)
 
-  elseif schim#symbol('define') is x[0] || schim#symbol('defvar') is x[0]
+  elseif schim#symbol('defvar') is x[0]
     if len(x) != 3
       throw 'schim.vim:E119: defvar requires 2 arguments'
     endif
@@ -385,7 +385,7 @@ endfunction
 " }}}1
 " Section: Read {{{1
 
-let s:iskeyword = '[[:alnum:]_=!#$%^&*+|.?/<>:~-]'
+let s:iskeyword = '[[:alnum:]_=?!#$%&*+|./<>:~-]'
 
 function! s:tokenize(str) abort
   let tokens = []

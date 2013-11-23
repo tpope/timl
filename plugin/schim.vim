@@ -8,8 +8,7 @@ let g:loaded_schim = 1
 
 augroup schim
   autocmd!
-  autocmd BufNewFile,BufReadPost *.tim iabbrev <buffer> lb λ
-  autocmd BufNewFile,BufReadPost *.tim set filetype=lisp
+  autocmd BufNewFile,BufReadPost *.tim set filetype=timl
   autocmd FuncUndefined *#* call s:autoload(expand('<amatch>'))
 augroup END
 
