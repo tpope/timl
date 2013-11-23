@@ -27,8 +27,7 @@ function! s:string(val) abort
   elseif type(a:val) == type('')
     return a:val
   elseif type(a:val) == type(function('tr'))
-    let name = join([a:val])
-    return (name =~# '^\d' ? '{' . name . '}' : name)
+    return join([a:val])
   else
     return string(a:val)
   endif
