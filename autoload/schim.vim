@@ -378,7 +378,8 @@ function! s:tokenize(str) abort
   let i = 0
   let len = len(a:str)
   while i < len
-    let ch = matchstr(a:str, '.', i)
+    let chs = matchstr(a:str, '..\=', i)
+    let ch = matchstr(chs, '.')
     if ch =~# s:iskeyword
       let token = matchstr(a:str, s:iskeyword.'*', i)
       let i += strlen(token)
@@ -393,6 +394,9 @@ function! s:tokenize(str) abort
       let token = matchstr(a:str, ';.\{-\}\ze\%(\n\|$\)', i)
       let i += strlen(token)
       " call add(tokens, token)
+    elseif chs ==# ',@'
+      call add(tokens, chs)
+      let i += len(chs)
     else
       call add(tokens, ch)
       let i += len(ch)
@@ -444,14 +448,17 @@ function! s:read_one(tokens, i) abort
     elseif a:tokens[i] ==# 'nil'
       return [g:schim#nil, i+1]
     elseif a:tokens[i] ==# "'"
-        let [val, i] = s:read_one(a:tokens, i+1)
-        return [[schim#symbol('quote'), val], i]
+      let [val, i] = s:read_one(a:tokens, i+1)
+      return [[schim#symbol('quote'), val], i]
     elseif a:tokens[i] ==# '`'
-        let [val, i] = s:read_one(a:tokens, i+1)
-        return [[schim#symbol('quasiquote'), val], i]
+      let [val, i] = s:read_one(a:tokens, i+1)
+      return [[schim#symbol('quasiquote'), val], i]
     elseif a:tokens[i] ==# ','
-        let [val, i] = s:read_one(a:tokens, i+1)
-        return [[schim#symbol('unquote'), val], i]
+      let [val, i] = s:read_one(a:tokens, i+1)
+      return [[schim#symbol('unquote'), val], i]
+    elseif a:tokens[i] ==# ',@'
+      let [val, i] = s:read_one(a:tokens, i+1)
+      return [[schim#symbol('unquote-splicing'), val], i]
     elseif a:tokens[i][0] ==# ';'
       let i += 1
       continue
@@ -504,7 +511,16 @@ function! s:quasiquote(token, envs, id) abort
   elseif schim#symbol('unquote') is a:token[0]
     return s:eval(a:token[1], a:envs)
   else
-    return map(copy(a:token), 's:quasiquote(v:val, a:envs, a:id)')
+    let ret = []
+    for V in a:token
+      if type(V) == type([]) && get(V, 0, '') is schim#symbol('unquote-splicing')
+        call extend(ret, s:eval(get(V, 1, g:schim#nil), a:envs))
+      else
+        call add(ret, s:quasiquote(V, a:envs, a:id))
+      endif
+      unlet! V
+    endfor
+    return ret
   endif
 endfunction
 
