@@ -25,7 +25,7 @@ function! schim#runtime#string(...) abort
       let acc .= _.x[0]
     elseif type(_.x) == type('')
       let acc .= _.x
-    elseif type(_.x) == type(function('tr')) abort
+    elseif type(_.x) == type(function('tr'))
       let name = join([_.x])
       let acc .= (name =~# '^\d' ? '{' . name . '}' : name)
     else
