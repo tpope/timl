@@ -100,7 +100,7 @@ endfunction
 
 function! schim#a2env(f, a) abort
   let env = {}
-  if get(a:f.params, -1) is schim#symbol('...')
+  if get(a:f.arglist, -1) is schim#symbol('...')
     let env['...'] = a:a['000']
   endif
   for [k,V] in items(a:a)
@@ -209,23 +209,22 @@ endif
 
 let g:schim#macros = s:macros
 
-function! s:build_function(name, params) abort
-  let params = map(copy(a:params), 'v:val is schim#symbol("...") ? "..." : schim#munge(v:val[0])')
+function! s:build_function(name, arglist) abort
+  let arglist = map(copy(a:arglist), 'v:val is schim#symbol("...") ? "..." : schim#munge(v:val[0])')
   let dict = {}
-  return 'function! '.a:name.'('.join(params, ',').")\n"
-        \ . "let g:file = expand('<sfile>')\n"
+  return 'function! '.a:name.'('.join(arglist, ',').")\n"
         \ . "let name = matchstr(expand('<sfile>'), '.*\\%(\\.\\.\\| \\)\\zs.*')\n"
         \ . "let fn = g:schim#closures[name]\n"
-        \ . "let envs = [schim#a2env(fn, a:)] + fn.envs\n"
-        \ . "return schim#eval(fn.exp, envs)\n"
+        \ . "let env = [schim#a2env(fn, a:)] + fn.env\n"
+        \ . "return schim#eval(fn.form, env)\n"
         \ . "endfunction"
 endfunction
 
-function! s:lambda(params, form, env) abort
+function! s:lambda(arglist, form, env) abort
   let dict = {}
-  execute s:build_function('dict.function', a:params)
+  execute s:build_function('dict.function', a:arglist)
   let name = matchstr(string(dict.function), "'\\zs.*\\ze'")
-  let g:schim#closures[name] = { 'params': a:params, 'envs': a:env, 'exp': a:form }
+  let g:schim#closures[name] = {'name': name, 'arglist': a:arglist, 'env': a:env, 'form': a:form, 'macro': 0}
   return dict.function
 endfunction
 
@@ -313,13 +312,13 @@ function! s:eval(x, envs) abort
       throw 'schim.vim:E119: defun requires 3 arguments'
     endif
     let var = s:string(x[1])
-    let params = x[2]
     let name = schim#munge(ns.'#'.var)
     let file = s:file4ns(ns)
     call writefile(split(s:build_function(name, x[2]),"\n"), file)
     execute 'source '.file
-    let g:schim#closures[name] = {'params': x[2], 'envs': envs, 'exp': x[3]}
-    if schim#symbol('defmacro') is x[0]
+    let macro = schim#symbol('defmacro') is x[0]
+    let g:schim#closures[name] = {'name': name, 'arglist': x[2], 'env': envs, 'form': x[3], 'macro': macro}
+    if macro
       let s:macros[name] = 1
     endif
     return function(name)
