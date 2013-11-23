@@ -210,7 +210,7 @@ function! s:lambda(params, form, env) abort
   let dict = {}
   execute s:build_function('dict.function', a:params)
   let name = matchstr(string(dict.function), "'\\zs.*\\ze'")
-  let g:schim#closures[name] = { 'envs': a:env, 'exp': a:form }
+  let g:schim#closures[name] = { 'params': a:params, 'envs': a:env, 'exp': a:form }
   return dict.function
 endfunction
 
@@ -305,7 +305,7 @@ function! s:eval(x, envs) abort
     let file = s:file4ns(ns)
     call writefile(split(s:build_function(name, x[2]),"\n"), file)
     execute 'source '.file
-    let g:schim#closures[name] = {'envs': envs, 'exp': x[3]}
+    let g:schim#closures[name] = {'params': x[2], 'envs': envs, 'exp': x[3]}
     if schim#symbol('defmacro') is x[0]
       let s:macros[name] = 1
     endif
