@@ -231,6 +231,8 @@ function! schim#set_bang(envs, sym, val)
     elseif sym =~# '^[bwtg]:'
       exe 'unlet! '.sym
       exe 'let ' . sym . ' = val'
+    elseif sym =~# '^v:'
+      exe 'let ' . sym . ' = val'
     else
       let env = schim#find(a:envs, sym)
       let env[sym] = val
