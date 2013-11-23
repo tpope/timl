@@ -1,3 +1,4 @@
+(defun pr (x) (:echo (schim#pr-str x)))
 (defun inc (n) (+ n 1))
 (defun dec (n) (- n 1))
 (defun constantly (x) (lambda (...) x))
@@ -9,4 +10,22 @@
   (let (args (append (list x) ...))
     (f:call f (append (butlast args) (last args)) {})))
 
-(defmacro or (x y) `(let (or# ,x) (if or# or# ,y)))
+(defmacro or (x ...)
+  (if ...
+    `(let (or# ,x) (if or# or# (or ,@...)))
+    x))
+
+(defmacro and (x ...)
+  (if ...
+    `(let (and# ,x) (if and# (and ,@...) and#))
+    x))
+
+(defmacro when (test ...)
+  `(if ,test (begin ,@...)))
+
+(defmacro if-let (binding ...)
+  (let (form (first binding)
+         tst (last binding))
+    `(let (temp# ,tst)
+      (if temp#
+        (let (,form temp#) ,@...)))))
