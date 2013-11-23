@@ -1,7 +1,7 @@
 if exists("g:autoloaded_schim_runtime") || &cp || v:version < 700
   finish
 endif
-let g:autoloaded_schim = 1
+let g:autoloaded_schim_runtime = 1
 
 " Section: Misc {{{1
 

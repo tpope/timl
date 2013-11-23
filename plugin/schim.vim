@@ -10,12 +10,27 @@ augroup schim
   autocmd!
   autocmd BufNewFile,BufReadPost *.schim iabbrev <buffer> lb λ
   autocmd BufNewFile,BufReadPost *.schim set filetype=lisp
-  autocmd FuncUndefined *#* call schim#autoload(expand('<amatch>'), 'noruntime')
+  autocmd FuncUndefined *#* call s:autoload(expand('<amatch>'))
 augroup END
 
 command! -bar -nargs=1 -complete=file TLsource :call schim#source(expand(<q-args>))
 command! -bar -nargs=? TLrepl :call s:repl(<f-args>)
 command! -bar -nargs=1 TLload :call schim#load(<f-args>)
+
+if !exists('g:schim#requires')
+  let g:schim#requires = {}
+endif
+
+function! s:autoload(function) abort
+  let ns = matchstr(a:function, '.*\ze#')
+
+  if !has_key(g:schim#requires, ns)
+    let g:schim#requires[ns] = 1
+    for file in findfile('autoload/'.tr(ns,'#','/').'.schim', &rtp, -1)
+      call schim#source(file, ns)
+    endfor
+  endif
+endfunction
 
 function! s:repl(...)
   let ns = a:0 ? a:1 : 'user'

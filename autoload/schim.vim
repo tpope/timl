@@ -541,23 +541,21 @@ function! schim#source(filename, ...)
   endfor
 endfunction
 
-if !exists('s:requires')
-  let s:requires = {}
+if !exists('g:schim#requires')
+  let g:schim#requires = {}
 endif
 
-function! schim#autoload(function, ...) abort
+function! schim#autoload(function) abort
   let ns = matchstr(a:function, '.*\ze#')
 
-  if !has_key(s:requires, ns)
-    let s:requires[ns] = 1
-    call call('schim#source', [ns] + a:000)
+  if !has_key(g:schim#requires, ns)
+    let g:schim#requires[ns] = 1
+    call schim#load(ns)
   endif
 endfunction
 
-function! schim#load(ns, ...) abort
-  if !a:0
-    execute 'runtime! autoload/'.tr(a:ns,'#','/').'.vim'
-  endif
+function! schim#load(ns) abort
+  execute 'runtime! autoload/'.tr(a:ns,'#','/').'.vim'
   for file in findfile('autoload/'.tr(a:ns,'#','/').'.schim', &rtp, -1)
     call schim#source(file, a:ns)
   endfor
