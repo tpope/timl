@@ -98,8 +98,11 @@ function! schim#demunge(var) abort
   return tr(substitute(a:var, '_\(\u\+\)_', '\=get(s:demunge, submatch(0), submatch(0))', 'g'), '_', '-')
 endfunction
 
-function! schim#a2env(a)
-  let env = {'...': a:a['000']}
+function! schim#a2env(f, a) abort
+  let env = {}
+  if get(a:f.params, -1) is schim#symbol('...')
+    let env['...'] = a:a['000']
+  endif
   for [k,V] in items(a:a)
     if k !~# '^\d'
       let env[schim#demunge(k)] = V
@@ -201,7 +204,7 @@ function! s:build_function(name, params) abort
         \ . "let g:file = expand('<sfile>')\n"
         \ . "let name = matchstr(expand('<sfile>'), '.*\\%(\\.\\.\\| \\)\\zs.*')\n"
         \ . "let fn = g:schim#closures[name]\n"
-        \ . "let envs = [schim#a2env(a:)] + fn.envs\n"
+        \ . "let envs = [schim#a2env(fn, a:)] + fn.envs\n"
         \ . "return schim#eval(fn.exp, envs)\n"
         \ . "endfunction"
 endfunction
