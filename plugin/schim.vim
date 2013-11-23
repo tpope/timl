@@ -8,8 +8,8 @@ let g:loaded_schim = 1
 
 augroup schim
   autocmd!
-  autocmd BufNewFile,BufReadPost *.schim iabbrev <buffer> lb λ
-  autocmd BufNewFile,BufReadPost *.schim set filetype=lisp
+  autocmd BufNewFile,BufReadPost *.tim iabbrev <buffer> lb λ
+  autocmd BufNewFile,BufReadPost *.tim set filetype=lisp
   autocmd FuncUndefined *#* call s:autoload(expand('<amatch>'))
 augroup END
 
@@ -26,7 +26,7 @@ function! s:autoload(function) abort
 
   if !has_key(g:schim#requires, ns)
     let g:schim#requires[ns] = 1
-    for file in findfile('autoload/'.tr(ns,'#','/').'.schim', &rtp, -1)
+    for file in findfile('autoload/'.tr(ns,'#','/').'.tim', &rtp, -1)
       call schim#source(file, ns)
     endfor
   endif

@@ -568,7 +568,7 @@ endfunction
 
 function! schim#load(ns) abort
   execute 'runtime! autoload/'.tr(a:ns,'#','/').'.vim'
-  for file in findfile('autoload/'.tr(a:ns,'#','/').'.schim', &rtp, -1)
+  for file in findfile('autoload/'.tr(a:ns,'#','/').'.tim', &rtp, -1)
     call schim#source(file, a:ns)
   endfor
 endfunction
