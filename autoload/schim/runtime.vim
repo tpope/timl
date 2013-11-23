@@ -82,6 +82,10 @@ function! schim#runtime#_SLASH_(x, ...) abort
   endif
 endfunction
 
+function schim#runtime#_PERCENT_(x, y) abort
+  return a:x % a:y
+endfunction
+
 function! schim#runtime#_GT_(x, y) abort
   return a:x ># a:y
 endfunction
@@ -96,6 +100,14 @@ endfunction
 
 function! schim#runtime#_LT__EQ_(x, y) abort
   return a:x <=# a:y
+endfunction
+
+function! schim#runtime#_EQ__TILDE_(x, y) abort
+  return type(a:x) == type('') && type(a:y) == type('') && a:x =~# a:y
+endfunction
+
+function! schim#runtime#_EQ__TILDE__QMARK_(x, y) abort
+  return type(a:x) == type('') && type(a:y) == type('') && a:x =~? a:y
 endfunction
 
 function! schim#runtime#_EQ_(x, y) abort

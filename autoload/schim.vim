@@ -361,7 +361,7 @@ endfunction
 " }}}1
 " Section: Read {{{1
 
-let s:iskeyword = '[[:alnum:]_=+!#$^&*|.?/<>:-]'
+let s:iskeyword = '[[:alnum:]_=!#$%^&*+|.?/<>:~-]'
 
 function! s:tokenize(str) abort
   let tokens = []
