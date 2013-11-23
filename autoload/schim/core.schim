@@ -25,9 +25,20 @@
 (defmacro when (test ...)
   `(if ,test (do ,@...)))
 
-(defmacro if-let (binding ...)
+(defmacro if-let (binding then ...)
   (let (form (first binding)
          tst (last binding))
     `(let (temp# ,tst)
       (if temp#
-        (let (,form temp#) ,@...)))))
+        (let (,form temp#) ,then) ,@...))))
+
+(defmacro -> (x ...)
+  (if ...
+    (let (form (first ...)
+          more (rest ...))
+      (if more
+        `(-> (-> ,x ,form) ,@more)
+        (if (list? form)
+          `(,(first form) ,x ,@(rest form))
+          (list form x))))
+    x))

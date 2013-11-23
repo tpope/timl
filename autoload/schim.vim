@@ -344,7 +344,7 @@ function! s:eval(x, envs) abort
     execute x[0][0] . ' ' . join(strings, ' ')
     return g:schim#nil
 
-  elseif has_key(s:macros, join([schim#lookup(envs, x[0])]))
+  elseif schim#symbol_p(x[0]) && has_key(s:macros, join([schim#lookup(envs, x[0])]))
     let x2 = call(schim#lookup(envs, x[0]), x[1:-1])
     return s:eval(x2, envs)
   else
