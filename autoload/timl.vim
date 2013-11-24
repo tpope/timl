@@ -148,7 +148,7 @@ function! timl#ns_for_file(file) abort
   let slash = exists('+shellslash') && &shellslash ? '\' : '/'
   for dir in split(&runtimepath, ',')
     if file[0 : len(dir)+9] ==# dir.slash.'autoload'.slash
-      return tr(fnamemodify(file[len(dir)+10 : -1], ':r'), '\/_', '##-')
+      return tr(fnamemodify(file[len(dir)+10 : -1], ':r:r'), '\/_', '##-')
     endif
   endfor
   return 'user'
@@ -271,7 +271,7 @@ function! timl#set_bang(envs, sym, val)
 endfunction
 
 function! timl#eval(x, ...) abort
-  let envs = ['user', 'timl#core', 'timl#runtime']
+  let envs = ['user', 'timl#core']
   if a:0 && type(a:1) == type([])
     let envs = a:1
   elseif a:0
