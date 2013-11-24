@@ -446,6 +446,73 @@ function! s:eval(x, envs) abort
   endif
 endfunction
 
+function! timl#re(str, ...) abort
+  return call('timl#eval', [timl#read(a:str)] + a:000)
+endfunction
+
+function! timl#rep(...) abort
+  return timl#pr_str(call('timl#re', a:000))
+endfunction
+
+function! timl#source_file(filename, ...)
+  let ns = a:0 ? a:1 : timl#ns_for_file(fnamemodify(a:filename, ':p'))
+  for expr in timl#readfile(a:filename)
+    call timl#eval(expr, ns)
+  endfor
+endfunction
+
+if !exists('g:timl#requires')
+  let g:timl#requires = {}
+endif
+
+function! timl#autoload(function) abort
+  let ns = matchstr(a:function, '.*\ze#')
+
+  if !has_key(g:timl#requires, ns)
+    let g:timl#requires[ns] = 1
+    call timl#load(ns)
+  endif
+endfunction
+
+function! timl#load(ns) abort
+  execute 'runtime! autoload/'.tr(a:ns,'#','/').'.vim'
+  for file in findfile('autoload/'.tr(a:ns,'#','/').'.tim', &rtp, -1)
+    call timl#source_file(file, a:ns)
+  endfor
+endfunction
+
+function! s:quasiquote(token, envs, id) abort
+  if type(a:token) == type({})
+    let dict = {}
+    for [k, V] in items(a:token)
+      let dict[k] = s:quasiquote(V, a:envs, a:id)
+      unlet! V
+    endfor
+    return dict
+  elseif timl#symbol_p(a:token)
+    if a:token[0] =~# '#$'
+      return timl#symbol(substitute(a:token[0], '#$', '__'.a:id.'__', ''))
+    else
+      return timl#qualify(a:envs, a:token)
+    endif
+  elseif type(a:token) !=# type([]) || empty(a:token)
+    return a:token
+  elseif timl#symbol('unquote') is a:token[0]
+    return s:eval(a:token[1], a:envs)
+  else
+    let ret = []
+    for V in a:token
+      if type(V) == type([]) && get(V, 0, '') is timl#symbol('unquote-splicing')
+        call extend(ret, s:eval(get(V, 1, g:timl#nil), a:envs))
+      else
+        call add(ret, s:quasiquote(V, a:envs, a:id))
+      endif
+      unlet! V
+    endfor
+    return ret
+  endif
+endfunction
+
 " }}}1
 " Section: Read {{{1
 
@@ -550,38 +617,6 @@ function! s:read_one(tokens, i) abort
   throw error
 endfunction
 
-function! s:quasiquote(token, envs, id) abort
-  if type(a:token) == type({})
-    let dict = {}
-    for [k, V] in items(a:token)
-      let dict[k] = s:quasiquote(V, a:envs, a:id)
-      unlet! V
-    endfor
-    return dict
-  elseif timl#symbol_p(a:token)
-    if a:token[0] =~# '#$'
-      return timl#symbol(substitute(a:token[0], '#$', '__'.a:id.'__', ''))
-    else
-      return timl#qualify(a:envs, a:token)
-    endif
-  elseif type(a:token) !=# type([]) || empty(a:token)
-    return a:token
-  elseif timl#symbol('unquote') is a:token[0]
-    return s:eval(a:token[1], a:envs)
-  else
-    let ret = []
-    for V in a:token
-      if type(V) == type([]) && get(V, 0, '') is timl#symbol('unquote-splicing')
-        call extend(ret, s:eval(get(V, 1, g:timl#nil), a:envs))
-      else
-        call add(ret, s:quasiquote(V, a:envs, a:id))
-      endif
-      unlet! V
-    endfor
-    return ret
-  endif
-endfunction
-
 function! timl#read_all(str) abort
   let tokens = s:tokenize(a:str)
   let forms = []
@@ -597,43 +632,8 @@ function! timl#read(str) abort
   return s:read_one(s:tokenize(a:str), 0)[0]
 endfunction
 
-function! timl#re(str, ...) abort
-  return call('timl#eval', [timl#read(a:str)] + a:000)
-endfunction
-
-function! timl#rep(...) abort
-  return timl#pr_str(call('timl#re', a:000))
-endfunction
-
 function! timl#readfile(filename) abort
   return timl#read_all(join(readfile(a:filename), "\n"))
-endfunction
-
-function! timl#source_file(filename, ...)
-  let ns = a:0 ? a:1 : timl#ns_for_file(fnamemodify(a:filename, ':p'))
-  for expr in timl#readfile(a:filename)
-    call timl#eval(expr, ns)
-  endfor
-endfunction
-
-if !exists('g:timl#requires')
-  let g:timl#requires = {}
-endif
-
-function! timl#autoload(function) abort
-  let ns = matchstr(a:function, '.*\ze#')
-
-  if !has_key(g:timl#requires, ns)
-    let g:timl#requires[ns] = 1
-    call timl#load(ns)
-  endif
-endfunction
-
-function! timl#load(ns) abort
-  execute 'runtime! autoload/'.tr(a:ns,'#','/').'.vim'
-  for file in findfile('autoload/'.tr(a:ns,'#','/').'.tim', &rtp, -1)
-    call timl#source_file(file, a:ns)
-  endfor
 endfunction
 
 " }}}1
