@@ -9,6 +9,7 @@ let g:loaded_timl = 1
 augroup timl
   autocmd!
   autocmd BufNewFile,BufReadPost *.tim set filetype=timl
+  autocmd FileType timl command! -buffer -bar Wepl :update|TLsource %|TLrepl
   autocmd FuncUndefined *#* call s:autoload(expand('<amatch>'))
 augroup END
 

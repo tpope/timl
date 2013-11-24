@@ -578,8 +578,9 @@ function! timl#readfile(filename) abort
 endfunction
 
 function! timl#source_file(filename, ...)
+  let ns = a:0 ? a:1 : timl#ns_for_file(fnamemodify(a:filename, ':p'))
   for expr in timl#readfile(a:filename)
-    call call('timl#eval', [expr] + a:000)
+    call timl#eval(expr, ns)
   endfor
 endfunction
 
