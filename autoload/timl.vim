@@ -577,7 +577,7 @@ function! timl#readfile(filename) abort
   return timl#read_all(join(readfile(a:filename), "\n"))
 endfunction
 
-function! timl#source(filename, ...)
+function! timl#source_file(filename, ...)
   for expr in timl#readfile(a:filename)
     call call('timl#eval', [expr] + a:000)
   endfor
@@ -599,7 +599,7 @@ endfunction
 function! timl#load(ns) abort
   execute 'runtime! autoload/'.tr(a:ns,'#','/').'.vim'
   for file in findfile('autoload/'.tr(a:ns,'#','/').'.tim', &rtp, -1)
-    call timl#source(file, a:ns)
+    call timl#source_file(file, a:ns)
   endfor
 endfunction
 

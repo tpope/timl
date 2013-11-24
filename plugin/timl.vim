@@ -12,7 +12,7 @@ augroup timl
   autocmd FuncUndefined *#* call s:autoload(expand('<amatch>'))
 augroup END
 
-command! -bar -nargs=1 -complete=file TLsource :call timl#source(expand(<q-args>))
+command! -bar -nargs=1 -complete=file TLsource :call timl#source_file(expand(<q-args>))
 command! -bar -nargs=? TLrepl :call s:repl(<f-args>)
 command! -bar -nargs=1 TLload :call timl#load(<f-args>)
 
@@ -26,7 +26,7 @@ function! s:autoload(function) abort
   if !has_key(g:timl#requires, ns)
     let g:timl#requires[ns] = 1
     for file in findfile('autoload/'.tr(ns,'#','/').'.tim', &rtp, -1)
-      call timl#source(file, ns)
+      call timl#source_file(file, ns)
     endfor
   endif
 endfunction
@@ -49,7 +49,7 @@ function! s:repl(...)
             echo "\n"
           endtry
         endwhile
-        let result = timl#pr_str(timl#eval([timl#symbol('do')] + read, ns))
+        let result = timl#pr_str(timl#eval([timl#symbol('do')] + read, [ns, 'timl#repl', 'timl#core']))
         echo result
       catch
         echohl ErrorMSG
