@@ -373,10 +373,21 @@ function! s:eval(x, envs) abort
     let env = {}
     let _ = {}
     for [_.key, _.form] in x[1]
-      if s:string(_.key) ==# '_'
-        call s:eval(_.form, [env] + envs)
+      let _.val = s:eval(_.form, [env] + envs)
+      if _.key is timl#symbol_p('_') || _.key is g:timl#nil
+        " ignore
+      elseif timl#symbol_p(_.key)
+        let env[s:string(_.key)] = _.val
+      elseif type(_.key) == type([])
+        for i in range(len(_.key))
+          if type(_.val) == type([])
+            let env[s:string(_.key[i])] = get(_.val, i, g:timl#nil)
+          elseif type(_.val) == type({})
+            let env[s:string(_.key[i])] = get(_.val, s:string(_.key[i]), g:timl#nil)
+          endif
+        endfor
       else
-        let env[s:string(_.key)] = s:eval(_.form, [env] + envs)
+        throw "timl.vim: unsupported binding form ".timl#pr_str(_.key)
       endif
     endfor
     return s:eval([timl#symbol('do')] + x[2 : -1], [env] + envs)
@@ -685,6 +696,7 @@ TimLAssert g:timl_set_bang == {"key": ["c", "b"]}
 unlet! g:timl_set_bang
 TimLAssert timl#re('(let ((a 1)) (let ((b 2)) (set! a 3)) a)') == 3
 TimLAssert timl#re('(let ((a 1)) (let ((a 2)) (set! a 3)) a)') == 1
+TimLAssert timl#re('(let (((j k) {"j" 1}) ((l m) (list 2))) (list j k l m))') == [1, g:timl#nil, 2, g:timl#nil]
 
 TimLAssert timl#re('(dict "a" 1 "b" 2)') ==# {"a": 1, "b": 2}
 TimLAssert timl#re('(dict "a" 1 (list "b" 2))') ==# {"a": 1, "b": 2}
