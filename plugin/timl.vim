@@ -43,7 +43,7 @@ function! s:repl(...)
       try
         while 1
           try
-            let read = timl#read_all(input)
+            let read = timl#reader#read_string_all(input)
             break
           catch /^timl.vim: unexpected EOF/
             let input .= "\n" . input(ns.'=>> ')
