@@ -15,7 +15,13 @@ function! s:function(name) abort
   return function(s:funcname(a:name))
 endfunction
 
-let g:timl#nil = []
+function! s:persistent_list(...)
+  return a:000
+endfunction
+
+if !exists('g:timl#nil')
+  let g:timl#nil = s:persistent_list()
+endif
 
 function! timl#nil_p(val)
   return empty(a:val)
@@ -45,7 +51,7 @@ endif
 function! timl#symbol(str)
   let str = type(a:str) == type([]) ? a:str[0] : a:str
   if !has_key(g:timl#symbols, str)
-    let g:timl#symbols[str] = [str]
+    let g:timl#symbols[str] = s:persistent_list(str)
   endif
   return g:timl#symbols[str]
 endfunction
