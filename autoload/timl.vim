@@ -259,24 +259,35 @@ function! s:file4ns(ns) abort
   return file
 endfunction
 
-function! timl#set_bang(envs, sym, val)
+function! timl#set_bang(envs, sym, val, ...)
     let sym = timl#symbol(a:sym)[0]
-    let val = a:val
+    let val = s:eval((a:0 ? a:000[-1] : a:val), a:envs)
+    let _ = {}
     if sym =~# '^&'
       if type(val) == type([])
         exe 'let ' . sym . ' = join(val, ",")'
       else
         exe 'let ' . sym . ' = val'
       endif
-    elseif sym =~# '^[bwtg]:'
-      exe 'unlet! '.sym
-      exe 'let ' . sym . ' = val'
-    elseif sym =~# '^v:'
-      exe 'let ' . sym . ' = val'
+    elseif sym =~# '^[bwtgv]:'
+      let _.env = eval(sym[0:1])
+      let sym = timl#munge(sym[2:-1])
     else
-      let env = timl#find(a:envs, sym)
-      let env[sym] = val
+      let _.env = timl#find(a:envs, sym)
     endif
+    let refs = ''
+    for _.form in (a:0 ? [a:val] : []) + a:000[0:-2]
+      let _.val = s:eval(_.form, a:envs)
+      if timl#symbol_p(_.val) || type(_.val) == type('') || type(_.val) == type(0)
+        let refs .= '['.string(s:string(_.val)).']'
+      elseif type(_.val) == type([]) && len(_.val) == 2
+        let refs .= '['.string(_.val[0]).' : '.string(_.val[1]).']'
+      else
+        throw "timl.vim: invalid set! key ".string(_.val)
+      endif
+    endfor
+
+    execute 'let _.env[sym]'.refs.' = val'
     return val
 endfunction
 
@@ -315,10 +326,10 @@ function! s:eval(x, envs) abort
     return s:quasiquote(get(x, 1, g:timl#nil), envs, s:gensym_id)
 
   elseif timl#symbol('set!') is x[0]
-    if len(x) != 3
+    if len(x) < 3
       throw 'timl.vim:E119: set! requires 2 arguments'
     endif
-    return timl#set_bang(envs, x[1], s:eval(x[2], envs))
+    return call('timl#set_bang', [envs] + x[1:-1])
 
   elseif timl#symbol('if') is x[0]
     if len(x) < 3
@@ -664,8 +675,12 @@ TimLAssert timl#re('(if 1 forty-two 69)') ==# 42
 TimLAssert timl#re('(if 0 "boo" "yay")') ==# "yay"
 TimLAssert timl#re('(do 1 2)') ==# 2
 
-TimLAssert timl#re('(set! g:timl_set_bang (+ 1 2))') == 3
-TimLAssert g:timl_set_bang ==# 3
+TimLAssert timl#re('(set! g:timl_set_bang {})') == {}
+TimLAssert g:timl_set_bang ==# {}
+TimLAssert timl#re('(set! g:timl_set_bang "key" (list "a" "b"))') == ["a", "b"]
+TimLAssert g:timl_set_bang == {"key": ["a", "b"]}
+TimLAssert timl#re('(set! g:timl_set_bang "key" ''(0 0) ''("c"))') == ["c"]
+TimLAssert g:timl_set_bang == {"key": ["c", "b"]}
 unlet! g:timl_set_bang
 TimLAssert timl#re('(let (a 1) (let (b 2) (set! a 3)) a)') == 3
 TimLAssert timl#re('(let (a 1) (let (a 2) (set! a 3)) a)') == 1
