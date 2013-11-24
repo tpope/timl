@@ -57,6 +57,16 @@ endfunction
 
 " From clojure/lange/Compiler.java
 let s:munge = {
+      \ '0': "_ZERO_",
+      \ '1': "_ONE_",
+      \ '2': "_TWO_",
+      \ '3': "_THREE_",
+      \ '4': "_FOUR_",
+      \ '5': "_FIVE_",
+      \ '6': "_SIX_",
+      \ '7': "_SEVEN_",
+      \ '8': "_EIGHT_",
+      \ '9': "_NINE_",
       \ ':': "_COLON_",
       \ '+': "_PLUS_",
       \ '>': "_GT_",
@@ -89,7 +99,7 @@ unlet! s:key
 
 function! timl#munge(var) abort
   let var = s:string(a:var)
-  return tr(substitute(var, '[^[:alnum:]#_-]', '\=get(s:munge,submatch(0))', 'g'), '-', '_')
+  return tr(substitute(var, '[^[:alnum:]#_-]', '\=get(s:munge,submatch(0), submatch(0))', 'g'), '-', '_')
 endfunction
 
 function! timl#demunge(var) abort
