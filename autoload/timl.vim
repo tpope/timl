@@ -28,6 +28,8 @@ function! s:string(val) abort
     return a:val
   elseif type(a:val) == type(function('tr'))
     return join([a:val])
+  elseif type(a:val) == type([])
+    return join(map(copy(a:val), 's:string(v:val)'), ',').','
   else
     return string(a:val)
   endif
@@ -67,6 +69,7 @@ let s:munge = {
       \ '7': "_SEVEN_",
       \ '8': "_EIGHT_",
       \ '9': "_NINE_",
+      \ ',': "_COMMA_",
       \ ':': "_COLON_",
       \ '+': "_PLUS_",
       \ '>': "_GT_",
@@ -112,11 +115,23 @@ function! timl#a2env(f, a) abort
   if get(a:f.arglist, -1) is timl#symbol('...')
     let env['...'] = a:a['000']
   endif
-  for [k,V] in items(a:a)
+  let _ = {}
+  for [k,_.V] in items(a:a)
     if k !~# '^\d'
-      let env[timl#demunge(k)] = V
+      let k = timl#demunge(k)
+      if k =~# ',$'
+        let keys = split(k, ',')
+        for i in range(len(keys))
+          if type(_.V) == type([])
+            let env[keys[i]] = get(_.V, i, g:timl#nil)
+          elseif type(_.V) == type([])
+            let env[keys[i]] = get(_.V, keys[i], g:timl#nil)
+          endif
+        endfor
+      else
+        let env[k] = _.V
+      endif
     endif
-    unlet! V
   endfor
   return env
 endfunction
@@ -230,7 +245,7 @@ endif
 let g:timl#macros = s:macros
 
 function! s:build_function(name, arglist) abort
-  let arglist = map(copy(a:arglist), 'v:val is timl#symbol("...") ? "..." : timl#munge(v:val[0])')
+  let arglist = map(copy(a:arglist), 'v:val is timl#symbol("...") ? "..." : timl#munge(v:val)')
   let dict = {}
   return 'function! '.a:name.'('.join(arglist, ',').")\n"
         \ . "let name = matchstr(expand('<sfile>'), '.*\\%(\\.\\.\\| \\)\\zs.*')\n"
@@ -696,7 +711,9 @@ TimLAssert g:timl_set_bang == {"key": ["c", "b"]}
 unlet! g:timl_set_bang
 TimLAssert timl#re('(let ((a 1)) (let ((b 2)) (set! a 3)) a)') == 3
 TimLAssert timl#re('(let ((a 1)) (let ((a 2)) (set! a 3)) a)') == 1
+
 TimLAssert timl#re('(let (((j k) {"j" 1}) ((l m) (list 2))) (list j k l m))') == [1, g:timl#nil, 2, g:timl#nil]
+TimLAssert timl#re('(reduce (lambda (m (k v)) (append m (list v k))) ''() {"a" 1})') == [1, "a"]
 
 TimLAssert timl#re('(dict "a" 1 "b" 2)') ==# {"a": 1, "b": 2}
 TimLAssert timl#re('(dict "a" 1 (list "b" 2))') ==# {"a": 1, "b": 2}
