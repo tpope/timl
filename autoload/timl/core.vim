@@ -146,7 +146,7 @@ endfunction
 
 function! timl#core#get(coll, key, ...) abort
   if type(a:coll) == type([]) && type(a:key) != type(0)
-    return g:timl#nil
+    return a:0 ? a:1 : g:timl#nil
   endif
   return get(a:coll, a:key, a:0 ? a:1 : g:timl#nil)
 endfunction
