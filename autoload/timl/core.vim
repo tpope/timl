@@ -195,11 +195,19 @@ function! timl#core#cons(val, list) abort
 endfunction
 
 function! timl#core#map(f, list) abort
-  return map(copy(a:list), 'call(a:f, [v:val], {})')
+  if type(a:list) == type({})
+    return map(copy(a:list), 'call(a:f, [[v:key, v:val]], {})')
+  else
+    return map(copy(a:list), 'call(a:f, [v:val], {})')
+  endif
 endfunction
 
 function! timl#core#filter(f, list) abort
-  return filter(copy(a:list), 'call(a:f, [v:val], {})')
+  if type(a:list) == type({})
+    return filter(copy(a:list), 'call(a:f, [[v:key, v:val]], {})')
+  else
+    return filter(copy(a:list), 'call(a:f, [v:val], {})')
+  endif
 endfunction
 
 function! timl#core#reduce(f, val_or_list, ...) abort
@@ -213,7 +221,7 @@ function! timl#core#reduce(f, val_or_list, ...) abort
     let list = copy(a:val_or_list)
     let _.val = remove(list, 0)
   endif
-  for _.elem in list
+  for _.elem in (type(list) == type({}) ? items(list) : list)
     let _.val = call(a:f, [_.val, _.elem], {})
   endfor
   return _.val
