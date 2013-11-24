@@ -1,4 +1,4 @@
-# Schim
+# TimL
 
 Scheme/Lisp/whatever implementation in pure Vim, yo.
 
@@ -9,7 +9,7 @@ installing [pathogen.vim](https://github.com/tpope/vim-pathogen), and
 then simply copy and paste:
 
     cd ~/.vim/bundle
-    git clone git://github.com/tpope/schim.git
+    git clone git://github.com/tpope/timl.git
 
 ## License
 

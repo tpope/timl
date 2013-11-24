@@ -1,4 +1,4 @@
-(defun pr-str (...) (f:join (map schim#pr-str ...)))
+(defun pr-str (...) (f:join (map timl#pr-str ...)))
 (defun pr (...) (:echo (apply pr-str ...)))
 (defun 1+ (n) (+ n 1))
 (defun 1- (n) (- n 1))

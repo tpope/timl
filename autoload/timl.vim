@@ -1,9 +1,9 @@
 " Maintainer:   Tim Pope <http://tpo.pe/>
 
-if exists("g:autoloaded_schim") || &cp || v:version < 700
+if exists("g:autoloaded_timl") || &cp || v:version < 700
   finish
 endif
-let g:autoloaded_schim = 1
+let g:autoloaded_timl = 1
 
 " Section: Misc {{{1
 
@@ -15,14 +15,14 @@ function! s:function(name) abort
   return function(s:funcname(a:name))
 endfunction
 
-let g:schim#nil = []
+let g:timl#nil = []
 
-function! schim#nil_p(val)
+function! timl#nil_p(val)
   return empty(a:val)
 endfunction
 
 function! s:string(val) abort
-  if schim#symbol_p(a:val)
+  if timl#symbol_p(a:val)
     return a:val[0]
   elseif type(a:val) == type('')
     return a:val
@@ -36,23 +36,23 @@ endfunction
 " }}}1
 " Section: Symbols {{{1
 
-if !exists('g:schim#symbols')
-  let g:schim#symbols = {}
+if !exists('g:timl#symbols')
+  let g:timl#symbols = {}
 endif
 
-function! schim#symbol(str)
+function! timl#symbol(str)
   let str = type(a:str) == type([]) ? a:str[0] : a:str
-  if !has_key(g:schim#symbols, str)
-    let g:schim#symbols[str] = [str]
+  if !has_key(g:timl#symbols, str)
+    let g:timl#symbols[str] = [str]
   endif
-  return g:schim#symbols[str]
+  return g:timl#symbols[str]
 endfunction
 
-function! schim#symbol_p(symbol)
+function! timl#symbol_p(symbol)
   return type(a:symbol) == type([]) &&
         \ len(a:symbol) == 1 &&
         \ type(a:symbol[0]) == type('') &&
-        \ get(g:schim#symbols, a:symbol[0], 0) is a:symbol
+        \ get(g:timl#symbols, a:symbol[0], 0) is a:symbol
 endfunction
 
 " From clojure/lange/Compiler.java
@@ -87,24 +87,24 @@ for s:key in keys(s:munge)
 endfor
 unlet! s:key
 
-function! schim#munge(var) abort
+function! timl#munge(var) abort
   let var = s:string(a:var)
   return tr(substitute(var, '[^[:alnum:]#_-]', '\=get(s:munge,submatch(0))', 'g'), '-', '_')
 endfunction
 
-function! schim#demunge(var) abort
+function! timl#demunge(var) abort
   let var = s:string(a:var)
   return tr(substitute(a:var, '_\(\u\+\)_', '\=get(s:demunge, submatch(0), submatch(0))', 'g'), '_', '-')
 endfunction
 
-function! schim#a2env(f, a) abort
+function! timl#a2env(f, a) abort
   let env = {}
-  if get(a:f.arglist, -1) is schim#symbol('...')
+  if get(a:f.arglist, -1) is timl#symbol('...')
     let env['...'] = a:a['000']
   endif
   for [k,V] in items(a:a)
     if k !~# '^\d'
-      let env[schim#demunge(k)] = V
+      let env[timl#demunge(k)] = V
     endif
     unlet! V
   endfor
@@ -114,13 +114,13 @@ endfunction
 " }}}1
 " Section: Garbage collection {{{1
 
-if !exists('g:schim#closures')
-  let g:schim#closures = {}
+if !exists('g:timl#closures')
+  let g:timl#closures = {}
 endif
 
-function! schim#gc()
+function! timl#gc()
   let l:count = 0
-  for fn in keys(g:schim#closures)
+  for fn in keys(g:timl#closures)
     try
       if fn =~# '^\d'
         let Fn = function('{'.fn.'}')
@@ -128,22 +128,22 @@ function! schim#gc()
         let Fn = function(fn)
       endif
     catch /^Vim\%((\a\+)\)\=:E700/
-      call remove(g:schim#closures, fn)
+      call remove(g:timl#closures, fn)
       let l:count += 1
     endtry
   endfor
   return l:count
 endfunction
 
-augroup schim#gc
+augroup timl#gc
   autocmd!
-  autocmd CursorHold * call schim#gc()
+  autocmd CursorHold * call timl#gc()
 augroup END
 
 " }}}1
 " Section: Eval {{{1
 
-function! schim#ns_for_file(file) abort
+function! timl#ns_for_file(file) abort
   let file = fnamemodify(a:file, ':p')
   let slash = exists('+shellslash') && &shellslash ? '\' : '/'
   for dir in split(&runtimepath, ',')
@@ -154,28 +154,28 @@ function! schim#ns_for_file(file) abort
   return 'user'
 endfunction
 
-function! schim#lookup(envs, sym) abort
+function! timl#lookup(envs, sym) abort
   let sym = type(a:sym) == type([]) ? a:sym[0] : a:sym
   if sym =~# '^f:' && exists('*'.sym[2:-1])
     return function(sym[2:-1])
   elseif sym =~# '^&.\|^\w:' && exists(sym)
     return eval(sym)
   elseif sym =~# '#'
-    let sym = schim#munge(sym)
-    call schim#autoload(sym)
+    let sym = timl#munge(sym)
+    call timl#autoload(sym)
     if exists('g:'.sym)
       return g:{sym}
     elseif exists('*'.sym)
       return function(sym)
     else
-      throw 'schim.vim: ' . sym . ' undefined'
+      throw 'timl.vim: ' . sym . ' undefined'
     endif
   endif
-  let env = schim#find(a:envs, sym)
+  let env = timl#find(a:envs, sym)
   if type(env) ==# type({})
     return env[sym]
   else
-    let target = schim#munge(env.'#'.sym)
+    let target = timl#munge(env.'#'.sym)
     if exists('*'.target)
       return function(target)
     else
@@ -184,31 +184,31 @@ function! schim#lookup(envs, sym) abort
   endif
 endfunction
 
-function! schim#find(envs, sym) abort
+function! timl#find(envs, sym) abort
   let sym = type(a:sym) == type([]) ? a:sym[0] : a:sym
   for env in a:envs
     if type(env) == type({}) && has_key(env, sym)
       return env
     elseif type(env) == type('')
-      let target = schim#munge(env.'#'.sym)
-      call schim#autoload(target)
+      let target = timl#munge(env.'#'.sym)
+      call timl#autoload(target)
       if exists('*'.target) || exists('g:'.target)
         return env
       endif
     endif
     unlet! env
   endfor
-  throw 'schim.vim: ' . sym . ' undefined'
+  throw 'timl.vim: ' . sym . ' undefined'
 endfunction
 
-function! schim#qualify(envs, sym)
+function! timl#qualify(envs, sym)
   let sym = type(a:sym) == type([]) ? a:sym[0] : a:sym
   try
-    let ns = schim#find(a:envs, a:sym)
+    let ns = timl#find(a:envs, a:sym)
     if type(ns) == type('')
-      return schim#symbol(ns . '#' . sym)
+      return timl#symbol(ns . '#' . sym)
     endif
-  catch /^schim.vim:/
+  catch /^timl.vim:/
   endtry
   return a:sym
 endfunction
@@ -217,16 +217,16 @@ if !exists('s:macros')
   let s:macros = {}
 endif
 
-let g:schim#macros = s:macros
+let g:timl#macros = s:macros
 
 function! s:build_function(name, arglist) abort
-  let arglist = map(copy(a:arglist), 'v:val is schim#symbol("...") ? "..." : schim#munge(v:val[0])')
+  let arglist = map(copy(a:arglist), 'v:val is timl#symbol("...") ? "..." : timl#munge(v:val[0])')
   let dict = {}
   return 'function! '.a:name.'('.join(arglist, ',').")\n"
         \ . "let name = matchstr(expand('<sfile>'), '.*\\%(\\.\\.\\| \\)\\zs.*')\n"
-        \ . "let fn = g:schim#closures[name]\n"
-        \ . "let env = [schim#a2env(fn, a:)] + fn.env\n"
-        \ . "return schim#eval(fn.form, env)\n"
+        \ . "let fn = g:timl#closures[name]\n"
+        \ . "let env = [timl#a2env(fn, a:)] + fn.env\n"
+        \ . "return timl#eval(fn.form, env)\n"
         \ . "endfunction"
 endfunction
 
@@ -234,7 +234,7 @@ function! s:lambda(arglist, form, env) abort
   let dict = {}
   execute s:build_function('dict.function', a:arglist)
   let name = matchstr(string(dict.function), "'\\zs.*\\ze'")
-  let g:schim#closures[name] = {'name': name, 'arglist': a:arglist, 'env': a:env, 'form': a:form, 'macro': 0}
+  let g:timl#closures[name] = {'name': name, 'arglist': a:arglist, 'env': a:env, 'form': a:form, 'macro': 0}
   return dict.function
 endfunction
 
@@ -249,8 +249,8 @@ function! s:file4ns(ns) abort
   return file
 endfunction
 
-function! schim#set_bang(envs, sym, val)
-    let sym = schim#symbol(a:sym)[0]
+function! timl#set_bang(envs, sym, val)
+    let sym = timl#symbol(a:sym)[0]
     let val = a:val
     if sym =~# '^&'
       if type(val) == type([])
@@ -264,14 +264,14 @@ function! schim#set_bang(envs, sym, val)
     elseif sym =~# '^v:'
       exe 'let ' . sym . ' = val'
     else
-      let env = schim#find(a:envs, sym)
+      let env = timl#find(a:envs, sym)
       let env[sym] = val
     endif
     return val
 endfunction
 
-function! schim#eval(x, ...) abort
-  let envs = ['user', 'schim#core', 'schim#runtime']
+function! timl#eval(x, ...) abort
+  let envs = ['user', 'timl#core', 'timl#runtime']
   if a:0 && type(a:1) == type([])
     let envs = a:1
   elseif a:0
@@ -291,64 +291,64 @@ function! s:eval(x, envs) abort
   endwhile
   let ns = envs[i]
 
-  if schim#symbol_p(x)
-    return schim#lookup(envs, x)
+  if timl#symbol_p(x)
+    return timl#lookup(envs, x)
 
   elseif type(x) != type([]) || empty(x)
     return x
 
-  elseif schim#symbol('quote') is x[0]
-    return get(x, 1, g:schim#nil)
+  elseif timl#symbol('quote') is x[0]
+    return get(x, 1, g:timl#nil)
 
-  elseif schim#symbol('quasiquote') is x[0]
+  elseif timl#symbol('quasiquote') is x[0]
     let s:gensym_id = get(s:, 'gensym_id', 0) + 1
-    return s:quasiquote(get(x, 1, g:schim#nil), envs, s:gensym_id)
+    return s:quasiquote(get(x, 1, g:timl#nil), envs, s:gensym_id)
 
-  elseif schim#symbol('set!') is x[0]
+  elseif timl#symbol('set!') is x[0]
     if len(x) != 3
-      throw 'schim.vim:E119: set! requires 2 arguments'
+      throw 'timl.vim:E119: set! requires 2 arguments'
     endif
-    return schim#set_bang(envs, x[1], s:eval(x[2], envs))
+    return timl#set_bang(envs, x[1], s:eval(x[2], envs))
 
-  elseif schim#symbol('if') is x[0]
+  elseif timl#symbol('if') is x[0]
     if len(x) < 3
-      throw 'schim.vim:E119: if requires 2 or 3 arguments'
+      throw 'timl.vim:E119: if requires 2 or 3 arguments'
     endif
     let Cond = s:eval(x[1], envs)
-    return s:eval(get(x, empty(Cond) || Cond is 0 ? 3 : 2, g:schim#nil), envs)
+    return s:eval(get(x, empty(Cond) || Cond is 0 ? 3 : 2, g:timl#nil), envs)
 
-  elseif schim#symbol('defun') is x[0] || schim#symbol('defmacro') is x[0]
+  elseif timl#symbol('defun') is x[0] || timl#symbol('defmacro') is x[0]
     if len(x) != 4
-      throw 'schim.vim:E119: defun requires 3 arguments'
+      throw 'timl.vim:E119: defun requires 3 arguments'
     endif
     let var = s:string(x[1])
-    let name = schim#munge(ns.'#'.var)
+    let name = timl#munge(ns.'#'.var)
     let file = s:file4ns(ns)
     call writefile(split(s:build_function(name, x[2]),"\n"), file)
     execute 'source '.file
-    let macro = schim#symbol('defmacro') is x[0]
-    let g:schim#closures[name] = {'name': name, 'arglist': x[2], 'env': envs, 'form': x[3], 'macro': macro}
+    let macro = timl#symbol('defmacro') is x[0]
+    let g:timl#closures[name] = {'name': name, 'arglist': x[2], 'env': envs, 'form': x[3], 'macro': macro}
     if macro
       let s:macros[name] = 1
     endif
     return function(name)
 
-  elseif schim#symbol('defvar') is x[0]
+  elseif timl#symbol('defvar') is x[0]
     if len(x) != 3
-      throw 'schim.vim:E119: defvar requires 2 arguments'
+      throw 'timl.vim:E119: defvar requires 2 arguments'
     endif
     let var = s:string(x[1])
     let Val = s:eval(x[2], envs)
-    let g:{schim#munge(ns.'#'.var)} = Val
+    let g:{timl#munge(ns.'#'.var)} = Val
     return Val
 
-  elseif schim#symbol('lambda') is x[0] || schim#symbol("\u03bb") is x[0]
+  elseif timl#symbol('lambda') is x[0] || timl#symbol("\u03bb") is x[0]
     if len(x) < 3
-      throw 'schim.vim:E119: lambda requires at least 2 arguments'
+      throw 'timl.vim:E119: lambda requires at least 2 arguments'
     endif
     return s:lambda(x[1], x[2], envs)
 
-  elseif schim#symbol('let') is x[0]
+  elseif timl#symbol('let') is x[0]
     let [_, bindings; body] = x
     let env = {}
     for i in range(0, len(bindings)-1, 2)
@@ -358,18 +358,18 @@ function! s:eval(x, envs) abort
         let env[bindings[i][0]] = s:eval(bindings[i+1], [env] + envs)
       endif
     endfor
-    return s:eval([schim#symbol('do')] + body, [env] + envs)
+    return s:eval([timl#symbol('do')] + body, [env] + envs)
 
-  elseif schim#symbol('do') is x[0]
-    return get(map(x[1:-1], 's:eval(v:val, envs)'), -1, g:schim#nil)
+  elseif timl#symbol('do') is x[0]
+    return get(map(x[1:-1], 's:eval(v:val, envs)'), -1, g:timl#nil)
 
-  elseif schim#symbol_p(x[0]) && x[0][0] =~# '^:'
+  elseif timl#symbol_p(x[0]) && x[0][0] =~# '^:'
     let strings = map(x[1:-1], 's:string(s:eval(v:val, envs))')
     execute x[0][0] . ' ' . join(strings, ' ')
-    return g:schim#nil
+    return g:timl#nil
 
-  elseif schim#symbol_p(x[0]) && has_key(s:macros, join([schim#lookup(envs, x[0])]))
-    let x2 = call(schim#lookup(envs, x[0]), x[1:-1])
+  elseif timl#symbol_p(x[0]) && has_key(s:macros, join([timl#lookup(envs, x[0])]))
+    let x2 = call(timl#lookup(envs, x[0]), x[1:-1])
     return s:eval(x2, envs)
   else
     let evaled = map(copy(x), 's:eval(v:val, envs)')
@@ -378,15 +378,15 @@ function! s:eval(x, envs) abort
       if type(evaled[1]) == type(function('tr'))
         let Func = evaled[1]
       else
-        let Func = evaled[0][schim#symbol(evaled[1])[0]]
+        let Func = evaled[0][timl#symbol(evaled[1])[0]]
       endif
       let args = evaled[2:-1]
-    elseif type(evaled[0]) == type(function('tr')) || schim#symbol_p(evaled[0])
+    elseif type(evaled[0]) == type(function('tr')) || timl#symbol_p(evaled[0])
       let dict = {}
       let Func = evaled[0]
       let args = evaled[1:-1]
     else
-      throw 'schim.vim: can''t call ' . schim#pr_str(x)
+      throw 'timl.vim: can''t call ' . timl#pr_str(x)
     endif
 
     return call(Func, args, dict)
@@ -430,12 +430,12 @@ function! s:tokenize(str) abort
   return tokens
 endfunction
 
-function! schim#tokenize(str)
+function! timl#tokenize(str)
   return s:tokenize(a:str)
 endfunction
 
 function! s:read_one(tokens, i) abort
-  let error = 'schim.vim: unexpected EOF'
+  let error = 'timl.vim: unexpected EOF'
   let i = a:i
   while i < len(a:tokens)
     if a:tokens[i] =~# '^"\|^[+-]\=\d\%(.*\d\)\=$'
@@ -458,9 +458,9 @@ function! s:read_one(tokens, i) abort
       while i < len(a:tokens) && a:tokens[i] !=# '}'
         let [key, i] = s:read_one(a:tokens, i)
         if type(key) != type('')
-          let error = 'schim.vim: dict keys must be strings'
+          let error = 'timl.vim: dict keys must be strings'
         elseif a:tokens[i] ==# '}'
-          let error = 'schim.vim: dict literal contains odd number of elements'
+          let error = 'timl.vim: dict literal contains odd number of elements'
         endif
         let [val, i] = s:read_one(a:tokens, i)
         let dict[key] = val
@@ -471,26 +471,26 @@ function! s:read_one(tokens, i) abort
       endif
       return [dict, i+1]
     elseif a:tokens[i] ==# 'nil'
-      return [g:schim#nil, i+1]
+      return [g:timl#nil, i+1]
     elseif a:tokens[i] ==# "'"
       let [val, i] = s:read_one(a:tokens, i+1)
-      return [[schim#symbol('quote'), val], i]
+      return [[timl#symbol('quote'), val], i]
     elseif a:tokens[i] ==# '`'
       let [val, i] = s:read_one(a:tokens, i+1)
-      return [[schim#symbol('quasiquote'), val], i]
+      return [[timl#symbol('quasiquote'), val], i]
     elseif a:tokens[i] ==# ','
       let [val, i] = s:read_one(a:tokens, i+1)
-      return [[schim#symbol('unquote'), val], i]
+      return [[timl#symbol('unquote'), val], i]
     elseif a:tokens[i] ==# ',@'
       let [val, i] = s:read_one(a:tokens, i+1)
-      return [[schim#symbol('unquote-splicing'), val], i]
+      return [[timl#symbol('unquote-splicing'), val], i]
     elseif a:tokens[i][0] ==# ';'
       let i += 1
       continue
     elseif a:tokens[i] =~# '^'.s:iskeyword
-      return [schim#symbol(a:tokens[i]), i+1]
+      return [timl#symbol(a:tokens[i]), i+1]
     else
-      let error = 'schim.vim: unexpected token: '.string(a:tokens[i])
+      let error = 'timl.vim: unexpected token: '.string(a:tokens[i])
       break
     endif
   endwhile
@@ -505,21 +505,21 @@ function! s:quasiquote(token, envs, id) abort
       unlet! V
     endfor
     return dict
-  elseif schim#symbol_p(a:token)
+  elseif timl#symbol_p(a:token)
     if a:token[0] =~# '#$'
-      return schim#symbol(substitute(a:token[0], '#$', '__'.a:id.'__', ''))
+      return timl#symbol(substitute(a:token[0], '#$', '__'.a:id.'__', ''))
     else
-      return schim#qualify(a:envs, a:token)
+      return timl#qualify(a:envs, a:token)
     endif
   elseif type(a:token) !=# type([]) || empty(a:token)
     return a:token
-  elseif schim#symbol('unquote') is a:token[0]
+  elseif timl#symbol('unquote') is a:token[0]
     return s:eval(a:token[1], a:envs)
   else
     let ret = []
     for V in a:token
-      if type(V) == type([]) && get(V, 0, '') is schim#symbol('unquote-splicing')
-        call extend(ret, s:eval(get(V, 1, g:schim#nil), a:envs))
+      if type(V) == type([]) && get(V, 0, '') is timl#symbol('unquote-splicing')
+        call extend(ret, s:eval(get(V, 1, g:timl#nil), a:envs))
       else
         call add(ret, s:quasiquote(V, a:envs, a:id))
       endif
@@ -529,7 +529,7 @@ function! s:quasiquote(token, envs, id) abort
   endif
 endfunction
 
-function! schim#read_all(str) abort
+function! timl#read_all(str) abort
   let tokens = s:tokenize(a:str)
   let forms = []
   let i = 0
@@ -540,45 +540,45 @@ function! schim#read_all(str) abort
   return forms
 endfunction
 
-function! schim#read(str) abort
+function! timl#read(str) abort
   return s:read_one(s:tokenize(a:str), 0)[0]
 endfunction
 
-function! schim#re(str, ...) abort
-  return call('schim#eval', [schim#read(a:str)] + a:000)
+function! timl#re(str, ...) abort
+  return call('timl#eval', [timl#read(a:str)] + a:000)
 endfunction
 
-function! schim#rep(...) abort
-  return schim#pr_str(call('schim#re', a:000))
+function! timl#rep(...) abort
+  return timl#pr_str(call('timl#re', a:000))
 endfunction
 
-function! schim#readfile(filename) abort
-  return schim#read_all(join(readfile(a:filename), "\n"))
+function! timl#readfile(filename) abort
+  return timl#read_all(join(readfile(a:filename), "\n"))
 endfunction
 
-function! schim#source(filename, ...)
-  for expr in schim#readfile(a:filename)
-    call call('schim#eval', [expr] + a:000)
+function! timl#source(filename, ...)
+  for expr in timl#readfile(a:filename)
+    call call('timl#eval', [expr] + a:000)
   endfor
 endfunction
 
-if !exists('g:schim#requires')
-  let g:schim#requires = {}
+if !exists('g:timl#requires')
+  let g:timl#requires = {}
 endif
 
-function! schim#autoload(function) abort
+function! timl#autoload(function) abort
   let ns = matchstr(a:function, '.*\ze#')
 
-  if !has_key(g:schim#requires, ns)
-    let g:schim#requires[ns] = 1
-    call schim#load(ns)
+  if !has_key(g:timl#requires, ns)
+    let g:timl#requires[ns] = 1
+    call timl#load(ns)
   endif
 endfunction
 
-function! schim#load(ns) abort
+function! timl#load(ns) abort
   execute 'runtime! autoload/'.tr(a:ns,'#','/').'.vim'
   for file in findfile('autoload/'.tr(a:ns,'#','/').'.tim', &rtp, -1)
-    call schim#source(file, a:ns)
+    call timl#source(file, a:ns)
   endfor
 endfunction
 
@@ -595,18 +595,18 @@ let s:escapes = {
       \ "\"": '\"',
       \ "\\": '\\'}
 
-function! schim#pr_str(x)
+function! timl#pr_str(x)
   " TODO: guard against recursion
-  if schim#symbol_p(a:x)
+  if timl#symbol_p(a:x)
     return a:x[0]
-  elseif a:x is# g:schim#nil
+  elseif a:x is# g:timl#nil
     return 'nil'
   elseif type(a:x) == type([])
-    return '(' . join(map(copy(a:x), 'schim#pr_str(v:val)'), ' ') . ')'
+    return '(' . join(map(copy(a:x), 'timl#pr_str(v:val)'), ' ') . ')'
   elseif type(a:x) == type({})
     let acc = []
     for [k, V] in items(a:x)
-      call add(acc, schim#pr_str(k) . ' ' . schim#pr_str(V))
+      call add(acc, timl#pr_str(k) . ' ' . timl#pr_str(V))
       unlet! V
     endfor
     return '{' . join(acc, ' ') . '}'
@@ -626,7 +626,7 @@ if !exists('$TEST')
   finish
 endif
 
-command! -nargs=1 SchimAssert
+command! -nargs=1 TimLAssert
       \ try |
       \   if !eval(<q-args>) |
       \     echomsg "Failed: ".<q-args> |
@@ -635,38 +635,38 @@ command! -nargs=1 SchimAssert
       \  echomsg "Error:  ".<q-args>." (".v:exception.")" |
       \ endtry
 
-SchimAssert schim#read('foo') ==# schim#symbol('foo')
-SchimAssert schim#read('":)"') ==# ':)'
-SchimAssert schim#read('(car (list 1 2))') ==# [schim#symbol('car'), [schim#symbol('list'), 1, 2]]
-SchimAssert schim#read('{"a" 1 "b" 2}') ==# {"a": 1, "b": 2}
-SchimAssert schim#read("(1)\n; hi\n") ==# [1]
-SchimAssert schim#read('({})') ==# [{}]
-SchimAssert schim#read("'(1 2 3)") ==# [schim#symbol('quote'), [1, 2, 3]]
-SchimAssert schim#read("`foo") ==# [schim#symbol('quasiquote'), schim#symbol('foo')]
-SchimAssert schim#read(",foo") ==# [schim#symbol('unquote'), schim#symbol('foo')]
+TimLAssert timl#read('foo') ==# timl#symbol('foo')
+TimLAssert timl#read('":)"') ==# ':)'
+TimLAssert timl#read('(car (list 1 2))') ==# [timl#symbol('car'), [timl#symbol('list'), 1, 2]]
+TimLAssert timl#read('{"a" 1 "b" 2}') ==# {"a": 1, "b": 2}
+TimLAssert timl#read("(1)\n; hi\n") ==# [1]
+TimLAssert timl#read('({})') ==# [{}]
+TimLAssert timl#read("'(1 2 3)") ==# [timl#symbol('quote'), [1, 2, 3]]
+TimLAssert timl#read("`foo") ==# [timl#symbol('quasiquote'), timl#symbol('foo')]
+TimLAssert timl#read(",foo") ==# [timl#symbol('unquote'), timl#symbol('foo')]
 
-SchimAssert schim#re('(+ 1 2 3)') == 6
+TimLAssert timl#re('(+ 1 2 3)') == 6
 
-SchimAssert schim#re('(let () (defvar forty-two 42))')
-SchimAssert schim#re('forty-two') ==# 42
+TimLAssert timl#re('(let () (defvar forty-two 42))')
+TimLAssert timl#re('forty-two') ==# 42
 
-SchimAssert schim#re('(if 1 forty-two 69)') ==# 42
-SchimAssert schim#re('(if 0 "boo" "yay")') ==# "yay"
-SchimAssert schim#re('(do 1 2)') ==# 2
+TimLAssert timl#re('(if 1 forty-two 69)') ==# 42
+TimLAssert timl#re('(if 0 "boo" "yay")') ==# "yay"
+TimLAssert timl#re('(do 1 2)') ==# 2
 
-SchimAssert schim#re('(set! g:schim_set_bang (+ 1 2))') == 3
-SchimAssert g:schim_set_bang ==# 3
-unlet! g:schim_set_bang
-SchimAssert schim#re('(let (a 1) (let (b 2) (set! a 3)) a)') == 3
-SchimAssert schim#re('(let (a 1) (let (a 2) (set! a 3)) a)') == 1
+TimLAssert timl#re('(set! g:timl_set_bang (+ 1 2))') == 3
+TimLAssert g:timl_set_bang ==# 3
+unlet! g:timl_set_bang
+TimLAssert timl#re('(let (a 1) (let (b 2) (set! a 3)) a)') == 3
+TimLAssert timl#re('(let (a 1) (let (a 2) (set! a 3)) a)') == 1
 
-SchimAssert schim#re('(dict "a" 1 "b" 2)') ==# {"a": 1, "b": 2}
-SchimAssert schim#re('(dict "a" 1 (list "b" 2))') ==# {"a": 1, "b": 2}
-SchimAssert schim#re('(length "abc")') ==# 3
+TimLAssert timl#re('(dict "a" 1 "b" 2)') ==# {"a": 1, "b": 2}
+TimLAssert timl#re('(dict "a" 1 (list "b" 2))') ==# {"a": 1, "b": 2}
+TimLAssert timl#re('(length "abc")') ==# 3
 
-SchimAssert schim#re('(reduce + 0 (list 1 2 3))') ==# 6
+TimLAssert timl#re('(reduce + 0 (list 1 2 3))') ==# 6
 
-delcommand SchimAssert
+delcommand TimLAssert
 
 " }}}1
 
