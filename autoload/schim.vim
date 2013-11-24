@@ -438,7 +438,7 @@ function! s:read_one(tokens, i) abort
   let error = 'schim.vim: unexpected EOF'
   let i = a:i
   while i < len(a:tokens)
-    if a:tokens[i] =~# '^"\|^-\=\d'
+    if a:tokens[i] =~# '^"\|^[+-]\=\d\%(.*\d\)\=$'
       return [eval(a:tokens[i]), i+1]
     elseif a:tokens[i] ==# '('
       let i += 1
