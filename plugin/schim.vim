@@ -34,7 +34,8 @@ endfunction
 function! s:repl(...)
   let more = &more
   try
-    let ns = a:0 ? a:1 : 'user'
+    set nomore
+    let ns = a:0 ? a:1 : schim#ns_for_file(expand('%:p'))
     let input = input(ns.'=> ')
     while !empty(input)
       echo "\n"

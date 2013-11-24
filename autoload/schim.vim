@@ -143,6 +143,17 @@ augroup END
 " }}}1
 " Section: Eval {{{1
 
+function! schim#ns_for_file(file) abort
+  let file = fnamemodify(a:file, ':p')
+  let slash = exists('+shellslash') && &shellslash ? '\' : '/'
+  for dir in split(&runtimepath, ',')
+    if file[0 : len(dir)+9] ==# dir.slash.'autoload'.slash
+      return tr(fnamemodify(file[len(dir)+10 : -1], ':r'), '\/_', '##-')
+    endif
+  endfor
+  return 'user'
+endfunction
+
 function! schim#lookup(envs, sym) abort
   let sym = type(a:sym) == type([]) ? a:sym[0] : a:sym
   if sym =~# '^f:' && exists('*'.sym[2:-1])
@@ -187,7 +198,7 @@ function! schim#find(envs, sym) abort
     endif
     unlet! env
   endfor
-  throw 'schim.vim: ' . sym . ' undefined'.string(a:envs)
+  throw 'schim.vim: ' . sym . ' undefined'
 endfunction
 
 function! schim#qualify(envs, sym)
