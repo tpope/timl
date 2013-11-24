@@ -360,8 +360,8 @@ function! s:eval(x, envs) abort
     return s:eval(get(x, empty(Cond) || Cond is 0 ? 3 : 2, g:timl#nil), envs)
 
   elseif timl#symbol('defun') is x[0] || timl#symbol('defmacro') is x[0]
-    if len(x) != 4
-      throw 'timl.vim:E119: defun requires 3 arguments'
+    if len(x) < 4
+      throw 'timl.vim:E119: defun requires at least 3 arguments'
     endif
     let var = s:string(x[1])
     let name = timl#munge(ns.'#'.var)
@@ -369,7 +369,8 @@ function! s:eval(x, envs) abort
     call writefile(split(s:build_function(name, x[2]),"\n"), file)
     execute 'source '.file
     let macro = timl#symbol('defmacro') is x[0]
-    let g:timl#lambdas[name] = {'name': name, 'arglist': x[2], 'env': envs, 'form': x[3], 'macro': macro}
+    let form = len(x) == 4 ? x[3] : [timl#symbol('do')] + x[3:-1]
+    let g:timl#lambdas[name] = {'name': name, 'arglist': x[2], 'env': envs, 'form': form, 'macro': macro}
     if macro
       let s:macros[name] = 1
     endif
@@ -388,7 +389,8 @@ function! s:eval(x, envs) abort
     if len(x) < 3
       throw 'timl.vim:E119: lambda requires at least 2 arguments'
     endif
-    return s:lambda(x[1], x[2], envs)
+    let form = len(x) == 3 ? x[2] : [timl#symbol('do')] + x[2:-1]
+    return s:lambda(x[1], form, envs)
 
   elseif timl#symbol('let') is x[0]
     let env = {}
@@ -411,7 +413,8 @@ function! s:eval(x, envs) abort
         throw "timl.vim: unsupported binding form ".timl#pr_str(_.key)
       endif
     endfor
-    return s:eval([timl#symbol('do')] + x[2 : -1], [env] + envs)
+    let form = len(x) == 3 ? x[2] : [timl#symbol('do')] + x[2:-1]
+    return s:eval(form, [env] + envs)
 
   elseif timl#symbol('do') is x[0]
     return get(map(x[1:-1], 's:eval(v:val, envs)'), -1, g:timl#nil)
