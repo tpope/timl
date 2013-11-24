@@ -124,13 +124,13 @@ endfunction
 " }}}1
 " Section: Garbage collection {{{1
 
-if !exists('g:timl#closures')
-  let g:timl#closures = {}
+if !exists('g:timl#lambdas')
+  let g:timl#lambdas = {}
 endif
 
 function! timl#gc()
   let l:count = 0
-  for fn in keys(g:timl#closures)
+  for fn in keys(g:timl#lambdas)
     try
       if fn =~# '^\d'
         let Fn = function('{'.fn.'}')
@@ -138,7 +138,7 @@ function! timl#gc()
         let Fn = function(fn)
       endif
     catch /^Vim\%((\a\+)\)\=:E700/
-      call remove(g:timl#closures, fn)
+      call remove(g:timl#lambdas, fn)
       let l:count += 1
     endtry
   endfor
@@ -234,7 +234,7 @@ function! s:build_function(name, arglist) abort
   let dict = {}
   return 'function! '.a:name.'('.join(arglist, ',').")\n"
         \ . "let name = matchstr(expand('<sfile>'), '.*\\%(\\.\\.\\| \\)\\zs.*')\n"
-        \ . "let fn = g:timl#closures[name]\n"
+        \ . "let fn = g:timl#lambdas[name]\n"
         \ . "let env = [timl#a2env(fn, a:)] + fn.env\n"
         \ . "return timl#eval(fn.form, env)\n"
         \ . "endfunction"
@@ -244,7 +244,7 @@ function! s:lambda(arglist, form, env) abort
   let dict = {}
   execute s:build_function('dict.function', a:arglist)
   let name = matchstr(string(dict.function), "'\\zs.*\\ze'")
-  let g:timl#closures[name] = {'name': name, 'arglist': a:arglist, 'env': a:env, 'form': a:form, 'macro': 0}
+  let g:timl#lambdas[name] = {'name': name, 'arglist': a:arglist, 'env': a:env, 'form': a:form, 'macro': 0}
   return dict.function
 endfunction
 
@@ -348,7 +348,7 @@ function! s:eval(x, envs) abort
     call writefile(split(s:build_function(name, x[2]),"\n"), file)
     execute 'source '.file
     let macro = timl#symbol('defmacro') is x[0]
-    let g:timl#closures[name] = {'name': name, 'arglist': x[2], 'env': envs, 'form': x[3], 'macro': macro}
+    let g:timl#lambdas[name] = {'name': name, 'arglist': x[2], 'env': envs, 'form': x[3], 'macro': macro}
     if macro
       let s:macros[name] = 1
     endif
