@@ -10,7 +10,7 @@
 (defun butlast (xs) (sublist xs 0 -2))
 (defun get-in (m ks) (reduce get m ks))
 (defun apply (f x ...)
-  (let (args (append (list x) ...))
+  (let ((args (append (list x) ...)))
     (f:call f (append (butlast args) (last args)) {})))
 
 (defun sorter (>)
@@ -32,28 +32,28 @@
 
 (defmacro or (x ...)
   (if ...
-    `(let (or# ,x) (if or# or# (or ,@...)))
+    `(let ((or# ,x)) (if or# or# (or ,@...)))
     x))
 
 (defmacro and (x ...)
   (if ...
-    `(let (and# ,x) (if and# (and ,@...) and#))
+    `(let ((and# ,x)) (if and# (and ,@...) and#))
     x))
 
 (defmacro when (test ...)
   `(if ,test (do ,@...)))
 
 (defmacro if-let (binding then ...)
-  (let (form (first binding)
-         tst (last binding))
-    `(let (temp# ,tst)
+  (let ((form (first binding))
+        (tst (last binding)))
+    `(let ((temp# ,tst))
       (if temp#
-        (let (,form temp#) ,then) ,@...))))
+        (let ((,form temp#)) ,then) ,@...))))
 
 (defmacro -> (x ...)
   (if ...
-    (let (form (first ...)
-          more (rest ...))
+    (let ((form (first ...))
+          (more (rest ...)))
       (if more
         `(-> (-> ,x ,form) ,@more)
         (if (list? form)

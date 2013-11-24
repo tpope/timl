@@ -370,16 +370,16 @@ function! s:eval(x, envs) abort
     return s:lambda(x[1], x[2], envs)
 
   elseif timl#symbol('let') is x[0]
-    let [_, bindings; body] = x
     let env = {}
-    for i in range(0, len(bindings)-1, 2)
-      if bindings[i][0] ==# '_'
-        call s:eval(bindings[i+1], [env] + envs)
+    let _ = {}
+    for [_.key, _.form] in x[1]
+      if s:string(_.key) ==# '_'
+        call s:eval(_.form, [env] + envs)
       else
-        let env[bindings[i][0]] = s:eval(bindings[i+1], [env] + envs)
+        let env[s:string(_.key)] = s:eval(_.form, [env] + envs)
       endif
     endfor
-    return s:eval([timl#symbol('do')] + body, [env] + envs)
+    return s:eval([timl#symbol('do')] + x[2 : -1], [env] + envs)
 
   elseif timl#symbol('do') is x[0]
     return get(map(x[1:-1], 's:eval(v:val, envs)'), -1, g:timl#nil)
@@ -682,8 +682,8 @@ TimLAssert g:timl_set_bang == {"key": ["a", "b"]}
 TimLAssert timl#re('(set! g:timl_set_bang "key" ''(0 0) ''("c"))') == ["c"]
 TimLAssert g:timl_set_bang == {"key": ["c", "b"]}
 unlet! g:timl_set_bang
-TimLAssert timl#re('(let (a 1) (let (b 2) (set! a 3)) a)') == 3
-TimLAssert timl#re('(let (a 1) (let (a 2) (set! a 3)) a)') == 1
+TimLAssert timl#re('(let ((a 1)) (let ((b 2)) (set! a 3)) a)') == 3
+TimLAssert timl#re('(let ((a 1)) (let ((a 2)) (set! a 3)) a)') == 1
 
 TimLAssert timl#re('(dict "a" 1 "b" 2)') ==# {"a": 1, "b": 2}
 TimLAssert timl#re('(dict "a" 1 (list "b" 2))') ==# {"a": 1, "b": 2}
