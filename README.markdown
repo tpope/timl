@@ -1,6 +1,11 @@
 # TimL
 
-Scheme/Lisp/whatever implementation in pure Vim, yo.
+Lisp implementation in pure Vim, yo.
+
+Start a repl with `:TLrepl`.
+
+Put files in `autoload/*.tim` and they will be automatically loaded into the
+corresponding namespace.
 
 ## Installation
 
