@@ -173,25 +173,6 @@ function! timl#core#list_QMARK_(val) abort
   return !timl#symbolp(a:val) && type(a:val) == type([])
 endfunction
 
-function! timl#core#dict(...) abort
-  let list = copy(a:000)
-  while len(a:000) % 2 !=# 0 && timl#core#list_QMARK_(list[-1])
-    call extend(list, remove(list, -1))
-  endwhile
-  if len(list) % 2 !=# 0
-    throw 'timl.vim: dict requires a even number of arguments'
-  endif
-  let dict = {}
-  for i in range(0, len(list)-1, 2)
-    let dict[list[i]] = list[i+1]
-  endfor
-  return dict
-endfunction
-
-function! timl#core#dict_QMARK_(val) abort
-  return type(a:val) == type({})
-endfunction
-
 function! timl#core#append(...) abort
   let acc = []
   for elem in a:000
@@ -235,6 +216,42 @@ function! timl#core#reduce(f, val_or_list, ...) abort
     let _.val = call(a:f, [_.val, _.elem], {})
   endfor
   return _.val
+endfunction
+
+" }}}1
+" Section: Dictionaries {{{1
+
+function! timl#core#dict(...) abort
+  let list = copy(a:000)
+  while len(a:000) % 2 !=# 0 && timl#core#list_QMARK_(list[-1])
+    call extend(list, remove(list, -1))
+  endwhile
+  if len(list) % 2 !=# 0
+    throw 'timl.vim: dict requires a even number of arguments'
+  endif
+  let dict = {}
+  for i in range(0, len(list)-1, 2)
+    let dict[list[i]] = list[i+1]
+  endfor
+  return dict
+endfunction
+
+function! timl#core#dict_QMARK_(val) abort
+  return type(a:val) == type({})
+endfunction
+
+function! timl#core#assoc(dict, ...) abort
+  return extend(timl#core#dict(a:000), a:dict, 'keep')
+endfunction
+
+function! timl#core#dissoc(dict, ...) abort
+  let dict = copy(a:dict)
+  for key in a:000
+    if has_key(dict, key)
+      call remove(dict, key)
+    endif
+  endfor
+  return dict
 endfunction
 
 " }}}1
