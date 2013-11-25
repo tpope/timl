@@ -532,6 +532,7 @@ function! timl#source_file(filename, ...)
     for expr in timl#reader#read_file(a:filename)
       call timl#eval(expr, ns)
     endfor
+  catch /^Vim\%((\a\+)\)\=:E168/
   finally
     let g:timl#core#_STAR_ns_STAR_ = old_ns
   endtry
