@@ -293,7 +293,7 @@ function! s:file4ns(ns) abort
   return file
 endfunction
 
-function! timl#set_bang(envs, sym, val, ...)
+function! timl#setq(envs, sym, val, ...)
   let sym = timl#symbol(a:sym)[0]
   let val = s:eval((a:0 ? a:000[-1] : a:val), a:envs)
   let _ = {}
@@ -321,7 +321,7 @@ function! timl#set_bang(envs, sym, val, ...)
     elseif type(_.val) == type([]) && len(_.val) == 2
       let refs .= '['.string(_.val[0]).' : '.string(_.val[1]).']'
     else
-      throw "timl.vim: invalid set! key ".string(_.val)
+      throw "timl.vim: invalid setq key ".string(_.val)
     endif
   endfor
   if type(_.env) == type({})
@@ -371,11 +371,11 @@ function! s:eval(x, envs) abort
     let s:gensym_id = get(s:, 'gensym_id', 0) + 1
     return s:quasiquote(get(x, 1, g:timl#nil), envs, s:gensym_id)
 
-  elseif timl#symbol('set!') is x[0]
+  elseif timl#symbol('setq') is x[0]
     if len(x) < 3
-      throw 'timl.vim:E119: set! requires 2 arguments'
+      throw 'timl.vim:E119: setq requires 2 arguments'
     endif
-    return call('timl#set_bang', [envs] + x[1:-1])
+    return call('timl#setq', [envs] + x[1:-1])
 
   elseif timl#symbol('if') is x[0]
     if len(x) < 3
@@ -652,15 +652,15 @@ TimLAssert timl#re('(if 1 forty-two 69)') ==# 42
 TimLAssert timl#re('(if 0 "boo" "yay")') ==# "yay"
 TimLAssert timl#re('(do 1 2)') ==# 2
 
-TimLAssert timl#re('(set! g:timl_set_bang {})') == {}
-TimLAssert g:timl_set_bang ==# {}
-TimLAssert timl#re('(set! g:timl_set_bang "key" (list "a" "b"))') == ["a", "b"]
-TimLAssert g:timl_set_bang == {"key": ["a", "b"]}
-TimLAssert timl#re('(set! g:timl_set_bang "key" ''(0 0) ''("c"))') == ["c"]
-TimLAssert g:timl_set_bang == {"key": ["c", "b"]}
-unlet! g:timl_set_bang
-TimLAssert timl#re('(let ((a 1)) (let ((b 2)) (set! a 3)) a)') == 3
-TimLAssert timl#re('(let ((a 1)) (let ((a 2)) (set! a 3)) a)') == 1
+TimLAssert timl#re('(setq g:timl_setq {})') == {}
+TimLAssert g:timl_setq ==# {}
+TimLAssert timl#re('(setq g:timl_setq "key" (list "a" "b"))') == ["a", "b"]
+TimLAssert g:timl_setq == {"key": ["a", "b"]}
+TimLAssert timl#re('(setq g:timl_setq "key" ''(0 0) ''("c"))') == ["c"]
+TimLAssert g:timl_setq == {"key": ["c", "b"]}
+unlet! g:timl_setq
+TimLAssert timl#re('(let ((a 1)) (let ((b 2)) (setq a 3)) a)') == 3
+TimLAssert timl#re('(let ((a 1)) (let ((a 2)) (setq a 3)) a)') == 1
 
 TimLAssert timl#re('(let (((j k) {"j" 1}) ((l m) (list 2))) (list j k l m))') == [1, g:timl#nil, 2, g:timl#nil]
 TimLAssert timl#re('(reduce (lambda (m (k v)) (append m (list v k))) ''() {"a" 1})') == [1, "a"]
