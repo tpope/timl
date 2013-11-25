@@ -456,7 +456,7 @@ function! s:eval(x, envs) abort
       finally
         call map(finallies, 's:eval(v:val, envs)')
       endtry
-    endtry
+    endif
 
   elseif timl#symbol_p(x[0]) && x[0][0] =~# '^:'
     let strings = map(x[1:-1], 's:string(s:eval(v:val, envs))')
