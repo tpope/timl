@@ -8,33 +8,14 @@ let g:autoloaded_timl_reader = 1
 let s:iskeyword = '[[:alnum:]_=?!#$%&*+|./<>:~-]'
 
 function! s:read_token(port) abort
-  let chs = matchstr(a:port.str, '..\=', a:port.pos)
-  let ch = matchstr(chs, '.')
-  if chs =~# '#[[:punct:]]'
-    let a:port.pos += strlen(chs)
-    return chs
-  elseif ch =~# s:iskeyword
-    let token = matchstr(a:port.str, s:iskeyword.'*', a:port.pos)
-    let a:port.pos += strlen(token)
-    return token
-  elseif ch ==# '"'
-    let token = matchstr(a:port.str, '"\%(\\.\|[^"]\)*"', a:port.pos)
-    let a:port.pos += strlen(token)
-    return token
-  elseif ch =~# "[[:space:]\r\n]"
-    let a:port.pos = matchend(a:port.str, "[[:space:]\r\n]*", a:port.pos)
-    return s:read_token(a:port)
-  elseif ch ==# ';'
-    let token = matchstr(a:port.str, ';.\{-\}\ze\%(\n\|$\)', a:port.pos)
-    let a:port.pos += strlen(token)
-    return token
-  elseif chs ==# ',@'
-    let a:port.pos += len(chs)
-    return chs
-  else
-    let a:port.pos += len(ch)
-    return ch
-  endif
+  let pat = '^#[[:punct:]]\|"\%(\\.\|[^"]\)*"\|[[:space:]]\|;.\{-\}\ze\%(\n\|$\)\|,@\|'.s:iskeyword.'\+\|.'
+  let match = matchstr(a:port.str, pat, a:port.pos)
+  let a:port.pos += len(match)
+  while match =~# '^[[:space:]]'
+    let match = matchstr(a:port.str, pat, a:port.pos)
+    let a:port.pos += len(match)
+  endwhile
+  return match
 endfunction
 
 function! s:tokenize(str) abort
