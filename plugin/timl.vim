@@ -8,15 +8,13 @@ let g:loaded_timl = 1
 
 augroup timl
   autocmd!
-  autocmd SourceCmd *.tim call timl#source_file(expand("<amatch>"))
   autocmd BufNewFile,BufReadPost *.tim set filetype=timl
-  autocmd FileType timl command! -buffer -bar Wepl :update|TLsource %|TLrepl
+  autocmd FileType timl command! -buffer -bar Wepl :update|source %|TLrepl
+  autocmd SourceCmd *.tim call timl#source_file(expand("<amatch>"))
   autocmd FuncUndefined *#* call s:autoload(expand('<amatch>'))
 augroup END
 
-command! -bar -nargs=1 -complete=file TLsource :call timl#source_file(expand(<q-args>))
 command! -bar -nargs=? TLrepl :call s:repl(<f-args>)
-command! -bar -nargs=1 TLload :call timl#load(<f-args>)
 command! -bar -nargs=1 -complete=expression TLinspect :echo timl#pr_str(<args>)
 
 if !exists('g:timl#requires')
@@ -28,10 +26,8 @@ function! s:autoload(function) abort
 
   if !has_key(g:timl#requires, ns)
     let g:timl#requires[ns] = 1
-    execute 'runtime! autoload/'.tr(ns, '#', '/').'.tim'
-    " for file in findfile('autoload/'.tr(ns,'#','/').'.tim', &rtp, -1)
-    "   call timl#source_file(file, ns)
-    " endfor
+    " Change to runtime! if include guards are ever added
+    execute 'runtime autoload/'.tr(ns, '#', '/').'.tim'
   endif
 endfunction
 
