@@ -26,8 +26,11 @@ function! s:autoload(function) abort
 
   if !has_key(g:timl#requires, ns)
     let g:timl#requires[ns] = 1
-    " Change to runtime! if include guards are ever added
-    execute 'runtime autoload/'.tr(ns, '#', '/').'.tim'
+    for file in findfile('autoload/'.tr(ns,'#','/').'.tim', &rtp, -1)
+      call timl#source_file(file, ns)
+      " drop to run all if include guards are added
+      return
+    endfor
   endif
 endfunction
 
