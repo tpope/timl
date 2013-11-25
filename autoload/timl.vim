@@ -191,6 +191,8 @@ function! timl#lookup(envs, sym) abort
     return function(sym[2:-1])
   elseif sym =~# '^&.\|^\w:' && exists(sym)
     return eval(sym)
+  elseif sym =~# '^@.$'
+    return eval(sym)
   elseif sym =~# '#'
     let sym = timl#munge(sym)
     call timl#autoload(sym)
@@ -284,12 +286,13 @@ function! timl#set_bang(envs, sym, val, ...)
     let sym = timl#symbol(a:sym)[0]
     let val = s:eval((a:0 ? a:000[-1] : a:val), a:envs)
     let _ = {}
-    if sym =~# '^&'
+    if sym =~# '^[&@]'
       if type(val) == type([])
         exe 'let ' . sym . ' = join(val, ",")'
       else
         exe 'let ' . sym . ' = val'
       endif
+      return val
     elseif sym =~# '^[bwtgv]:'
       let _.env = eval(sym[0:1])
       let sym = timl#munge(sym[2:-1])
