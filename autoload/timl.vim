@@ -422,6 +422,33 @@ function! s:eval(x, envs) abort
   elseif timl#symbol('do') is x[0]
     return get(map(x[1:-1], 's:eval(v:val, envs)'), -1, g:timl#nil)
 
+  elseif timl#symbol('try') is x[0]
+    let _ = {}
+    let forms = []
+    let catches = []
+    let finallies = []
+    for _.form in x[1:-1]
+      if type(_.form) == type([]) && get(_.form, 0) is timl#symbol('catch')
+        call add(catches, _.form[1:-1])
+      elseif type(_.form) == type([]) && get(_.form, 0) is timl#symbol('finally')
+        call extend(finallies, _.form[1:-1])
+      else
+        call add(forms, _.form)
+      endif
+    endfor
+    try
+      return get(map(forms, 's:eval(v:val, envs)'), -1, g:timl#nil)
+    catch
+      for catch in catches
+        if v:exception =~# catch[0]
+          return get(map(catch[1:-1], 's:eval(v:val, envs)'), -1, g:timl#nil)
+        endif
+      endfor
+      throw v:exception
+    finally
+      call map(finallies, 's:eval(v:val, envs)')
+    endtry
+
   elseif timl#symbol_p(x[0]) && x[0][0] =~# '^:'
     let strings = map(x[1:-1], 's:string(s:eval(v:val, envs))')
     execute x[0][0] . ' ' . join(strings, ' ')

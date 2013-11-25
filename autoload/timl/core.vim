@@ -5,6 +5,10 @@ let g:autoloaded_timl_runtime = 1
 
 " Section: Misc {{{1
 
+function! timl#core#throw(val) abort
+  throw a:val
+endfunction
+
 function! timl#core#nil_QMARK_(val) abort
   return empty(a:val)
 endfunction
