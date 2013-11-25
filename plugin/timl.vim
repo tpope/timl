@@ -16,7 +16,7 @@ augroup END
 command! -bar -nargs=1 -complete=file TLsource :call timl#source_file(expand(<q-args>))
 command! -bar -nargs=? TLrepl :call s:repl(<f-args>)
 command! -bar -nargs=1 TLload :call timl#load(<f-args>)
-command! -bar -nargs=1 TLinspect :echo timl#pr_str(<args>)
+command! -bar -nargs=1 -complete=expression TLinspect :echo timl#pr_str(<args>)
 
 if !exists('g:timl#requires')
   let g:timl#requires = {}
@@ -34,12 +34,13 @@ function! s:autoload(function) abort
 endfunction
 
 function! s:repl(...)
+  let cmpl = 'customlist,timl#reflect#input_complete'
   let env = {'*e': g:timl#nil, '*1': g:timl#nil}
   let more = &more
   try
     set nomore
     let g:timl#core#_STAR_ns_STAR_ = a:0 ? a:1 : timl#ns_for_file(expand('%:p'))
-    let input = input(g:timl#core#_STAR_ns_STAR_.'=> ')
+    let input = input(g:timl#core#_STAR_ns_STAR_.'=> ', '', cmpl)
     while !empty(input)
       echo "\n"
       try
@@ -49,7 +50,7 @@ function! s:repl(...)
             break
           catch /^timl.vim: unexpected EOF/
             let space = repeat(' ', len(g:timl#core#_STAR_ns_STAR_)-2)
-            let input .= "\n" . input(space.'#_=> ')
+            let input .= "\n" . input(space.'#_=> ', '', cmpl)
             echo "\n"
           endtry
         endwhile
@@ -63,7 +64,7 @@ function! s:repl(...)
         echo v:exception
         echohl NONE
       endtry
-      let input = input(g:timl#core#_STAR_ns_STAR_.'=> ')
+      let input = input(g:timl#core#_STAR_ns_STAR_.'=> ', '', cmpl)
     endwhile
   finally
     let &more = more
