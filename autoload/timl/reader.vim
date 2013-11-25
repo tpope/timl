@@ -7,114 +7,150 @@ let g:autoloaded_timl_reader = 1
 
 let s:iskeyword = '[[:alnum:]_=?!#$%&*+|./<>:~-]'
 
+function! s:read_token(port) abort
+  let chs = matchstr(a:port.str, '..\=', a:port.pos)
+  let ch = matchstr(chs, '.')
+  if ch =~# s:iskeyword
+    let token = matchstr(a:port.str, s:iskeyword.'*', a:port.pos)
+    let a:port.pos += strlen(token)
+    return token
+  elseif ch ==# '"'
+    let token = matchstr(a:port.str, '"\%(\\.\|[^"]\)*"', a:port.pos)
+    let a:port.pos += strlen(token)
+    return token
+  elseif ch =~# "[[:space:]\r\n]"
+    let a:port.pos = matchend(a:port.str, "[[:space:]\r\n]*", a:port.pos)
+    return s:read_token(a:port)
+  elseif ch ==# ';'
+    let token = matchstr(a:port.str, ';.\{-\}\ze\%(\n\|$\)', a:port.pos)
+    let a:port.pos += strlen(token)
+    return token
+  elseif chs ==# ',@'
+    let a:port.pos += len(chs)
+    return chs
+  else
+    let a:port.pos += len(ch)
+    return ch
+  endif
+endfunction
+
 function! s:tokenize(str) abort
   let tokens = []
-  let i = 0
-  let len = len(a:str)
-  while i < len
-    let chs = matchstr(a:str, '..\=', i)
-    let ch = matchstr(chs, '.')
-    if ch =~# s:iskeyword
-      let token = matchstr(a:str, s:iskeyword.'*', i)
-      let i += strlen(token)
-      call add(tokens, token)
-    elseif ch ==# '"'
-      let token = matchstr(a:str, '"\%(\\.\|[^"]\)*"', i)
-      let i += strlen(token)
-      call add(tokens, token)
-    elseif ch =~# "[[:space:]\r\n]"
-      let i = matchend(a:str, "[[:space:]\r\n]*", i)
-    elseif ch ==# ';'
-      let token = matchstr(a:str, ';.\{-\}\ze\%(\n\|$\)', i)
-      let i += strlen(token)
-      " call add(tokens, token)
-    elseif chs ==# ',@'
-      call add(tokens, chs)
-      let i += len(chs)
-    else
-      call add(tokens, ch)
-      let i += len(ch)
-    endif
+  let port = {'pos': 0, 'str': a:str}
+  let token = s:read_token(port)
+  while !empty(token)
+    call add(tokens, token)
+    let token = s:read_token(port)
   endwhile
   return tokens
 endfunction
 
-function! s:read_one(tokens, i) abort
-  let error = 'timl.vim: unexpected EOF'
-  let i = a:i
-  while i < len(a:tokens)
-    if a:tokens[i] =~# '^"\|^[+-]\=\d\%(.*\d\)\=$'
-      return [eval(a:tokens[i]), i+1]
-    elseif a:tokens[i] ==# '('
-      let i += 1
-      let list = []
-      while i < len(a:tokens) && a:tokens[i] !=# ')'
-        let [val, i] = s:read_one(a:tokens, i)
-        call add(list, val)
-        unlet! val
-      endwhile
-      if i >= len(a:tokens)
-        break
-      endif
-      return [list, i+1]
-    elseif a:tokens[i] ==# '{'
-      let i += 1
-      let dict = {}
-      while i < len(a:tokens) && a:tokens[i] !=# '}'
-        let [key, i] = s:read_one(a:tokens, i)
-        if type(key) != type('')
-          let error = 'timl.vim: dict keys must be strings'
-        elseif a:tokens[i] ==# '}'
-          let error = 'timl.vim: dict literal contains odd number of elements'
-        endif
-        let [val, i] = s:read_one(a:tokens, i)
-        let dict[key] = val
-        unlet! key val
-      endwhile
-      if i >= len(a:tokens)
-        break
-      endif
-      return [dict, i+1]
-    elseif a:tokens[i] ==# 'nil'
-      return [g:timl#nil, i+1]
-    elseif a:tokens[i] ==# "'"
-      let [val, i] = s:read_one(a:tokens, i+1)
-      return [[timl#symbol('quote'), val], i]
-    elseif a:tokens[i] ==# '`'
-      let [val, i] = s:read_one(a:tokens, i+1)
-      return [[timl#symbol('quasiquote'), val], i]
-    elseif a:tokens[i] ==# ','
-      let [val, i] = s:read_one(a:tokens, i+1)
-      return [[timl#symbol('unquote'), val], i]
-    elseif a:tokens[i] ==# ',@'
-      let [val, i] = s:read_one(a:tokens, i+1)
-      return [[timl#symbol('unquote-splicing'), val], i]
-    elseif a:tokens[i][0] ==# ';'
-      let i += 1
-      continue
-    elseif a:tokens[i] =~# '^'.s:iskeyword
-      return [timl#symbol(a:tokens[i]), i+1]
-    else
-      let error = 'timl.vim: unexpected token: '.string(a:tokens[i])
-      break
+function! s:eof(port)
+  return a:port.pos >= len(a:port.str)
+endfunction
+
+let s:eof = []
+
+function! timl#reader#read(port) abort
+  let error = 'timl.vim: EOF'
+  try
+    let val = s:read(a:port)
+    if val isnot# s:eof
+      return val
     endif
-  endwhile
+  catch /^timl.*/
+    let error = v:exception
+  endtry
+  throw error
+endfunction
+
+function! s:read(port, ...) abort
+  let error = 'timl.vim: unexpected EOF'
+  let port = a:port
+  let pos = a:0 ? a:2 : port.pos
+  let token = a:0 ? a:1 : s:read_token(port)
+  if token =~# '^"\|^[+-]\=\d\%(.*\d\)\=$'
+    return eval(token)
+  elseif token ==# '('
+    let list = []
+    let token = s:read_token(port)
+    while token !=# ')' && token !=# ''
+      call add(list, s:read(port, token, pos))
+      let token = s:read_token(port)
+    endwhile
+    if token ==# ')'
+      return list
+    endif
+  elseif token ==# '{'
+    let dict = {}
+    let token = s:read_token(port)
+    while 1
+      if token ==# '}'
+        return dict
+      elseif token ==# ''
+        break
+      endif
+      let key = s:read(port, token, pos)
+      if type(key) != type('')
+        let error = 'timl.vim: dict keys must be strings'
+        break
+      endif
+      let dict[key] = s:read_bang(port)
+      let token = s:read_token(port)
+    endwhile
+  elseif token ==# 'nil'
+    return g:timl#nil
+  elseif token ==# "'"
+    return [timl#symbol('quote'), s:read_bang(port)]
+  elseif token ==# '`'
+    return [timl#symbol('quasiquote'), s:read_bang(port)]
+  elseif token ==# ','
+    return [timl#symbol('unquote'), s:read_bang(port)]
+  elseif token ==# ',@'
+    return [timl#symbol('unquote-splicing'), s:read_bang(port)]
+  elseif token[0] ==# ';'
+    return s:read(port)
+  elseif token =~# '^'.s:iskeyword
+    return timl#symbol(token)
+  elseif empty(token)
+    return s:eof
+  else
+    let error = 'timl.vim: unexpected token '.string(token)
+  endif
+  throw error . ' at byte ' . port.pos
+endfunction
+
+function! s:read_bang(port) abort
+  let val = s:read(a:port)
+  if val isnot# s:eof
+    return val
+  endif
+  throw 'timl.vim: unexpected EOF'
+endfunction
+
+function! timl#reader#read_all(port) abort
+  let all = []
+  let _ = {}
+  try
+    while 1
+      let _.form = s:read(a:port)
+      if _.form is# s:eof
+        return all
+      endif
+      call add(all, _.form)
+    endwhile
+  catch /^timl.*/
+    let error = v:exception
+  endtry
   throw error
 endfunction
 
 function! timl#reader#read_string_all(str) abort
-  let tokens = s:tokenize(a:str)
-  let forms = []
-  let i = 0
-  while i < len(tokens)
-    let [form, i] = s:read_one(tokens, i)
-    call add(forms, form)
-  endwhile
-  return forms
+  return timl#reader#read_all({'str': a:str, 'pos': 0})
 endfunction
 
 function! timl#reader#read_string(str) abort
-  return s:read_one(s:tokenize(a:str), 0)[0]
+  return timl#reader#read({'str': a:str, 'pos': 0})
 endfunction
 
 function! timl#reader#read_file(filename) abort
@@ -129,7 +165,8 @@ endif
 
 command! -nargs=1 TimLRAssert
       \ try |
-      \ if !eval(<q-args>) | echomsg "Failed: ".<q-args> |
+      \ if !eval(<q-args>) |
+      \ echomsg "Failed: ".<q-args> |
       \   endif |
       \ catch /.*/ |
       \  echomsg "Error:  ".<q-args>." (".v:exception.")" |
