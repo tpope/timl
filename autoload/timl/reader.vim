@@ -10,7 +10,10 @@ let s:iskeyword = '[[:alnum:]_=?!#$%&*+|./<>:~-]'
 function! s:read_token(port) abort
   let chs = matchstr(a:port.str, '..\=', a:port.pos)
   let ch = matchstr(chs, '.')
-  if ch =~# s:iskeyword
+  if chs =~# '#[[:punct:]]'
+    let a:port.pos += strlen(chs)
+    return chs
+  elseif ch =~# s:iskeyword
     let token = matchstr(a:port.str, s:iskeyword.'*', a:port.pos)
     let a:port.pos += strlen(token)
     return token
@@ -110,6 +113,9 @@ function! s:read(port, ...) abort
     return [timl#symbol('unquote-splicing'), s:read_bang(port)]
   elseif token[0] ==# ';'
     return s:read(port)
+  elseif token ==# '#_'
+    call s:read(port)
+    return s:read(port)
   elseif token =~# '^'.s:iskeyword
     return timl#symbol(token)
   elseif empty(token)
@@ -181,6 +187,7 @@ TimLRAssert timl#reader#read_string('({})') ==# [{}]
 TimLRAssert timl#reader#read_string("'(1 2 3)") ==# [timl#symbol('quote'), [1, 2, 3]]
 TimLRAssert timl#reader#read_string("`foo") ==# [timl#symbol('quasiquote'), timl#symbol('foo')]
 TimLRAssert timl#reader#read_string(",foo") ==# [timl#symbol('unquote'), timl#symbol('foo')]
+TimLRAssert timl#reader#read_string("(1 #_2 3)") ==# [1, 3]
 
 delcommand TimLRAssert
 
