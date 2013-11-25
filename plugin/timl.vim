@@ -8,6 +8,7 @@ let g:loaded_timl = 1
 
 augroup timl
   autocmd!
+  autocmd SourceCmd *.tim call timl#source_file(expand("<amatch>"))
   autocmd BufNewFile,BufReadPost *.tim set filetype=timl
   autocmd FileType timl command! -buffer -bar Wepl :update|TLsource %|TLrepl
   autocmd FuncUndefined *#* call s:autoload(expand('<amatch>'))
@@ -27,9 +28,10 @@ function! s:autoload(function) abort
 
   if !has_key(g:timl#requires, ns)
     let g:timl#requires[ns] = 1
-    for file in findfile('autoload/'.tr(ns,'#','/').'.tim', &rtp, -1)
-      call timl#source_file(file, ns)
-    endfor
+    execute 'runtime! autoload/'.tr(ns, '#', '/').'.tim'
+    " for file in findfile('autoload/'.tr(ns,'#','/').'.tim', &rtp, -1)
+    "   call timl#source_file(file, ns)
+    " endfor
   endif
 endfunction
 
