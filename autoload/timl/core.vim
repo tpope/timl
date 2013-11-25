@@ -238,7 +238,7 @@ function! timl#core#reduce(f, val_or_list, ...) abort
 endfunction
 
 " }}}1
-" Namespaces {{{1
+" Section: Namespaces {{{1
 
 function! timl#core#in_ns(ns)
   let g:timl#core#_STAR_ns_STAR_ = timl#core#string(a:ns)
