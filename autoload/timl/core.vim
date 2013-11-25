@@ -38,6 +38,10 @@ function! timl#core#identity(x) abort
   return a:x
 endfunction
 
+function! timl#core#print(x) abort
+  echo a:x
+endfunction
+
 " }}}1
 " Section: Operators {{{
 
