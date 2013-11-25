@@ -283,33 +283,33 @@ function! s:file4ns(ns) abort
 endfunction
 
 function! timl#set_bang(envs, sym, val, ...)
-    let sym = timl#symbol(a:sym)[0]
-    let val = s:eval((a:0 ? a:000[-1] : a:val), a:envs)
-    let _ = {}
-    if sym =~# '^[&@]'
-      if type(val) == type([])
-        exe 'let ' . sym . ' = join(val, ",")'
-      else
-        exe 'let ' . sym . ' = val'
-      endif
-      return val
-    elseif sym =~# '^[bwtgv]:'
-      let _.env = eval(sym[0:1])
-      let sym = timl#munge(sym[2:-1])
+  let sym = timl#symbol(a:sym)[0]
+  let val = s:eval((a:0 ? a:000[-1] : a:val), a:envs)
+  let _ = {}
+  if sym =~# '^[&@]'
+    if type(val) == type([])
+      exe 'let ' . sym . ' = join(val, ",")'
     else
-      let _.env = timl#find(a:envs, sym)
+      exe 'let ' . sym . ' = val'
     endif
-    let refs = ''
-    for _.form in (a:0 ? [a:val] : []) + a:000[0:-2]
-      let _.val = s:eval(_.form, a:envs)
-      if timl#symbol_p(_.val) || type(_.val) == type('') || type(_.val) == type(0)
-        let refs .= '['.string(s:string(_.val)).']'
-      elseif type(_.val) == type([]) && len(_.val) == 2
-        let refs .= '['.string(_.val[0]).' : '.string(_.val[1]).']'
-      else
-        throw "timl.vim: invalid set! key ".string(_.val)
-      endif
-    endfor
+    return val
+  elseif sym =~# '^[bwtgv]:'
+    let _.env = eval(sym[0:1])
+    let sym = timl#munge(sym[2:-1])
+  else
+    let _.env = timl#find(a:envs, sym)
+  endif
+  let refs = ''
+  for _.form in (a:0 ? [a:val] : []) + a:000[0:-2]
+    let _.val = s:eval(_.form, a:envs)
+    if timl#symbol_p(_.val) || type(_.val) == type('') || type(_.val) == type(0)
+      let refs .= '['.string(s:string(_.val)).']'
+    elseif type(_.val) == type([]) && len(_.val) == 2
+      let refs .= '['.string(_.val[0]).' : '.string(_.val[1]).']'
+    else
+      throw "timl.vim: invalid set! key ".string(_.val)
+    endif
+  endfor
 
     execute 'let _.env[sym]'.refs.' = val'
     return val
@@ -444,7 +444,7 @@ function! s:eval(x, envs) abort
           return get(map(catch[1:-1], 's:eval(v:val, envs)'), -1, g:timl#nil)
         endif
       endfor
-      throw v:exception
+      throw v:exception =~# '^Vim' ? 'T'.v:exception[1:-1] : v:exception
     finally
       call map(finallies, 's:eval(v:val, envs)')
     endtry
