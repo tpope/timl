@@ -16,6 +16,7 @@ augroup END
 command! -bar -nargs=1 -complete=file TLsource :call timl#source_file(expand(<q-args>))
 command! -bar -nargs=? TLrepl :call s:repl(<f-args>)
 command! -bar -nargs=1 TLload :call timl#load(<f-args>)
+command! -bar -nargs=1 TLinspect :echo timl#pr_str(<args>)
 
 if !exists('g:timl#requires')
   let g:timl#requires = {}
