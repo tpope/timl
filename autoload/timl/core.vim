@@ -1,7 +1,9 @@
-if exists("g:autoloaded_timl_runtime") || &cp || v:version < 700
+if exists("g:autoloaded_timl_core") || &cp || v:version < 700
   finish
 endif
-let g:autoloaded_timl_runtime = 1
+let g:autoloaded_timl_core = 1
+
+let g:timl#core#_STAR_uses_STAR_ = []
 
 " Section: Misc {{{1
 
@@ -233,6 +235,30 @@ function! timl#core#reduce(f, val_or_list, ...) abort
     let _.val = call(a:f, [_.val, _.elem], {})
   endfor
   return _.val
+endfunction
+
+" }}}1
+" Namespaces {{{1
+
+function! timl#core#in_ns(ns)
+  let g:timl#core#_STAR_ns_STAR_ = timl#core#string(a:ns)
+  return timl#symbol(a:ns)
+endfunction
+
+function! timl#core#use(...)
+  let me = timl#core#string(g:timl#core#_STAR_ns_STAR_)
+  if !exists('g:'.timl#munge(me.'#*uses*'))
+    let g:{timl#munge(me.'#*uses*')} = [timl#symbol('timl#core')]
+  endif
+  let uses = g:{timl#munge(me.'#*uses*')}
+  let _ = {}
+  for _.ns in a:000
+    let sym = timl#symbol(_.ns)
+    if timl#core#string(_.ns) isnot# me && index(uses, sym) == -1
+      call insert(uses, sym)
+    endif
+  endfor
+  return g:timl#nil
 endfunction
 
 " }}}1

@@ -174,6 +174,8 @@ augroup END
 " }}}1
 " Section: Eval {{{1
 
+let g:user#_STAR_uses_STAR_ = [timl#symbol('timl#repl'), timl#symbol('timl#core')]
+
 function! timl#ns_for_file(file) abort
   let file = fnamemodify(a:file, ':p')
   let slash = exists('+shellslash') && &shellslash ? '\' : '/'
@@ -228,6 +230,13 @@ function! timl#find(envs, sym) abort
       if exists('*'.target) || exists('g:'.target)
         return env
       endif
+      for use in get(g:, timl#munge(env.'#*uses*'), [timl#symbol('timl#core')])
+        let target = timl#munge(s:string(use).'#'.sym)
+        call timl#autoload(target)
+        if exists('*'.target) || exists('g:'.target)
+          return s:string(use)
+        endif
+      endfor
     endif
     unlet! env
   endfor
@@ -302,6 +311,9 @@ function! timl#set_bang(envs, sym, val, ...)
   elseif sym =~# '^[bwtgv]:'
     let _.env = eval(sym[0:1])
     let sym = timl#munge(sym[2:-1])
+  elseif sym =~# '#'
+    let _.env = matchstr(sym, '.*\ze#')
+    let sym = matchstr(sym, '.*#\zs.*')
   else
     let _.env = timl#find(a:envs, sym)
   endif
@@ -316,9 +328,14 @@ function! timl#set_bang(envs, sym, val, ...)
       throw "timl.vim: invalid set! key ".string(_.val)
     endif
   endfor
-
-    execute 'let _.env[sym]'.refs.' = val'
-    return val
+  if type(_.env) == type({})
+    let pre = '_.env[sym]'
+  else
+    let pre = 'g:'.timl#munge(s:string(_.env).'#'.sym)
+    exe 'unlet! '.pre
+  endif
+  execute 'let '.pre.refs.' = val'
+  return val
 endfunction
 
 if !exists('g:timl#core#_STAR_ns_STAR_')
@@ -326,24 +343,17 @@ if !exists('g:timl#core#_STAR_ns_STAR_')
 endif
 
 function! timl#eval(x, ...) abort
-  let envs = ['user', 'timl#core']
-  if a:0 && type(a:1) == type([])
+  let envs = [g:timl#core#_STAR_ns_STAR_]
+  if a:0 && timl#symbol_p(a:1)
+    let envs[0] = a:1[0]
+  elseif a:0 && type(a:1) == type([])
     let envs = a:1
   elseif a:0
     let envs[0] = a:1
+    let g:timl#core#_STAR_ns_STAR_ = a:1
   endif
 
-  let i = 0
-  while i < len(envs) && type(envs[i]) != type('')
-    let i += 1
-  endwhile
-  let old_ns = get(g:, 'timl#core#_STAR_ns_STAR_', 'user')
-  try
-    let g:timl#core#_STAR_ns_STAR_ = envs[i]
-    return s:eval(a:x, envs)
-  finally
-    let g:timl#core#_STAR_ns_STAR_ = old_ns
-  endtry
+  return s:eval(a:x, envs)
 endfunction
 
 function! s:eval(x, envs) abort
@@ -519,10 +529,16 @@ function! timl#rep(...) abort
 endfunction
 
 function! timl#source_file(filename, ...)
-  let ns = a:0 ? a:1 : timl#ns_for_file(fnamemodify(a:filename, ':p'))
-  for expr in timl#reader#read_file(a:filename)
-    call timl#eval(expr, ns)
-  endfor
+  let old_ns = g:timl#core#_STAR_ns_STAR_
+  try
+    let ns = a:0 ? a:1 : timl#ns_for_file(fnamemodify(a:filename, ':p'))
+    let g:timl#core#_STAR_ns_STAR_ = ns
+    for expr in timl#reader#read_file(a:filename)
+      call timl#eval(expr, ns)
+    endfor
+  finally
+    let g:timl#core#_STAR_ns_STAR_ = old_ns
+  endtry
 endfunction
 
 if !exists('g:timl#requires')

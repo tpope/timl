@@ -1,3 +1,11 @@
+(in-ns 'timl#core)
+(defmacro ns (ns)
+  (list
+    'do
+    (if (not (f:exists (string "g:" (timl#munge (string ns "#" "*uses*")))))
+      `(set! ,(f:timl#symbol (string ns "#*uses*")) (list 'timl#core)))
+    `(in-ns ',ns)))
+
 ; (defmacro let (bindings ...)
 ;  `((lambda ,(map first bindings) ,@...) ,@(map last bindings)))
 (defun pr-str (...) (f:join (map timl#pr-str ...)))
