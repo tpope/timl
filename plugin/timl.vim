@@ -33,6 +33,7 @@ function! s:autoload(function) abort
 endfunction
 
 function! s:repl(...)
+  let env = {'*e': g:timl#nil, '*1': g:timl#nil}
   let more = &more
   try
     set nomore
@@ -50,12 +51,14 @@ function! s:repl(...)
             echo "\n"
           endtry
         endwhile
-        let result = timl#pr_str(timl#eval([timl#symbol('do')] + read, [ns, 'timl#repl', 'timl#core']))
-        echo result
+        let env['*1'] = timl#eval([timl#symbol('do')] + read, [env, ns, 'timl#repl', 'timl#core'])
+        echo timl#pr_str(env['*1'])
+      catch /^timl#repl: EXIT/
+        return ''
       catch
+        let env['*e'] = {'exception': v:exception, 'throwpoint': v:throwpoint}
         echohl ErrorMSG
         echo v:exception
-        echo v:throwpoint
         echohl NONE
       endtry
       let input = input(ns.'=> ')

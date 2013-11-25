@@ -3,3 +3,7 @@
           (list 'lambda
                 (get impl "arglist")
                 (get impl "form"))))
+
+(defun doc (fn)
+  (:help (string fn "("))
+  (:throw (f:string "timl#repl: EXIT")))
