@@ -436,17 +436,26 @@ function! s:eval(x, envs) abort
         call add(forms, _.form)
       endif
     endfor
-    try
-      return get(map(forms, 's:eval(v:val, envs)'), -1, g:timl#nil)
-    catch
-      for catch in catches
-        if v:exception =~# catch[0]
-          return get(map(catch[1:-1], 's:eval(v:val, envs)'), -1, g:timl#nil)
-        endif
-      endfor
-      throw v:exception =~# '^Vim' ? 'T'.v:exception[1:-1] : v:exception
-    finally
-      call map(finallies, 's:eval(v:val, envs)')
+
+    if empty(catches)
+      try
+        return get(map(forms, 's:eval(v:val, envs)'), -1, g:timl#nil)
+      finally
+        call map(finallies, 's:eval(v:val, envs)')
+      endtry
+    else
+      try
+        return get(map(forms, 's:eval(v:val, envs)'), -1, g:timl#nil)
+      catch
+        for catch in catches
+          if v:exception =~# catch[0]
+            return get(map(catch[1:-1], 's:eval(v:val, envs)'), -1, g:timl#nil)
+          endif
+        endfor
+        throw v:exception =~# '^Vim' ? 'T'.v:exception[1:-1] : v:exception
+      finally
+        call map(finallies, 's:eval(v:val, envs)')
+      endtry
     endtry
 
   elseif timl#symbol_p(x[0]) && x[0][0] =~# '^:'
