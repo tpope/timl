@@ -16,7 +16,7 @@ function! timl#core#nil_QMARK_(val) abort
 endfunction
 
 function! timl#core#symbol_QMARK_(symbol) abort
-  return timl#symbol_p(a:symbol)
+  return timl#symbolp(a:symbol)
 endfunction
 
 function! timl#core#symbol(str) abort
@@ -27,7 +27,7 @@ function! timl#core#string(...) abort
   let acc = ''
   let _ = {}
   for _.x in a:000
-    if timl#symbol_p(_.x)
+    if timl#symbolp(_.x)
       let acc .= _.x[0]
     elseif type(_.x) == type('')
       let acc .= _.x
@@ -170,7 +170,7 @@ function! timl#core#sublist(list, start, ...) abort
 endfunction
 
 function! timl#core#list_QMARK_(val) abort
-  return !timl#symbol_p(a:val) && type(a:val) == type([])
+  return !timl#symbolp(a:val) && type(a:val) == type([])
 endfunction
 
 function! timl#core#dict(...) abort

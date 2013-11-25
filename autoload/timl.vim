@@ -23,12 +23,8 @@ if !exists('g:timl#nil')
   let g:timl#nil = s:persistent_list()
 endif
 
-function! timl#nil_p(val)
-  return empty(a:val)
-endfunction
-
 function! s:string(val) abort
-  if timl#symbol_p(a:val)
+  if timl#symbolp(a:val)
     return a:val[0]
   elseif type(a:val) == type('')
     return a:val
@@ -56,7 +52,7 @@ function! timl#symbol(str)
   return g:timl#symbols[str]
 endfunction
 
-function! timl#symbol_p(symbol)
+function! timl#symbolp(symbol)
   return type(a:symbol) == type([]) &&
         \ len(a:symbol) == 1 &&
         \ type(a:symbol[0]) == type('') &&
@@ -320,7 +316,7 @@ function! timl#set_bang(envs, sym, val, ...)
   let refs = ''
   for _.form in (a:0 ? [a:val] : []) + a:000[0:-2]
     let _.val = s:eval(_.form, a:envs)
-    if timl#symbol_p(_.val) || type(_.val) == type('') || type(_.val) == type(0)
+    if timl#symbolp(_.val) || type(_.val) == type('') || type(_.val) == type(0)
       let refs .= '['.string(s:string(_.val)).']'
     elseif type(_.val) == type([]) && len(_.val) == 2
       let refs .= '['.string(_.val[0]).' : '.string(_.val[1]).']'
@@ -344,7 +340,7 @@ endif
 
 function! timl#eval(x, ...) abort
   let envs = [g:timl#core#_STAR_ns_STAR_]
-  if a:0 && timl#symbol_p(a:1)
+  if a:0 && timl#symbolp(a:1)
     let envs[0] = a:1[0]
   elseif a:0 && type(a:1) == type([])
     let envs = a:1
@@ -362,7 +358,7 @@ function! s:eval(x, envs) abort
 
   let ns = g:timl#core#_STAR_ns_STAR_
 
-  if timl#symbol_p(x)
+  if timl#symbolp(x)
     return timl#lookup(envs, x)
 
   elseif type(x) != type([]) || empty(x)
@@ -432,9 +428,9 @@ function! s:eval(x, envs) abort
     let _ = {}
     for [_.key, _.form] in x[1]
       let _.val = s:eval(_.form, [env] + envs)
-      if _.key is timl#symbol_p('_') || _.key is g:timl#nil
+      if _.key is timl#symbolp('_') || _.key is g:timl#nil
         " ignore
-      elseif timl#symbol_p(_.key)
+      elseif timl#symbolp(_.key)
         let env[s:string(_.key)] = _.val
       elseif type(_.key) == type([])
         for i in range(len(_.key))
@@ -490,12 +486,12 @@ function! s:eval(x, envs) abort
       endtry
     endif
 
-  elseif timl#symbol_p(x[0]) && x[0][0] =~# '^:'
+  elseif timl#symbolp(x[0]) && x[0][0] =~# '^:'
     let strings = map(x[1:-1], 's:string(s:eval(v:val, envs))')
     execute x[0][0] . ' ' . join(strings, ' ')
     return g:timl#nil
 
-  elseif timl#symbol_p(x[0]) && has_key(s:macros, join([timl#lookup(envs, x[0])]))
+  elseif timl#symbolp(x[0]) && has_key(s:macros, join([timl#lookup(envs, x[0])]))
     let x2 = call(timl#lookup(envs, x[0]), x[1:-1])
     return s:eval(x2, envs)
   else
@@ -508,7 +504,7 @@ function! s:eval(x, envs) abort
         let Func = evaled[0][timl#symbol(evaled[1])[0]]
       endif
       let args = evaled[2:-1]
-    elseif type(evaled[0]) == type(function('tr')) || timl#symbol_p(evaled[0])
+    elseif type(evaled[0]) == type(function('tr')) || timl#symbolp(evaled[0])
       let dict = {}
       let Func = evaled[0]
       let args = evaled[1:-1]
@@ -569,7 +565,7 @@ function! s:quasiquote(token, envs, id) abort
       unlet! V
     endfor
     return dict
-  elseif timl#symbol_p(a:token)
+  elseif timl#symbolp(a:token)
     if a:token[0] =~# '#$'
       return timl#symbol(substitute(a:token[0], '#$', '__'.a:id.'__', ''))
     else
@@ -608,7 +604,7 @@ let s:escapes = {
 
 function! timl#pr_str(x)
   " TODO: guard against recursion
-  if timl#symbol_p(a:x)
+  if timl#symbolp(a:x)
     return a:x[0]
   elseif a:x is# g:timl#nil
     return 'nil'
