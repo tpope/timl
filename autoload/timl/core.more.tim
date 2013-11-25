@@ -1,7 +1,7 @@
 ; (defmacro let (bindings ...)
 ;  `((lambda ,(map first bindings) ,@...) ,@(map last bindings)))
 (defun pr-str (...) (f:join (map timl#pr-str ...)))
-(defun pr (...) (:echo (apply pr-str ...)))
+(defun pr (...) (:echo (f:string (apply pr-str ...))))
 (defun 1+ (n) (+ n 1))
 (defun 1- (n) (- n 1))
 (defun constantly (x) (lambda (...) x))
