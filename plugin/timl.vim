@@ -6,6 +6,10 @@ if exists("g:loaded_timl") || v:version < 700 || &cp
 endif
 let g:loaded_timl = 1
 
+if &maxfuncdepth == 100
+  set maxfuncdepth=200
+endif
+
 augroup timl
   autocmd!
   autocmd BufNewFile,BufReadPost *.tim set filetype=timl
