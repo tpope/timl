@@ -263,11 +263,17 @@ function! s:build_function(name, arglist) abort
         \ . "endfunction"
 endfunction
 
-function! s:lambda(arglist, form, env) abort
+function! s:lambda(arglist, form, ns, env) abort
   let dict = {}
   execute s:build_function('dict.function', a:arglist)
   let name = matchstr(string(dict.function), "'\\zs.*\\ze'")
-  let g:timl#lambdas[name] = {'name': name, 'arglist': a:arglist, 'env': a:env, 'form': a:form, 'macro': 0}
+  let g:timl#lambdas[name] = {
+        \ 'ns': a:ns,
+        \ 'name': name,
+        \ 'arglist': a:arglist,
+        \ 'env': a:env,
+        \ 'form': a:form,
+        \ 'macro': 0}
   return dict.function
 endfunction
 
@@ -335,6 +341,7 @@ function! s:eval(x, envs) abort
     let i += 1
   endwhile
   let ns = envs[i]
+  let g:timl#core#_STAR_ns_STAR_ = ns
 
   if timl#symbol_p(x)
     return timl#lookup(envs, x)
@@ -373,7 +380,13 @@ function! s:eval(x, envs) abort
     execute 'source '.file
     let macro = timl#symbol('defmacro') is x[0]
     let form = len(x) == 4 ? x[3] : [timl#symbol('do')] + x[3:-1]
-    let g:timl#lambdas[name] = {'name': name, 'arglist': x[2], 'env': envs, 'form': form, 'macro': macro}
+    let g:timl#lambdas[name] = {
+          \ 'ns': ns,
+          \ 'name': name,
+          \ 'arglist': x[2],
+          \ 'env': envs,
+          \ 'form': form,
+          \ 'macro': macro}
     if macro
       let s:macros[name] = 1
     endif
@@ -393,7 +406,7 @@ function! s:eval(x, envs) abort
       throw 'timl.vim:E119: lambda requires at least 2 arguments'
     endif
     let form = len(x) == 3 ? x[2] : [timl#symbol('do')] + x[2:-1]
-    return s:lambda(x[1], form, envs)
+    return s:lambda(x[1], form, ns, envs)
 
   elseif timl#symbol('let') is x[0]
     let env = {}
