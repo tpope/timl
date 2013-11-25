@@ -321,6 +321,10 @@ function! timl#set_bang(envs, sym, val, ...)
     return val
 endfunction
 
+if !exists('g:timl#core#_STAR_ns_STAR_')
+  let g:timl#core#_STAR_ns_STAR_ = 'user'
+endif
+
 function! timl#eval(x, ...) abort
   let envs = ['user', 'timl#core']
   if a:0 && type(a:1) == type([])
@@ -329,19 +333,24 @@ function! timl#eval(x, ...) abort
     let envs[0] = a:1
   endif
 
-  return s:eval(a:x, envs)
+  let i = 0
+  while i < len(envs) && type(envs[i]) != type('')
+    let i += 1
+  endwhile
+  let old_ns = get(g:, 'timl#core#_STAR_ns_STAR_', 'user')
+  try
+    let g:timl#core#_STAR_ns_STAR_ = envs[i]
+    return s:eval(a:x, envs)
+  finally
+    let g:timl#core#_STAR_ns_STAR_ = old_ns
+  endtry
 endfunction
 
 function! s:eval(x, envs) abort
   let x = a:x
   let envs = a:envs
 
-  let i = 0
-  while i < len(envs) && type(envs[i]) != type('')
-    let i += 1
-  endwhile
-  let ns = envs[i]
-  let g:timl#core#_STAR_ns_STAR_ = ns
+  let ns = g:timl#core#_STAR_ns_STAR_
 
   if timl#symbol_p(x)
     return timl#lookup(envs, x)
