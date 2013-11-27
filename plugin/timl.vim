@@ -14,12 +14,22 @@ augroup timl
   autocmd!
   autocmd BufNewFile,BufReadPost *.tim set filetype=timl
   autocmd FileType timl command! -buffer -bar Wepl :update|source %|TLrepl
+  autocmd FileType * call s:load_filetype(expand('<amatch>'))
   autocmd SourceCmd *.tim call timl#source_file(expand("<amatch>"))
   autocmd FuncUndefined *#* call s:autoload(expand('<amatch>'))
 augroup END
 
 command! -bar -nargs=? TLrepl :call s:repl(<f-args>)
-command! -bar -nargs=1 -complete=expression TLinspect :echo timl#pr_str(<args>)
+command! -nargs=1 -complete=expression TLinspect :echo timl#pr_str(<args>)
+
+function! s:load_filetype(ft)
+  let ft = split(a:ft)[0]
+  for kind in ['ftplugin', 'indent']
+    for file in findfile(kind.'/'.ft.'.tim', &rtp, -1)
+      call timl#source_file(file, kind.'#'.ft)
+    endfor
+  endfor
+endfunction
 
 if !exists('g:timl#requires')
   let g:timl#requires = {}

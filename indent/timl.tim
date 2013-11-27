@@ -1,0 +1,4 @@
+(include-guard b:did-indent)
+(setq b:undo-indent "setlocal ai< si< lisp< lispwords<")
+
+(setlocal ai si lisp lispwords+="loop,if-let")
