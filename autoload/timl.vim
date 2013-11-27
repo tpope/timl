@@ -200,15 +200,22 @@ augroup END
 
 let g:user#_STAR_uses_STAR_ = [timl#symbol('timl#repl'), timl#symbol('timl#core')]
 
+function! s:lencompare(a, b)
+  return len(a:b) - len(a:b)
+endfunction
+
 function! timl#ns_for_file(file) abort
   let file = fnamemodify(a:file, ':p')
-  let slash = exists('+shellslash') && &shellslash ? '\' : '/'
-  for dir in split(&runtimepath, ',')
-    if file[0 : len(dir)+9] ==# dir.slash.'autoload'.slash
-      return tr(fnamemodify(file[len(dir)+10 : -1], ':r:r'), '\/_', '##-')
-    endif
+  let candidates = []
+  for glob in split(&runtimepath, ',')
+    let candidates += filter(split(glob(glob), "\n"), 'file[0 : len(v:val)-1] ==# v:val && file[len(v:val)] =~# "[\\/]"')
   endfor
-  return 'user'
+  if empty(candidates)
+    return 'user'
+  endif
+  let dir = sort(candidates, s:function('s:lencompare'))[-1]
+  let path = file[len(dir)+1 : -1]
+  return substitute(tr(fnamemodify(path, ':r:r'), '\/_', '##-'), '^\%(autoload\|plugin\|test\)#', '', '')
 endfunction
 
 function! timl#lookup(envs, sym) abort
