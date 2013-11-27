@@ -413,6 +413,10 @@ function! timl#setq(envs, sym, val, ...)
   return val
 endfunction
 
+function! timl#build_exception(exception, throwpoint)
+  return {"exception": a:exception, "throwpoint": a:throwpoint}
+endfunction
+
 if !exists('g:timl#core#_STAR_ns_STAR_')
   let g:timl#core#_STAR_ns_STAR_ = timl#symbol('user')
 endif
@@ -552,7 +556,16 @@ function! s:eval(x, envs) abort
     let finallies = []
     for _.form in x[1:-1]
       if type(_.form) == type([]) && get(_.form, 0) is timl#symbol('catch')
-        call add(catches, _.form[1:-1])
+        let _.pattern = s:eval(get(_.form, 1, g:timl#nil), envs)
+        if type(_.pattern) ==# type(0)
+          let _.pattern = '^Vim\%((\a\+)\)\=:E' . _.pattern
+        elseif type(_.pattern) !=# type('')
+          throw 'timl.vim: first catch argument must be a string'
+        endif
+        if !timl#symbolp(get(_.form, 2, g:timl#nil))
+          throw 'timl.vim: second catch argument must be a symbol'
+        endif
+        call add(catches, [_.pattern] + _.form[2:-1])
       elseif type(_.form) == type([]) && get(_.form, 0) is timl#symbol('finally')
         call extend(finallies, _.form[1:-1])
       else
@@ -572,7 +585,11 @@ function! s:eval(x, envs) abort
       catch
         for catch in catches
           if v:exception =~# catch[0]
-            return get(map(catch[1:-1], 's:eval(v:val, envs)'), -1, g:timl#nil)
+            let env = {}
+            if catch[2] isnot# timl#symbol('_')
+              let env[s:string(catch[2])] = timl#build_exception(v:exception, v:throwpoint)
+            endif
+            return get(map(catch[2:-1], 's:eval(v:val, [env] + envs)'), -1, g:timl#nil)
           endif
         endfor
         throw v:exception =~# '^Vim' ? 'T'.v:exception[1:-1] : v:exception

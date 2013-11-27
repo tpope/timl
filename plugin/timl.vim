@@ -38,9 +38,10 @@ function! s:autoload(function) abort
   endif
 endfunction
 
+let s:repl_env = {'*e': g:timl#nil, '*1': g:timl#nil}
+
 function! s:repl(...)
   let cmpl = 'customlist,timl#reflect#input_complete'
-  let env = {'*e': g:timl#nil, '*1': g:timl#nil}
   let more = &more
   try
     set nomore
@@ -59,12 +60,12 @@ function! s:repl(...)
             echo "\n"
           endtry
         endwhile
-        let env['*1'] = timl#eval([timl#symbol('do')] + read, [env, g:timl#core#_STAR_ns_STAR_[0], 'timl#repl'])
-        echo timl#pr_str(env['*1'])
+        let s:repl_env['*1'] = timl#eval([timl#symbol('do')] + read, [s:repl_env, g:timl#core#_STAR_ns_STAR_[0], 'timl#repl'])
+        echo timl#pr_str(s:repl_env['*1'])
       catch /^timl#repl: EXIT/
         return ''
       catch
-        let env['*e'] = {'exception': v:exception, 'throwpoint': v:throwpoint}
+        let s:repl_env['*e'] = timl#build_exception(v:exception, v:throwpoint)
         echohl ErrorMSG
         echo v:exception
         echohl NONE
