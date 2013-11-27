@@ -38,7 +38,9 @@ function! s:autoload(function) abort
   endif
 endfunction
 
-let s:repl_env = {'*e': g:timl#nil, '*1': g:timl#nil}
+if !exists('s:repl_env')
+  let s:repl_env = {'*e': g:timl#nil, '*1': g:timl#nil}
+endif
 
 function! s:repl(...)
   let cmpl = 'customlist,timl#reflect#input_complete'

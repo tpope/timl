@@ -276,6 +276,8 @@ function! timl#function(sym, ...) abort
   let munged = timl#munge(demunged)
   if demunged =~# '^\d\+$' && exists('*{'.demunged.'}')
     return function('{'.demunged.'}')
+  elseif demunged =~# '^<' && exists('*'.demunged)
+    return function(demunged)
   elseif munged =~# '^f:' && exists('*'.munged[2:-1])
     return function(munged[2:-1])
   elseif demunged =~# '^\w:' && exists(munged) && type(eval(munged)) == t
@@ -414,8 +416,20 @@ function! timl#setq(envs, sym, val, ...)
 endfunction
 
 function! timl#build_exception(exception, throwpoint)
-  return {"exception": a:exception, "throwpoint": a:throwpoint}
+  let dict = {"exception": a:exception}
+  let dict.line = +matchstr(a:throwpoint, '\d\+$')
+  if a:throwpoint !~# '^function '
+    let dict.file = matchstr(a:throwpoint, '^.\{-\}\ze\.\.')
+  endif
+  let dict.functions = map(split(matchstr(a:throwpoint, '\%( \|\.\.\)\zs.*\ze,'), '\.\.'), 'function(v:val =~# "^\\d" ? "{" . v:val . "}" : v:val)')
+  return dict
 endfunction
+
+try
+  call timl#build_exception(1, 2)
+catch
+  echoerr v:throwpoint
+endtry
 
 if !exists('g:timl#core#_STAR_ns_STAR_')
   let g:timl#core#_STAR_ns_STAR_ = timl#symbol('user')
@@ -742,7 +756,7 @@ function! timl#pr_str(x)
     let name = join([a:x])
     if name =~# '^{.*}$'
       return "#'" . name[1:-2]
-    elseif name =~# '#' || name =~# '^\d'
+    elseif name =~# '#' || name =~# '^[[:digit:]<]'
       return "#'" . timl#demunge(name)
     else
       return "#'" . 'f:' . timl#demunge(name)
