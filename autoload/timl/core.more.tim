@@ -20,6 +20,14 @@
 (defun butlast (xs) (sublist xs 0 -2))
 (defun get-in (m ks) (reduce get m ks))
 
+(defun partial (f ...)
+  (let ((args ...))
+    (lambda (...) (apply f (append args ...)))))
+(defun compose (f ...)
+  (if-let (fns ...)
+    (lambda (...) (f (apply (apply compose fns) ...)))
+    f))
+
 (defun sorter (>)
   (lambda (x y)
     (if (> x y)
