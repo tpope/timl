@@ -400,6 +400,9 @@ function! s:eval(x, envs) abort
   if timl#symbolp(x)
     return timl#lookup(envs, x)
 
+  elseif type(x) == type({})
+    return map(copy(x),  's:eval(v:val, envs)')
+
   elseif type(x) != type([]) || empty(x)
     return x
 

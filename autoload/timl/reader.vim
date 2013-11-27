@@ -65,6 +65,17 @@ function! s:read(port, ...) abort
     if token ==# ')'
       return list
     endif
+  elseif token ==# '#dict'
+    let list = s:read(port)
+    if type(list) !=# type([]) || len(list) % 2 != 0
+      let error = 'timl.vim: invalid dict literal'
+    else
+      let dict = {}
+      for i in range(0, len(list)-1, 2)
+        let dict[type(list[i]) == type('') ? list[i] : join(list[i])] = list[i+1]
+      endfor
+      return dict
+    endif
   elseif token ==# '{'
     let dict = {}
     let token = s:read_token(port)
@@ -162,6 +173,7 @@ command! -nargs=1 TimLRAssert
 TimLRAssert timl#reader#read_string('foo') ==# timl#symbol('foo')
 TimLRAssert timl#reader#read_string('":)"') ==# ':)'
 TimLRAssert timl#reader#read_string('(car (list 1 2))') ==# [timl#symbol('car'), [timl#symbol('list'), 1, 2]]
+TimLRAssert timl#reader#read_string('#dict("a" 1 "b" 2)') ==# {"a": 1, "b": 2}
 TimLRAssert timl#reader#read_string('{"a" 1 "b" 2}') ==# {"a": 1, "b": 2}
 TimLRAssert timl#reader#read_string("(1)\n; hi\n") ==# [1]
 TimLRAssert timl#reader#read_string('({})') ==# [{}]

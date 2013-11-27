@@ -231,7 +231,7 @@ function! timl#core#dict(...) abort
   endif
   let dict = {}
   for i in range(0, len(list)-1, 2)
-    let dict[list[i]] = list[i+1]
+    let dict[timl#core#string(list[i])] = list[i+1]
   endfor
   return dict
 endfunction
