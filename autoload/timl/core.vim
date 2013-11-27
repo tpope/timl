@@ -48,6 +48,25 @@ function! timl#core#print(x) abort
   echo a:x
 endfunction
 
+function! timl#core#apply(a:f, x, ...) abort
+  let args = [a:x] + a:000
+  if type(args[-1]) != type([])
+    throw 'timl.vim: last argument to apply must be a list'
+  endif
+  let args = args[0:-2] + args[-1]
+  if type(a:f) == type({})
+    if empty(args)
+      throw 'timl.vim: applying dictionary requires function'
+    endif
+    let dict = a:f
+    let f = remove(args, 0)
+  else
+    let dict = {}
+    let f = a:f
+  endif
+  return call(f, args, dict)
+endfunction
+
 " }}}1
 " Section: Operators {{{
 
