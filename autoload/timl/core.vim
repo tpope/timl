@@ -277,8 +277,8 @@ endfunction
 " Section: Namespaces {{{1
 
 function! timl#core#in_ns(ns)
-  let g:timl#core#_STAR_ns_STAR_ = timl#core#string(a:ns)
-  return timl#symbol(a:ns)
+  let g:timl#core#_STAR_ns_STAR_ = timl#symbol(a:ns)
+  return g:timl#core#_STAR_ns_STAR_
 endfunction
 
 function! timl#core#use(...)

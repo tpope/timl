@@ -44,8 +44,8 @@ function! s:repl(...)
   let more = &more
   try
     set nomore
-    let g:timl#core#_STAR_ns_STAR_ = a:0 ? a:1 : timl#ns_for_file(expand('%:p'))
-    let input = input(g:timl#core#_STAR_ns_STAR_.'=> ', '', cmpl)
+    let g:timl#core#_STAR_ns_STAR_ = timl#symbol(a:0 ? a:1 : timl#ns_for_file(expand('%:p')))
+    let input = input(g:timl#core#_STAR_ns_STAR_[0].'=> ', '', cmpl)
     while !empty(input)
       echo "\n"
       try
@@ -54,12 +54,12 @@ function! s:repl(...)
             let read = timl#reader#read_string_all(input)
             break
           catch /^timl.vim: unexpected EOF/
-            let space = repeat(' ', len(g:timl#core#_STAR_ns_STAR_)-2)
+            let space = repeat(' ', len(g:timl#core#_STAR_ns_STAR_[0])-2)
             let input .= "\n" . input(space.'#_=> ', '', cmpl)
             echo "\n"
           endtry
         endwhile
-        let env['*1'] = timl#eval([timl#symbol('do')] + read, [env, g:timl#core#_STAR_ns_STAR_, 'timl#repl'])
+        let env['*1'] = timl#eval([timl#symbol('do')] + read, [env, g:timl#core#_STAR_ns_STAR_[0], 'timl#repl'])
         echo timl#pr_str(env['*1'])
       catch /^timl#repl: EXIT/
         return ''
@@ -69,7 +69,7 @@ function! s:repl(...)
         echo v:exception
         echohl NONE
       endtry
-      let input = input(g:timl#core#_STAR_ns_STAR_.'=> ', '', cmpl)
+      let input = input(g:timl#core#_STAR_ns_STAR_[0].'=> ', '', cmpl)
     endwhile
   finally
     let &more = more

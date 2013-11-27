@@ -365,7 +365,7 @@ function! s:file4ns(ns) abort
   if !exists('s:tempdir')
     let s:tempdir = tempname()
   endif
-  let file = s:tempdir . '/' . tr(a:ns, '#', '/') . '.vim'
+  let file = s:tempdir . '/' . tr(s:string(a:ns), '#', '/') . '.vim'
   if !isdirectory(fnamemodify(file, ':h'))
     call mkdir(fnamemodify(file, ':h'), 'p')
   endif
@@ -414,18 +414,18 @@ function! timl#setq(envs, sym, val, ...)
 endfunction
 
 if !exists('g:timl#core#_STAR_ns_STAR_')
-  let g:timl#core#_STAR_ns_STAR_ = 'user'
+  let g:timl#core#_STAR_ns_STAR_ = timl#symbol('user')
 endif
 
 function! timl#eval(x, ...) abort
-  let envs = [g:timl#core#_STAR_ns_STAR_]
+  let envs = [g:timl#core#_STAR_ns_STAR_[0]]
   if a:0 && timl#symbolp(a:1)
     let envs[0] = a:1[0]
   elseif a:0 && type(a:1) == type([])
     let envs = a:1
   elseif a:0
     let envs[0] = a:1
-    let g:timl#core#_STAR_ns_STAR_ = a:1
+    let g:timl#core#_STAR_ns_STAR_ = timl#symbol(a:1)
   endif
 
   return s:eval(a:x, envs)
@@ -478,8 +478,8 @@ function! s:eval(x, envs) abort
       throw 'timl.vim:E119: defun requires at least 3 arguments'
     endif
     let var = s:string(x[1])
-    let name = timl#munge(ns.'#'.var)
-    let file = s:file4ns(ns)
+    let name = timl#munge(ns[0].'#'.var)
+    let file = s:file4ns(ns[0])
     call writefile(split(s:build_function(name, x[2]),"\n"), file)
     execute 'source '.file
     let macro = timl#symbol('defmacro') is x[0]
@@ -502,7 +502,7 @@ function! s:eval(x, envs) abort
     endif
     let var = s:string(x[1])
     let Val = s:eval(x[2], envs)
-    let g:{timl#munge(ns.'#'.var)} = Val
+    let g:{timl#munge(ns[0].'#'.var)} = Val
     return Val
 
   elseif timl#symbol('lambda') is x[0] || timl#symbol("\u03bb") is x[0]
@@ -510,7 +510,7 @@ function! s:eval(x, envs) abort
       throw 'timl.vim:E119: lambda requires at least 2 arguments'
     endif
     let form = len(x) == 3 ? x[2] : [timl#symbol('do')] + x[2:-1]
-    return s:lambda(x[1], form, ns, envs)
+    return s:lambda(x[1], form, ns[0], envs)
 
   elseif timl#symbol('recur') is x[0]
     return [g:timl#recur_token] + map(x[1:-1], 's:eval(v:val, envs)')
@@ -629,7 +629,7 @@ function! timl#source_file(filename, ...)
   let old_ns = g:timl#core#_STAR_ns_STAR_
   try
     let ns = a:0 ? a:1 : timl#ns_for_file(fnamemodify(a:filename, ':p'))
-    let g:timl#core#_STAR_ns_STAR_ = ns
+    let g:timl#core#_STAR_ns_STAR_ = timl#symbol(ns)
     for expr in timl#reader#read_file(a:filename)
       call timl#eval(expr, ns)
     endfor
@@ -748,7 +748,7 @@ command! -nargs=1 TimLAssert
       \     echomsg "Failed: ".<q-args> |
       \   endif |
       \ catch /.*/ |
-      \  echomsg "Error:  ".<q-args>." (".v:exception.")" |
+      \  echomsg "Error:  ".<q-args>." (".v:exception.")" . v:throwpoint |
       \ endtry
 
 TimLAssert timl#re('(+ 1 2 3)') == 6
