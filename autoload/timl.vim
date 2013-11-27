@@ -163,7 +163,6 @@ function! timl#l2env(f, args) abort
     endif
     let i += 1
   endfor
-  TLinspect env
   return env
 endfunction
 
