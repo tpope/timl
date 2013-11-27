@@ -104,7 +104,7 @@ unlet! s:key
 
 function! timl#munge(var) abort
   let var = s:string(a:var)
-  return tr(substitute(var, '[^[:alnum:]#_-]', '\=get(s:munge,submatch(0), submatch(0))', 'g'), '-', '_')
+  return tr(substitute(var, '[^[:alnum:]:#_-]', '\=get(s:munge,submatch(0), submatch(0))', 'g'), '-', '_')
 endfunction
 
 function! timl#demunge(var) abort
@@ -268,6 +268,51 @@ function! timl#find(envs, sym) abort
   throw 'timl.vim: ' . sym . ' undefined'
 endfunction
 
+function! timl#function(sym, ...) abort
+  let t = type(function('tr'))
+  if type(a:sym) == t
+    return a:sym
+  endif
+  let demunged = type(a:sym) == type([]) ? a:sym[0] : a:sym
+  let munged = timl#munge(demunged)
+  if demunged =~# '^\d\+$' && exists('*{'.demunged.'}')
+    return function('{'.demunged.'}')
+  elseif munged =~# '^f:' && exists('*'.munged[2:-1])
+    return function(munged[2:-1])
+  elseif demunged =~# '^\w:' && exists(munged) && type(eval(munged)) == t
+    return eval(dunged)
+  elseif demunged =~# '#'
+    call timl#autoload(munged)
+    if exists('*'.demunged)
+      return function(demunged)
+    elseif exists('g:'.demunged) && type(eval(demunged)) == t
+      return g:{demunged}
+    else
+      throw 'timl.vim: no such function ' . demunged
+    endif
+  endif
+  for env in a:0 ? a:1 : []
+    if type(env) == type({}) && has_key(env, demunged) && type(env[demunged]) == t
+      return env[demunged]
+    elseif type(env) == type('')
+      let target = timl#munge(env.'#'.demunged)
+      call timl#autoload(env.'#'.demunged)
+      if exists('*'.target)
+        return function(target)
+      endif
+      for use in get(g:, timl#munge(env.'#*uses*'), [timl#symbol('timl#core')])
+        let target = timl#munge(s:string(use).'#'.demunged)
+        call timl#autoload(target)
+        if exists('*'.target)
+          return function(target)
+        endif
+      endfor
+    endif
+    unlet! env
+  endfor
+  throw 'timl.vim: no such function ' . demunged
+endfunction
+
 function! timl#qualify(envs, sym)
   let sym = type(a:sym) == type([]) ? a:sym[0] : a:sym
   try
@@ -406,6 +451,9 @@ function! s:eval(x, envs) abort
   elseif type(x) != type([]) || empty(x)
     return x
 
+  elseif timl#symbol('function') is x[0]
+    return timl#function(x[1], envs)
+
   elseif timl#symbol('quote') is x[0]
     return get(x, 1, g:timl#nil)
 
@@ -542,6 +590,7 @@ function! s:eval(x, envs) abort
   elseif timl#symbolp(x[0]) && has_key(s:macros, join([timl#lookup(envs, x[0])]))
     let x2 = call(timl#lookup(envs, x[0]), x[1:-1])
     return s:eval(x2, envs)
+
   else
     let evaled = map(copy(x), 's:eval(v:val, envs)')
     if type(evaled[0]) == type({})
@@ -669,7 +718,14 @@ function! timl#pr_str(x)
   elseif type(a:x) == type('')
     return '"'.substitute(a:x, "[\001-\037\"\\\\]", '\=get(s:escapes, submatch(0), printf("\\%03o", char2nr(submatch(0))))', 'g').'"'
   elseif type(a:x) == type(function('tr'))
-    return '#function:'.join([a:x])
+    let name = join([a:x])
+    if name =~# '^{.*}$'
+      return "#'" . name[1:-2]
+    elseif name =~# '#' || name =~# '^\d'
+      return "#'" . timl#demunge(name)
+    else
+      return "#'" . 'f:' . timl#demunge(name)
+    endif
   else
     return string(a:x)
   endif
