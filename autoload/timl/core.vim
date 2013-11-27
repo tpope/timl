@@ -44,10 +44,6 @@ function! timl#core#identity(x) abort
   return a:x
 endfunction
 
-function! timl#core#print(x) abort
-  echo a:x
-endfunction
-
 function! timl#core#apply(f, x, ...) abort
   let args = [a:x] + a:000
   if type(args[-1]) != type([])
@@ -65,6 +61,19 @@ function! timl#core#apply(f, x, ...) abort
     let F = a:f
   endif
   return call(F, args, dict)
+endfunction
+
+" }}}1
+" Section: IO {{{1
+
+function! timl#core#echo(...) abort
+  echo call('timl#core#string', a:000, {})
+  return g:timl#nil
+endfunction
+
+function! timl#core#echomsg(...) abort
+  echomsg call('timl#core#string', a:000, {})
+  return g:timl#nil
 endfunction
 
 " }}}1

@@ -7,7 +7,7 @@
     `(in-ns ',ns)))
 
 (defun pr-str (...) (f:join (map timl#pr-str ...)))
-(defun pr (...) (print (apply pr-str ...)))
+(defun pr (...) (echo (apply pr-str ...)))
 
 (defmacro loop (bindings ...)
  `((lambda ,(map first bindings) ,@...) ,@(map last bindings)))

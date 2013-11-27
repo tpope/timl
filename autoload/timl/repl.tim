@@ -1,9 +1,21 @@
+(defun impl (fn)
+  (if fn
+    (or (get timl#lambdas (string fn))
+        (try
+          (let ((output     (capture (:silent "verbose function" (f:join (list fn)))))
+                (raw        (f:split output "\n"))
+                (file       (f:expand (f:matchstr (second raw) "\\S\\+$")))
+                (definition (first raw))
+                (name       ((compose symbol timl#demunge) (f:matchstr definition " \\zs\\S\\+\\ze(")))
+                (arglist    (map (compose symbol timl#demunge) (f:split (f:matchstr definition "(\\zs.*\\ze)") ", "))))
+            (filter (compose not nil? last) (dict "name" name "arglist" arglist "file" file)))
+          (catch 123 e (dict))))))
+
 (defun source (fn)
-  (if-let (impl (get timl#lambdas (string fn) nil))
-          (list 'lambda
-                (get impl "arglist")
-                (get impl "form"))
-          (capture (:silent "function" (string fn)))))
+  (if-let (impl (impl fn))
+    (list 'lambda
+          (get impl "arglist" '...)
+          (get impl "form" '...))))
 
 (defun doc (fn)
   (:silent "help" (string (f:substitute (string fn) "^f:" "" "") "("))

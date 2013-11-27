@@ -8,7 +8,7 @@ let g:autoloaded_timl = 1
 " Section: Misc {{{1
 
 function! s:funcname(name) abort
-  return substitute(a:name,'^s:',matchstr(expand('<sfile>'), '<SNR>\d\+_'),'')
+  return substitute(a:name,'^s:',matchstr(expand('<sfile>'), '.*\zs<SNR>\d\+_'),'')
 endfunction
 
 function! s:function(name) abort
