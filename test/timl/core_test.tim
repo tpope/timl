@@ -1,0 +1,9 @@
+(use 'timl#test)
+
+(let ((sentinel (dict)))
+  (assert (eq? sentinel ((constantly sentinel)))))
+
+(let ((sentinel (dict)))
+  (assert (eq? sentinel ((constantly 1)))))
+
+(assert (= "42" (capture (:silent "echo" 42))))
