@@ -6,13 +6,13 @@
       `(setq ,(f:timl#symbol (string ns "#*uses*")) (list 'timl#core)))
     `(in-ns ',ns)))
 
-(defmacro loop (bindings ...)
- `((lambda ,(map first bindings) ,@...) ,@(map last bindings)))
 (defun pr-str (...) (f:join (map timl#pr-str ...)))
 (defun pr (...) (print (apply pr-str ...)))
+
+(defmacro loop (bindings ...)
+ `((lambda ,(map first bindings) ,@...) ,@(map last bindings)))
 (defun 1+ (n) (+ n 1))
 (defun 1- (n) (- n 1))
-(defun constantly (x) (lambda (...) x))
 (defun reverse (xs) (f:reverse (f:copy xs)))
 (defun not (x) (if x 0 1))
 (defun second (xs) (get xs 1 nil))
@@ -20,6 +20,10 @@
 (defun butlast (xs) (sublist xs 0 -2))
 (defun get-in (m ks) (reduce get m ks))
 
+(defun read-string (string) (timl#reader#read-string string))
+(defun eval (form) (timl#eval form))
+
+(defun constantly (x) (lambda (...) x))
 (defun partial (f ...)
   (let ((args ...))
     (lambda (...) (apply f (append args ...)))))

@@ -283,11 +283,11 @@ function! timl#function(sym, ...) abort
   elseif demunged =~# '^\w:' && exists(munged) && type(eval(munged)) == t
     return eval(dunged)
   elseif demunged =~# '#'
-    call timl#autoload(munged)
-    if exists('*'.demunged)
-      return function(demunged)
-    elseif exists('g:'.demunged) && type(eval(demunged)) == t
-      return g:{demunged}
+    call timl#autoload(demunged)
+    if exists('*'.munged)
+      return function(munged)
+    elseif exists('g:'.munged) && type(eval(munged)) == t
+      return g:{munged}
     else
       throw 'timl.vim: no such function ' . demunged
     endif
