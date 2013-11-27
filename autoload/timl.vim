@@ -428,7 +428,7 @@ function! timl#build_exception(exception, throwpoint)
   if a:throwpoint !~# '^function '
     let dict.file = matchstr(a:throwpoint, '^.\{-\}\ze\.\.')
   endif
-  let dict.functions = map(split(matchstr(a:throwpoint, '\%( \|\.\.\)\zs.*\ze,'), '\.\.'), 'function(v:val =~# "^\\d" ? "{" . v:val . "}" : v:val)')
+  let dict.functions = map(split(matchstr(a:throwpoint, '\%( \|\.\.\)\zs.*\ze,'), '\.\.'), 'timl#demunge(v:val)')
   return dict
 endfunction
 
