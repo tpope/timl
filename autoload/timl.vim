@@ -539,7 +539,13 @@ function! s:eval(x, envs) abort
   elseif timl#symbol('let') is x[0]
     let env = {}
     let _ = {}
-    for [_.key, _.form] in x[1]
+    for _.let in x[1]
+      if timl#symbolp(_.let)
+        throw "timl.vim: let accepts a list of lists"
+      elseif len(_.let) != 2
+        throw "timl.vim: invalid binding ".timl#pr_str(_.let)
+      endif
+      let [_.key, _.form] = _.let
       let _.val = s:eval(_.form, [env] + envs)
       if _.key is timl#symbolp('_') || _.key is g:timl#nil
         " ignore
