@@ -1,1 +1,4 @@
-(defun fact (n) (if (<= n 1) 1 (* n (fact (1- n)))))
+(defun fact (x)
+  (loop ((n x)
+         (f 1))
+        (if (<= n 1) f (recur (1- n) (* f n)))))

@@ -126,7 +126,7 @@ function! timl#a2env(f, a) abort
         for i in range(len(keys))
           if type(_.V) == type([])
             let env[keys[i]] = get(_.V, i, g:timl#nil)
-          elseif type(_.V) == type([])
+          elseif type(_.V) == type({})
             let env[keys[i]] = get(_.V, keys[i], g:timl#nil)
           endif
         endfor
@@ -135,6 +135,35 @@ function! timl#a2env(f, a) abort
       endif
     endif
   endfor
+  return env
+endfunction
+
+function! timl#l2env(f, args) abort
+  let args = a:args
+  let env = {}
+  let _ = {}
+  let i = 0
+  for _.param in a:f.arglist
+    if i >= len(args)
+      throw 'timl.vim: arity error'
+    endif
+    if timl#symbolp(_.param)
+      let env[_.param[0]] = args[i]
+    elseif type(_.param) == type([])
+      for j in range(len(_.param))
+        let key = s:string(_.param[j])
+        if type(args[i]) == type([])
+          let env[key] = get(args[i], j, g:timl#nil)
+        elseif type(args[i]) == type({})
+          let env[key] = get(args[i], key, g:timl#nil)
+        endif
+      endfor
+    else
+      throw 'timl.vim: unsupported param '.string(param)
+    endif
+    let i += 1
+  endfor
+  TLinspect env
   return env
 endfunction
 
@@ -264,7 +293,13 @@ function! s:build_function(name, arglist) abort
         \ . "let name = matchstr(expand('<sfile>'), '.*\\%(\\.\\.\\| \\)\\zs.*')\n"
         \ . "let fn = g:timl#lambdas[name]\n"
         \ . "let env = [timl#a2env(fn, a:)] + fn.env\n"
-        \ . "return timl#eval(fn.form, env)\n"
+        \ . "let _ = {}\n"
+        \ . "let _.result = timl#eval(fn.form, env)\n"
+        \ . "while type(_.result) == type([]) && get(_.result, 0) is# g:timl#recur_token\n"
+        \ . "let env = [timl#l2env(fn, _.result[1:-1])] + fn.env\n"
+        \ . "let _.result = timl#eval(fn.form, env)\n"
+        \ . "endwhile\n"
+        \ . "return _.result\n"
         \ . "endfunction"
 endfunction
 
@@ -352,6 +387,10 @@ function! timl#eval(x, ...) abort
   return s:eval(a:x, envs)
 endfunction
 
+if !exists('g:timl#recur_token')
+  let g:timl#recur_token = s:persistent_list('recur token')
+endif
+
 function! s:eval(x, envs) abort
   let x = a:x
   let envs = a:envs
@@ -422,6 +461,12 @@ function! s:eval(x, envs) abort
     endif
     let form = len(x) == 3 ? x[2] : [timl#symbol('do')] + x[2:-1]
     return s:lambda(x[1], form, ns, envs)
+
+  elseif timl#symbol('recur') is x[0]
+    return [g:timl#recur_token] + map(x[1:-1], 's:eval(v:val, envs)')
+
+  elseif x[0] is g:timl#recur_token
+    throw 'timl.vim: incorrect use of recur'
 
   elseif timl#symbol('let') is x[0]
     let env = {}
