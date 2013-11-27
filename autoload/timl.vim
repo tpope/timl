@@ -29,7 +29,7 @@ function! s:string(val) abort
   elseif type(a:val) == type('')
     return a:val
   elseif type(a:val) == type(function('tr'))
-    return join([a:val])
+    return substitute(join([a:val]), '[{}]', '', 'g')
   elseif type(a:val) == type([])
     return join(map(copy(a:val), 's:string(v:val)'), ',').','
   else

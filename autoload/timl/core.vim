@@ -32,7 +32,7 @@ function! timl#core#string(...) abort
     elseif type(_.x) == type('')
       let acc .= _.x
     elseif type(_.x) == type(function('tr'))
-      let acc .= join([_.x])
+      return substitute(join([_.x]), '[{}]', '', 'g')
     else
       let acc .= string(_.x)
     endif
