@@ -72,7 +72,7 @@ function! s:read(port, ...) abort
     else
       let dict = {}
       for i in range(0, len(list)-1, 2)
-        let dict[type(list[i]) == type('') ? list[i] : join(list[i])] = list[i+1]
+        let dict[type(list[i]) == type([]) ? join(list[i]) : list[i]] = list[i+1]
       endfor
       return dict
     endif
