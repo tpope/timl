@@ -1,4 +1,11 @@
 (defun fact (x)
   (loop ((n x)
          (f 1))
-        (if (<= n 1) f (recur (1- n) (* f n)))))
+    (if (<= n 1) f (recur (1- n) (* f n)))))
+
+(defun fib (n)
+  (first
+    (loop ((xs (list 1 0)))
+      (if (< (length xs) n)
+        (recur (cons (+ (first xs) (second xs)) xs))
+        xs))))
