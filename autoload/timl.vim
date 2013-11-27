@@ -592,7 +592,12 @@ function! s:eval(x, envs) abort
     return s:eval(x2, envs)
 
   else
-    let evaled = map(copy(x), 's:eval(v:val, envs)')
+    if timl#symbolp(x[0])
+      let evaled = [timl#function(x[0], envs)] +
+            \ map(x[1:-1], 's:eval(v:val, envs)')
+    else
+      let evaled = map(copy(x), 's:eval(v:val, envs)')
+    endif
     if type(evaled[0]) == type({})
       let dict = evaled[0]
       if type(evaled[1]) == type(function('tr'))
