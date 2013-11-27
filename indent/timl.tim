@@ -1,4 +1,4 @@
-(include-guard b:did-indent)
-(setq b:undo-indent "setlocal ai< si< lisp< lispwords<")
+(use 'timl#indent)
+(include-guard)
 
-(setlocal ai si lisp lispwords+="loop,if-let")
+(setlocal ai nosi lisp lispwords+="loop,if-let")

@@ -1,5 +1,5 @@
-(include-guard b:did-ftplugin)
-(setq b:undo-ftplugin "setlocal comments< define< formatoptions< omnifunc<")
+(use 'timl#ftplugin)
+(include-guard)
 
 (setlocal comments=":;,:;;;,:;;,sr:#|,mb:|,ex:|#")
 (setlocal define="^\\s*(def\\k*")

@@ -106,6 +106,13 @@
           (first more) (rest more))
         )) 1 -1))
 
+(defun extract-option-names (...)
+  (map (lambda (x) (f:matchstr (string x) "\\%(inv\\|no\\)\\=\\zs\\w\\+")) (filter symbol? ...)))
+
+(defun extract-option-restore (...)
+  (if-let (options (apply extract-option-names ...))
+    (string "setlocal " (f:join options "< ") "<")))
+
 (defmacro setlocal (...)
   `(:setlocal ,(apply build-option-string ...)))
 
