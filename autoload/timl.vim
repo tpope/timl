@@ -407,10 +407,15 @@ function! timl#setq(envs, target, val) abort
     endif
   elseif type(a:target) == type([])
     let target = map(copy(a:target), 's:eval(v:val, a:envs)')
-    if len(target) == 3 && type(target[0]) == type([]) && type(target[1]) == type(0) && type(target[2]) == type(0)
+    if len(target) == 3
+          \ && type(target[0]) == type([])
+          \ && type(target[1]) == type(0)
+          \ && type(target[2]) == type(0)
+          \ && type(val)       == type([])
       let target[0][target[1] : target[2]] = val
       return val
-    elseif len(target) == 2 && (type(target[0]) == type([]) || type(target[0]) == type({}))
+    elseif len(target) == 2
+          \ && (type(target[0]) == type([]) || type(target[0]) == type({}))
       let target[0][target[1]] = val
       return val
     endif
