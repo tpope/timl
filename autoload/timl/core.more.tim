@@ -69,6 +69,12 @@
       (if temp#
         (let ((,form temp#)) ,then) ,@...))))
 
+(defmacro cond (...)
+  (when ...
+    (list 'if (first (first ...))
+          (second (first ...))
+          (cons 'timl#core#cond (rest ...)))))
+
 (defmacro -> (x ...)
   (if ...
     (let ((form (first ...))
