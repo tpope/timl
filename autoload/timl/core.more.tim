@@ -73,7 +73,7 @@
   (when ...
     (list 'if (first (first ...))
           (second (first ...))
-          (cons 'timl#core#cond (rest ...)))))
+          (cons `cond (rest ...)))))
 
 (defmacro -> (x ...)
   (if ...
@@ -98,7 +98,7 @@
   (let ((str (timl#munge (string var))))
    `(if (f:exists ,str)
      (:finish)
-     (:let ,str " = 1"))))
+     (setq ,var 1))))
 
 (defun build-option-string (...)
   (sublist
