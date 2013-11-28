@@ -374,11 +374,23 @@ function! s:file4ns(ns) abort
   if !exists('s:tempdir')
     let s:tempdir = tempname()
   endif
-  let file = s:tempdir . '/' . tr(s:string(a:ns), '#', '/') . '.vim'
+  let file = s:tempdir . '/' . tr(timl#munge(a:ns), '#', '/') . '.vim'
   if !isdirectory(fnamemodify(file, ':h'))
     call mkdir(fnamemodify(file, ':h'), 'p')
   endif
   return file
+endfunction
+
+function! s:define_function(opts)
+  let munged = timl#munge(a:opts.name)
+  let file = s:file4ns(a:opts.ns)
+  call writefile(split(s:build_function(munged, a:opts.arglist),"\n"), file)
+  execute 'source '.file
+  let g:timl#lambdas[munged] = a:opts
+  if a:opts.macro
+    let s:macros[munged] = 1
+  endif
+  return function(munged)
 endfunction
 
 function! timl#setq(envs, sym, val, ...)
@@ -502,32 +514,55 @@ function! s:eval(x, envs) abort
     if len(x) < 4
       throw 'timl.vim:E119: defun requires at least 3 arguments'
     endif
-    let var = s:string(x[1])
-    let name = timl#munge(ns[0].'#'.var)
-    let file = s:file4ns(ns[0])
-    call writefile(split(s:build_function(name, x[2]),"\n"), file)
-    execute 'source '.file
     let macro = timl#symbol('defmacro') is x[0]
+    let var = s:string(x[1])
+    let name = timl#symbol(ns[0].'#'.var)
     let form = len(x) == 4 ? x[3] : [timl#symbol('do')] + x[3:-1]
-    let g:timl#lambdas[name] = {
+    return s:define_function({
           \ 'ns': ns,
           \ 'name': name,
           \ 'arglist': x[2],
           \ 'env': envs,
           \ 'form': form,
-          \ 'macro': macro}
-    if macro
-      let s:macros[name] = 1
-    endif
-    return function(name)
+          \ 'macro': macro})
 
   elseif timl#symbol('defvar') is x[0]
     if len(x) != 3
       throw 'timl.vim:E119: defvar requires 2 arguments'
     endif
     let var = s:string(x[1])
+    let name = ns[0].'#'.var
+    let global = timl#munge(name)
     let Val = s:eval(x[2], envs)
-    let g:{timl#munge(ns[0].'#'.var)} = Val
+    unlet! g:{global}
+    if exists('*'.global)
+      execute 'delfunction '.global
+    endif
+    if type(Val) == type(function('tr'))
+      let munged = timl#munge(Val)
+      if has_key(g:timl#lambdas, munged)
+        let lambda = g:timl#lambdas[munged]
+        call s:define_function({
+              \ 'ns': ns,
+              \ 'name': timl#symbol(name),
+              \ 'arglist': lambda.arglist,
+              \ 'env': lambda.env,
+              \ 'form': lambda.form,
+              \ 'macro': lambda.macro})
+      elseif munged =~# '^\d'
+        throw "timl.vim: can't define anonymous non-TimL function"
+      else
+
+        let file = s:file4ns(ns)
+        call writefile([
+              \ "function! ".global."(...) abort",
+              \ "return call(".string(munged).", a:000)",
+              \ "endfunction"], file)
+        execute 'source '.file
+      endif
+    else
+      let g:{global} = Val
+    endif
     return Val
 
   elseif timl#symbol('lambda') is x[0] || timl#symbol("\u03bb") is x[0]
