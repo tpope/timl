@@ -384,45 +384,38 @@ function! s:define_function(opts)
   return function(munged)
 endfunction
 
-function! timl#setq(envs, sym, val, ...)
-  let sym = timl#symbol(a:sym)[0]
-  let val = s:eval((a:0 ? a:000[-1] : a:val), a:envs)
-  let _ = {}
-  if sym =~# '^[&@]'
-    if type(val) == type([])
-      exe 'let ' . sym . ' = join(val, ",")'
-    else
-      exe 'let ' . sym . ' = val'
+function! timl#setq(envs, target, val) abort
+  let val = s:eval(a:val, a:envs)
+  if timl#symbolp(a:target)
+    let sym = timl#munge(a:target)
+    let _ = {}
+    if sym =~# '^[&@]'
+      if type(val) == type([])
+        exe 'let ' . sym . ' = join(val, ",")'
+      else
+        exe 'let ' . sym . ' = val'
+      endif
+      return val
+    elseif sym =~# '^[bwtgv]:[[:alpha:]][[:alnum:]_#]*$'
+      exe 'unlet! '.sym
+      exe 'let '.sym.' = val'
+      return val
+    elseif sym =~# '^[[:alpha:]][[:alnum:]_#]*$'
+      unlet! g:{sym}
+      let g:{sym} = val
+      return val
     endif
-    return val
-  elseif sym =~# '^[bwtgv]:'
-    let _.env = eval(sym[0:1])
-    let sym = timl#munge(sym[2:-1])
-  elseif sym =~# '#'
-    let _.env = matchstr(sym, '.*\ze#')
-    let sym = matchstr(sym, '.*#\zs.*')
-  else
-    let _.env = timl#find(a:envs, sym)
-  endif
-  let refs = ''
-  for _.form in (a:0 ? [a:val] : []) + a:000[0:-2]
-    let _.val = s:eval(_.form, a:envs)
-    if timl#symbolp(_.val) || type(_.val) == type('') || type(_.val) == type(0)
-      let refs .= '['.string(s:string(_.val)).']'
-    elseif type(_.val) == type([]) && len(_.val) == 2
-      let refs .= '['.string(_.val[0]).' : '.string(_.val[1]).']'
-    else
-      throw "timl.vim: invalid setq key ".string(_.val)
+  elseif type(a:target) == type([])
+    let target = map(copy(a:target), 's:eval(v:val, a:envs)')
+    if len(target) == 3 && type(target[0]) == type([]) && type(target[1]) == type(0) && type(target[2]) == type(0)
+      let target[0][target[1] : target[2]] = val
+      return val
+    elseif len(target) == 2 && (type(target[0]) == type([]) || type(target[0]) == type({}))
+      let target[0][target[1]] = val
+      return val
     endif
-  endfor
-  if type(_.env) == type({})
-    let pre = '_.env[sym]'
-  else
-    let pre = 'g:'.timl#munge(s:string(_.env).'#'.sym)
-    exe 'unlet! '.pre
   endif
-  execute 'let '.pre.refs.' = val'
-  return val
+  throw 'timl.vim: invalid assignment target ' . timl#pr_str(a:target)
 endfunction
 
 function! timl#build_exception(exception, throwpoint)
@@ -434,12 +427,6 @@ function! timl#build_exception(exception, throwpoint)
   let dict.functions = map(split(matchstr(a:throwpoint, '\%( \|\.\.\)\zs.*\ze,'), '\.\.'), 'timl#demunge(v:val)')
   return dict
 endfunction
-
-try
-  call timl#build_exception(1, 2)
-catch
-  echoerr v:throwpoint
-endtry
 
 if !exists('g:timl#core#_STAR_ns_STAR_')
   let g:timl#core#_STAR_ns_STAR_ = timl#symbol('user')
@@ -831,13 +818,11 @@ TimLAssert timl#re('(do 1 2)') ==# 2
 
 TimLAssert timl#re('(setq g:timl_setq {})') == {}
 TimLAssert g:timl_setq ==# {}
-TimLAssert timl#re('(setq g:timl_setq "key" (list "a" "b"))') == ["a", "b"]
+TimLAssert timl#re('(setq (g:timl_setq "key") (list "a" "b"))') == ["a", "b"]
 TimLAssert g:timl_setq == {"key": ["a", "b"]}
-TimLAssert timl#re('(setq g:timl_setq "key" ''(0 0) ''("c"))') == ["c"]
+TimLAssert timl#re('(setq ((get g:timl_setq "key") 0 0) (list "c"))') == ["c"]
 TimLAssert g:timl_setq == {"key": ["c", "b"]}
 unlet! g:timl_setq
-TimLAssert timl#re('(let ((a 1)) (let ((b 2)) (setq a 3)) a)') == 3
-TimLAssert timl#re('(let ((a 1)) (let ((a 2)) (setq a 3)) a)') == 1
 
 TimLAssert timl#re('(let (((j k) {"j" 1}) ((l m) (list 2))) (list j k l m))') == [1, g:timl#nil, 2, g:timl#nil]
 TimLAssert timl#re('(reduce (lambda (m (k v)) (append m (list v k))) ''() {"a" 1})') == [1, "a"]
