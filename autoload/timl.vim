@@ -387,13 +387,14 @@ endfunction
 function! timl#setq(envs, target, val) abort
   let val = s:eval(a:val, a:envs)
   if timl#symbolp(a:target)
-    let sym = timl#munge(a:target)
+    let unmunged = s:string(a:target)
+    let sym = timl#munge(unmunged)
     let _ = {}
-    if sym =~# '^[&@]'
+    if unmunged =~# '^@.$\|^&'
       if type(val) == type([])
-        exe 'let ' . sym . ' = join(val, ",")'
+        exe 'let ' . unmunged . ' = join(val, ",")'
       else
-        exe 'let ' . sym . ' = val'
+        exe 'let ' . unmunged . ' = val'
       endif
       return val
     elseif sym =~# '^[bwtgv]:[[:alpha:]][[:alnum:]_#]*$'
