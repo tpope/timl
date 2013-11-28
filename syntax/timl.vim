@@ -11,9 +11,11 @@ runtime! syntax/lisp.vim
 
 setl iskeyword+=?,!,#,$,%,&,*,+,.,/,<,>,:,~
 
-syn keyword timlSpecialForm quote quasiquote unquote unquote-splicing
-syn keyword timlSpecialForm if setq defvar defun defmacro lambda let do
+syn cluster lispBaseListCluster add=timlSpecialForm,timlString
 
+syn keyword timlSpecialForm quote quasiquote unquote unquote-splicing function
+syn keyword timlSpecialForm if setq defvar defun defmacro lambda let do
+syn keyword timlSpecialForm try catch finally
 syn region  timlString   start=+"+ skip=+\\\\\|\\"+ end=+"+
 syn match   timlComment  ";.*"
 
