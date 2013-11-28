@@ -333,12 +333,6 @@ function! timl#qualify(envs, sym)
   return a:sym
 endfunction
 
-if !exists('s:macros')
-  let s:macros = {}
-endif
-
-let g:timl#macros = s:macros
-
 function! s:build_function(name, arglist) abort
   let arglist = map(copy(a:arglist), 'v:val is timl#symbol("...") ? "..." : timl#munge(v:val)')
   let dict = {}
@@ -387,9 +381,6 @@ function! s:define_function(opts)
   call writefile(split(s:build_function(munged, a:opts.arglist),"\n"), file)
   execute 'source '.file
   let g:timl#lambdas[munged] = a:opts
-  if a:opts.macro
-    let s:macros[munged] = 1
-  endif
   return function(munged)
 endfunction
 
@@ -665,14 +656,13 @@ function! s:eval(x, envs) abort
     execute x[0][0] . ' ' . join(strings, ' ')
     return g:timl#nil
 
-  elseif timl#symbolp(x[0]) && has_key(s:macros, join([timl#lookup(envs, x[0])]))
-    let x2 = call(timl#lookup(envs, x[0]), x[1:-1])
-    return s:eval(x2, envs)
-
   else
     if timl#symbolp(x[0])
-      let evaled = [timl#function(x[0], envs)] +
-            \ map(x[1:-1], 's:eval(v:val, envs)')
+      let Fn = timl#function(x[0], envs)
+      if get(get(g:timl#lambdas, s:string(Fn), {}), 'macro')
+        return s:eval(call(Fn, x[1:-1], {"macro": 1}), envs)
+      endif
+      let evaled = [Fn] + map(x[1:-1], 's:eval(v:val, envs)')
     else
       let evaled = map(copy(x), 's:eval(v:val, envs)')
     endif
