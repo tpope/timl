@@ -288,7 +288,7 @@ function! timl#function(sym, ...) abort
   elseif munged =~# '^f:' && exists('*'.munged[2:-1])
     return function(munged[2:-1])
   elseif demunged =~# '^\w:' && exists(munged) && type(eval(munged)) == t
-    return eval(dunged)
+    return eval(demunged)
   elseif demunged =~# '#'
     call timl#autoload(demunged)
     if exists('*'.munged)
