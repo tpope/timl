@@ -19,8 +19,9 @@ augroup timl
   autocmd FuncUndefined *#* call s:autoload(expand('<amatch>'))
 augroup END
 
-command! -bar -nargs=? TLrepl :execute s:repl(<f-args>)
-command! -nargs=1 -complete=expression TLinspect :echo timl#pr_str(<args>)
+command! -bar -nargs=?                                             TLrepl :execute s:repl(<f-args>)
+command! -nargs=1 -complete=expression                          TLinspect :echo timl#pr_str(<args>)
+command! -nargs=1 -complete=customlist,timl#reflect#input_complete TLeval :echo timl#rep(<q-args>)
 
 function! s:load_filetype(ft) abort
   let ft = split(a:ft)[0]
