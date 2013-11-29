@@ -1,0 +1,144 @@
+*timl.txt*  TimL
+
+Author:  Tim Pope <http://tpo.pe/>
+Repo:    https://github.com/tpope/timl
+License: Same terms as Vim itself (see |license|)
+
+USAGE                                           *timl*
+
+TimL files have an extension of ".tim" and a |filetype| of "timl".  If they
+are placed in "autoload/" in 'runtimepath', Vim's |autoload| will load them
+just the same as ".vim" files.
+
+                                                *:TLrepl*
+:TLrepl [ns]            Start a REPL.
+
+:source {file}          Load a TimL file.
+
+:Wepl                   In a TimL file, write, source, and start a REPL in
+                        that namespace.
+
+SYNTAX                                          *timl-syntax*
+
+It's Lisp.
+
+Numbers ~
+Same as Vim. See |expr-number|.
+
+Strings ~
+Same as double quoted strings in vim.  See |expr-string|.  There are no single
+quoted strings.
+
+                                                *timl-nil*
+Nil ~
+VimL has no concept of nil, so this is actually just a particular empty list.
+
+                                                *timl-symbols*
+Symbols ~
+Any sequence of identifier characters that doesn't look like a number.
+Identifier characters include alphanumeris and the special characters
+"-_?!*+/<>". "#" is also allowed in the middle of a symbol to refer to
+namespaced functions. ":" is reserved for internal use and can be used to
+refer to Vim variables (|b:var,| |w:var|, |t:var|, |g:var|, |v:var|) or to
+global functions not in a namespace (f:tr refers to |tr()|).
+
+Lists ~
+Zero or more forms enclosed in parentheses.  Lists are just Vim |Lists|, not
+actual linked lists.
+
+Dictionaries ~
+Vim |Dictionaries| are printed as a flat list of keys and values preceded by
+"#dict".  Keys must be strings.  To create a dictionary, use
+|timl#core#dict()|.
+
+Quoting ~
+"'", "`", ",", and ",@" map to "quote", "quasiquote", "unquote", and
+"unquote-splicing".
+
+Comments ~
+Linewise comments with a ";". "#_" also comments out a single form.
+
+EVALUATION                                      *timl-evaluation*
+
+It's Lisp.
+
+Symbols evaluate to their value in lexical scope (from let or lambda) or the
+current namespace.  Symbols evaluating to special forms are handled as
+explained under |timl-special-forms|.
+
+Lists evaluate to a function call.  Dictionaries evaluate their
+values.  Everything else evaluates to itself.
+
+SPECIAL FORMS                                   *timl-special-forms*
+
+                                                *timl-if*
+(if {cond} {then} [{else}]) ~
+If {cond} is true, evaluate {then}, else evaluate {else}.  In a compromise
+between sanity and VimL compatibility (which lacks true Booleans), 0 and
+|empty()| expressions (including nil) are treated as false, and everything
+else is treated as true.
+
+                                                *timl-begin*
+(begin {form} ...) ~
+Evaluate a series of forms and return the result of the last one.
+
+                                                *timl-let*
+(let (({symbol} {value}) ...) {body} ...) ~
+Bind the given symbols lexically for the scope of the given body.
+
+                                                *timl-lambda*
+(lambda [{name}] ({param} ...) {body} ...) ~
+Create an anonymous function.
+
+                                                *timl-recur*
+In tail position, re-calls the current function or |timl#core#loop| construct
+with the given parameters.  See Clojure's documentation at
+http://clojure.org/special_forms#recur .
+
+                                                *timl-define*
+(define {var} {value}) ~
+(define {function} ({param} ...) {body} ...) ~
+Define a variable or function.
+
+                                                *timl-set!*
+(set! {var} {value}) ~
+Set a Vim variable, in a manner similar to |:let|.  |g:var|, |b:var|, |w:var|,
+|t:var|, |v:var|, |expr-option|, and |expr-register| are supported. >
+        (set! b:did_ftplugin 1)
+        (set! &shiftwidth 2)
+        (set! @@ "this is the unnamed register")
+<
+                                                *timl-quote*
+(quote {form}) ~
+'{form} ~
+Returns {form} unevaluated.
+
+                        *timl-quasiquote* *timl-unquote* *timl-unquote-splicing*
+(quasiquote {form}) ~
+`{form} ~
+Standard Lisp quasiquoting, with Clojure style namespace resolution.  Can
+contain unquote (",") and unquote-splicing (",@").
+
+                                        *timl-try* *timl-catch* *timl-finally*
+(try {body} ... (catch {pattern} {e} {body} ...) ... (finally {body} ...) ...) ~
+Wraps a set of forms in a |:try| block.  The {pattern} is a regexp to match
+the string exception as explained under |:catch|, or can also be a Vim error
+number.  You can access |v:exception| and |v:throwpoint| for information about
+the exception, or look in dictionary {e}.
+
+NAMESPACES                                      *timl-namespaces*
+
+Namespaces take the Clojure model and adapt it to fit the VimL |autoload|
+feature.
+>
+        (in-ns 'foo#bar)
+        (define baz 1)
+        (in-ns 'user)
+        foo#bar#baz    ; evaluates to 1
+        (use 'foo#bar)
+        baz            ; evaluates to 1
+<
+TimL files placed in the |autoload| directory will automatically be loaded in
+the correct namespace.
+
+ vim:tw=78:et:ft=help:norl:
