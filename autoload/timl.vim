@@ -200,6 +200,11 @@ augroup END
 
 let g:user#_STAR_uses_STAR_ = [timl#symbol('timl#repl'), timl#symbol('timl#core')]
 
+function! timl#call(Func, args, ...) abort
+  let dict = (a:0 && type(a:1) == type({})) ? a:1 : {'__fn__': a:Func}
+  return call(a:Func, a:args, dict)
+endfunction
+
 function! s:lencompare(a, b)
   return len(a:b) - len(a:b)
 endfunction
@@ -336,31 +341,39 @@ endfunction
 function! s:build_function(name, arglist) abort
   let arglist = map(copy(a:arglist), 'v:val is timl#symbol("...") ? "..." : timl#munge(v:val)')
   let dict = {}
-  return 'function! '.a:name.'('.join(arglist, ',').")\n"
+  return 'function! '.a:name.'('.join(arglist, ',').") abort\n"
         \ . "let name = matchstr(expand('<sfile>'), '.*\\%(\\.\\.\\| \\)\\zs.*')\n"
         \ . "let fn = g:timl#lambdas[name]\n"
         \ . "let env = [timl#a2env(fn, a:)] + fn.env\n"
+        \ . "let nameenv = {}\n"
+        \ . "if !empty(get(fn, 'name', ''))\n"
+        \ . "let nameenv = {fn.name[0]: name =~ '^\\d' ? self.__fn__ : function(name)}\n"
+        \ . "endif\n"
+        \ . "call extend(env[0], nameenv, 'keep')\n"
         \ . "let _ = {}\n"
         \ . "let _.result = timl#eval(fn.form, env)\n"
         \ . "while type(_.result) == type([]) && get(_.result, 0) is# g:timl#recur_token\n"
         \ . "let env = [timl#l2env(fn, _.result[1:-1])] + fn.env\n"
+        \ . "call extend(env[0], nameenv, 'keep')\n"
         \ . "let _.result = timl#eval(fn.form, env)\n"
         \ . "endwhile\n"
         \ . "return _.result\n"
         \ . "endfunction"
 endfunction
 
-function! s:lambda(arglist, form, ns, env) abort
+function! s:lambda(name, arglist, form, ns, env) abort
   let dict = {}
   execute s:build_function('dict.function', a:arglist)
-  let name = matchstr(string(dict.function), "'\\zs.*\\ze'")
-  let g:timl#lambdas[name] = {
+  let fn = matchstr(string(dict.function), "'\\zs.*\\ze'")
+  let g:timl#lambdas[fn] = {
         \ 'ns': a:ns,
-        \ 'name': name,
         \ 'arglist': a:arglist,
         \ 'env': a:env,
         \ 'form': a:form,
         \ 'macro': 0}
+  if !empty(a:name)
+    let g:timl#lambdas[fn].name = a:name
+  endif
   return dict.function
 endfunction
 
@@ -376,7 +389,7 @@ function! s:file4ns(ns) abort
 endfunction
 
 function! s:define_function(opts)
-  let munged = timl#munge(a:opts.name)
+  let munged = timl#munge(s:string(a:opts.ns).'#'.s:string(a:opts.name))
   let file = s:file4ns(a:opts.ns)
   call writefile(split(s:build_function(munged, a:opts.arglist),"\n"), file)
   execute 'source '.file
@@ -501,7 +514,7 @@ function! s:eval(x, envs) abort
       let form = len(x) == 4 ? x[3] : [timl#symbol('begin')] + x[3:-1]
       return s:define_function({
             \ 'ns': ns,
-            \ 'name': name,
+            \ 'name': timl#symbol(var),
             \ 'arglist': x[2],
             \ 'env': envs,
             \ 'form': form,
@@ -519,7 +532,7 @@ function! s:eval(x, envs) abort
         let lambda = g:timl#lambdas[munged]
         call s:define_function({
               \ 'ns': ns,
-              \ 'name': timl#symbol(name),
+              \ 'name': timl#symbol(var),
               \ 'arglist': lambda.arglist,
               \ 'env': lambda.env,
               \ 'form': lambda.form,
@@ -541,11 +554,17 @@ function! s:eval(x, envs) abort
     return Val
 
   elseif timl#symbol('lambda') is x[0]
-    if len(x) < 3
-      throw 'timl:E119: lambda requires at least 2 arguments'
+    let rest = x[1:-1]
+    if timl#symbolp(get(rest, 0))
+      let name = remove(rest, 0)
+    else
+      let name = ''
     endif
-    let form = len(x) == 3 ? x[2] : [timl#symbol('begin')] + x[2:-1]
-    return s:lambda(x[1], form, ns[0], envs)
+    if type(get(rest, 0)) != type([])
+      throw 'timl(lambda): parameter list required'
+    endif
+    let form = len(rest) == 2 ? rest[1] : [timl#symbol('begin')] + x[1:-1]
+    return s:lambda(name, rest[0], form, ns[0], envs)
 
   elseif timl#symbol('recur') is x[0]
     return [g:timl#recur_token] + map(x[1:-1], 's:eval(v:val, envs)')
@@ -644,7 +663,7 @@ function! s:eval(x, envs) abort
     if timl#symbolp(x[0])
       let Fn = timl#function(x[0], envs)
       if get(get(g:timl#lambdas, s:string(Fn), {}), 'macro')
-        return s:eval(call(Fn, x[1:-1], {"macro": 1}), envs)
+        return s:eval(timl#call(Fn, x[1:-1]), envs)
       endif
       let evaled = [Fn] + map(x[1:-1], 's:eval(v:val, envs)')
     else
@@ -659,14 +678,14 @@ function! s:eval(x, envs) abort
       endif
       let args = evaled[2:-1]
     elseif type(evaled[0]) == type(function('tr')) || timl#symbolp(evaled[0])
-      let dict = {}
+      let dict = 0
       let Func = evaled[0]
       let args = evaled[1:-1]
     else
       throw 'timl: cannot call ' . timl#pr_str(x)
     endif
 
-    return call(Func, args, dict)
+    return timl#call(Func, args, dict)
   endif
 endfunction
 

@@ -46,15 +46,16 @@ endfunction
 
 function! timl#core#apply(f, x, ...) abort
   let args = [a:x] + a:000
-  let dict = {}
   if type(args[-1]) == type({})
     let dict = remove(args, -1)
+  else
+    let dict = 0
   endif
   if type(args[-1]) != type([])
     throw 'timl: last non-dict argument to apply must be a list'
   endif
   let args = args[0:-2] + args[-1]
-  return call(a:f, args, dict)
+  return timl#call(a:f, args, dict)
 endfunction
 
 " }}}1
@@ -209,17 +210,17 @@ endfunction
 
 function! timl#core#map(f, list) abort
   if type(a:list) == type({})
-    return map(copy(a:list), 'call(a:f, [[v:key, v:val]], {})')
+    return map(copy(a:list), 'timl#call(a:f, [[v:key, v:val]])')
   else
-    return map(copy(a:list), 'call(a:f, [v:val], {})')
+    return map(copy(a:list), 'timl#call(a:f, [v:val])')
   endif
 endfunction
 
 function! timl#core#filter(f, list) abort
   if type(a:list) == type({})
-    return filter(copy(a:list), 'call(a:f, [[v:key, v:val]], {})')
+    return filter(copy(a:list), 'timl#call(a:f, [[v:key, v:val]], {})')
   else
-    return filter(copy(a:list), 'call(a:f, [v:val], {})')
+    return filter(copy(a:list), 'timl#call(a:f, [v:val], {})')
   endif
 endfunction
 
@@ -235,7 +236,7 @@ function! timl#core#reduce(f, val_or_list, ...) abort
     let _.val = remove(list, 0)
   endif
   for _.elem in (type(list) == type({}) ? items(list) : list)
-    let _.val = call(a:f, [_.val, _.elem], {})
+    let _.val = timl#call(a:f, [_.val, _.elem])
   endfor
   return _.val
 endfunction
