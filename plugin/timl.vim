@@ -26,7 +26,13 @@ function! s:load_filetype(ft) abort
   let ft = split(a:ft)[0]
   for kind in ['ftplugin', 'indent']
     for file in findfile(kind.'/'.ft.'.tim', &rtp, -1)
-      call timl#source_file(file, kind.'#'.ft)
+      try
+        call timl#source_file(file, kind.'#'.ft)
+      catch
+        echohl WarningMSG
+        echo v:exception . ' (' . v:throwpoint .')'
+        echohl NONE
+      endtry
     endfor
   endfor
 endfunction
