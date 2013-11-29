@@ -5,10 +5,13 @@ let g:autoloaded_timl_core = 1
 
 let g:timl#core#_STAR_uses_STAR_ = []
 
+let s:true = 1
+let s:false = g:timl#nil
+
 " Section: Misc {{{1
 
-function! timl#core#throw(val) abort
-  throw a:val
+function! timl#core#not(val) abort
+  return empty(a:val) || a:val is 0 ? s:true : s:false
 endfunction
 
 function! timl#core#nil_QMARK_(val) abort
@@ -56,6 +59,10 @@ function! timl#core#apply(f, x, ...) abort
   endif
   let args = args[0:-2] + args[-1]
   return timl#call(a:f, args, dict)
+endfunction
+
+function! timl#core#throw(val) abort
+  throw a:val
 endfunction
 
 " }}}1
@@ -119,35 +126,35 @@ function! timl#core#_PERCENT_(x, y) abort
 endfunction
 
 function! timl#core#_GT_(x, y) abort
-  return a:x ># a:y
+  return a:x ># a:y ? s:true : s:false
 endfunction
 
 function! timl#core#_LT_(x, y) abort
-  return a:x <# a:y
+  return a:x <# a:y ? s:true : s:false
 endfunction
 
 function! timl#core#_GT__EQ_(x, y) abort
-  return a:x >=# a:y
+  return a:x >=# a:y ? s:true : s:false
 endfunction
 
 function! timl#core#_LT__EQ_(x, y) abort
-  return a:x <=# a:y
+  return a:x <=# a:y ? s:true : s:false
 endfunction
 
 function! timl#core#_EQ__TILDE_(x, y) abort
-  return type(a:x) == type('') && type(a:y) == type('') && a:x =~# a:y
+  return type(a:x) == type('') && type(a:y) == type('') && a:x =~# a:y ? s:true : s:false
 endfunction
 
 function! timl#core#_EQ__TILDE__QMARK_(x, y) abort
-  return type(a:x) == type('') && type(a:y) == type('') && a:x =~? a:y
+  return type(a:x) == type('') && type(a:y) == type('') && a:x =~? a:y ? s:true : s:false
 endfunction
 
 function! timl#core#_EQ_(x, y) abort
-  return type(a:x) == type(a:y) && a:x ==# a:y
+  return type(a:x) == type(a:y) && a:x ==# a:y ? s:true : s:false
 endfunction
 
 function! timl#core#eq_QMARK_(x, y) abort
-  return a:x is# a:y
+  return a:x is# a:y ? s:true : s:false
 endfunction
 
 " }}}1
