@@ -19,7 +19,7 @@ augroup timl
   autocmd FuncUndefined *#* call s:autoload(expand('<amatch>'))
 augroup END
 
-command! -bar -nargs=? TLrepl :call s:repl(<f-args>)
+command! -bar -nargs=? TLrepl :execute s:repl(<f-args>)
 command! -nargs=1 -complete=expression TLinspect :echo timl#pr_str(<args>)
 
 function! s:load_filetype(ft)
@@ -59,6 +59,11 @@ function! s:repl(...)
     set nomore
     let g:timl#core#_STAR_ns_STAR_ = timl#symbol(a:0 ? a:1 : timl#ns_for_file(expand('%:p')))
     let input = input(g:timl#core#_STAR_ns_STAR_[0].'=> ', '', cmpl)
+    if input =~# '^:q\%[uit]'
+      return ''
+    elseif input =~# '^:'
+      return input
+    endif
     while !empty(input)
       echo "\n"
       try
@@ -74,7 +79,9 @@ function! s:repl(...)
         endwhile
         let s:repl_env['*1'] = timl#eval([timl#symbol('begin')] + read, [s:repl_env, g:timl#core#_STAR_ns_STAR_[0], 'timl#repl'])
         echo timl#pr_str(s:repl_env['*1'])
-      catch /^timl#repl: EXIT/
+      catch /^timl#repl: exit/
+        return v:exception[16:-1]
+      catch /^Vim\%((\a\+)\)\=:E168/
         return ''
       catch
         let s:repl_env['*e'] = timl#build_exception(v:exception, v:throwpoint)
@@ -84,6 +91,7 @@ function! s:repl(...)
       endtry
       let input = input(g:timl#core#_STAR_ns_STAR_[0].'=> ', '', cmpl)
     endwhile
+    return input
   finally
     let &more = more
   endtry

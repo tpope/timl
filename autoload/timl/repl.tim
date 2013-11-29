@@ -17,6 +17,16 @@
           (get impl "arglist" '...)
           (get impl "form" '...))))
 
-(define doc (fn)
-  (: (string "silent help " (f:substitute (string fn) "^f:" "" "") "("))
-  (: (string "throw " (f:string "timl#repl: EXIT"))))
+(define special-forms
+  '(if begin let lambda define
+     quote quasiquote unquote unquote-splicing function
+     try catch finally))
+
+(define-syntax doc (sym)
+  (let ((topic (if (<= 0 (f:index special-forms sym))
+                 (string "vim-" sym))))
+    `(begin
+       (throw (string "timl#repl: exit help " (or ,topic (f:substitute (string ,sym) "^\\w\\+\\zs$" "(" ""))))
+       (throw "timl#repl: exit"))))
+
+(define-syntax help (sym) (doc sym))
