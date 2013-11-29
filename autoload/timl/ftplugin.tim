@@ -5,5 +5,5 @@
 ; should append to b:undo-ftplugin
 (define-syntax setlocal (...)
   `(begin
-     (: (string "setlocal " ,(apply build-option-string ...)))
-     (set! b:undo-ftplugin ,(apply extract-option-restore ...))))
+     (: (string "setlocal " ,(build-option-string ...)))
+     (set! b:undo-ftplugin ,(extract-option-restore ...))))

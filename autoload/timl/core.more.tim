@@ -59,11 +59,11 @@
      (: 'finish)
      (set! ,var 1))))
 
-(define build-option-string (...)
+(define build-option-string (args)
   (sublist
     (loop ((s "")
-           (x (first ...))
-           (more (rest ...)))
+           (x (first args))
+           (more (rest args)))
       (if (nil? x)
         s
         (recur
@@ -71,15 +71,15 @@
           (first more) (rest more))
         )) 1 -1))
 
-(define extract-option-names (...)
-  (map (lambda (x) (f:matchstr (string x) "\\%(inv\\|no\\)\\=\\zs\\w\\+")) (filter symbol? ...)))
+(define extract-option-names (args)
+  (map (lambda (x) (f:matchstr (string x) "\\%(inv\\|no\\)\\=\\zs\\w\\+")) (filter symbol? args)))
 
-(define extract-option-restore (...)
-  (if-let (options (apply extract-option-names ...))
-    (string "setlocal " (f:join options "< ") "<")))
+(define extract-option-restore (args)
+  (if-let (options (extract-option-names args))
+    (string "setlocal " (f:join (map string options) "< ") "<")))
 
 (define-syntax setlocal (...)
-  `(: (string "setlocal " ,(apply build-option-string ...))))
+  `(: (string "setlocal " ,(build-option-string args))))
 
 (define-syntax setglobal (...)
-  `(: (string "setlocal " ,(apply build-option-string ...))))
+  `(: (string "setlocal " ,(build-option-string args))))

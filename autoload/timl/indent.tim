@@ -4,5 +4,5 @@
 
 (define-syntax setlocal (...)
   `(begin
-     (: (string "setlocal " ,(apply build-option-string ...)))
-     (set! b:undo-indent ,(apply extract-option-restore ...))))
+     (: (string "setlocal " ,(build-option-string ...)))
+     (set! b:undo-indent ,(extract-option-restore ...))))
