@@ -22,7 +22,7 @@ augroup END
 command! -bar -nargs=? TLrepl :execute s:repl(<f-args>)
 command! -nargs=1 -complete=expression TLinspect :echo timl#pr_str(<args>)
 
-function! s:load_filetype(ft)
+function! s:load_filetype(ft) abort
   let ft = split(a:ft)[0]
   for kind in ['ftplugin', 'indent']
     for file in findfile(kind.'/'.ft.'.tim', &rtp, -1)
@@ -48,7 +48,7 @@ function! s:autoload(function) abort
   endif
 endfunction
 
-function! s:repl(...)
+function! s:repl(...) abort
   if !exists('s:repl_env')
     let s:repl_env = {'*e': g:timl#nil, '*1': g:timl#nil}
   endif
