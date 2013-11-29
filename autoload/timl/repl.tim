@@ -18,5 +18,5 @@
           (get impl "form" '...))))
 
 (defun doc (fn)
-  (:silent "help" (string (f:substitute (string fn) "^f:" "" "") "("))
-  (:throw (f:string "timl#repl: EXIT")))
+  (: (string "silent help " (f:substitute (string fn) "^f:" "" "") "("))
+  (: (string "throw " (f:string "timl#repl: EXIT"))))
