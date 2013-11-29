@@ -18,6 +18,10 @@ function! timl#core#nil_QMARK_(val) abort
   return empty(a:val)
 endfunction
 
+function! timl#core#type(val) abort
+  return timl#core#symbol_QMARK_(a:val) ? -1 : a:val
+endfunction
+
 function! timl#core#symbol_QMARK_(symbol) abort
   return timl#symbolp(a:symbol)
 endfunction
@@ -149,8 +153,17 @@ function! timl#core#_EQ__TILDE__QMARK_(x, y) abort
   return type(a:x) == type('') && type(a:y) == type('') && a:x =~? a:y ? s:true : s:false
 endfunction
 
-function! timl#core#_EQ_(x, y) abort
+function! s:ntype(x) abort
+  let t = timl#core#type(a:x)
+  return t == 5 ? 0 : t
+endfunction
+
+function! timl#core#_EQ_(x, ...) abort
   return type(a:x) == type(a:y) && a:x ==# a:y ? s:true : s:false
+endfunction
+
+function! timl#core#equal_QMARK_(x, y) abort
+  return s:ntype(a:x) == s:ntype(a:y) && a:x ==# a:y ? s:true : s:false
 endfunction
 
 function! timl#core#eq_QMARK_(x, y) abort

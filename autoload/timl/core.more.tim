@@ -29,8 +29,12 @@
 
 (define-syntax loop (bindings ...)
  `((lambda ,(map first bindings) ,@...) ,@(map last bindings)))
+
 (define 1+ (partial + 1))
 (define 1- (n) (- n 1))
+(define zero? (partial equal? 0))
+(define nonzero? (comp not zero?))
+
 (define reverse (xs) (f:reverse (f:copy xs)))
 (define second (xs) (get xs 1 nil))
 (define last (xs) (get xs -1 nil))
