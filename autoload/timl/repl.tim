@@ -6,9 +6,9 @@
                 (raw        (f:split output "\n"))
                 (file       (f:expand (f:matchstr (second raw) "\\S\\+$")))
                 (definition (first raw))
-                (name       ((compose symbol timl#demunge) (f:matchstr definition " \\zs\\S\\+\\ze(")))
-                (arglist    (map (compose symbol timl#demunge) (f:split (f:matchstr definition "(\\zs.*\\ze)") ", "))))
-            (filter (compose not nil? last) (dict "name" name "arglist" arglist "file" file)))
+                (name       ((comp symbol timl#demunge) (f:matchstr definition " \\zs\\S\\+\\ze(")))
+                (arglist    (map (comp symbol timl#demunge) (f:split (f:matchstr definition "(\\zs.*\\ze)") ", "))))
+            (filter (comp not nil? last) (dict "name" name "arglist" arglist "file" file)))
           (catch 123 e (dict))))))
 
 (define source (fn)

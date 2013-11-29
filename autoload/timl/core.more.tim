@@ -21,7 +21,7 @@
     (lambda (...) (apply f (append args ...)))))
 (define comp (f ...)
   (if-let (fns ...)
-    (lambda (...) (f (apply (apply compose fns) ...)))
+    (lambda (...) (f (apply (apply comp fns) ...)))
     f))
 
 (define-syntax loop (bindings ...)
