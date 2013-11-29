@@ -323,6 +323,7 @@ endfunction
 
 " }}}1
 
+call timl#source_file(expand('<sfile>:r') . '.macros.tim', 'timl#core')
 call timl#source_file(expand('<sfile>:r') . '.more.tim', 'timl#core')
 
 " vim:set et sw=2:

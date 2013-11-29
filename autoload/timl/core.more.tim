@@ -1,19 +1,9 @@
 (in-ns 'timl#core)
-(define define-syntax (...)
-  `(let ((fn# (define ,@...)))
-     (f:extend (get timl#lambdas (string fn#)) (dict "macro" 1))
-     fn#))
-(set! ((f:get g:timl#lambdas "timl#core#define_syntax") "macro") 1)
-
-#_(define-syntax ns (n)
-    (list
-      'begin
-      (if (not (f:exists (string "g:" (timl#munge (string n "#" "*uses*")))))
-        `(set! ,(f:timl#symbol (string n "#*uses*")) (list 'timl#core)))
-      `(in-ns ',n)))
 
 (define pr-str (...) (f:join (map timl#pr-str ...)))
 (define pr (...) (echo (apply pr-str ...)))
+(define read-string (string) (timl#reader#read-string string))
+(define eval (form) (timl#eval form))
 
 (define constantly (x) (lambda (...) x))
 (define partial (f ...)
@@ -27,9 +17,6 @@
 (define true (not nil))
 (define false (not true))
 
-(define-syntax loop (bindings ...)
- `((lambda ,(map first bindings) ,@...) ,@(map last bindings)))
-
 (define 1+ (partial + 1))
 (define 1- (n) (- n 1))
 (define zero? (partial equal? 0))
@@ -40,9 +27,6 @@
 (define last (xs) (get xs -1 nil))
 (define butlast (xs) (sublist xs 0 -2))
 (define get-in (m ks) (reduce get m ks))
-
-(define read-string (string) (timl#reader#read-string string))
-(define eval (form) (timl#eval form))
 
 (define sorter (>)
   (lambda (x y)
@@ -60,43 +44,6 @@
 (define reductions (f init xs)
   (cons init (if xs
     (reductions f (f init (first xs)) (rest xs)))))
-
-(define-syntax or (x ...)
-  (if ...
-    `(let ((or# ,x)) (if or# or# (or ,@...)))
-    x))
-
-(define-syntax and (x ...)
-  (if ...
-    `(let ((and# ,x)) (if and# (and ,@...) and#))
-    x))
-
-(define-syntax when (test ...)
-  `(if ,test (begin ,@...)))
-
-(define-syntax if-let (binding then ...)
-  (let ((form (first binding))
-        (tst (last binding)))
-    `(let ((temp# ,tst))
-      (if temp#
-        (let ((,form temp#)) ,then) ,@...))))
-
-(define-syntax cond (...)
-  (when ...
-    (list 'if (first (first ...))
-          (second (first ...))
-          (cons `cond (rest ...)))))
-
-(define-syntax -> (x ...)
-  (if ...
-    (let ((form (first ...))
-          (more (rest ...)))
-      (if more
-        `(-> (-> ,x ,form) ,@more)
-        (if (list? form)
-          `(,(first form) ,x ,@(rest form))
-          (list form x))))
-    x))
 
 (define-syntax capture (...)
   `(begin
