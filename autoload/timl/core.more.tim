@@ -15,9 +15,18 @@
 (define pr-str (...) (f:join (map timl#pr-str ...)))
 (define pr (...) (echo (apply pr-str ...)))
 
+(define constantly (x) (lambda (...) x))
+(define partial (f ...)
+  (let ((args ...))
+    (lambda (...) (apply f (append args ...)))))
+(define comp (f ...)
+  (if-let (fns ...)
+    (lambda (...) (f (apply (apply compose fns) ...)))
+    f))
+
 (define-syntax loop (bindings ...)
  `((lambda ,(map first bindings) ,@...) ,@(map last bindings)))
-(define 1+ (n) (+ n 1))
+(define 1+ (partial + 1))
 (define 1- (n) (- n 1))
 (define reverse (xs) (f:reverse (f:copy xs)))
 (define not (x) (if x 0 1))
@@ -28,15 +37,6 @@
 
 (define read-string (string) (timl#reader#read-string string))
 (define eval (form) (timl#eval form))
-
-(define constantly (x) (lambda (...) x))
-(define partial (f ...)
-  (let ((args ...))
-    (lambda (...) (apply f (append args ...)))))
-(define compose (f ...)
-  (if-let (fns ...)
-    (lambda (...) (f (apply (apply compose fns) ...)))
-    f))
 
 (define sorter (>)
   (lambda (x y)
