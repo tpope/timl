@@ -1,4 +1,4 @@
-(use 'timl#ftplugin)
+(refer 'timl#ftplugin)
 (include-guard)
 
 (setlocal comments=":;,:;;;,:;;,sr:#|,mb:|,ex:|#")

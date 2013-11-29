@@ -3,8 +3,6 @@ if exists("g:autoloaded_timl_core") || &cp || v:version < 700
 endif
 let g:autoloaded_timl_core = 1
 
-let g:timl#core#_STAR_uses_STAR_ = []
-
 let s:true = 1
 let s:false = g:timl#nil
 
@@ -212,6 +210,16 @@ function! timl#core#sublist(list, start, ...) abort
   endif
 endfunction
 
+function! timl#core#slice(list, start, ...) abort
+  if a:0 && a:1 == 0
+    return type(a:list) == type('') ? '' : []
+  elseif a:0
+    return a:list[a:start : (a:1 < 0 ? a:1 : a:1-1)]
+  else
+    return a:list[a:start :]
+  endif
+endfunction
+
 function! timl#core#list_QMARK_(val) abort
   return !timl#symbolp(a:val) && type(a:val) == type([])
 endfunction
@@ -301,29 +309,27 @@ endfunction
 " Section: Namespaces {{{1
 
 function! timl#core#in_ns(ns)
+  call timl#create_ns(timl#core#string(a:ns))
   let g:timl#core#_STAR_ns_STAR_ = timl#symbol(a:ns)
   return g:timl#core#_STAR_ns_STAR_
 endfunction
 
-function! timl#core#use(...)
+function! timl#core#refer(ns)
   let me = timl#core#string(g:timl#core#_STAR_ns_STAR_)
-  if !exists('g:'.timl#munge(me.'#*uses*'))
-    let g:{timl#munge(me.'#*uses*')} = [timl#symbol('timl#core')]
-  endif
-  let uses = g:{timl#munge(me.'#*uses*')}
-  let _ = {}
-  for _.ns in a:000
-    let sym = timl#symbol(_.ns)
-    if timl#core#string(_.ns) isnot# me && index(uses, sym) == -1
-      call insert(uses, sym)
-    endif
-  endfor
+  call timl#create_ns(me, {'referring': [a:ns]})
+  return g:timl#nil
+endfunction
+
+function! timl#core#alias(alias, ns)
+  let me = timl#core#string(g:timl#core#_STAR_ns_STAR_)
+  call timl#create_ns(me, {'aliases': {timl#core#string(a:alias): a:ns}})
   return g:timl#nil
 endfunction
 
 " }}}1
 
 call timl#source_file(expand('<sfile>:r') . '.macros.tim', 'timl#core')
+call timl#source_file(expand('<sfile>:r') . '.coll.tim', 'timl#core')
 call timl#source_file(expand('<sfile>:r') . '.more.tim', 'timl#core')
 
 " vim:set et sw=2:

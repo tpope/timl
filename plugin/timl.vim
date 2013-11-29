@@ -63,7 +63,11 @@ function! s:repl(...) abort
   let more = &more
   try
     set nomore
-    let g:timl#core#_STAR_ns_STAR_ = timl#symbol(a:0 ? a:1 : timl#ns_for_file(expand('%:p')))
+    let guess = timl#ns_for_file(expand('%:p'))
+    if !has_key(g:timl#namespaces, guess)
+      let guess = 'user'
+    endif
+    let g:timl#core#_STAR_ns_STAR_ = timl#symbol(a:0 ? a:1 : guess)
     let input = input(g:timl#core#_STAR_ns_STAR_[0].'=> ', '', cmpl)
     if input =~# '^:q\%[uit]'
       return ''

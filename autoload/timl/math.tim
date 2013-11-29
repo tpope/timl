@@ -1,3 +1,5 @@
+(in-ns 'timl#math)
+
 (define fact (x)
   (loop ((n x)
          (f 1))

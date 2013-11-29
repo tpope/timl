@@ -22,29 +22,6 @@
 (define zero? (partial equal? 0))
 (define nonzero? (comp not zero?))
 
-(define reverse (xs) (f:reverse (f:copy xs)))
-(define second (xs) (get xs 1 nil))
-(define last (xs) (get xs -1 nil))
-(define butlast (xs) (sublist xs 0 -2))
-(define get-in (m ks) (reduce get m ks))
-
-(define sorter (>)
-  (lambda (x y)
-    (if (> x y)
-      1
-      (if (> y x)
-        -1
-        0))))
-
-(define sort (xs ...)
-  (if ...
-    (f:sort (f:copy xs) (sorter (first ...)) {})
-    (f:sort (f:copy xs))))
-
-(define reductions (f init xs)
-  (cons init (if xs
-    (reductions f (f init (first xs)) (rest xs)))))
-
 (define-syntax capture (...)
   `(begin
      (try

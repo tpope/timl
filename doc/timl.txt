@@ -134,9 +134,11 @@ feature.
         (in-ns 'foo#bar)
         (define baz 1)
         (in-ns 'user)
-        foo#bar#baz    ; evaluates to 1
-        (use 'foo#bar)
-        baz            ; evaluates to 1
+        foo#bar#baz            ; evaluates to 1
+        (alias 'quux 'foo#bar)
+        quux/baz               ; evaluates to 1
+        (refer 'foo#bar)
+        baz                    ; evaluates to 1
 <
 TimL files placed in the |autoload| directory will automatically be loaded in
 the correct namespace.

@@ -198,7 +198,34 @@ augroup END
 " }}}1
 " Section: Eval {{{1
 
-let g:user#_STAR_uses_STAR_ = [timl#symbol('timl#repl'), timl#symbol('timl#core')]
+if !exists('g:timl#namespaces')
+  let g:timl#namespaces = {
+        \ 'timl#core': {'referring': [], 'aliases': {}},
+        \ 'user':      {'referring': ['timl#repl', 'timl#core'], 'aliases': {}}}
+endif
+
+function! timl#create_ns(name, ...)
+  let name = s:string(a:name)
+  if !has_key(g:timl#namespaces, a:name)
+    let g:timl#namespaces[a:name] = {'referring': ['timl#core'], 'aliases': {}}
+  endif
+  let ns = g:timl#namespaces[a:name]
+  if !a:0
+    return ns
+  endif
+  let opts = a:1
+  let _ = {}
+  for _.refer in get(opts, 'referring', [])
+    let str = s:string(_.refer)
+    if name !=# str && index(ns.referring, str) < 0
+      call insert(ns.referring, str)
+    endif
+  endfor
+  for [_.name, _.target] in items(get(opts, 'aliases', {}))
+    let ns.aliases[_.name] = s:string(_.target)
+  endfor
+  return ns
+endfunction
 
 function! timl#call(Func, args, ...) abort
   let dict = (a:0 && type(a:1) == type({})) ? a:1 : {'__fn__': a:Func}
@@ -232,8 +259,8 @@ function! timl#lookup(envs, sym) abort
   elseif sym =~# '^@.$'
     return eval(sym)
   elseif sym =~# '#'
-    let sym = timl#munge(sym)
     call timl#autoload(sym)
+    let sym = timl#munge(sym)
     if exists('g:'.sym)
       return g:{sym}
     elseif exists('*'.sym)
@@ -261,16 +288,24 @@ function! timl#find(envs, sym) abort
     if type(env) == type({}) && has_key(env, sym)
       return env
     elseif type(env) == type('')
+      call timl#autoload(env.'#'.sym)
+      let ns = timl#create_ns(env)
+      if sym =~# './.'
+        let alias = matchstr(sym, '.*\ze/')
+        let var = matchstr(sym, '.*/\zs.*')
+        if has_key(ns.aliases, alias)
+          return timl#find(var, [ns.aliases[alias]])
+        endif
+      endif
       let target = timl#munge(env.'#'.sym)
-      call timl#autoload(target)
       if exists('*'.target) || exists('g:'.target)
         return env
       endif
-      for use in get(g:, timl#munge(env.'#*uses*'), [timl#symbol('timl#core')])
-        let target = timl#munge(s:string(use).'#'.sym)
+      for refer in timl#create_ns(env).referring
+        let target = timl#munge(s:string(refer).'#'.sym)
         call timl#autoload(target)
         if exists('*'.target) || exists('g:'.target)
-          return s:string(use)
+          return s:string(refer)
         endif
       endfor
     endif
@@ -308,13 +343,21 @@ function! timl#function(sym, ...) abort
     if type(env) == type({}) && has_key(env, demunged) && type(env[demunged]) == t
       return env[demunged]
     elseif type(env) == type('')
-      let target = timl#munge(env.'#'.demunged)
       call timl#autoload(env.'#'.demunged)
+      let ns = timl#create_ns(env)
+      if demunged =~# './.'
+        let alias = matchstr(demunged, '.*\ze/')
+        let var = matchstr(demunged, '.*/\zs.*')
+        if has_key(ns.aliases, alias)
+          return timl#function(var, [ns.aliases[alias]])
+        endif
+      endif
+      let target = timl#munge(env.'#'.demunged)
       if exists('*'.target)
         return function(target)
       endif
-      for use in get(g:, timl#munge(env.'#*uses*'), [timl#symbol('timl#core')])
-        let target = timl#munge(s:string(use).'#'.demunged)
+      for refer in ns.referring
+        let target = timl#munge(s:string(refer).'#'.demunged)
         call timl#autoload(target)
         if exists('*'.target)
           return function(target)
@@ -469,6 +512,17 @@ if !exists('g:timl#recur_token')
   let g:timl#recur_token = s:persistent_list('recur token')
 endif
 
+let s:function   = timl#symbol('function')
+let s:quote      = timl#symbol('quote')
+let s:quasiquote = timl#symbol('quasiquote')
+let s:setq       = timl#symbol('set!')
+let s:if         = timl#symbol('if')
+let s:define     = timl#symbol('define')
+let s:lambda     = timl#symbol('lambda')
+let s:recur      = timl#symbol('recur')
+let s:let        = timl#symbol('let')
+let s:begin      = timl#symbol('begin')
+let s:try        = timl#symbol('try')
 function! s:eval(x, envs) abort
   let x = a:x
   let envs = a:envs
@@ -487,30 +541,30 @@ function! s:eval(x, envs) abort
 
   let F = x[0]
   let rest = x[1:-1]
-  if timl#symbol('function') is F
+  if F is s:function
     return timl#function(get(rest, 0), envs)
 
-  elseif timl#symbol('quote') is F
+  elseif F is# s:quote
     return get(rest, 0, g:timl#nil)
 
-  elseif timl#symbol('quasiquote') is F
+  elseif F is# s:quasiquote
     let s:gensym_id = get(s:, 'gensym_id', 0) + 1
     return s:quasiquote(get(rest, 0, g:timl#nil), envs, s:gensym_id)
 
-  elseif timl#symbol('set!') is F
+  elseif F is# s:setq
     if len(rest) < 2
       throw 'timl:E119: set! requires 2 arguments'
     endif
     return call('timl#setq', [envs] + x[1:-1])
 
-  elseif timl#symbol('if') is F
+  elseif F is# s:if
     if len(rest) < 2
       throw 'timl:E119: if requires 2 or 3 arguments'
     endif
     let Cond = s:eval(rest[0], envs)
     return s:eval(get(rest, empty(Cond) || Cond is 0 ? 2 : 1, g:timl#nil), envs)
 
-  elseif timl#symbol('define') is F
+  elseif F is# s:define
     let var = s:string(rest[0])
     let name = ns[0].'#'.var
     if len(rest) > 2
@@ -556,7 +610,7 @@ function! s:eval(x, envs) abort
     endif
     return Val
 
-  elseif timl#symbol('lambda') is F
+  elseif F is# s:lambda
     if timl#symbolp(get(rest, 0))
       let name = remove(rest, 0)
     else
@@ -568,13 +622,13 @@ function! s:eval(x, envs) abort
     let form = len(rest) == 2 ? rest[1] : [timl#symbol('begin')] + rest[1:-1]
     return s:lambda(name, rest[0], form, ns[0], envs)
 
-  elseif timl#symbol('recur') is F
+  elseif F is# s:recur
     return [g:timl#recur_token] + map(copy(rest), 's:eval(v:val, envs)')
 
-  elseif F is g:timl#recur_token
+  elseif F is# g:timl#recur_token
     throw 'timl: incorrect use of recur'
 
-  elseif timl#symbol('let') is F
+  elseif F is# s:let
     let env = {}
     let _ = {}
     for _.let in rest[0]
@@ -604,10 +658,10 @@ function! s:eval(x, envs) abort
     let form = len(rest) == 2 ? rest[1] : [timl#symbol('begin')] + rest[1:-1]
     return s:eval(form, [env] + envs)
 
-  elseif timl#symbol('begin') is F
+  elseif F is# s:begin
     return get(map(copy(rest), 's:eval(v:val, envs)'), -1, g:timl#nil)
 
-  elseif timl#symbol('try') is F
+  elseif F is# s:try
     let _ = {}
     let forms = []
     let catches = []
@@ -718,7 +772,7 @@ if !exists('g:timl#requires')
 endif
 
 function! timl#autoload(function) abort
-  let ns = matchstr(a:function, '.*\ze#')
+  let ns = timl#munge(matchstr(a:function, '.*\ze#'))
 
   if !has_key(g:timl#requires, ns)
     let g:timl#requires[ns] = 1
@@ -850,6 +904,8 @@ TimLAssert timl#re('(dict "a" 1 (list "b" 2))') ==# {"a": 1, "b": 2}
 TimLAssert timl#re('(length "abc")') ==# 3
 
 TimLAssert timl#re('(reduce + 0 (list 1 2 3))') ==# 6
+
+TimLAssert timl#re("(loop ((n 5) (f 1)) (if (<= n 1) f (recur (1- n) (* f n))))") ==# 120
 
 delcommand TimLAssert
 
