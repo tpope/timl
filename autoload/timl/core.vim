@@ -46,21 +46,15 @@ endfunction
 
 function! timl#core#apply(f, x, ...) abort
   let args = [a:x] + a:000
+  let dict = {}
+  if type(args[-1]) == type({})
+    let dict = remove(args, -1)
+  endif
   if type(args[-1]) != type([])
-    throw 'timl.vim: last argument to apply must be a list'
+    throw 'timl.vim: last non-dict argument to apply must be a list'
   endif
   let args = args[0:-2] + args[-1]
-  if type(a:f) == type({})
-    if empty(args)
-      throw 'timl.vim: applying dictionary requires function'
-    endif
-    let dict = a:f
-    let F = remove(args, 0)
-  else
-    let dict = {}
-    let F = a:f
-  endif
-  return call(F, args, dict)
+  return call(a:f, args, dict)
 endfunction
 
 " }}}1
