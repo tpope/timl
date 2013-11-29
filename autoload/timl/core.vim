@@ -158,7 +158,7 @@ function! s:ntype(x) abort
   return t == 5 ? 0 : t
 endfunction
 
-function! timl#core#_EQ_(x, ...) abort
+function! timl#core#_EQ_(x, y) abort
   return type(a:x) == type(a:y) && a:x ==# a:y ? s:true : s:false
 endfunction
 
