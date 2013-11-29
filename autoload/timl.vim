@@ -283,7 +283,7 @@ function! timl#function(sym, ...) abort
   let munged = timl#munge(demunged)
   if demunged =~# '^\d\+$' && exists('*{'.demunged.'}')
     return function('{'.demunged.'}')
-  elseif demunged =~# '^<' && exists('*'.demunged)
+  elseif munged =~# '^<' && exists('*'.munged)
     return function(demunged)
   elseif munged =~# '^f:' && exists('*'.munged[2:-1])
     return function(munged[2:-1])
