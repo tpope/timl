@@ -1,0 +1,34 @@
+(in-ns 'timl#core)
+
+(define empty? f:empty)
+(define not-empty (xs) (if (empty? xs) nil xs))
+(define next (xs) (not-empty (rest xs)))
+(define second (xs) (first (rest xs)))
+(define last (xs) (if (next xs) (recur (next xs)) (first xs)))
+(define conj (xs ...) (append xs ...))
+(define butlast (s)
+  (loop ((ret '()) (s s))
+    (if (next s)
+      (recur (conj ret (first s)) (next s))
+      ret)))
+
+(define reverse (xs) (f:reverse (f:copy xs)))
+
+(define sorter (>)
+  (lambda (x y)
+    (if (> x y)
+      1
+      (if (> y x)
+        -1
+        0))))
+
+(define sort (xs ...)
+  (if ...
+    (f:sort (f:copy xs) (sorter (first ...)) {})
+    (f:sort (f:copy xs))))
+
+(define reductions (f init xs)
+  (cons init (if xs
+    (reductions f (f init (first xs)) (rest xs)))))
+
+(define get-in (m ks) (reduce get m ks))
