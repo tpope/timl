@@ -104,7 +104,7 @@ function! s:read(port, ...) abort
   else
     let error = 'timl#reader: unexpected token '.string(token)
   endif
-  throw error . ' at byte ' . port.pos
+  throw error . ' at byte ' . pos
 endfunction
 
 function! s:read_bang(port) abort
