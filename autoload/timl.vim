@@ -145,7 +145,7 @@ function! timl#l2env(f, args) abort
   let i = 0
   for _.param in a:f.arglist
     if i >= len(args)
-      throw 'timl.vim: arity error'
+      throw 'timl: arity error'
     endif
     if timl#symbolp(_.param)
       let env[_.param[0]] = args[i]
@@ -159,7 +159,7 @@ function! timl#l2env(f, args) abort
         endif
       endfor
     else
-      throw 'timl.vim: unsupported param '.string(param)
+      throw 'timl: unsupported param '.string(param)
     endif
     let i += 1
   endfor
@@ -234,7 +234,7 @@ function! timl#lookup(envs, sym) abort
     elseif exists('*'.sym)
       return function(sym)
     else
-      throw 'timl.vim: ' . sym . ' undefined'
+      throw 'timl: ' . sym . ' undefined'
     endif
   endif
   let env = timl#find(a:envs, sym)
@@ -271,7 +271,7 @@ function! timl#find(envs, sym) abort
     endif
     unlet! env
   endfor
-  throw 'timl.vim: ' . sym . ' undefined'
+  throw 'timl: ' . sym . ' undefined'
 endfunction
 
 function! timl#function(sym, ...) abort
@@ -296,7 +296,7 @@ function! timl#function(sym, ...) abort
     elseif exists('g:'.munged) && type(eval(munged)) == t
       return g:{munged}
     else
-      throw 'timl.vim: no such function ' . demunged
+      throw 'timl: no such function ' . demunged
     endif
   endif
   for env in a:0 ? a:1 : []
@@ -318,7 +318,7 @@ function! timl#function(sym, ...) abort
     endif
     unlet! env
   endfor
-  throw 'timl.vim: no such function ' . demunged
+  throw 'timl: no such function ' . demunged
 endfunction
 
 function! timl#qualify(envs, sym)
@@ -328,7 +328,7 @@ function! timl#qualify(envs, sym)
     if type(ns) == type('')
       return timl#symbol(ns . '#' . sym)
     endif
-  catch /^timl.vim:/
+  catch /^timl:/
   endtry
   return a:sym
 endfunction
@@ -421,7 +421,7 @@ function! timl#setq(envs, target, val) abort
       return val
     endif
   endif
-  throw 'timl.vim: invalid assignment target ' . timl#pr_str(a:target)
+  throw 'timl: invalid assignment target ' . timl#pr_str(a:target)
 endfunction
 
 function! timl#build_exception(exception, throwpoint)
@@ -483,20 +483,20 @@ function! s:eval(x, envs) abort
 
   elseif timl#symbol('setq') is x[0]
     if len(x) < 3
-      throw 'timl.vim:E119: setq requires 2 arguments'
+      throw 'timl:E119: setq requires 2 arguments'
     endif
     return call('timl#setq', [envs] + x[1:-1])
 
   elseif timl#symbol('if') is x[0]
     if len(x) < 3
-      throw 'timl.vim:E119: if requires 2 or 3 arguments'
+      throw 'timl:E119: if requires 2 or 3 arguments'
     endif
     let Cond = s:eval(x[1], envs)
     return s:eval(get(x, empty(Cond) || Cond is 0 ? 3 : 2, g:timl#nil), envs)
 
   elseif timl#symbol('defun') is x[0] || timl#symbol('defmacro') is x[0]
     if len(x) < 4
-      throw 'timl.vim:E119: defun requires at least 3 arguments'
+      throw 'timl:E119: defun requires at least 3 arguments'
     endif
     let macro = timl#symbol('defmacro') is x[0]
     let var = s:string(x[1])
@@ -517,7 +517,7 @@ function! s:eval(x, envs) abort
     let var = s:string(x[1])
     let name = ns[0].'#'.var
     if len(x) != 3
-      throw 'timl.vim:E119: defvar requires 2 arguments'
+      throw 'timl:E119: defvar requires 2 arguments'
     endif
     let global = timl#munge(name)
     let Val = s:eval(x[2], envs)
@@ -537,7 +537,7 @@ function! s:eval(x, envs) abort
               \ 'form': lambda.form,
               \ 'macro': lambda.macro})
       elseif munged =~# '^\d'
-        throw "timl.vim: can't define anonymous non-TimL function"
+        throw 'timl: cannot define anonymous non-TimL function'
       else
 
         let file = s:file4ns(ns)
@@ -554,7 +554,7 @@ function! s:eval(x, envs) abort
 
   elseif timl#symbol('lambda') is x[0] || timl#symbol("\u03bb") is x[0]
     if len(x) < 3
-      throw 'timl.vim:E119: lambda requires at least 2 arguments'
+      throw 'timl:E119: lambda requires at least 2 arguments'
     endif
     let form = len(x) == 3 ? x[2] : [timl#symbol('do')] + x[2:-1]
     return s:lambda(x[1], form, ns[0], envs)
@@ -563,16 +563,16 @@ function! s:eval(x, envs) abort
     return [g:timl#recur_token] + map(x[1:-1], 's:eval(v:val, envs)')
 
   elseif x[0] is g:timl#recur_token
-    throw 'timl.vim: incorrect use of recur'
+    throw 'timl: incorrect use of recur'
 
   elseif timl#symbol('let') is x[0]
     let env = {}
     let _ = {}
     for _.let in x[1]
       if timl#symbolp(_.let)
-        throw "timl.vim: let accepts a list of lists"
+        throw 'timl: let accepts a list of lists'
       elseif len(_.let) != 2
-        throw "timl.vim: invalid binding ".timl#pr_str(_.let)
+        throw 'timl: invalid binding '.timl#pr_str(_.let)
       endif
       let [_.key, _.form] = _.let
       let _.val = s:eval(_.form, [env] + envs)
@@ -589,7 +589,7 @@ function! s:eval(x, envs) abort
           endif
         endfor
       else
-        throw "timl.vim: unsupported binding form ".timl#pr_str(_.key)
+        throw 'timl: unsupported binding form '.timl#pr_str(_.key)
       endif
     endfor
     let form = len(x) == 3 ? x[2] : [timl#symbol('do')] + x[2:-1]
@@ -609,10 +609,10 @@ function! s:eval(x, envs) abort
         if type(_.pattern) ==# type(0)
           let _.pattern = '^Vim\%((\a\+)\)\=:E' . _.pattern
         elseif type(_.pattern) !=# type('')
-          throw 'timl.vim: first catch argument must be a string'
+          throw 'timl: first catch argument must be a string'
         endif
         if !timl#symbolp(get(_.form, 2, g:timl#nil))
-          throw 'timl.vim: second catch argument must be a symbol'
+          throw 'timl: second catch argument must be a symbol'
         endif
         call add(catches, [_.pattern] + _.form[2:-1])
       elseif type(_.form) == type([]) && get(_.form, 0) is timl#symbol('finally')
@@ -675,7 +675,7 @@ function! s:eval(x, envs) abort
       let Func = evaled[0]
       let args = evaled[1:-1]
     else
-      throw 'timl.vim: can''t call ' . timl#pr_str(x)
+      throw 'timl: cannot call ' . timl#pr_str(x)
     endif
 
     return call(Func, args, dict)

@@ -66,7 +66,7 @@ function! s:repl(...)
           try
             let read = timl#reader#read_string_all(input)
             break
-          catch /^timl.vim: unexpected EOF/
+          catch /^timl#reader: unexpected EOF/
             let space = repeat(' ', len(g:timl#core#_STAR_ns_STAR_[0])-2)
             let input .= "\n" . input(space.'#_=> ', '', cmpl)
             echo "\n"

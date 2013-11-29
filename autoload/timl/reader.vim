@@ -36,7 +36,7 @@ endfunction
 let s:eof = []
 
 function! timl#reader#read(port) abort
-  let error = 'timl.vim: EOF'
+  let error = 'timl#reader: EOF'
   try
     let val = s:read(a:port)
     if val isnot# s:eof
@@ -49,7 +49,7 @@ function! timl#reader#read(port) abort
 endfunction
 
 function! s:read(port, ...) abort
-  let error = 'timl.vim: unexpected EOF'
+  let error = 'timl#reader: unexpected EOF'
   let port = a:port
   let pos = a:0 ? a:2 : port.pos
   let token = a:0 ? a:1 : s:read_token(port)
@@ -68,7 +68,7 @@ function! s:read(port, ...) abort
   elseif token ==# '#dict'
     let list = s:read(port)
     if type(list) !=# type([]) || len(list) % 2 != 0
-      let error = 'timl.vim: invalid dict literal'
+      let error = 'timl#reader: invalid dict literal'
     else
       let dict = {}
       for i in range(0, len(list)-1, 2)
@@ -87,7 +87,7 @@ function! s:read(port, ...) abort
       endif
       let key = s:read(port, token, pos)
       if type(key) != type('')
-        let error = 'timl.vim: dict keys must be strings'
+        let error = 'timl#reader: dict keys must be strings'
         break
       endif
       let dict[key] = s:read_bang(port)
@@ -115,7 +115,7 @@ function! s:read(port, ...) abort
   elseif empty(token)
     return s:eof
   else
-    let error = 'timl.vim: unexpected token '.string(token)
+    let error = 'timl#reader: unexpected token '.string(token)
   endif
   throw error . ' at byte ' . port.pos
 endfunction
@@ -125,7 +125,7 @@ function! s:read_bang(port) abort
   if val isnot# s:eof
     return val
   endif
-  throw 'timl.vim: unexpected EOF'
+  throw 'timl#reader: unexpected EOF'
 endfunction
 
 function! timl#reader#read_all(port) abort

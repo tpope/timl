@@ -51,7 +51,7 @@ function! timl#core#apply(f, x, ...) abort
     let dict = remove(args, -1)
   endif
   if type(args[-1]) != type([])
-    throw 'timl.vim: last non-dict argument to apply must be a list'
+    throw 'timl: last non-dict argument to apply must be a list'
   endif
   let args = args[0:-2] + args[-1]
   return call(a:f, args, dict)
@@ -249,7 +249,7 @@ function! timl#core#dict(...) abort
     call extend(list, remove(list, -1))
   endwhile
   if len(list) % 2 !=# 0
-    throw 'timl.vim: dict requires a even number of arguments'
+    throw 'timl: dict requires a even number of arguments'
   endif
   let dict = {}
   for i in range(0, len(list)-1, 2)
