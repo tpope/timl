@@ -48,25 +48,29 @@ function! timl#reader#read(port) abort
   throw error
 endfunction
 
+function! s:read_until(port, char)
+  let list = []
+  let token = s:read_token(a:port)
+  while token !=# a:char && token !=# ''
+    call add(list, s:read(a:port, token, a:port.pos))
+    let token = s:read_token(a:port)
+  endwhile
+  if token ==# a:char
+    return list
+  endif
+  throw 'timl#reader: unexpected EOF at byte ' . a:port.pos
+endfunction
+
 function! s:read(port, ...) abort
-  let error = 'timl#reader: unexpected EOF'
   let port = a:port
   let pos = a:0 ? a:2 : port.pos
   let token = a:0 ? a:1 : s:read_token(port)
   if token =~# '^"\|^[+-]\=\d\%(.*\d\)\=$'
     return eval(token)
   elseif token ==# '('
-    let list = []
-    let token = s:read_token(port)
-    while token !=# ')' && token !=# ''
-      call add(list, s:read(port, token, pos))
-      let token = s:read_token(port)
-    endwhile
-    if token ==# ')'
-      return list
-    endif
-  elseif token ==# '#dict'
-    let list = s:read(port)
+    return s:read_until(port, ')')
+  elseif token ==# '#dict' || token == '{'
+    let list = (token ==# '{' ? s:read_until(port, '}') : s:read(port))
     if type(list) !=# type([]) || len(list) % 2 != 0
       let error = 'timl#reader: invalid dict literal'
     else
@@ -76,23 +80,6 @@ function! s:read(port, ...) abort
       endfor
       return dict
     endif
-  elseif token ==# '{'
-    let dict = {}
-    let token = s:read_token(port)
-    while 1
-      if token ==# '}'
-        return dict
-      elseif token ==# ''
-        break
-      endif
-      let key = s:read(port, token, pos)
-      if type(key) != type('')
-        let error = 'timl#reader: dict keys must be strings'
-        break
-      endif
-      let dict[key] = s:read_bang(port)
-      let token = s:read_token(port)
-    endwhile
   elseif token ==# 'nil'
     return g:timl#nil
   elseif token ==# "'"
