@@ -511,11 +511,14 @@ function! s:eval(x, envs) abort
           \ 'macro': macro})
 
   elseif timl#symbol('defvar') is x[0]
-    if len(x) != 3
-      throw 'timl.vim:E119: defvar requires 2 arguments'
+    if len(x) > 3
+      return s:eval([timl#symbol('defun')] + x[1:-1], envs)
     endif
     let var = s:string(x[1])
     let name = ns[0].'#'.var
+    if len(x) != 3
+      throw 'timl.vim:E119: defvar requires 2 arguments'
+    endif
     let global = timl#munge(name)
     let Val = s:eval(x[2], envs)
     unlet! g:{global}
