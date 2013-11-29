@@ -483,45 +483,48 @@ function! s:eval(x, envs) abort
 
   elseif type(x) != type([]) || empty(x)
     return x
+  endif
 
-  elseif timl#symbol('function') is x[0]
-    return timl#function(x[1], envs)
+  let F = x[0]
+  let rest = x[1:-1]
+  if timl#symbol('function') is F
+    return timl#function(get(rest, 0), envs)
 
-  elseif timl#symbol('quote') is x[0]
-    return get(x, 1, g:timl#nil)
+  elseif timl#symbol('quote') is F
+    return get(rest, 0, g:timl#nil)
 
-  elseif timl#symbol('quasiquote') is x[0]
+  elseif timl#symbol('quasiquote') is F
     let s:gensym_id = get(s:, 'gensym_id', 0) + 1
-    return s:quasiquote(get(x, 1, g:timl#nil), envs, s:gensym_id)
+    return s:quasiquote(get(rest, 0, g:timl#nil), envs, s:gensym_id)
 
-  elseif timl#symbol('set!') is x[0]
-    if len(x) < 3
+  elseif timl#symbol('set!') is F
+    if len(rest) < 2
       throw 'timl:E119: set! requires 2 arguments'
     endif
     return call('timl#setq', [envs] + x[1:-1])
 
-  elseif timl#symbol('if') is x[0]
-    if len(x) < 3
+  elseif timl#symbol('if') is F
+    if len(rest) < 2
       throw 'timl:E119: if requires 2 or 3 arguments'
     endif
-    let Cond = s:eval(x[1], envs)
-    return s:eval(get(x, empty(Cond) || Cond is 0 ? 3 : 2, g:timl#nil), envs)
+    let Cond = s:eval(rest[0], envs)
+    return s:eval(get(rest, empty(Cond) || Cond is 0 ? 2 : 1, g:timl#nil), envs)
 
-  elseif timl#symbol('define') is x[0]
-    let var = s:string(x[1])
+  elseif timl#symbol('define') is F
+    let var = s:string(rest[0])
     let name = ns[0].'#'.var
-    if len(x) > 3
-      let form = len(x) == 4 ? x[3] : [timl#symbol('begin')] + x[3:-1]
+    if len(rest) > 2
+      let form = len(rest) == 3 ? rest[2] : [timl#symbol('begin')] + rest[2:-1]
       return s:define_function({
             \ 'ns': ns,
             \ 'name': timl#symbol(var),
-            \ 'arglist': x[2],
+            \ 'arglist': rest[1],
             \ 'env': envs,
             \ 'form': form,
             \ 'macro': 0})
     endif
     let global = timl#munge(name)
-    let Val = s:eval(x[2], envs)
+    let Val = s:eval(rest[1], envs)
     unlet! g:{global}
     if exists('*'.global)
       execute 'delfunction '.global
@@ -553,8 +556,7 @@ function! s:eval(x, envs) abort
     endif
     return Val
 
-  elseif timl#symbol('lambda') is x[0]
-    let rest = x[1:-1]
+  elseif timl#symbol('lambda') is F
     if timl#symbolp(get(rest, 0))
       let name = remove(rest, 0)
     else
@@ -563,19 +565,19 @@ function! s:eval(x, envs) abort
     if type(get(rest, 0)) != type([])
       throw 'timl(lambda): parameter list required'
     endif
-    let form = len(rest) == 2 ? rest[1] : [timl#symbol('begin')] + x[1:-1]
+    let form = len(rest) == 2 ? rest[1] : [timl#symbol('begin')] + rest[1:-1]
     return s:lambda(name, rest[0], form, ns[0], envs)
 
-  elseif timl#symbol('recur') is x[0]
-    return [g:timl#recur_token] + map(x[1:-1], 's:eval(v:val, envs)')
+  elseif timl#symbol('recur') is F
+    return [g:timl#recur_token] + map(copy(rest), 's:eval(v:val, envs)')
 
-  elseif x[0] is g:timl#recur_token
+  elseif F is g:timl#recur_token
     throw 'timl: incorrect use of recur'
 
-  elseif timl#symbol('let') is x[0]
+  elseif timl#symbol('let') is F
     let env = {}
     let _ = {}
-    for _.let in x[1]
+    for _.let in rest[0]
       if timl#symbolp(_.let)
         throw 'timl: let accepts a list of lists'
       elseif len(_.let) != 2
@@ -599,18 +601,18 @@ function! s:eval(x, envs) abort
         throw 'timl: unsupported binding form '.timl#pr_str(_.key)
       endif
     endfor
-    let form = len(x) == 3 ? x[2] : [timl#symbol('begin')] + x[2:-1]
+    let form = len(rest) == 2 ? rest[1] : [timl#symbol('begin')] + rest[1:-1]
     return s:eval(form, [env] + envs)
 
-  elseif timl#symbol('begin') is x[0]
-    return get(map(x[1:-1], 's:eval(v:val, envs)'), -1, g:timl#nil)
+  elseif timl#symbol('begin') is F
+    return get(map(copy(rest), 's:eval(v:val, envs)'), -1, g:timl#nil)
 
-  elseif timl#symbol('try') is x[0]
+  elseif timl#symbol('try') is F
     let _ = {}
     let forms = []
     let catches = []
     let finallies = []
-    for _.form in x[1:-1]
+    for _.form in rest
       if type(_.form) == type([]) && get(_.form, 0) is timl#symbol('catch')
         let _.pattern = s:eval(get(_.form, 1, g:timl#nil), envs)
         if type(_.pattern) ==# type(0)
@@ -654,20 +656,20 @@ function! s:eval(x, envs) abort
       endtry
     endif
 
-  elseif timl#symbolp(x[0]) && x[0][0] =~# '^:'
-    let strings = map(x[1:-1], 's:string(s:eval(v:val, envs))')
-    execute x[0][0] . ' ' . join(strings, ' ')
+  elseif timl#symbolp(F) && F[0] =~# '^:'
+    let strings = map(copy(rest), 's:string(s:eval(v:val, envs))')
+    execute F[0] . ' ' . join(strings, ' ')
     return g:timl#nil
 
   else
-    if timl#symbolp(x[0])
-      let Fn = timl#function(x[0], envs)
+    if timl#symbolp(F)
+      let Fn = timl#function(F, envs)
       if get(get(g:timl#lambdas, s:string(Fn), {}), 'macro')
-        return s:eval(timl#call(Fn, x[1:-1]), envs)
+        return s:eval(timl#call(Fn, rest), envs)
       endif
-      let evaled = [Fn] + map(x[1:-1], 's:eval(v:val, envs)')
+      let evaled = [Fn] + map(copy(rest), 's:eval(v:val, envs)')
     else
-      let evaled = map(copy(x), 's:eval(v:val, envs)')
+      let evaled = map([F] + rest, 's:eval(v:val, envs)')
     endif
     if type(evaled[0]) == type({})
       let dict = evaled[0]
