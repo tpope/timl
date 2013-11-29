@@ -481,9 +481,9 @@ function! s:eval(x, envs) abort
     let s:gensym_id = get(s:, 'gensym_id', 0) + 1
     return s:quasiquote(get(x, 1, g:timl#nil), envs, s:gensym_id)
 
-  elseif timl#symbol('setq') is x[0]
+  elseif timl#symbol('set!') is x[0]
     if len(x) < 3
-      throw 'timl:E119: setq requires 2 arguments'
+      throw 'timl:E119: set! requires 2 arguments'
     endif
     return call('timl#setq', [envs] + x[1:-1])
 
@@ -494,29 +494,18 @@ function! s:eval(x, envs) abort
     let Cond = s:eval(x[1], envs)
     return s:eval(get(x, empty(Cond) || Cond is 0 ? 3 : 2, g:timl#nil), envs)
 
-  elseif timl#symbol('defun') is x[0]
-    if len(x) < 4
-      throw 'timl:E119: defun requires at least 3 arguments'
-    endif
-    let var = s:string(x[1])
-    let name = timl#symbol(ns[0].'#'.var)
-    let form = len(x) == 4 ? x[3] : [timl#symbol('do')] + x[3:-1]
-    return s:define_function({
-          \ 'ns': ns,
-          \ 'name': name,
-          \ 'arglist': x[2],
-          \ 'env': envs,
-          \ 'form': form,
-          \ 'macro': 0})
-
-  elseif timl#symbol('defvar') is x[0]
-    if len(x) > 3
-      return s:eval([timl#symbol('defun')] + x[1:-1], envs)
-    endif
+  elseif timl#symbol('define') is x[0]
     let var = s:string(x[1])
     let name = ns[0].'#'.var
-    if len(x) != 3
-      throw 'timl:E119: defvar requires 2 arguments'
+    if len(x) > 3
+      let form = len(x) == 4 ? x[3] : [timl#symbol('begin')] + x[3:-1]
+      return s:define_function({
+            \ 'ns': ns,
+            \ 'name': name,
+            \ 'arglist': x[2],
+            \ 'env': envs,
+            \ 'form': form,
+            \ 'macro': 0})
     endif
     let global = timl#munge(name)
     let Val = s:eval(x[2], envs)
@@ -551,11 +540,11 @@ function! s:eval(x, envs) abort
     endif
     return Val
 
-  elseif timl#symbol('lambda') is x[0] || timl#symbol("\u03bb") is x[0]
+  elseif timl#symbol('lambda') is x[0]
     if len(x) < 3
       throw 'timl:E119: lambda requires at least 2 arguments'
     endif
-    let form = len(x) == 3 ? x[2] : [timl#symbol('do')] + x[2:-1]
+    let form = len(x) == 3 ? x[2] : [timl#symbol('begin')] + x[2:-1]
     return s:lambda(x[1], form, ns[0], envs)
 
   elseif timl#symbol('recur') is x[0]
@@ -591,10 +580,10 @@ function! s:eval(x, envs) abort
         throw 'timl: unsupported binding form '.timl#pr_str(_.key)
       endif
     endfor
-    let form = len(x) == 3 ? x[2] : [timl#symbol('do')] + x[2:-1]
+    let form = len(x) == 3 ? x[2] : [timl#symbol('begin')] + x[2:-1]
     return s:eval(form, [env] + envs)
 
-  elseif timl#symbol('do') is x[0]
+  elseif timl#symbol('begin') is x[0]
     return get(map(x[1:-1], 's:eval(v:val, envs)'), -1, g:timl#nil)
 
   elseif timl#symbol('try') is x[0]
@@ -817,18 +806,18 @@ command! -nargs=1 TimLAssert
 
 TimLAssert timl#re('(+ 1 2 3)') == 6
 
-TimLAssert timl#re('(let () (defvar forty-two 42))')
+TimLAssert timl#re('(let () (define forty-two 42))')
 TimLAssert timl#re('forty-two') ==# 42
 
 TimLAssert timl#re('(if 1 forty-two 69)') ==# 42
 TimLAssert timl#re('(if 0 "boo" "yay")') ==# "yay"
-TimLAssert timl#re('(do 1 2)') ==# 2
+TimLAssert timl#re('(begin 1 2)') ==# 2
 
-TimLAssert timl#re('(setq g:timl_setq {})') == {}
+TimLAssert timl#re('(set! g:timl_setq {})') == {}
 TimLAssert g:timl_setq ==# {}
-TimLAssert timl#re('(setq (g:timl_setq "key") (list "a" "b"))') == ["a", "b"]
+TimLAssert timl#re('(set! (g:timl_setq "key") (list "a" "b"))') == ["a", "b"]
 TimLAssert g:timl_setq == {"key": ["a", "b"]}
-TimLAssert timl#re('(setq ((get g:timl_setq "key") 0 0) (list "c"))') == ["c"]
+TimLAssert timl#re('(set! ((get g:timl_setq "key") 0 0) (list "c"))') == ["c"]
 TimLAssert g:timl_setq == {"key": ["c", "b"]}
 unlet! g:timl_setq
 

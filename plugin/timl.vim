@@ -72,7 +72,7 @@ function! s:repl(...)
             echo "\n"
           endtry
         endwhile
-        let s:repl_env['*1'] = timl#eval([timl#symbol('do')] + read, [s:repl_env, g:timl#core#_STAR_ns_STAR_[0], 'timl#repl'])
+        let s:repl_env['*1'] = timl#eval([timl#symbol('begin')] + read, [s:repl_env, g:timl#core#_STAR_ns_STAR_[0], 'timl#repl'])
         echo timl#pr_str(s:repl_env['*1'])
       catch /^timl#repl: EXIT/
         return ''

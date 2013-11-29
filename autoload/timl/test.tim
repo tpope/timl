@@ -1,6 +1,6 @@
 (in-ns 'timl#test)
 
-(defmacro assert (form)
+(define-syntax assert (form)
   `(try
      (if ,form
        1

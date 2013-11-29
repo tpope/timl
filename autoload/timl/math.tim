@@ -1,9 +1,9 @@
-(defun fact (x)
+(define fact (x)
   (loop ((n x)
          (f 1))
     (if (<= n 1) f (recur (1- n) (* f n)))))
 
-(defun fib (n)
+(define fib (n)
   (first
     (loop ((xs (list 1 0)))
       (if (< (length xs) n)

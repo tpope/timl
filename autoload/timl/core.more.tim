@@ -1,44 +1,44 @@
 (in-ns 'timl#core)
-(defun defmacro (...)
-  `(let ((fn# (defun ,@...)))
+(define define-syntax (...)
+  `(let ((fn# (define ,@...)))
      (f:extend (get timl#lambdas (string fn#)) (dict "macro" 1))
      fn#))
-(setq ((f:get g:timl#lambdas "timl#core#defmacro") "macro") 1)
+(set! ((f:get g:timl#lambdas "timl#core#define_syntax") "macro") 1)
 
-#_(defmacro ns (n)
+#_(define-syntax ns (n)
     (list
-      'do
+      'begin
       (if (not (f:exists (string "g:" (timl#munge (string n "#" "*uses*")))))
-        `(setq ,(f:timl#symbol (string n "#*uses*")) (list 'timl#core)))
+        `(set! ,(f:timl#symbol (string n "#*uses*")) (list 'timl#core)))
       `(in-ns ',n)))
 
-(defun pr-str (...) (f:join (map timl#pr-str ...)))
-(defun pr (...) (echo (apply pr-str ...)))
+(define pr-str (...) (f:join (map timl#pr-str ...)))
+(define pr (...) (echo (apply pr-str ...)))
 
-(defmacro loop (bindings ...)
+(define-syntax loop (bindings ...)
  `((lambda ,(map first bindings) ,@...) ,@(map last bindings)))
-(defun 1+ (n) (+ n 1))
-(defun 1- (n) (- n 1))
-(defun reverse (xs) (f:reverse (f:copy xs)))
-(defun not (x) (if x 0 1))
-(defun second (xs) (get xs 1 nil))
-(defun last (xs) (get xs -1 nil))
-(defun butlast (xs) (sublist xs 0 -2))
-(defun get-in (m ks) (reduce get m ks))
+(define 1+ (n) (+ n 1))
+(define 1- (n) (- n 1))
+(define reverse (xs) (f:reverse (f:copy xs)))
+(define not (x) (if x 0 1))
+(define second (xs) (get xs 1 nil))
+(define last (xs) (get xs -1 nil))
+(define butlast (xs) (sublist xs 0 -2))
+(define get-in (m ks) (reduce get m ks))
 
-(defun read-string (string) (timl#reader#read-string string))
-(defun eval (form) (timl#eval form))
+(define read-string (string) (timl#reader#read-string string))
+(define eval (form) (timl#eval form))
 
-(defun constantly (x) (lambda (...) x))
-(defun partial (f ...)
+(define constantly (x) (lambda (...) x))
+(define partial (f ...)
   (let ((args ...))
     (lambda (...) (apply f (append args ...)))))
-(defun compose (f ...)
+(define compose (f ...)
   (if-let (fns ...)
     (lambda (...) (f (apply (apply compose fns) ...)))
     f))
 
-(defun sorter (>)
+(define sorter (>)
   (lambda (x y)
     (if (> x y)
       1
@@ -46,36 +46,36 @@
         -1
         0))))
 
-(defun sort (xs ...)
+(define sort (xs ...)
   (if ...
     (f:sort (f:copy xs) (sorter (first ...)) {})
     (f:sort (f:copy xs))))
 
-(defun reductions (f init xs)
+(define reductions (f init xs)
   (cons init (if xs
     (reductions f (f init (first xs)) (rest xs)))))
 
-(defmacro or (x ...)
+(define-syntax or (x ...)
   (if ...
     `(let ((or# ,x)) (if or# or# (or ,@...)))
     x))
 
-(defmacro and (x ...)
+(define-syntax and (x ...)
   (if ...
     `(let ((and# ,x)) (if and# (and ,@...) and#))
     x))
 
-(defmacro when (test ...)
-  `(if ,test (do ,@...)))
+(define-syntax when (test ...)
+  `(if ,test (begin ,@...)))
 
-(defmacro if-let (binding then ...)
+(define-syntax if-let (binding then ...)
   (let ((form (first binding))
         (tst (last binding)))
     `(let ((temp# ,tst))
       (if temp#
         (let ((,form temp#)) ,then) ,@...))))
 
-(defmacro cond (...)
+(define-syntax cond (...)
   (when ...
     (list 'if (first (first ...))
           (second (first ...))
@@ -92,21 +92,21 @@
           (list form x))))
     x))
 
-(defmacro capture (...)
-  `(do
+(define-syntax capture (...)
+  `(begin
      (try
        (: "redir => g:timl_core_captured")
        ,@...
        (finally (: "redir END")))
      (f:substitute g:timl_core_captured "^\n" "" "")))
 
-(defmacro include-guard (var)
+(define-syntax include-guard (var)
   (let ((str (timl#munge (string var))))
    `(if (f:exists ,str)
      (: 'finish)
-     (setq ,var 1))))
+     (set! ,var 1))))
 
-(defun build-option-string (...)
+(define build-option-string (...)
   (sublist
     (loop ((s "")
            (x (first ...))
@@ -118,15 +118,15 @@
           (first more) (rest more))
         )) 1 -1))
 
-(defun extract-option-names (...)
+(define extract-option-names (...)
   (map (lambda (x) (f:matchstr (string x) "\\%(inv\\|no\\)\\=\\zs\\w\\+")) (filter symbol? ...)))
 
-(defun extract-option-restore (...)
+(define extract-option-restore (...)
   (if-let (options (apply extract-option-names ...))
     (string "setlocal " (f:join options "< ") "<")))
 
-(defmacro setlocal (...)
+(define-syntax setlocal (...)
   `(: (string "setlocal " ,(apply build-option-string ...))))
 
-(defmacro setglobal (...)
+(define-syntax setglobal (...)
   `(: (string "setlocal " ,(apply build-option-string ...))))

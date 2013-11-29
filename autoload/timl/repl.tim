@@ -1,4 +1,4 @@
-(defun impl (fn)
+(define impl (fn)
   (if fn
     (or (get timl#lambdas (string fn))
         (try
@@ -11,12 +11,12 @@
             (filter (compose not nil? last) (dict "name" name "arglist" arglist "file" file)))
           (catch 123 e (dict))))))
 
-(defun source (fn)
+(define source (fn)
   (if-let (impl (impl fn))
     (list 'lambda
           (get impl "arglist" '...)
           (get impl "form" '...))))
 
-(defun doc (fn)
+(define doc (fn)
   (: (string "silent help " (f:substitute (string fn) "^f:" "" "") "("))
   (: (string "throw " (f:string "timl#repl: EXIT"))))
