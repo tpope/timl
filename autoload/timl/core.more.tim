@@ -1,10 +1,16 @@
 (in-ns 'timl#core)
-(defmacro ns (ns)
-  (list
-    'do
-    (if (not (f:exists (string "g:" (timl#munge (string ns "#" "*uses*")))))
-      `(setq ,(f:timl#symbol (string ns "#*uses*")) (list 'timl#core)))
-    `(in-ns ',ns)))
+(defun defmacro (...)
+  `(let ((fn# (defun ,@...)))
+     (f:extend (get timl#lambdas (string fn#)) (dict "macro" 1))
+     fn#))
+(setq ((f:get g:timl#lambdas "timl#core#defmacro") "macro") 1)
+
+#_(defmacro ns (n)
+    (list
+      'do
+      (if (not (f:exists (string "g:" (timl#munge (string n "#" "*uses*")))))
+        `(setq ,(f:timl#symbol (string n "#*uses*")) (list 'timl#core)))
+      `(in-ns ',n)))
 
 (defun pr-str (...) (f:join (map timl#pr-str ...)))
 (defun pr (...) (echo (apply pr-str ...)))
@@ -75,7 +81,7 @@
           (second (first ...))
           (cons `cond (rest ...)))))
 
-(defmacro -> (x ...)
+(define-syntax -> (x ...)
   (if ...
     (let ((form (first ...))
           (more (rest ...)))

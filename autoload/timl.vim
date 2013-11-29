@@ -109,7 +109,7 @@ endfunction
 
 function! timl#demunge(var) abort
   let var = s:string(a:var)
-  return tr(substitute(a:var, '_\(\u\+\)_', '\=get(s:demunge, submatch(0), submatch(0))', 'g'), '_', '-')
+  return tr(substitute(var, '_\(\u\+\)_', '\=get(s:demunge, submatch(0), submatch(0))', 'g'), '_', '-')
 endfunction
 
 function! timl#a2env(f, a) abort
@@ -494,11 +494,10 @@ function! s:eval(x, envs) abort
     let Cond = s:eval(x[1], envs)
     return s:eval(get(x, empty(Cond) || Cond is 0 ? 3 : 2, g:timl#nil), envs)
 
-  elseif timl#symbol('defun') is x[0] || timl#symbol('defmacro') is x[0]
+  elseif timl#symbol('defun') is x[0]
     if len(x) < 4
       throw 'timl:E119: defun requires at least 3 arguments'
     endif
-    let macro = timl#symbol('defmacro') is x[0]
     let var = s:string(x[1])
     let name = timl#symbol(ns[0].'#'.var)
     let form = len(x) == 4 ? x[3] : [timl#symbol('do')] + x[3:-1]
@@ -508,7 +507,7 @@ function! s:eval(x, envs) abort
           \ 'arglist': x[2],
           \ 'env': envs,
           \ 'form': form,
-          \ 'macro': macro})
+          \ 'macro': 0})
 
   elseif timl#symbol('defvar') is x[0]
     if len(x) > 3
