@@ -14,7 +14,7 @@ setl iskeyword+=?,!,#,$,%,&,*,+,.,/,<,>,:,~
 syn cluster lispBaseListCluster add=timlSpecialForm,timlString
 
 syn keyword timlSpecialForm quote quasiquote unquote unquote-splicing function
-syn keyword timlSpecialForm if set! define lambda let begin
+syn keyword timlSpecialForm if set! define lambda let begin recur
 syn keyword timlSpecialForm try catch finally
 syn region  timlString   start=+"+ skip=+\\\\\|\\"+ end=+"+
 syn match   timlComment  ";.*"
