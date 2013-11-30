@@ -2,7 +2,7 @@
   (if fn
     (or (get timl#lambdas (string fn))
         (try
-          (let ((output     (capture (: "source verbose function" (f:join (list fn)))))
+          (let ((output     (capture (: "silent verbose function" (f:join (list fn)))))
                 (raw        (f:split output "\n"))
                 (file       (f:expand (f:matchstr (second raw) "\\S\\+$")))
                 (definition (first raw))
