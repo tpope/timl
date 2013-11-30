@@ -20,7 +20,7 @@ augroup timl
 augroup END
 
 command! -bar -nargs=?                                             TLrepl :execute s:repl(<f-args>)
-command! -nargs=1 -complete=expression                          TLinspect :echo timl#pr_str(<args>)
+command! -nargs=1 -complete=expression                          TLinspect :echo timl#printer#string(<args>)
 command! -nargs=1 -complete=customlist,timl#reflect#input_complete TLeval :echo timl#rep(<q-args>)
 
 function! s:load_filetype(ft) abort
@@ -89,7 +89,7 @@ function! s:repl(...) abort
           endtry
         endwhile
         let s:repl_env['*1'] = timl#eval([timl#symbol('begin')] + read, [s:repl_env, g:timl#core#_STAR_ns_STAR_[0], 'timl#repl'])
-        echo timl#pr_str(s:repl_env['*1'])
+        echo timl#printer#string(s:repl_env['*1'])
       catch /^timl#repl: exit/
         return v:exception[16:-1]
       catch /^Vim\%((\a\+)\)\=:E168/

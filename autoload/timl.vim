@@ -198,6 +198,10 @@ augroup END
 " }}}1
 " Section: Eval {{{1
 
+function! s:pr_str(x)
+  return timl#printer#string(a:x)
+endfunction
+
 if !exists('g:timl#namespaces')
   let g:timl#namespaces = {
         \ 'timl#core': {'referring': [], 'aliases': {}},
@@ -479,7 +483,7 @@ function! timl#setq(envs, target, val) abort
       return val
     endif
   endif
-  throw 'timl: invalid assignment target ' . timl#pr_str(a:target)
+  throw 'timl: invalid assignment target ' . s:pr_str(a:target)
 endfunction
 
 function! timl#build_exception(exception, throwpoint)
@@ -638,7 +642,7 @@ function! s:eval(x, envs) abort
       if timl#symbolp(_.let)
         throw 'timl: let accepts a list of lists'
       elseif len(_.let) != 2
-        throw 'timl: invalid binding '.timl#pr_str(_.let)
+        throw 'timl: invalid binding '.s:pr_str(_.let)
       endif
       let [_.key, _.form] = _.let
       let _.val = s:eval(_.form, [env] + envs)
@@ -655,7 +659,7 @@ function! s:eval(x, envs) abort
           endif
         endfor
       else
-        throw 'timl: unsupported binding form '.timl#pr_str(_.key)
+        throw 'timl: unsupported binding form '.s:pr_str(_.key)
       endif
     endfor
     let form = len(rest) == 2 ? rest[1] : [timl#symbol('begin')] + rest[1:-1]
@@ -741,7 +745,7 @@ function! s:eval(x, envs) abort
       let Func = evaled[0]
       let args = evaled[1:-1]
     else
-      throw 'timl: cannot call ' . timl#pr_str(x)
+      throw 'timl: cannot call ' . s:pr_str(x)
     endif
 
     return timl#call(Func, args, dict)
@@ -753,7 +757,7 @@ function! timl#re(str, ...) abort
 endfunction
 
 function! timl#rep(...) abort
-  return timl#pr_str(call('timl#re', a:000))
+  return s:pr_str(call('timl#re', a:000))
 endfunction
 
 function! timl#source_file(filename, ...)
@@ -819,47 +823,6 @@ function! s:quasiquote(token, envs, id) abort
       unlet! V
     endfor
     return ret
-  endif
-endfunction
-
-" }}}1
-" Section: Print {{{1
-
-let s:escapes = {
-      \ "\n": '\n',
-      \ "\r": '\r',
-      \ "\t": '\t',
-      \ "\"": '\"',
-      \ "\\": '\\'}
-
-function! timl#pr_str(x)
-  " TODO: guard against recursion
-  if timl#symbolp(a:x)
-    return a:x[0]
-  elseif a:x is# g:timl#nil
-    return 'nil'
-  elseif type(a:x) == type([])
-    return '(' . join(map(copy(a:x), 'timl#pr_str(v:val)'), ' ') . ')'
-  elseif type(a:x) == type({})
-    let acc = []
-    for [k, V] in items(a:x)
-      call add(acc, timl#pr_str(k) . ' ' . timl#pr_str(V))
-      unlet! V
-    endfor
-    return '#dict(' . join(acc, ' ') . ')'
-  elseif type(a:x) == type('')
-    return '"'.substitute(a:x, "[\n\r\t\"\\\\]", '\=get(s:escapes, submatch(0))', 'g').'"'
-  elseif type(a:x) == type(function('tr'))
-    let name = join([a:x])
-    if name =~# '^{.*}$'
-      return "#'" . name[1:-2]
-    elseif name =~# '#' || name =~# '^[[:digit:]<]'
-      return "#'" . timl#demunge(name)
-    else
-      return "#'" . 'f:' . timl#demunge(name)
-    endif
-  else
-    return string(a:x)
   endif
 endfunction
 

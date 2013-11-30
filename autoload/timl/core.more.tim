@@ -1,6 +1,6 @@
 (in-ns 'timl#core)
 
-(define pr-str (...) (f:join (map timl#pr-str ...)))
+(define pr-str (...) (f:join (map timl#printer#string ...)))
 (define pr (...) (echo (apply pr-str ...)))
 (define read-string (string) (timl#reader#read-string string))
 (define eval (form) (timl#eval form))
