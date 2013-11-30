@@ -19,14 +19,30 @@ function! timl#printer#string(x)
   elseif a:x is# g:timl#nil
     return 'nil'
   elseif type(a:x) == type([])
-    return '(' . join(map(copy(a:x), 'timl#printer#string(v:val)'), ' ') . ')'
+    if timl#symbolp(get(a:x, 0, '')) && a:x[0][0] =~# '^#'
+      let index = 1
+      let prefix = a:x[0][0]
+    else
+      let index = 0
+      let prefix = ''
+    endif
+    return prefix.'('.join(map(a:x[index : ], 'timl#printer#string(v:val)'), ' ') . ')'
   elseif type(a:x) == type({})
+    if timl#symbolp(get(a:x, '#tag', '')) && a:x['#tag'][0] =~# '^#'
+      let prefix = a:x['#tag'][0].' '
+      let skip = '#tag'
+    else
+      let prefix = ''
+      let skip = ''
+    endif
     let acc = []
     for [k, V] in items(a:x)
-      call add(acc, timl#printer#string(k) . ' ' . timl#printer#string(V))
+      if k !=# skip
+        call add(acc, timl#printer#string(k) . ' ' . timl#printer#string(V))
+      endif
       unlet! V
     endfor
-    return '#dict(' . join(acc, ' ') . ')'
+    return prefix.'#dict(' . join(acc, ' ') . ')'
   elseif type(a:x) == type('')
     return '"'.substitute(a:x, "[\n\r\t\"\\\\]", '\=get(s:escapes, submatch(0))', 'g').'"'
   elseif type(a:x) == type(function('tr'))

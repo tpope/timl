@@ -7,6 +7,20 @@ let g:autoloaded_timl_reader = 1
 
 let s:iskeyword = '[[:alnum:]_=?!#$%&*+|./<>:~-]'
 
+let g:timl#reader#tag_handlers = {}
+
+function g:timl#reader#tag_handlers.dict(list)
+  let list = timl#cons#to_vector(a:list)
+  if len(list) % 2 == 0
+    let dict = {}
+    for i in range(0, len(list)-1, 2)
+      let dict[type(list[i]) == type([]) ? substitute(join(list[i]), '^:', '', '') : list[i]] = list[i+1]
+    endfor
+    return dict
+  endif
+  throw 'timl#reader: invalid dict literal'
+endfunction
+
 function! s:read_token(port) abort
   let pat = '^\%(#[[:punct:]]\|"\%(\\.\|[^"]\)*"\|[[:space:]]\|;.\{-\}\ze\%(\n\|$\)\|,@\|'.s:iskeyword.'\+\|@.\|.\)'
   let match = matchstr(a:port.str, pat, a:port.pos)
@@ -67,14 +81,27 @@ function! s:read(port, ...) abort
   let token = a:0 ? a:1 : s:read_token(port)
   if token ==# '('
     return s:read_until(port, ')')
-  elseif token ==# '#dict' || token == '{'
-    let list = (token ==# '{' ? s:read_until(port, '}') : s:read(port))
+  elseif token == '{'
+    let list = s:read_until(port, '}')
     if type(list) !=# type([]) || len(list) % 2 != 0
       let error = 'timl#reader: invalid dict literal'
     else
       let dict = {}
       for i in range(0, len(list)-1, 2)
-        let dict[type(list[i]) == type([]) ? substitute(join(list[i]), '^:', '', '') : list[i]] = list[i+1]
+        if timl#symbolp(list[i])
+          if list[i][0][0] ==# ':'
+            let key = list[i][0][1:-1]
+          else
+            let key = "'".list[i][0]
+          endif
+        elseif type(list[i]) == type(0)
+          let key = ';' . list[i]
+        elseif type(list[i]) == type("")
+          let key = '"' . list[i]
+        else
+      let error = 'timl#reader: invalid dict key type'
+        endif
+        let dict[key] = list[i+1]
       endfor
       return dict
     endif
@@ -105,6 +132,17 @@ function! s:read(port, ...) abort
   elseif token ==# '#_'
     call s:read(port)
     return s:read(port)
+  elseif token =~# '^#\a'
+    let next = s:read(port)
+    if has_key(g:timl#reader#tag_handlers, token[1:-1])
+      return g:timl#reader#tag_handlers[token[1:-1]](next)
+    elseif type(next) == type([])
+      return insert(next, timl#symbol(token))
+    elseif type(next) == type({})
+      return extend(next, {'#tag': timl#symbol(token)})
+    else
+      return {'value': next, '#tag': timl#symbol(token)}
+    endif
   elseif token =~# '^'.s:iskeyword || token =~# '^@.$'
     return timl#symbol(token)
   elseif empty(token)
@@ -171,7 +209,7 @@ TimLRAssert timl#reader#read_string('foo') ==# timl#symbol('foo')
 TimLRAssert timl#reader#read_string('":)"') ==# ':)'
 TimLRAssert timl#reader#read_string('(car (list 1 2))') ==# [timl#symbol('car'), [timl#symbol('list'), 1, 2]]
 TimLRAssert timl#reader#read_string('#dict("a" 1 "b" 2)') ==# {"a": 1, "b": 2}
-TimLRAssert timl#reader#read_string('{"a" 1 "b" 2}') ==# {"a": 1, "b": 2}
+TimLRAssert timl#reader#read_string('{"a" 1 :b 2 3 "c"}') ==# {'"a': 1, "b": 2, ";3": "c"}
 TimLRAssert timl#reader#read_string("(1)\n; hi\n") ==# [1]
 TimLRAssert timl#reader#read_string('({})') ==# [{}]
 TimLRAssert timl#reader#read_string("'(1 2 3)") ==# [timl#symbol('quote'), [1, 2, 3]]

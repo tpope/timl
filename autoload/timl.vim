@@ -258,7 +258,7 @@ endfunction
 
 function! timl#lookup(envs, sym) abort
   let sym = a:sym[0]
-  if sym =~# '^:.'
+  if sym =~# '^[#:].'
     return a:sym
   elseif sym =~# '^f:' && exists('*'.sym[2:-1])
     return function(sym[2:-1])
@@ -337,7 +337,7 @@ function! timl#function(sym, ...) abort
     return function(munged[2:-1])
   elseif demunged =~# '^\w:' && exists(munged) && type(eval(munged)) == t
     return eval(demunged)
-  elseif demunged =~# '#'
+  elseif demunged =~# '.#'
     call timl#autoload(demunged)
     if exists('*'.munged)
       return function(munged)
@@ -517,7 +517,7 @@ function! timl#eval(x, ...) abort
 endfunction
 
 if !exists('g:timl#recur_token')
-  let g:timl#recur_token = s:persistent_list('recur token')
+  let g:timl#recur_token = timl#symbol('#recur')
 endif
 
 let s:function   = timl#symbol('function')
@@ -861,8 +861,8 @@ TimLAssert timl#re('(set! ((get g:timl_setq "key") 0 0) (list "c"))') == ["c"]
 TimLAssert g:timl_setq == {"key": ["c", "b"]}
 unlet! g:timl_setq
 
-TimLAssert timl#re('(let (((j k) {"j" 1}) ((l m) (list 2))) (list j k l m))') == [1, g:timl#nil, 2, g:timl#nil]
-TimLAssert timl#re('(reduce (lambda (m (k v)) (append m (list v k))) ''() {"a" 1})') == [1, "a"]
+TimLAssert timl#re('(let (((j k) (dict "j" 1)) ((l m) (list 2))) (list j k l m))') == [1, g:timl#nil, 2, g:timl#nil]
+TimLAssert timl#re('(reduce (lambda (m (k v)) (append m (list v k))) ''() (dict "a" 1))') == [1, "a"]
 
 TimLAssert timl#re('(dict "a" 1 "b" 2)') ==# {"a": 1, "b": 2}
 TimLAssert timl#re('(dict "a" 1 (list "b" 2))') ==# {"a": 1, "b": 2}

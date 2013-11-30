@@ -13,7 +13,19 @@ function! timl#core#nil_QMARK_(val) abort
 endfunction
 
 function! timl#core#type(val) abort
-  return timl#core#symbol_QMARK_(a:val) ? -1 : type(a:val)
+  let type = type(a:val)
+  if type == type([])
+    if timl#symbolp(a:val)
+      return -1
+    elseif timl#symbolp(get(a:val, 0)) && a:val[0][0][0] ==# '#'
+      return a:val[0][0][1:-1]
+    endif
+  elseif type == type({})
+    if timl#symbolp(get(a:val, '#type')) && a:val['#type'][0][0] ==# '#'
+      return a:val['#type'][0][1:-1]
+    endif
+  endif
+  return type
 endfunction
 
 function! timl#core#symbol_QMARK_(symbol) abort
