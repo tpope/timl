@@ -179,10 +179,6 @@ endfunction
 " }}}1
 " Section: Lists {{{1
 
-function! timl#core#length(list) abort
-  return len(a:list)
-endfunction
-
 function! timl#core#first(list) abort
   return get(a:list, 0, g:timl#nil)
 endfunction
@@ -201,13 +197,6 @@ endfunction
 
 function! timl#core#list(...) abort
   return a:000
-endfunction
-
-function! timl#core#get(coll, key, ...) abort
-  if type(a:coll) == type([]) && type(a:key) != type(0)
-    return a:0 ? a:1 : g:timl#nil
-  endif
-  return get(a:coll, a:key, a:0 ? a:1 : g:timl#nil)
 endfunction
 
 function! timl#core#sublist(list, start, ...) abort
@@ -244,39 +233,6 @@ function! timl#core#cons(val, list) abort
   return [a:val] + a:list
 endfunction
 
-function! timl#core#map(f, list) abort
-  if type(a:list) == type({})
-    return map(copy(a:list), 'timl#call(a:f, [[v:key, v:val]])')
-  else
-    return map(copy(a:list), 'timl#call(a:f, [v:val])')
-  endif
-endfunction
-
-function! timl#core#filter(f, list) abort
-  if type(a:list) == type({})
-    return filter(copy(a:list), 'timl#call(a:f, [[v:key, v:val]], {})')
-  else
-    return filter(copy(a:list), 'timl#call(a:f, [v:val], {})')
-  endif
-endfunction
-
-function! timl#core#reduce(f, val_or_list, ...) abort
-  let _ = {}
-  if a:0
-    let _.val = a:val_or_list
-    let list = a:1
-  elseif empty(a:val_or_list)
-    return g:timl#nil
-  else
-    let list = copy(a:val_or_list)
-    let _.val = remove(list, 0)
-  endif
-  for _.elem in (type(list) == type({}) ? items(list) : list)
-    let _.val = timl#call(a:f, [_.val, _.elem])
-  endfor
-  return _.val
-endfunction
-
 " }}}1
 " Section: Dictionaries {{{1
 
@@ -311,6 +267,84 @@ function! timl#core#dissoc(dict, ...) abort
     endif
   endfor
   return dict
+endfunction
+
+" }}}1
+" Section: Collections {{{1
+
+function! timl#core#length(coll) abort
+  let t = timl#core#type(a:coll)
+  if type(t) == type('')
+    return len(a:coll) - 1
+  endif
+  return len(a:coll)
+endfunction
+
+function! timl#core#empty_QMARK_(coll)
+  return timl#core#length(a:coll) ? s:false : s:true
+endfunction
+
+function! timl#core#empty(coll) abort
+  if type(a:coll) == type({})
+    return {}
+  elseif type(a:coll) == type('')
+    return ''
+  elseif type(a:coll) == type([]) && !timl#symbolp(a:coll)
+    return []
+  endif
+  return g:timl#nil
+endfunction
+
+function! timl#core#get(coll, key, ...) abort
+  let def = a:0 ? a:1 : g:timl#nil
+  let t = timl#core#type(a:coll)
+  if type(a:coll) == type([])
+    if type(a:key) != type(0)
+      return a:0 ? a:1 : g:timl#nil
+    endif
+    return get(a:coll, a:key + (a:key > 0 && type(t) ==# type('')), def)
+  endif
+  return get(a:coll, timl#core#string(a:key), a:0 ? a:1 : def)
+endfunction
+
+function! s:bare(coll)
+  let t = timl#core#type(a:coll)
+  if type(a:coll) == type({})
+    if type(t) == type('')
+      let dict = copy(a:coll)
+      call remove(dict, '#tag')
+      return items(dict)
+    else
+      return items(a:coll)
+    endif
+  elseif type(a:coll) == type([])
+    return a:coll[type(t) == type('') : -1]
+  endif
+  throw 'timl: not a collection'
+endfunction
+
+function! timl#core#map(f, coll) abort
+  let result = map(s:bare(a:coll), 'timl#call(a:f, [v:val])')
+  lockvar result
+  return result
+endfunction
+
+function! timl#core#reduce(f, coll, ...) abort
+  let _ = {}
+  if a:0
+    let _.val = a:coll
+    let coll = s:bare(a:1)
+  else
+    let coll = s:bare(a:coll)
+    if empty(coll)
+      return g:timl#nil
+    endif
+    let _.val = remove(coll, 0)
+  endif
+  for _.elem in coll
+    let _.val = timl#call(a:f, [_.val, _.elem])
+  endfor
+  return _.val
 endfunction
 
 " }}}1

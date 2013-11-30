@@ -1,6 +1,5 @@
 (in-ns 'timl#core)
 
-(define empty? f:empty)
 (define (not-empty xs) (if (empty? xs) nil xs))
 (define (next xs) (not-empty (rest xs)))
 (define (second xs) (first (rest xs)))
@@ -32,3 +31,4 @@
     (reductions f (f init (first xs)) (rest xs)))))
 
 (define (get-in m ks) (reduce get m ks))
+(define (filter f coll) (reduce (lambda (m o) (if (f o) (append m (list o)) m)) '() coll))
