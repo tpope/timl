@@ -63,16 +63,6 @@ endfunction
 
 " From clojure/lange/Compiler.java
 let s:munge = {
-      \ '0': "_ZERO_",
-      \ '1': "_ONE_",
-      \ '2': "_TWO_",
-      \ '3': "_THREE_",
-      \ '4': "_FOUR_",
-      \ '5': "_FIVE_",
-      \ '6': "_SIX_",
-      \ '7': "_SEVEN_",
-      \ '8': "_EIGHT_",
-      \ '9': "_NINE_",
       \ ',': "_COMMA_",
       \ ':': "_COLON_",
       \ '+': "_PLUS_",
