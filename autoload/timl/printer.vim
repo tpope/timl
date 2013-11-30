@@ -21,6 +21,18 @@ function! timl#printer#string(x)
   elseif a:x is# g:timl#nil
     return 'nil'
 
+  elseif timl#consp(a:x)
+    let acc = []
+    let _ = {'x': a:x}
+    while timl#consp(_.x)
+      call add(acc, timl#printer#string(timl#car(_.x)))
+      let _.x = timl#cdr(_.x)
+    endwhile
+    if _.x isnot# g:timl#nil
+      call extend(acc, ['.', timl#printer#string(_.x)])
+    endif
+    return '('.join(acc, ' ').')'
+
   elseif type(a:x) == type([])
     if timl#symbolp(get(a:x, 0, '')) && a:x[0][0] =~# '^#'
       let index = 1
@@ -29,7 +41,7 @@ function! timl#printer#string(x)
       let index = 0
       let prefix = ''
     endif
-    return prefix.'('.join(map(a:x[index : ], 'timl#printer#string(v:val)'), ' ') . ')'
+    return prefix.'['.join(map(a:x[index : ], 'timl#printer#string(v:val)'), ' ') . ']'
 
   elseif type == 'timl#vim#dictionary'
     let acc = []
@@ -86,7 +98,7 @@ command! -nargs=1 TimLPAssert
 
 TimLPAssert timl#printer#string('foo') ==# '"foo"'
 TimLPAssert timl#printer#string(timl#symbol('foo')) ==# 'foo'
-TimLPAssert timl#printer#string([1,2]) ==# '(1 2)'
+TimLPAssert timl#printer#string([1,2]) ==# '[1 2]'
 TimLPAssert timl#printer#string({"a": 1, "b": 2}) ==# '#["a" 1 "b" 2]'
 
 delcommand TimLPAssert

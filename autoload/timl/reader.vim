@@ -69,7 +69,9 @@ function! s:read(port, ...) abort
   let pos = a:0 ? a:2 : port.pos
   let token = a:0 ? a:1 : s:read_token(port)
   if token ==# '('
-    return s:read_until(port, ')')
+    return timl#list2(s:read_until(port, ')'))
+  elseif token == '['
+    return s:read_until(port, ']')
   elseif token == '{'
     let list = s:read_until(port, '}')
     if len(list) % 2 != 0
@@ -125,15 +127,15 @@ function! s:read(port, ...) abort
   elseif token =~# '^"\|^[+-]\=\d\%(.*\d\)\=$'
     return eval(token)
   elseif token ==# "'"
-    return [timl#symbol('quote'), s:read_bang(port)]
+    return timl#list(timl#symbol('quote'), s:read_bang(port))
   elseif token ==# '`'
-    return [timl#symbol('quasiquote'), s:read_bang(port)]
+    return timl#list(timl#symbol('quasiquote'), s:read_bang(port))
   elseif token ==# ','
-    return [timl#symbol('unquote'), s:read_bang(port)]
+    return timl#list(timl#symbol('unquote'), s:read_bang(port))
   elseif token ==# ',@'
-    return [timl#symbol('unquote-splicing'), s:read_bang(port)]
+    return timl#list(timl#symbol('unquote-splicing'), s:read_bang(port))
   elseif token ==# '#*'
-    return [timl#symbol('function'), s:read_bang(port)]
+    return timl#list(timl#symbol('function'), s:read_bang(port))
   elseif token[0] ==# ';'
     return s:read(port)
   elseif token ==# '#_'
@@ -221,15 +223,15 @@ command! -nargs=1 TimLRAssert
 
 TimLRAssert timl#reader#read_string('foo') ==# timl#symbol('foo')
 TimLRAssert timl#reader#read_string('":)"') ==# ':)'
-TimLRAssert timl#reader#read_string('(car (list 1 2))') ==# [timl#symbol('car'), [timl#symbol('list'), 1, 2]]
+TimLRAssert timl#reader#read_string('(first [1 2])') ==# timl#list(timl#symbol('first'), [1, 2])
 TimLRAssert timl#reader#read_string('#["a" 1 "b" 2]') ==# {"a": 1, "b": 2}
 TimLRAssert timl#reader#read_string('{"a" 1 :b 2 3 "c"}') ==# {' "a"': 1, "b": 2, "3": "c", '#tag': timl#symbol('#timl#lang#hash-map')}
-TimLRAssert timl#reader#read_string("(1)\n; hi\n") ==# [1]
-TimLRAssert timl#reader#read_string("'(1 2 3)") ==# [timl#symbol('quote'), [1, 2, 3]]
-TimLRAssert timl#reader#read_string("`foo") ==# [timl#symbol('quasiquote'), timl#symbol('foo')]
-TimLRAssert timl#reader#read_string(",foo") ==# [timl#symbol('unquote'), timl#symbol('foo')]
-TimLRAssert timl#reader#read_string("#*tr") ==# [timl#symbol('function'), timl#symbol('tr')]
-TimLRAssert timl#reader#read_string("(1 #_2 3)") ==# [1, 3]
+TimLRAssert timl#reader#read_string("[1]\n; hi\n") ==# [1]
+TimLRAssert timl#reader#read_string("'[1 2 3]") ==# timl#list(timl#symbol('quote'), [1, 2, 3])
+TimLRAssert timl#reader#read_string("`foo") ==# timl#list(timl#symbol('quasiquote'), timl#symbol('foo'))
+TimLRAssert timl#reader#read_string(",foo") ==# timl#list(timl#symbol('unquote'), timl#symbol('foo'))
+TimLRAssert timl#reader#read_string("#*tr") ==# timl#list(timl#symbol('function'), timl#symbol('tr'))
+TimLRAssert timl#reader#read_string("(1 #_2 3)") ==# timl#list(1, 3)
 
 delcommand TimLRAssert
 

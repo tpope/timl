@@ -191,15 +191,19 @@ endfunction
 " Section: Lists {{{1
 
 function! timl#core#car(list) abort
-  return get(a:list, 0, g:timl#nil)
+  return timl#car(a:list)
 endfunction
 
 function! timl#core#cdr(list) abort
-  return timl#lock(a:list[1:-1])
+  return timl#cdr(a:list)
 endfunction
 
 function! timl#core#list(...) abort
-  return a:000
+  return timl#list2(a:000)
+endfunction
+
+function! timl#core#list_STAR_(seq) abort
+  return timl#list2(a:seq)
 endfunction
 
 function! timl#core#sublist(list, start, ...) abort
@@ -221,19 +225,24 @@ function! timl#core#slice(list, start, ...) abort
 endfunction
 
 function! timl#core#list_QMARK_(val) abort
-  return !timl#symbolp(a:val) && type(a:val) == type([]) ? s:true : s:false
+  return timl#consp(a:val) ? s:true : s:false
+endfunction
+
+function! timl#core#vector_QMARK_(val) abort
+  return timl#vectorp(a:val) ? s:true : s:false
 endfunction
 
 function! timl#core#append(...) abort
   let acc = []
-  for elem in a:000
-    call extend(acc, elem)
+  let _ = {}
+  for _.elem in a:000
+    call extend(acc, timl#vec(_.elem))
   endfor
   return timl#lock(acc)
 endfunction
 
 function! timl#core#cons(val, list) abort
-  return timl#lock([a:val] + a:list)
+  return timl#cons(a:val, a:list)
 endfunction
 
 " }}}1
@@ -241,8 +250,8 @@ endfunction
 
 function! timl#core#dict(...) abort
   let list = copy(a:000)
-  while len(a:000) % 2 !=# 0 && timl#core#list_QMARK_(list[-1]) is# s:true
-    call extend(list, remove(list, -1))
+  while len(a:000) % 2 !=# 0 && type(list[-1]) == type([])
+    call extend(list, timl#vec(remove(list, -1)))
   endwhile
   if len(list) % 2 !=# 0
     throw 'timl: dict requires a even number of arguments'
@@ -313,7 +322,9 @@ endfunction
 
 function! timl#core#seq(coll)
   let t = timl#type(a:coll)
-  if t == 'timl#vim#dictionary'
+  if t ==# 'timl#lang#cons'
+    return timl#vec(a:coll)
+  elseif t == 'timl#vim#dictionary'
     let seq = timl#lock(items(a:coll))
   elseif t == 'timl#vim#list'
     let seq = timl#persistent(a:coll)
@@ -337,6 +348,10 @@ function! timl#core#length(coll) abort
     return len(a:coll) - 1
   endif
   return len(a:coll)
+endfunction
+
+function! timl#core#count(list) abort
+  return timl#count(a:list)
 endfunction
 
 function! timl#core#empty_QMARK_(coll)

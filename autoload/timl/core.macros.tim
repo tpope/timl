@@ -13,8 +13,11 @@
         `(set! ,(f:timl#symbol (string n "#*uses*")) (list 'timl#core)))
       `(in-ns ',n)))
 
+(define-syntax (defn name params ...)
+  `(define ,(cons name params) ,@...))
+
 (define-syntax (loop bindings ...)
- `((lambda ,(map first bindings) ,@...) ,@(map last bindings)))
+ `((lambda ,(map first bindings) ,@...) ,@(map second bindings)))
 
 (define-syntax (or x ...)
   (if ...
