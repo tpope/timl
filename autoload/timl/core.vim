@@ -13,7 +13,7 @@ function! timl#core#nil_QMARK_(val) abort
 endfunction
 
 function! timl#core#type(val) abort
-  return timl#core#symbol_QMARK_(a:val) ? -1 : a:val
+  return timl#core#symbol_QMARK_(a:val) ? -1 : type(a:val)
 endfunction
 
 function! timl#core#symbol_QMARK_(symbol) abort
