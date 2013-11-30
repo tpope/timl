@@ -188,22 +188,14 @@ augroup timl#gc
 augroup END
 
 " }}}1
-" Section: Eval {{{1
+" Section: Namespaces {{{1
 
-function! s:pr_str(x)
-  return timl#printer#string(a:x)
-endfunction
-
-if !exists('g:timl#namespaces')
-  let g:timl#namespaces = {
-        \ 'timl#core': {'referring': [], 'aliases': {}},
-        \ 'user':      {'referring': ['timl#repl', 'timl#core'], 'aliases': {}}}
-endif
+let s:ns = timl#symbol('#namespace')
 
 function! timl#create_ns(name, ...)
   let name = s:string(a:name)
   if !has_key(g:timl#namespaces, a:name)
-    let g:timl#namespaces[a:name] = {'referring': ['timl#core'], 'aliases': {}}
+    let g:timl#namespaces[a:name] = {'#tag': s:ns, 'referring': ['timl#core'], 'aliases': {}}
   endif
   let ns = g:timl#namespaces[a:name]
   if !a:0
@@ -221,6 +213,19 @@ function! timl#create_ns(name, ...)
     let ns.aliases[_.name] = s:string(_.target)
   endfor
   return ns
+endfunction
+
+if !exists('g:timl#namespaces')
+  let g:timl#namespaces = {
+        \ 'timl#core': {'#tag': s:ns, 'referring': [], 'aliases': {}},
+        \ 'user':      {'#tag': s:ns, 'referring': ['timl#repl', 'timl#core'], 'aliases': {}}}
+endif
+
+" }}}1
+" Section: Eval {{{1
+
+function! s:pr_str(x)
+  return timl#printer#string(a:x)
 endfunction
 
 function! timl#call(Func, args, ...) abort
