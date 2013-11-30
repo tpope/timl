@@ -131,7 +131,7 @@ function! timl#core#_SLASH_(x, ...) abort
   endif
 endfunction
 
-function! timl#core#_PERCENT_(x, y) abort
+function! timl#core#rem(x, y) abort
   return a:x % a:y
 endfunction
 
