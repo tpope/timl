@@ -1,48 +1,48 @@
 (in-ns 'timl#core)
 
-(define define-syntax (...)
+(define (define-syntax ...)
   `(let ((fn# (define ,@...)))
      (f:extend (get timl#lambdas (string fn#)) (dict "macro" 1))
      fn#))
 (set! ((f:get g:timl#lambdas "timl#core#define_syntax") "macro") 1)
 
-#_(define-syntax ns (n)
+#_(define-syntax (ns n)
     (list
       'begin
       (if (not (f:exists (string "g:" (timl#munge (string n "#" "*uses*")))))
         `(set! ,(f:timl#symbol (string n "#*uses*")) (list 'timl#core)))
       `(in-ns ',n)))
 
-(define-syntax loop (bindings ...)
+(define-syntax (loop bindings ...)
  `((lambda ,(map first bindings) ,@...) ,@(map last bindings)))
 
-(define-syntax or (x ...)
+(define-syntax (or x ...)
   (if ...
     `(let ((or# ,x)) (if or# or# (or ,@...)))
     x))
 
-(define-syntax and (x ...)
+(define-syntax (and x ...)
   (if ...
     `(let ((and# ,x)) (if and# (and ,@...) and#))
     x))
 
-(define-syntax when (test ...)
+(define-syntax (when test ...)
   `(if ,test (begin ,@...)))
 
-(define-syntax if-let (binding then ...)
+(define-syntax (if-let binding then ...)
   (let ((form (first binding))
         (tst (first (rest binding))))
     `(let ((temp# ,tst))
       (if temp#
         (let ((,form temp#)) ,then) ,@...))))
 
-(define-syntax cond (...)
+(define-syntax (cond ...)
   (when ...
     (list 'if (first (first ...))
           (second (first ...))
           (cons `cond (rest ...)))))
 
-(define-syntax -> (x ...)
+(define-syntax (-> x ...)
   (if ...
     (let ((form (first ...))
           (more (rest ...)))

@@ -532,18 +532,18 @@ function! s:eval(x, envs) abort
     return s:eval(get(rest, empty(Cond) || Cond is 0 ? 2 : 1, g:timl#nil), envs)
 
   elseif F is# s:define
-    let var = s:string(rest[0])
-    let name = ns[0].'#'.var
-    if len(rest) > 2
-      let form = len(rest) == 3 ? rest[2] : [timl#symbol('begin')] + rest[2:-1]
+    if !timl#symbolp(rest[0])
+      let form = len(rest) == 2 ? rest[1] : [timl#symbol('begin')] + rest[1:-1]
       return s:define_function({
             \ 'ns': ns,
-            \ 'name': timl#symbol(var),
-            \ 'arglist': rest[1],
+            \ 'name': rest[0][0],
+            \ 'arglist': rest[0][1:-1],
             \ 'env': envs,
             \ 'form': form,
             \ 'macro': 0})
     endif
+    let var = s:string(rest[0])
+    let name = ns[0].'#'.var
     let global = timl#munge(name)
     let Val = s:eval(rest[1], envs)
     unlet! g:{global}

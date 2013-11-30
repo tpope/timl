@@ -1,6 +1,6 @@
 (in-ns 'timl#test)
 
-(define-syntax assert (form)
+(define-syntax (assert form)
   `(try
      (if ,form
        1

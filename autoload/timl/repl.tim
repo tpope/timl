@@ -1,4 +1,4 @@
-(define impl (fn)
+(define (impl fn)
   (if fn
     (or (get timl#lambdas (string fn))
         (try
@@ -11,7 +11,7 @@
             (filter (comp not nil? last) (dict "name" name "arglist" arglist "file" file)))
           (catch 123 e (dict))))))
 
-(define source (fn)
+(define (source fn)
   (if-let (impl (impl fn))
     (list 'lambda
           (get impl "arglist" '...)
@@ -22,11 +22,11 @@
      quote quasiquote unquote unquote-splicing function
      try catch finally))
 
-(define-syntax doc (sym)
+(define-syntax (doc sym)
   (let ((topic (if (<= 0 (f:index special-forms sym))
                  (string "timl-" sym))))
     `(begin
        (throw (string "timl#repl: exit help " (or ,topic (f:substitute (string ,sym) "^\\w\\+\\zs$" "(" ""))))
        (throw "timl#repl: exit"))))
 
-(define-syntax help (sym) (doc sym))
+(define-syntax (help sym) (doc sym))

@@ -1,27 +1,27 @@
 (in-ns 'timl#core)
 
-(define not (x) (if x false true))
+(define (not x) (if x false true))
 
-(define pr-str (...) (f:join (map timl#printer#string ...)))
-(define pr (...) (echo (apply pr-str ...)))
-(define read-string (string) (timl#reader#read-string string))
-(define eval (form) (timl#eval form))
+(define (pr-str ...) (f:join (map timl#printer#string ...)))
+(define (pr ...) (echo (apply pr-str ...)))
+(define (read-string string) (timl#reader#read-string string))
+(define (eval form) (timl#eval form))
 
-(define constantly (x) (lambda (...) x))
-(define partial (f ...)
+(define (constantly x) (lambda (...) x))
+(define (partial f ...)
   (let ((args ...))
     (lambda (...) (apply f (append args ...)))))
-(define comp (f ...)
+(define (comp f ...)
   (if-let (fns ...)
     (lambda (...) (f (apply (apply comp fns) ...)))
     f))
 
 (define 1+ (partial + 1))
-(define 1- (n) (- n 1))
+(define (1- n) (- n 1))
 (define zero? (partial equal? 0))
 (define nonzero? (comp not zero?))
 
-(define-syntax capture (...)
+(define-syntax (capture ...)
   `(begin
      (try
        (: "redir => g:timl_core_captured")
@@ -29,13 +29,13 @@
        (finally (: "redir END")))
      (f:substitute g:timl_core_captured "^\n" "" "")))
 
-(define-syntax include-guard (var)
+(define-syntax (include-guard var)
   (let ((str (timl#munge (string var))))
    `(if (f:exists ,str)
      (: 'finish)
      (set! ,var 1))))
 
-(define build-option-string (args)
+(define (build-option-string args)
   (sublist
     (loop ((s "")
            (x (first args))
@@ -47,15 +47,15 @@
           (first more) (rest more))
         )) 1 -1))
 
-(define extract-option-names (args)
+(define (extract-option-names args)
   (map (lambda (x) (f:matchstr (string x) "\\%(inv\\|no\\)\\=\\zs\\w\\+")) (filter symbol? args)))
 
-(define extract-option-restore (args)
+(define (extract-option-restore args)
   (if-let (options (extract-option-names args))
     (string "setlocal " (f:join (map string options) "< ") "<")))
 
-(define-syntax setlocal (...)
+(define-syntax (setlocal ...)
   `(: (string "setlocal " ,(build-option-string args))))
 
-(define-syntax setglobal (...)
+(define-syntax (setglobal ...)
   `(: (string "setlocal " ,(build-option-string args))))

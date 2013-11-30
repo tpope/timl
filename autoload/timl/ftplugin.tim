@@ -1,9 +1,9 @@
-(define-syntax include-guard (...)
+(define-syntax (include-guard ...)
   (let ((param (or (first ...) 'b:did-ftplugin)))
    `(timl#core#include-guard ,param)))
 
 ; should append to b:undo-ftplugin
-(define-syntax setlocal (...)
+(define-syntax (setlocal ...)
   `(begin
      (: (string "setlocal " ,(build-option-string ...)))
      (set! b:undo-ftplugin ,(extract-option-restore ...))))
