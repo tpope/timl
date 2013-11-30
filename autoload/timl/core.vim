@@ -6,11 +6,7 @@ let g:autoloaded_timl_core = 1
 let s:true = g:timl#true
 let s:false = g:timl#false
 
-" Section: Misc {{{1
-
-function! timl#core#nil_QMARK_(val) abort
-  return empty(a:val)
-endfunction
+" Section: Types {{{1
 
 function! timl#core#type(val) abort
   let type = type(a:val)
@@ -28,8 +24,28 @@ function! timl#core#type(val) abort
   return type
 endfunction
 
-function! timl#core#symbol_QMARK_(symbol) abort
-  return timl#symbolp(a:symbol)
+function! timl#core#nil_QMARK_(val) abort
+  return a:val is# g:timl#nil
+endfunction
+
+function! timl#core#symbol_QMARK_(obj) abort
+  return timl#symbolp(a:obj)
+endfunction
+
+function! timl#core#string_QMARK_(obj) abort
+  return type(a:obj) == type('')
+endfunction
+
+function! timl#core#integer_QMARK_(obj) abort
+  return type(a:obj) == type(0)
+endfunction
+
+function! timl#core#float_QMARK_(obj) abort
+  return type(a:obj) == 5
+endfunction
+
+function! timl#core#number_QMARK_(obj) abort
+  return type(a:obj) == type(0) || type(a:obj) == 5
 endfunction
 
 function! timl#core#symbol(str) abort
@@ -52,6 +68,9 @@ function! timl#core#string(...) abort
   endfor
   return acc
 endfunction
+
+" }}}1
+" Section: Functional {{{1
 
 function! timl#core#identity(x) abort
   return a:x
