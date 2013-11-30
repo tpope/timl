@@ -509,7 +509,7 @@ function! s:eval(x, envs) abort
   let F = x[0]
   let rest = x[1:-1]
   if F is s:function
-    return function(get(rest, 0))
+    return function(s:string(get(rest, 0)))
 
   elseif F is# s:quote
     return get(rest, 0, g:timl#nil)
