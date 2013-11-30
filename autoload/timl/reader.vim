@@ -125,7 +125,7 @@ function! s:read(port, ...) abort
     return [timl#symbol('unquote'), s:read_bang(port)]
   elseif token ==# ',@'
     return [timl#symbol('unquote-splicing'), s:read_bang(port)]
-  elseif token ==# '#'''
+  elseif token ==# '#*'
     return [timl#symbol('function'), s:read_bang(port)]
   elseif token[0] ==# ';'
     return s:read(port)
@@ -215,7 +215,7 @@ TimLRAssert timl#reader#read_string('({})') ==# [{}]
 TimLRAssert timl#reader#read_string("'(1 2 3)") ==# [timl#symbol('quote'), [1, 2, 3]]
 TimLRAssert timl#reader#read_string("`foo") ==# [timl#symbol('quasiquote'), timl#symbol('foo')]
 TimLRAssert timl#reader#read_string(",foo") ==# [timl#symbol('unquote'), timl#symbol('foo')]
-TimLRAssert timl#reader#read_string("#'tr") ==# [timl#symbol('function'), timl#symbol('tr')]
+TimLRAssert timl#reader#read_string("#*tr") ==# [timl#symbol('function'), timl#symbol('tr')]
 TimLRAssert timl#reader#read_string("(1 #_2 3)") ==# [1, 3]
 
 delcommand TimLRAssert

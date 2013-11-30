@@ -46,14 +46,7 @@ function! timl#printer#string(x)
   elseif type(a:x) == type('')
     return '"'.substitute(a:x, "[\n\r\t\"\\\\]", '\=get(s:escapes, submatch(0))', 'g').'"'
   elseif type(a:x) == type(function('tr'))
-    let name = join([a:x])
-    if name =~# '^{.*}$'
-      return "#'" . name[1:-2]
-    elseif name =~# '#' || name =~# '^[[:digit:]<]'
-      return "#'" . timl#demunge(name)
-    else
-      return "#'" . 'f:' . timl#demunge(name)
-    endif
+    return '#*'.substitute(join([a:x]), '[{}]', '', 'g')
   else
     return string(a:x)
   endif

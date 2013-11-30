@@ -256,7 +256,7 @@ function! timl#lookup(envs, sym) abort
     return eval(sym)
   elseif sym =~# '^@.$'
     return eval(sym)
-  elseif sym =~# '#'
+  elseif sym =~# '.#'
     call timl#autoload(sym)
     let sym = timl#munge(sym)
     if exists('g:'.sym)
@@ -292,7 +292,7 @@ function! timl#find(envs, sym) abort
         let alias = matchstr(sym, '.*\ze/')
         let var = matchstr(sym, '.*/\zs.*')
         if has_key(ns.aliases, alias)
-          return timl#find(var, [ns.aliases[alias]])
+          return timl#find([ns.aliases[alias]], var)
         endif
       endif
       let target = timl#munge(env.'#'.sym)
@@ -310,61 +310,6 @@ function! timl#find(envs, sym) abort
     unlet! env
   endfor
   throw 'timl: ' . sym . ' undefined'
-endfunction
-
-function! timl#function(sym, ...) abort
-  let t = type(function('tr'))
-  if type(a:sym) == t
-    return a:sym
-  endif
-  let demunged = type(a:sym) == type([]) ? a:sym[0] : a:sym
-  let munged = timl#munge(demunged)
-  if demunged =~# '^\d\+$' && exists('*{'.demunged.'}')
-    return function('{'.demunged.'}')
-  elseif munged =~# '^<' && exists('*'.munged)
-    return function(demunged)
-  elseif munged =~# '^f:' && exists('*'.munged[2:-1])
-    return function(munged[2:-1])
-  elseif demunged =~# '^\w:' && exists(munged) && type(eval(munged)) == t
-    return eval(demunged)
-  elseif demunged =~# '.#'
-    call timl#autoload(demunged)
-    if exists('*'.munged)
-      return function(munged)
-    elseif exists('g:'.munged) && type(eval(munged)) == t
-      return g:{munged}
-    else
-      throw 'timl: no such function ' . demunged
-    endif
-  endif
-  for env in a:0 ? a:1 : []
-    if type(env) == type({}) && has_key(env, demunged) && type(env[demunged]) == t
-      return env[demunged]
-    elseif type(env) == type('')
-      call timl#autoload(env.'#'.demunged)
-      let ns = timl#create_ns(env)
-      if demunged =~# './.'
-        let alias = matchstr(demunged, '.*\ze/')
-        let var = matchstr(demunged, '.*/\zs.*')
-        if has_key(ns.aliases, alias)
-          return timl#function(var, [ns.aliases[alias]])
-        endif
-      endif
-      let target = timl#munge(env.'#'.demunged)
-      if exists('*'.target)
-        return function(target)
-      endif
-      for refer in ns.referring
-        let target = timl#munge(s:string(refer).'#'.demunged)
-        call timl#autoload(target)
-        if exists('*'.target)
-          return function(target)
-        endif
-      endfor
-    endif
-    unlet! env
-  endfor
-  throw 'timl: no such function ' . demunged
 endfunction
 
 function! timl#qualify(envs, sym)
@@ -541,7 +486,7 @@ function! s:eval(x, envs) abort
   let F = x[0]
   let rest = x[1:-1]
   if F is s:function
-    return timl#function(get(rest, 0), envs)
+    return function(get(rest, 0))
 
   elseif F is# s:quote
     return get(rest, 0, g:timl#nil)
@@ -716,7 +661,7 @@ function! s:eval(x, envs) abort
 
   else
     if timl#symbolp(F)
-      let Fn = timl#function(F, envs)
+      let Fn = timl#lookup(envs, F)
       if get(get(g:timl#lambdas, s:string(Fn), {}), 'macro')
         return s:eval(timl#call(Fn, rest), envs)
       endif
