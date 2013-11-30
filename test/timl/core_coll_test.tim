@@ -1,0 +1,17 @@
+(in-ns 'timl#core-coll-test)
+(refer 'timl#test)
+
+(assert (= 3 (length (list 1 2 3))))
+(assert (= 1 (length (dict "a" "b"))))
+
+(assert (= (list) (empty (list 1 2 3))))
+(assert (= (dict) (empty (dict "a" "b"))))
+(assert (= "" (empty "string")))
+(assert (nil? (empty 'symbol)))
+(assert (nil? (empty 0)))
+
+(assert (= (list 2 3 4) (map (partial + 1) (list 1 2 3))))
+(assert (= (list "a") (map first (dict "a" "b"))))
+
+(assert (= 6 (reduce + (list 1 2 3))))
+(assert (= (list "c" "a" "b") (reduce append (list "c") (dict "a" "b"))))
