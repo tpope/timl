@@ -1,26 +1,5 @@
 (in-ns 'timl#core)
 
-(define (not x) (if x false true))
-
-(define (pr-str ...) (f:join (map timl#printer#string ...)))
-(define (pr ...) (echo (apply pr-str ...)))
-(define (read-string string) (timl#reader#read-string string))
-(define (eval form) (timl#eval form))
-
-(define (constantly x) (lambda (...) x))
-(define (partial f ...)
-  (let ((args ...))
-    (lambda (...) (apply f (append args ...)))))
-(define (comp f ...)
-  (if-let (fns ...)
-    (lambda (...) (f (apply (apply comp fns) ...)))
-    f))
-
-(define 1+ (partial + 1))
-(define (1- n) (- n 1))
-(define zero? (partial equal? 0))
-(define nonzero? (comp not zero?))
-
 (define-syntax (capture ...)
   `(begin
      (try
