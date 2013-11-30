@@ -80,6 +80,10 @@ function! s:read(port, ...) abort
     endif
   elseif token ==# 'nil'
     return g:timl#nil
+  elseif token ==# 'false'
+    return g:timl#false
+  elseif token ==# 'true'
+    return g:timl#true
   elseif token =~# '^\d\+e\d\+$'
     return eval(substitute(token, 'e', '.0e', ''))
   elseif token =~# '^\.\d'

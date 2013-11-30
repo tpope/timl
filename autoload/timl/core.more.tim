@@ -1,5 +1,7 @@
 (in-ns 'timl#core)
 
+(define not (x) (if x false true))
+
 (define pr-str (...) (f:join (map timl#printer#string ...)))
 (define pr (...) (echo (apply pr-str ...)))
 (define read-string (string) (timl#reader#read-string string))
@@ -13,9 +15,6 @@
   (if-let (fns ...)
     (lambda (...) (f (apply (apply comp fns) ...)))
     f))
-
-(define true (not nil))
-(define false (not true))
 
 (define 1+ (partial + 1))
 (define 1- (n) (- n 1))

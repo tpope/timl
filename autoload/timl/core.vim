@@ -3,14 +3,10 @@ if exists("g:autoloaded_timl_core") || &cp || v:version < 700
 endif
 let g:autoloaded_timl_core = 1
 
-let s:true = 1
-let s:false = g:timl#nil
+let s:true = g:timl#true
+let s:false = g:timl#false
 
 " Section: Misc {{{1
-
-function! timl#core#not(val) abort
-  return empty(a:val) || a:val is 0 ? s:true : s:false
-endfunction
 
 function! timl#core#nil_QMARK_(val) abort
   return empty(a:val)

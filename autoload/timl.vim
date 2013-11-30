@@ -21,6 +21,8 @@ endfunction
 
 if !exists('g:timl#nil')
   let g:timl#nil = s:persistent_list()
+  let g:timl#false = g:timl#nil
+  let g:timl#true = 1
 endif
 
 function! s:string(val) abort
