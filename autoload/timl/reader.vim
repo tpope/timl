@@ -10,7 +10,7 @@ let s:iskeyword = '[[:alnum:]_=?!#$%&*+|./<>:~-]'
 let g:timl#reader#tag_handlers = {}
 
 function g:timl#reader#tag_handlers.dict(list)
-  let list = timl#cons#to_vector(a:list)
+  let list = a:list
   if len(list) % 2 == 0
     let dict = {}
     for i in range(0, len(list)-1, 2)
