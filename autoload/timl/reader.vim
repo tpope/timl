@@ -65,9 +65,7 @@ function! s:read(port, ...) abort
   let port = a:port
   let pos = a:0 ? a:2 : port.pos
   let token = a:0 ? a:1 : s:read_token(port)
-  if token =~# '^"\|^[+-]\=\d\%(.*\d\)\=$'
-    return eval(token)
-  elseif token ==# '('
+  if token ==# '('
     return s:read_until(port, ')')
   elseif token ==# '#dict' || token == '{'
     let list = (token ==# '{' ? s:read_until(port, '}') : s:read(port))
@@ -82,6 +80,12 @@ function! s:read(port, ...) abort
     endif
   elseif token ==# 'nil'
     return g:timl#nil
+  elseif token =~# '^\d\+e\d\+$'
+    return eval(substitute(token, 'e', '.0e', ''))
+  elseif token =~# '^\.\d'
+    return eval('0'.token)
+  elseif token =~# '^"\|^[+-]\=\d\%(.*\d\)\=$'
+    return eval(token)
   elseif token ==# "'"
     return [timl#symbol('quote'), s:read_bang(port)]
   elseif token ==# '`'
