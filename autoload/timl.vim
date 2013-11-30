@@ -826,9 +826,6 @@ endfunction
 " Section: Print {{{1
 
 let s:escapes = {
-      \ "\b": '\b',
-      \ "\e": '\e',
-      \ "\f": '\f',
       \ "\n": '\n',
       \ "\r": '\r',
       \ "\t": '\t',
@@ -851,7 +848,7 @@ function! timl#pr_str(x)
     endfor
     return '#dict(' . join(acc, ' ') . ')'
   elseif type(a:x) == type('')
-    return '"'.substitute(a:x, "[\001-\037\"\\\\]", '\=get(s:escapes, submatch(0), printf("\\%03o", char2nr(submatch(0))))', 'g').'"'
+    return '"'.substitute(a:x, "[\n\r\t\"\\\\]", '\=get(s:escapes, submatch(0))', 'g').'"'
   elseif type(a:x) == type(function('tr'))
     let name = join([a:x])
     if name =~# '^{.*}$'
