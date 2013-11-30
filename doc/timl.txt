@@ -126,6 +126,10 @@ the string exception as explained under |:catch|, or can also be a Vim error
 number.  You can access |v:exception| and |v:throwpoint| for information about
 the exception, or look in dictionary {e}.
 
+                                                *timl-:* *timl-colon*
+(: {command}) ~
+Runs the given string as an ex command.
+
 NAMESPACES                                      *timl-namespaces*
 
 Namespaces take the Clojure model and adapt it to fit the VimL |autoload|

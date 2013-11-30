@@ -523,6 +523,7 @@ let s:recur      = timl#symbol('recur')
 let s:let        = timl#symbol('let')
 let s:begin      = timl#symbol('begin')
 let s:try        = timl#symbol('try')
+let s:colon      = timl#symbol(':')
 function! s:eval(x, envs) abort
   let x = a:x
   let envs = a:envs
@@ -710,7 +711,7 @@ function! s:eval(x, envs) abort
       endtry
     endif
 
-  elseif timl#symbolp(F) && F[0] =~# '^:'
+  elseif F is s:colon
     let strings = map(copy(rest), 's:string(s:eval(v:val, envs))')
     execute F[0] . ' ' . join(strings, ' ')
     return g:timl#nil

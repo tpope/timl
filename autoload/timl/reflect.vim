@@ -24,6 +24,7 @@ endfunction
 
 function! timl#reflect#ns_function_completion(ns) abort
   let nses = [a:ns] + timl#reflect#ns_uses(a:ns)
+  let g:nses = nses
   let fns = timl#reflect#functions_matching('^\%('.join(map(copy(nses),'timl#munge(v:val)'),'\|').'\)#')
   let locals = {}
   for [fn, sig] in items(fns)

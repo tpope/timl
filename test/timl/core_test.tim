@@ -3,4 +3,4 @@
 (let ((sentinel (dict)))
   (assert (eq? sentinel ((constantly sentinel)))))
 
-(assert (= "42" (capture (:silent "echo" 42))))
+(assert (= "42" (capture (: "silent echo 42"))))
