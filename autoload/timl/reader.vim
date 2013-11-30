@@ -16,6 +16,7 @@ function g:timl#reader#tag_handlers.dict(list)
     for i in range(0, len(list)-1, 2)
       let dict[type(list[i]) == type([]) ? substitute(join(list[i]), '^:', '', '') : list[i]] = list[i+1]
     endfor
+    lockvar dict
     return dict
   endif
   throw 'timl#reader: invalid dict literal'
@@ -70,6 +71,7 @@ function! s:read_until(port, char)
     let token = s:read_token(a:port)
   endwhile
   if token ==# a:char
+    lockvar list
     return list
   endif
   throw 'timl#reader: unexpected EOF at byte ' . a:port.pos
@@ -95,6 +97,7 @@ function! s:read(port, ...) abort
         endif
         let dict[key] = list[i+1]
       endfor
+      lockvar dict
       return dict
     endif
   elseif token ==# 'nil'

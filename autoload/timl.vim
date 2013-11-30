@@ -25,6 +25,7 @@ if !exists('g:timl#nil')
   let g:timl#nil = timl#persist()
   let g:timl#false = g:timl#nil
   let g:timl#true = 1
+  lockvar g:timl#nil g:timl#false g:timl#true
 endif
 
 function! s:string(val) abort
