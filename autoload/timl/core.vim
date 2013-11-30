@@ -33,7 +33,7 @@ function! timl#core#string(...) abort
   let _ = {}
   for _.x in a:000
     if timl#symbolp(_.x)
-      let acc .= _.x[0]
+      let acc .= substitute(_.x[0], '^:', '', '')
     elseif type(_.x) == type('')
       let acc .= _.x
     elseif type(_.x) == type(function('tr'))

@@ -25,7 +25,7 @@ endif
 
 function! s:string(val) abort
   if timl#symbolp(a:val)
-    return a:val[0]
+    return substitute(a:val[0], '^:', '', '')
   elseif type(a:val) == type('')
     return a:val
   elseif type(a:val) == type(function('tr'))
@@ -251,8 +251,10 @@ function! timl#ns_for_file(file) abort
 endfunction
 
 function! timl#lookup(envs, sym) abort
-  let sym = type(a:sym) == type([]) ? a:sym[0] : a:sym
-  if sym =~# '^f:' && exists('*'.sym[2:-1])
+  let sym = a:sym[0]
+  if sym =~# '^:.'
+    return a:sym
+  elseif sym =~# '^f:' && exists('*'.sym[2:-1])
     return function(sym[2:-1])
   elseif sym =~# '^&.\|^\w:' && exists(sym)
     return eval(sym)
