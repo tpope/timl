@@ -5,7 +5,7 @@ if exists("g:autoloaded_timl")
 endif
 let g:autoloaded_timl = 1
 
-" Section: Misc {{{1
+" Section: Util {{{1
 
 function! s:funcname(name) abort
   return substitute(a:name,'^s:',matchstr(expand('<sfile>'), '.*\zs<SNR>\d\+_'),'')
@@ -15,27 +15,45 @@ function! s:function(name) abort
   return function(s:funcname(a:name))
 endfunction
 
-function! s:persistent_list(...)
+" Section: Data types {{{1
+
+function! timl#persist(...)
   return a:000
 endfunction
 
 if !exists('g:timl#nil')
-  let g:timl#nil = s:persistent_list()
+  let g:timl#nil = timl#persist()
   let g:timl#false = g:timl#nil
   let g:timl#true = 1
 endif
 
 function! s:string(val) abort
-  if timl#symbolp(a:val)
-    return substitute(a:val[0], '^:', '', '')
-  elseif type(a:val) == type('')
+  if type(a:val) == type('')
     return a:val
   elseif type(a:val) == type(function('tr'))
     return substitute(join([a:val]), '[{}]', '', 'g')
+  elseif timl#symbolp(a:val)
+    return substitute(a:val[0], '^:', '', '')
   elseif type(a:val) == type([])
     return join(map(copy(a:val), 's:string(v:val)'), ',').','
   else
     return string(a:val)
+  endif
+endfunction
+
+function! timl#key(key)
+  if type(a:key) == type(0)
+    return ';' . a:key
+  elseif type(a:key) == type("")
+    return '"' . a:key
+  elseif timl#symbolp(a:key)
+    if a:key[0][0] ==# ':'
+      return a:key[0][1:-1]
+    else
+      return "'".a:key[0]
+    endif
+  else
+    return ''
   endif
 endfunction
 
@@ -49,7 +67,7 @@ endif
 function! timl#symbol(str)
   let str = type(a:str) == type([]) ? a:str[0] : a:str
   if !has_key(g:timl#symbols, str)
-    let g:timl#symbols[str] = s:persistent_list(str)
+    let g:timl#symbols[str] = timl#persist(str)
   endif
   return g:timl#symbols[str]
 endfunction

@@ -88,18 +88,10 @@ function! s:read(port, ...) abort
     else
       let dict = {}
       for i in range(0, len(list)-1, 2)
-        if timl#symbolp(list[i])
-          if list[i][0][0] ==# ':'
-            let key = list[i][0][1:-1]
-          else
-            let key = "'".list[i][0]
-          endif
-        elseif type(list[i]) == type(0)
-          let key = ';' . list[i]
-        elseif type(list[i]) == type("")
-          let key = '"' . list[i]
-        else
-      let error = 'timl#reader: invalid dict key type'
+        let key = timl#key(list[i])
+        if empty(key)
+          let error = 'timl#reader: invalid dict key'
+          break
         endif
         let dict[key] = list[i+1]
       endfor
