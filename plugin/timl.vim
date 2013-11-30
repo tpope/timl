@@ -48,7 +48,7 @@ function! s:autoload(function) abort
   if !has_key(g:timl#requires, ns)
     let g:timl#requires[ns] = 1
     for file in findfile('autoload/'.tr(ns,'#','/').'.tim', &rtp, -1)
-      call timl#source_file(file, ns)
+      call timl#source_file(file, tr(ns, '_', '-'))
       " drop to run all if include guards are added
       return
     endfor
