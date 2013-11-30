@@ -846,7 +846,7 @@ function! timl#pr_str(x)
       call add(acc, timl#pr_str(k) . ' ' . timl#pr_str(V))
       unlet! V
     endfor
-    return '{' . join(acc, ' ') . '}'
+    return '#dict(' . join(acc, ' ') . ')'
   elseif type(a:x) == type('')
     return '"'.substitute(a:x, "[\001-\037\"\\\\]", '\=get(s:escapes, submatch(0), printf("\\%03o", char2nr(submatch(0))))', 'g').'"'
   elseif type(a:x) == type(function('tr'))
