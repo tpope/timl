@@ -9,19 +9,6 @@ let s:iskeyword = '[[:alnum:]_=?!#$%&*+|./<>:~-]'
 
 let g:timl#reader#tag_handlers = {}
 
-function g:timl#reader#tag_handlers.dict(list)
-  let list = a:list
-  if len(list) % 2 == 0
-    let dict = {}
-    for i in range(0, len(list)-1, 2)
-      let dict[type(list[i]) == type([]) ? substitute(join(list[i]), '^:', '', '') : list[i]] = list[i+1]
-    endfor
-    lockvar dict
-    return dict
-  endif
-  throw 'timl#reader: invalid dict literal'
-endfunction
-
 function! s:read_token(port) abort
   let pat = '^\%(#[[:punct:]]\|"\%(\\.\|[^"]\)*"\|[[:space:]]\|;.\{-\}\ze\%(\n\|$\)\|,@\|'.s:iskeyword.'\+\|@.\|.\)'
   let match = matchstr(a:port.str, pat, a:port.pos)
@@ -85,21 +72,44 @@ function! s:read(port, ...) abort
     return s:read_until(port, ')')
   elseif token == '{'
     let list = s:read_until(port, '}')
-    if type(list) !=# type([]) || len(list) % 2 != 0
+    if len(list) % 2 != 0
       let error = 'timl#reader: invalid dict literal'
     else
       let dict = {}
       for i in range(0, len(list)-1, 2)
         let key = timl#key(list[i])
-        if empty(key)
-          let error = 'timl#reader: invalid dict key'
-          break
-        endif
         let dict[key] = list[i+1]
       endfor
       lockvar dict
       return dict
     endif
+  elseif token == '#['
+    let list = s:read_until(port, ']')
+    if len(list) % 2 != 0
+      let error = 'timl#reader: invalid dict literal'
+    else
+      let dict = {}
+      for i in range(0, len(list)-1, 2)
+        if type(list[i]) !=# type("")
+          let error = 'timl#reader: dict keys must be strings'
+          break
+        endif
+        let dict[list[i]] = list[i+1]
+      endfor
+    endif
+    if !exists('error')
+      lockvar dict
+      return dict
+    endif
+  elseif token == '#{'
+    let list = s:read_until(port, '}')
+    let dict = {}
+    let _ = {}
+    for _.key in list
+      let dict[timl#key(_.key)] = _.key
+    endfor
+    lockvar dict
+    return dict
   elseif token ==# 'nil'
     return g:timl#nil
   elseif token ==# 'false'
@@ -203,8 +213,8 @@ command! -nargs=1 TimLRAssert
 TimLRAssert timl#reader#read_string('foo') ==# timl#symbol('foo')
 TimLRAssert timl#reader#read_string('":)"') ==# ':)'
 TimLRAssert timl#reader#read_string('(car (list 1 2))') ==# [timl#symbol('car'), [timl#symbol('list'), 1, 2]]
-TimLRAssert timl#reader#read_string('#dict("a" 1 "b" 2)') ==# {"a": 1, "b": 2}
-TimLRAssert timl#reader#read_string('{"a" 1 :b 2 3 "c"}') ==# {'"a': 1, "b": 2, ";3": "c"}
+TimLRAssert timl#reader#read_string('#["a" 1 "b" 2]') ==# {"a": 1, "b": 2}
+TimLRAssert timl#reader#read_string('{"a" 1 :b 2 3 "c"}') ==# {' "a"': 1, "b": 2, "3": "c"}
 TimLRAssert timl#reader#read_string("(1)\n; hi\n") ==# [1]
 TimLRAssert timl#reader#read_string('({})') ==# [{}]
 TimLRAssert timl#reader#read_string("'(1 2 3)") ==# [timl#symbol('quote'), [1, 2, 3]]

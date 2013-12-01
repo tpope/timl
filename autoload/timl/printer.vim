@@ -42,7 +42,7 @@ function! timl#printer#string(x)
       endif
       unlet! V
     endfor
-    return prefix.'#dict(' . join(acc, ' ') . ')'
+    return prefix.'#[' . join(acc, ' ') . ']'
   elseif type(a:x) == type('')
     return '"'.substitute(a:x, "[\n\r\t\"\\\\]", '\=get(s:escapes, submatch(0))', 'g').'"'
   elseif type(a:x) == type(function('tr'))
@@ -70,7 +70,7 @@ command! -nargs=1 TimLPAssert
 TimLPAssert timl#printer#string('foo') ==# '"foo"'
 TimLPAssert timl#printer#string(timl#symbol('foo')) ==# 'foo'
 TimLPAssert timl#printer#string([1,2]) ==# '(1 2)'
-TimLPAssert timl#printer#string({"a": 1, "b": 2}) ==# '#dict("a" 1 "b" 2)'
+TimLPAssert timl#printer#string({"a": 1, "b": 2}) ==# '#["a" 1 "b" 2]'
 
 delcommand TimLPAssert
 

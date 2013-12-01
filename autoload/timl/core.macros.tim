@@ -2,7 +2,7 @@
 
 (define (define-syntax ...)
   `(let ((fn# (define ,@...)))
-     (f:extend (get timl#lambdas (string fn#)) (dict "macro" 1))
+     (f:extend (f:get timl#lambdas (string fn#)) (dict "macro" 1))
      fn#))
 (set! ((f:get g:timl#lambdas "timl#core#define_syntax") "macro") 1)
 

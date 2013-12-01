@@ -198,20 +198,12 @@ endfunction
 " }}}1
 " Section: Lists {{{1
 
-function! timl#core#first(list) abort
-  return get(a:list, 0, g:timl#nil)
-endfunction
-
-function! timl#core#rest(list) abort
-  return a:list[1:-1]
-endfunction
-
 function! timl#core#car(list) abort
   return get(a:list, 0, g:timl#nil)
 endfunction
 
 function! timl#core#cdr(list) abort
-  return a:list[1:-1]
+  return timl#lock(a:list[1:-1])
 endfunction
 
 function! timl#core#list(...) abort
@@ -220,19 +212,19 @@ endfunction
 
 function! timl#core#sublist(list, start, ...) abort
   if a:0
-    return a:list[a:start : a:1]
+    return timl#lock(a:list[a:start : a:1])
   else
-    return a:list[a:start :]
+    return timl#lock(a:list[a:start :])
   endif
 endfunction
 
 function! timl#core#slice(list, start, ...) abort
   if a:0 && a:1 == 0
-    return type(a:list) == type('') ? '' : []
+    return type(a:list) == type('') ? '' : timl#lock([])
   elseif a:0
-    return a:list[a:start : (a:1 < 0 ? a:1 : a:1-1)]
+    return timl#lock(a:list[a:start : (a:1 < 0 ? a:1 : a:1-1)])
   else
-    return a:list[a:start :]
+    return timl#lock(a:list[a:start :])
   endif
 endfunction
 
@@ -245,11 +237,11 @@ function! timl#core#append(...) abort
   for elem in a:000
     call extend(acc, elem)
   endfor
-  return acc
+  return timl#lock(acc)
 endfunction
 
 function! timl#core#cons(val, list) abort
-  return [a:val] + a:list
+  return timl#lock([a:val] + a:list)
 endfunction
 
 " }}}1
@@ -267,35 +259,66 @@ function! timl#core#dict(...) abort
   for i in range(0, len(list)-1, 2)
     let dict[timl#core#string(list[i])] = list[i+1]
   endfor
-  return dict
+  return timl#lock(dict)
+endfunction
+
+function! timl#core#hash_map(...) abort
+  let list = copy(a:000)
+  while len(a:000) % 2 !=# 0 && timl#core#list_QMARK_(list[-1])
+    call extend(list, remove(list, -1))
+  endwhile
+  if len(list) % 2 !=# 0
+    throw 'timl: dict requires a even number of arguments'
+  endif
+  let dict = {}
+  for i in range(0, len(list)-1, 2)
+    let dict[timl#key(list[i])] = list[i+1]
+  endfor
+  return timl#lock(dict)
 endfunction
 
 function! timl#core#dict_QMARK_(val) abort
   return type(a:val) == type({})
 endfunction
 
-function! timl#core#assoc(dict, ...) abort
-  return extend(timl#core#dict(a:000), a:dict, 'keep')
-endfunction
-
 function! timl#core#dissoc(dict, ...) abort
   let dict = copy(a:dict)
-  for key in a:000
+  let _ = {}
+  for _.key in a:000
+    let key = timl#key(_.key)
     if has_key(dict, key)
       call remove(dict, key)
     endif
   endfor
-  return dict
+  return timl#lock(dict)
 endfunction
 
 " }}}1
 " Section: Collections {{{1
 
+function! timl#core#get(coll, key, ...) abort
+  let def = a:0 ? a:1 : g:timl#nil
+  let t = timl#core#type(a:coll)
+  if type(a:coll) == type([])
+    if type(a:key) != type(0)
+      return a:0 ? a:1 : g:timl#nil
+    endif
+    return get(a:coll, a:key + (a:key > 0 && type(t) ==# type('')), def)
+  endif
+  return get(a:coll, timl#key(a:key), a:0 ? a:1 : def)
+endfunction
+
+function! timl#core#assoc(coll, ...) abort
+  return timl#lock(extend(timl#core#dict(a:000), a:dict, 'keep'))
+endfunction
+
+" }}}1
+" Section: Sequences {{{1
+
 function! timl#core#seq(coll)
   let t = timl#core#type(a:coll)
   if t == type({})
-    let seq = items(a:coll)
-    lockvar seq
+    let seq = timl#lock(items(a:coll))
   elseif t == type([])
     let seq = timl#persistent(a:coll)
   endif
@@ -303,6 +326,14 @@ function! timl#core#seq(coll)
     return empty(seq) ? g:timl#nil : seq
   endif
   throw 'timl: not seqable'
+endfunction
+
+function! timl#core#first(seq) abort
+  return get(timl#core#seq(a:seq), 0, g:timl#nil)
+endfunction
+
+function! timl#core#rest(list) abort
+  return timl#lock(timl#core#seq(a:list)[1:-1])
 endfunction
 
 function! timl#core#length(coll) abort
@@ -326,18 +357,6 @@ function! timl#core#empty(coll) abort
     return []
   endif
   return g:timl#nil
-endfunction
-
-function! timl#core#get(coll, key, ...) abort
-  let def = a:0 ? a:1 : g:timl#nil
-  let t = timl#core#type(a:coll)
-  if type(a:coll) == type([])
-    if type(a:key) != type(0)
-      return a:0 ? a:1 : g:timl#nil
-    endif
-    return get(a:coll, a:key + (a:key > 0 && type(t) ==# type('')), def)
-  endif
-  return get(a:coll, timl#core#string(a:key), a:0 ? a:1 : def)
 endfunction
 
 function! timl#core#map(f, coll) abort

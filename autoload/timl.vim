@@ -15,7 +15,14 @@ function! s:function(name) abort
   return function(s:funcname(a:name))
 endfunction
 
+" }}}1
 " Section: Data types {{{1
+
+function! timl#lock(val) abort
+  let val = a:val
+  lockvar val
+  return val
+endfunction
 
 function! timl#persistentp(val) abort
   let val = a:val
@@ -69,17 +76,21 @@ endfunction
 
 function! timl#key(key)
   if type(a:key) == type(0)
-    return ';' . a:key
-  elseif type(a:key) == type("")
-    return '"' . a:key
-  elseif timl#symbolp(a:key)
-    if a:key[0][0] ==# ':'
-      return a:key[0][1:-1]
-    else
-      return "'".a:key[0]
-    endif
+    return string(a:key)
+  elseif timl#symbolp(a:key) && a:key[0][0] =~# '[:#]'
+    return a:key[0][1:-1]
   else
-    return ''
+    return ' '.timl#printer#string(a:key)
+  endif
+endfunction
+
+function! timl#dekey(key)
+  if a:key =~# '^#'
+    throw 'timl.vim: invalid key'
+  elseif a:key =~# '^ \|^[-+]\=\d'
+    return timl#reader#read_string(a:key[1:-1])
+  else
+    return timl#symbol(':'.a:key)
   endif
 endfunction
 
@@ -839,11 +850,13 @@ TimLAssert timl#re('(if 1 forty-two 69)') ==# 42
 TimLAssert timl#re('(if 0 "boo" "yay")') ==# "yay"
 TimLAssert timl#re('(begin 1 2)') ==# 2
 
-TimLAssert timl#re('(set! g:timl_setq {})') == {}
+TimLAssert timl#re('(set! g:timl_setq (dict))') == {}
 TimLAssert g:timl_setq ==# {}
+let g:timl_setq = {}
 TimLAssert timl#re('(set! (g:timl_setq "key") (list "a" "b"))') == ["a", "b"]
-TimLAssert g:timl_setq == {"key": ["a", "b"]}
-TimLAssert timl#re('(set! ((get g:timl_setq "key") 0 0) (list "c"))') == ["c"]
+TimLAssert g:timl_setq ==# {"key": ["a", "b"]}
+let g:timl_setq = {"key": ["a", "b"]}
+TimLAssert timl#re('(set! ((f:get g:timl_setq "key") 0 0) (list "c"))') == ["c"]
 TimLAssert g:timl_setq == {"key": ["c", "b"]}
 unlet! g:timl_setq
 
