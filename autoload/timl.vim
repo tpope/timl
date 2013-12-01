@@ -26,6 +26,10 @@ let s:types = {
       \ 4: 'timl#vim#dictionary',
       \ 5: 'timl#vim#float'}
 
+function! timl#truth(val) abort
+  return empty(a:val) || a:val is 0
+endfunction
+
 function! timl#type(val) abort
   let type = get(s:types, type(a:val), 'timl#vim#unknown')
   if type == 'timl#vim#list'
@@ -427,7 +431,7 @@ function! timl#ns_for_file(file) abort
   return substitute(tr(fnamemodify(path, ':r:r'), '\/_', '##-'), '^\%(autoload\|plugin\|test\)#', '', '')
 endfunction
 
-function! timl#lookup(envs, sym) abort
+function! timl#lookup(sym, ns, locals) abort
   let sym = a:sym[0]
   if sym =~# '^[#:].'
     return a:sym
@@ -447,11 +451,11 @@ function! timl#lookup(envs, sym) abort
     else
       throw 'timl: ' . sym . ' undefined'
     endif
+  elseif has_key(a:locals, sym)
+    return a:locals[sym]
   endif
-  let env = timl#find(a:envs, sym)
-  if type(env) ==# type({})
-    return env[sym]
-  elseif env isnot# g:timl#nil
+  let env = timl#find([a:ns], sym)
+  if env isnot# g:timl#nil
     let target = timl#munge(env.'#'.sym)
     if exists('*'.target)
       return function(target)
@@ -459,6 +463,7 @@ function! timl#lookup(envs, sym) abort
       return g:{target}
     endif
   endif
+  throw 'timl: ' . sym . ' undefined'
 endfunction
 
 function! timl#find(envs, sym) abort
@@ -508,18 +513,18 @@ function! s:build_function(name, arglist) abort
   return 'function! '.a:name.'('.join(arglist, ',').") abort\n"
         \ . "let name = matchstr(expand('<sfile>'), '.*\\%(\\.\\.\\| \\)\\zs.*')\n"
         \ . "let fn = g:timl#lambdas[name]\n"
-        \ . "let env = [timl#a2env(fn, a:)] + fn.env\n"
+        \ . "let env = extend(timl#a2env(fn, a:), copy(fn.env), 'keep')\n"
         \ . "let nameenv = {}\n"
         \ . "if !empty(get(fn, 'name', ''))\n"
         \ . "let nameenv = {fn.name[0]: name =~ '^\\d' ? self.__fn__ : function(name)}\n"
         \ . "endif\n"
-        \ . "call extend(env[0], nameenv, 'keep')\n"
+        \ . "call extend(env, nameenv, 'keep')\n"
         \ . "let _ = {}\n"
-        \ . "let _.result = timl#eval(fn.form, env)\n"
+        \ . "let _.result = timl#eval(fn.form, fn.ns, env)\n"
         \ . "while type(_.result) == type([]) && get(_.result, 0) is# g:timl#recur_token\n"
-        \ . "let env = [timl#l2env(fn, _.result[1:-1])] + fn.env\n"
-        \ . "call extend(env[0], nameenv, 'keep')\n"
-        \ . "let _.result = timl#eval(fn.form, env)\n"
+        \ . "let env = extend(timl#l2env(fn, _.result[1:-1]), copy(fn.env), 'keep')\n"
+        \ . "call extend(env, nameenv, 'keep')\n"
+        \ . "let _.result = timl#eval(fn.form, fn.ns, env)\n"
         \ . "endwhile\n"
         \ . "return _.result\n"
         \ . "endfunction"
@@ -616,15 +621,14 @@ if !exists('g:timl#core#_STAR_ns_STAR_')
 endif
 
 function! timl#eval(x, ...) abort
-  let envs = [g:timl#core#_STAR_ns_STAR_[0]]
-  if a:0 && timl#symbolp(a:1)
-    let envs[0] = a:1[0]
-  elseif a:0 && type(a:1) == type([])
-    let envs = a:1
-  elseif a:0
-    let envs[0] = a:1
+  if a:0 > 1
+    return s:eval(a:x, [a:2, s:string(a:1)])
+  endif
+
+  if a:0
     let g:timl#core#_STAR_ns_STAR_ = timl#symbol(a:1)
   endif
+  let envs = [{}, g:timl#core#_STAR_ns_STAR_[0]]
 
   return s:eval(a:x, envs)
 endfunction
@@ -657,7 +661,7 @@ function! s:eval(x, envs) abort
   let ns = g:timl#core#_STAR_ns_STAR_
 
   if timl#symbolp(x)
-    return timl#lookup(envs, x)
+    return timl#lookup(x, envs[1], envs[0])
 
   elseif type(x) == type([]) && x isnot# g:timl#nil
     return map(copy(x), 's:eval(v:val, envs)')
@@ -699,7 +703,7 @@ function! s:eval(x, envs) abort
       throw 'timl:E119: if requires 2 or 3 arguments'
     endif
     let Cond = s:eval(rest[0], envs)
-    return s:eval(get(rest, empty(Cond) || Cond is 0 ? 2 : 1, g:timl#nil), envs)
+    return s:eval(get(rest, timl#truth(Cond) ? 2 : 1, g:timl#nil), envs)
 
   elseif F is# s:define
     if timl#consp(rest[0])
@@ -709,7 +713,7 @@ function! s:eval(x, envs) abort
             \ 'ns': ns,
             \ 'name': proto[0],
             \ 'arglist': proto[1:-1],
-            \ 'env': envs,
+            \ 'env': envs[0],
             \ 'form': form,
             \ 'macro': 0})
     endif
@@ -761,7 +765,7 @@ function! s:eval(x, envs) abort
       throw 'timl(lambda): parameter list required'
     endif
     let form = len(rest) == 2 ? rest[1] : timl#list2([s:begin] + rest[1:-1])
-    return s:lambda(name, rest[0], form, ns[0], envs)
+    return s:lambda(name, rest[0], form, ns[0], envs[0])
 
   elseif F is# s:recur
     return [g:timl#recur_token] + map(copy(rest), 's:eval(v:val, envs)')
@@ -770,7 +774,7 @@ function! s:eval(x, envs) abort
     throw 'timl: incorrect use of recur'
 
   elseif F is# s:let
-    let env = {}
+    let env = copy(envs[0])
     let _ = {}
     for _.list in timl#vec(rest[0])
       let _.let = timl#vec(_.list)
@@ -780,7 +784,7 @@ function! s:eval(x, envs) abort
         throw 'timl: invalid binding '.s:pr_str(_.let)
       endif
       let [_.key, _.form] = _.let
-      let _.val = s:eval(_.form, [env] + envs)
+      let _.val = s:eval(_.form, [env] + envs[1:-1])
       if _.key is timl#symbolp('_') || _.key is g:timl#nil
         " ignore
       elseif timl#symbolp(_.key)
@@ -799,7 +803,7 @@ function! s:eval(x, envs) abort
       endif
     endfor
     let form = len(rest) == 2 ? rest[1] : timl#list2([s:begin] + rest[1:-1])
-    return s:eval(form, [env] + envs)
+    return s:eval(form, [env] + envs[1:-1])
 
   elseif F is# s:begin
     return get(map(copy(rest), 's:eval(v:val, envs)'), -1, g:timl#nil)
@@ -840,11 +844,11 @@ function! s:eval(x, envs) abort
       catch
         for catch in catches
           if v:exception =~# catch[0]
-            let env = {}
+            let env = copy(envs[0])
             if catch[2] isnot# timl#symbol('_')
               let env[s:string(catch[2])] = timl#build_exception(v:exception, v:throwpoint)
             endif
-            return get(map(catch[2:-1], 's:eval(v:val, [env] + envs)'), -1, g:timl#nil)
+            return get(map(catch[2:-1], 's:eval(v:val, [env] + envs[1:-1])'), -1, g:timl#nil)
           endif
         endfor
         throw v:exception =~# '^Vim' ? 'T'.v:exception[1:-1] : v:exception
@@ -860,7 +864,7 @@ function! s:eval(x, envs) abort
 
   else
     if timl#symbolp(F)
-      let Fn = timl#lookup(envs, F)
+      let Fn = timl#lookup(F, envs[1], envs[0])
       if get(get(g:timl#lambdas, s:string(Fn), {}), 'macro')
         return s:eval(timl#call(Fn, rest), envs)
       endif
