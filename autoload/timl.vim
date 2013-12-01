@@ -310,7 +310,7 @@ function! timl#find(envs, sym) abort
     if type(env) == type({}) && has_key(env, sym)
       return env
     elseif type(env) == type('')
-      call timl#autoload(env.'#'.sym)
+      call timl#require(env)
       let ns = timl#create_ns(env)
       if sym =~# './.'
         let alias = matchstr(sym, '.*\ze/')
@@ -323,9 +323,9 @@ function! timl#find(envs, sym) abort
       if exists('*'.target) || exists('g:'.target)
         return env
       endif
-      for refer in timl#create_ns(env).referring
+      for refer in ns.referring
         let target = timl#munge(s:string(refer).'#'.sym)
-        call timl#autoload(target)
+        call timl#require(refer)
         if exists('*'.target) || exists('g:'.target)
           return s:string(refer)
         endif
@@ -740,8 +740,12 @@ if !exists('g:timl#requires')
 endif
 
 function! timl#autoload(function) abort
-  let ns = timl#munge(matchstr(a:function, '.*\ze#'))
+  let ns = matchstr(a:function, '.*\ze#')
+  call timl#require(ns)
+endfunction
 
+function! timl#require(ns) abort
+  let ns = a:ns
   if !has_key(g:timl#requires, ns)
     let g:timl#requires[ns] = 1
     call timl#load(ns)
@@ -749,9 +753,10 @@ function! timl#autoload(function) abort
 endfunction
 
 function! timl#load(ns) abort
-  execute 'runtime! autoload/'.tr(a:ns,'#','/').'.vim'
-  for file in findfile('autoload/'.tr(a:ns,'#','/').'.tim', &rtp, -1)
-    call timl#source_file(file, a:ns)
+  let base = tr(a:ns,'#-','/_')
+  execute 'runtime! autoload/'.base.'.vim'
+  for file in findfile('autoload/'.base.'.tim', &rtp, -1)
+    call timl#source_file(file, tr(a:ns, '_', '-'))
   endfor
 endfunction
 
