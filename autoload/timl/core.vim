@@ -293,16 +293,11 @@ endfunction
 
 function! timl#core#seq(coll)
   let t = timl#core#type(a:coll)
-  if type(a:coll) == type({})
-    if type(t) == type('')
-      let dict = copy(a:coll)
-      call remove(dict, '#tag')
-      let seq = items(dict)
-    else
-      let seq = items(a:coll)
-    endif
-  elseif type(a:coll) == type([])
-    let seq = a:coll[type(t) == type('') : -1]
+  if t == type({})
+    let seq = items(a:coll)
+    lockvar seq
+  elseif t == type([])
+    let seq = timl#persistent(a:coll)
   endif
   if exists('seq')
     return empty(seq) ? g:timl#nil : seq
@@ -350,7 +345,7 @@ function! timl#core#map(f, coll) abort
   if empty(seq)
     return seq
   endif
-  let result = map(seq, 'timl#call(a:f, [v:val])')
+  let result = map(timl#transient(seq), 'timl#call(a:f, [v:val])')
   lockvar result
   return result
 endfunction
@@ -361,7 +356,7 @@ function! timl#core#reduce(f, coll, ...) abort
     let _.val = a:coll
     let coll = timl#core#seq(a:1)
   else
-    let coll = timl#core#seq(a:coll)
+    let coll = timl#transient(timl#core#seq(a:coll))
     if empty(coll)
       return g:timl#nil
     endif

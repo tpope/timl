@@ -17,12 +17,37 @@ endfunction
 
 " Section: Data types {{{1
 
-function! timl#persist(...)
+function! timl#persistentp(val) abort
+  let val = a:val
+  return islocked('val')
+endfunction
+
+function! timl#persistent(val) abort
+  let val = a:val
+  if islocked('val')
+    return val
+  else
+    let val = copy(a:val)
+    lockvar val
+    return val
+  endif
+endfunction
+
+function! timl#transient(val) abort
+  let val = a:val
+  if islocked('val')
+    return copy(val)
+  else
+    return val
+  endif
+endfunction
+
+function! s:freeze(...) abort
   return a:000
 endfunction
 
 if !exists('g:timl#nil')
-  let g:timl#nil = timl#persist()
+  let g:timl#nil = s:freeze()
   let g:timl#false = g:timl#nil
   let g:timl#true = 1
   lockvar g:timl#nil g:timl#false g:timl#true
@@ -68,7 +93,7 @@ endif
 function! timl#symbol(str)
   let str = type(a:str) == type([]) ? a:str[0] : a:str
   if !has_key(g:timl#symbols, str)
-    let g:timl#symbols[str] = timl#persist(str)
+    let g:timl#symbols[str] = s:freeze(str)
   endif
   return g:timl#symbols[str]
 endfunction
