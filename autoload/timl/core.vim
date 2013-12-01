@@ -317,11 +317,10 @@ function! timl#core#seq(coll)
     let seq = timl#lock(items(a:coll))
   elseif t == 'timl#vim#list'
     let seq = timl#persistent(a:coll)
+  else
+    let seq = timl#dispatch('seq', a:coll)
   endif
-  if exists('seq')
-    return empty(seq) ? g:timl#nil : seq
-  endif
-  throw 'timl: not seqable'
+  return empty(seq) ? g:timl#nil : seq
 endfunction
 
 function! timl#core#first(seq) abort

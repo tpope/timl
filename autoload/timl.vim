@@ -44,6 +44,19 @@ function! timl#type(val) abort
   return type
 endfunction
 
+function! timl#implementsp(fn, obj)
+  return exists('*'.tr(timl#type(a:obj) . '#' . a:fn, '-', '_'))
+endfunction
+
+function! timl#dispatch(fn, obj, ...)
+  let t = timl#type(a:obj)
+  let fn = tr(t . '#' . a:fn, '-', '_')
+  if exists('*'.fn)
+    return timl#call(fn, [a:obj] + a:000)
+  endif
+  throw "timl:E117: can't " . a:fn . " this " . t
+endfunction
+
 function! timl#lock(val) abort
   let val = a:val
   lockvar val
@@ -571,7 +584,13 @@ function! s:eval(x, envs) abort
     return timl#lookup(envs, x)
 
   elseif type(x) == type({})
-    return map(copy(x),  's:eval(v:val, envs)')
+    if timl#implementsp('eval', x)
+      return timl#dispatch('eval', x, envs)
+    elseif timl#type(x) == 'timl#vim#dictionary'
+      return map(copy(x),  's:eval(v:val, envs)')
+    else
+      return x
+    endif
 
   elseif type(x) != type([]) || empty(x)
     return x
