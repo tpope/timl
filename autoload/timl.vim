@@ -237,7 +237,7 @@ endfunction
 if !exists('g:timl#namespaces')
   let g:timl#namespaces = {
         \ 'timl#core': {'#tag': s:ns, 'referring': [], 'aliases': {}},
-        \ 'user':      {'#tag': s:ns, 'referring': ['timl#repl', 'timl#core'], 'aliases': {}}}
+        \ 'user':      {'#tag': s:ns, 'referring': ['timl#core'], 'aliases': {}}}
 endif
 
 " }}}1

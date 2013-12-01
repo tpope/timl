@@ -69,6 +69,7 @@ function! s:repl(...) abort
       let guess = 'user'
     endif
     let g:timl#core#_STAR_ns_STAR_ = timl#symbol(a:0 ? a:1 : guess)
+    call timl#core#refer(timl#symbol('timl#repl'))
     let input = input(g:timl#core#_STAR_ns_STAR_[0].'=> ', '', cmpl)
     if input =~# '^:q\%[uit]'
       return ''
