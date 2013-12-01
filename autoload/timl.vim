@@ -313,7 +313,11 @@ endfunction
 
 function! timl#call(Func, args, ...) abort
   let dict = (a:0 && type(a:1) == type({})) ? a:1 : {'__fn__': a:Func}
-  return call(a:Func, a:args, dict)
+  if timl#symbolp(a:Func)
+    return call('timl#core#get', a:args[0:0] + [a:Func] + a:args[1:-1])
+  else
+    return call(a:Func, a:args, dict)
+  endif
 endfunction
 
 function! s:lencompare(a, b)

@@ -291,13 +291,17 @@ endfunction
 function! timl#core#get(coll, key, ...) abort
   let def = a:0 ? a:1 : g:timl#nil
   let t = timl#type(a:coll)
-  if type(a:coll) == 'timl#core#list'
+  if t ==# 'timl#vim#list'
     if type(a:key) != type(0)
       return a:0 ? a:1 : g:timl#nil
     endif
     return get(a:coll, a:key, def)
+  elseif t ==# 'timl#vim#dictionary'
+    return get(a:coll, timl#core#string(a:key), def)
+  elseif t !~# '^timl#vim#'
+    return get(a:coll, timl#key(a:key), def)
   endif
-  return get(a:coll, timl#key(a:key), def)
+  return def
 endfunction
 
 function! timl#core#assoc(coll, ...) abort
