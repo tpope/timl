@@ -75,7 +75,8 @@ function! s:read(port, ...) abort
     if len(list) % 2 != 0
       let error = 'timl#reader: invalid dict literal'
     else
-      let dict = {}
+      call timl#require('timl#lang#hash-map')
+      let dict = {'#tag': timl#symbol('#timl#lang#hash-map')}
       for i in range(0, len(list)-1, 2)
         let key = timl#key(list[i])
         let dict[key] = list[i+1]
@@ -103,7 +104,8 @@ function! s:read(port, ...) abort
     endif
   elseif token == '#{'
     let list = s:read_until(port, '}')
-    let dict = {}
+    call timl#require('timl#lang#hash-set')
+    let dict = {'#tag': timl#symbol('#timl#lang#hash-set')}
     let _ = {}
     for _.key in list
       let dict[timl#key(_.key)] = _.key
@@ -139,14 +141,21 @@ function! s:read(port, ...) abort
     return s:read(port)
   elseif token =~# '^#\a'
     let next = s:read(port)
+    unlockvar next
+    if token =~# '\.'
+      let token = tr(token, '.', '#')
+    else
+      let token = '#timl#lang'.token
+    endif
+    call timl#autoload(token[1:-1],'#*')
     if has_key(g:timl#reader#tag_handlers, token[1:-1])
       return g:timl#reader#tag_handlers[token[1:-1]](next)
     elseif type(next) == type([])
-      return insert(next, timl#symbol(token))
+      return timl#lock(insert(next, timl#symbol(token)))
     elseif type(next) == type({})
-      return extend(next, {'#tag': timl#symbol(token)})
+      return timl#lock(extend(next, {'#tag': timl#symbol(token)}))
     else
-      return {'value': next, '#tag': timl#symbol(token)}
+      return timl#lock({'value': next, '#tag': timl#symbol(token)})
     endif
   elseif token =~# '^'.s:iskeyword || token =~# '^@.$'
     return timl#symbol(token)
@@ -214,9 +223,8 @@ TimLRAssert timl#reader#read_string('foo') ==# timl#symbol('foo')
 TimLRAssert timl#reader#read_string('":)"') ==# ':)'
 TimLRAssert timl#reader#read_string('(car (list 1 2))') ==# [timl#symbol('car'), [timl#symbol('list'), 1, 2]]
 TimLRAssert timl#reader#read_string('#["a" 1 "b" 2]') ==# {"a": 1, "b": 2}
-TimLRAssert timl#reader#read_string('{"a" 1 :b 2 3 "c"}') ==# {' "a"': 1, "b": 2, "3": "c"}
+TimLRAssert timl#reader#read_string('{"a" 1 :b 2 3 "c"}') ==# {' "a"': 1, "b": 2, "3": "c", '#tag': timl#symbol('#timl#lang#hash-map')}
 TimLRAssert timl#reader#read_string("(1)\n; hi\n") ==# [1]
-TimLRAssert timl#reader#read_string('({})') ==# [{}]
 TimLRAssert timl#reader#read_string("'(1 2 3)") ==# [timl#symbol('quote'), [1, 2, 3]]
 TimLRAssert timl#reader#read_string("`foo") ==# [timl#symbol('quasiquote'), timl#symbol('foo')]
 TimLRAssert timl#reader#read_string(",foo") ==# [timl#symbol('unquote'), timl#symbol('foo')]

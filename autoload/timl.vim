@@ -18,6 +18,30 @@ endfunction
 " }}}1
 " Section: Data types {{{1
 
+let s:types = {
+      \ 0: 'timl#vim#number',
+      \ 1: 'timl#vim#string',
+      \ 2: 'timl#vim#funcref',
+      \ 3: 'timl#vim#list',
+      \ 4: 'timl#vim#dictionary',
+      \ 5: 'timl#vim#float'}
+
+function! timl#type(val) abort
+  let type = get(s:types, type(a:val), 'timl#vim#unknown')
+  if type == 'timl#vim#list'
+    if timl#symbolp(a:val)
+      return 'timl#lang#symbol'
+    elseif timl#symbolp(get(a:val, 0)) && a:val[0][0][0] ==# '#'
+      return a:val[0][0][1:-1]
+    endif
+  elseif type == 'timl#vim#dictionary'
+    if timl#symbolp(get(a:val, '#tag')) && a:val['#tag'][0][0] ==# '#'
+      return a:val['#tag'][0][1:-1]
+    endif
+  endif
+  return type
+endfunction
+
 function! timl#lock(val) abort
   let val = a:val
   lockvar val

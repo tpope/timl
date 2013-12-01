@@ -9,19 +9,7 @@ let s:false = g:timl#false
 " Section: Types {{{1
 
 function! timl#core#type(val) abort
-  let type = type(a:val)
-  if type == type([])
-    if timl#symbolp(a:val)
-      return -1
-    elseif timl#symbolp(get(a:val, 0)) && a:val[0][0][0] ==# '#'
-      return a:val[0][0][1:-1]
-    endif
-  elseif type == type({})
-    if timl#symbolp(get(a:val, '#type')) && a:val['#type'][0][0] ==# '#'
-      return a:val['#type'][0][1:-1]
-    endif
-  endif
-  return type
+  return timl#symbol(timl#type(a:val))
 endfunction
 
 function! timl#core#nil_QMARK_(val) abort
@@ -178,9 +166,9 @@ function! timl#core#_EQ__TILDE__QMARK_(x, y) abort
   return type(a:x) == type('') && type(a:y) == type('') && a:x =~? a:y ? s:true : s:false
 endfunction
 
-function! s:ntype(x) abort
-  let t = timl#core#type(a:x)
-  return t == 5 ? 0 : t
+function! s:numberp(x) abort
+  let t = type(a:x)
+  return t == 0 || t == 5
 endfunction
 
 function! timl#core#_EQ_(x, y) abort
@@ -188,7 +176,11 @@ function! timl#core#_EQ_(x, y) abort
 endfunction
 
 function! timl#core#equal_QMARK_(x, y) abort
-  return s:ntype(a:x) == s:ntype(a:y) && a:x ==# a:y ? s:true : s:false
+  if s:numberp(a:x) && s:numberp(a:y)
+    return a:x == a:y ? s:true : s:false
+  else
+    return timl#core#_EQ_(a:x, a:y)
+  endif
 endfunction
 
 function! timl#core#eq_QMARK_(x, y) abort
@@ -298,14 +290,14 @@ endfunction
 
 function! timl#core#get(coll, key, ...) abort
   let def = a:0 ? a:1 : g:timl#nil
-  let t = timl#core#type(a:coll)
-  if type(a:coll) == type([])
+  let t = timl#type(a:coll)
+  if type(a:coll) == 'timl#core#list'
     if type(a:key) != type(0)
       return a:0 ? a:1 : g:timl#nil
     endif
-    return get(a:coll, a:key + (a:key > 0 && type(t) ==# type('')), def)
+    return get(a:coll, a:key, def)
   endif
-  return get(a:coll, timl#key(a:key), a:0 ? a:1 : def)
+  return get(a:coll, timl#key(a:key), def)
 endfunction
 
 function! timl#core#assoc(coll, ...) abort
@@ -316,10 +308,10 @@ endfunction
 " Section: Sequences {{{1
 
 function! timl#core#seq(coll)
-  let t = timl#core#type(a:coll)
-  if t == type({})
+  let t = timl#type(a:coll)
+  if t == 'timl#vim#dictionary'
     let seq = timl#lock(items(a:coll))
-  elseif t == type([])
+  elseif t == 'timl#vim#list'
     let seq = timl#persistent(a:coll)
   endif
   if exists('seq')
@@ -337,8 +329,8 @@ function! timl#core#rest(list) abort
 endfunction
 
 function! timl#core#length(coll) abort
-  let t = timl#core#type(a:coll)
-  if type(t) == type('')
+  let t = timl#type(a:coll)
+  if t !~# '^timl#vim'
     return len(a:coll) - 1
   endif
   return len(a:coll)

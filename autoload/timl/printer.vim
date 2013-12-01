@@ -21,7 +21,7 @@ function! timl#printer#string(x)
   elseif type(a:x) == type([])
     if timl#symbolp(get(a:x, 0, '')) && a:x[0][0] =~# '^#'
       let index = 1
-      let prefix = a:x[0][0]
+      let prefix = '#'.tr(a:x[0][0][1:-1], '#', '.') . ' '
     else
       let index = 0
       let prefix = ''
@@ -29,7 +29,7 @@ function! timl#printer#string(x)
     return prefix.'('.join(map(a:x[index : ], 'timl#printer#string(v:val)'), ' ') . ')'
   elseif type(a:x) == type({})
     if timl#symbolp(get(a:x, '#tag', '')) && a:x['#tag'][0] =~# '^#'
-      let prefix = a:x['#tag'][0].' '
+      let prefix = '#'.tr(a:x['#tag'][0][1:-1], '#', '.') . ' '
       let skip = '#tag'
     else
       let prefix = ''
