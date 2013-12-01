@@ -512,18 +512,23 @@ if !exists('g:timl#recur_token')
   let g:timl#recur_token = timl#symbol('#recur')
 endif
 
-let s:function   = timl#symbol('function')
-let s:quote      = timl#symbol('quote')
-let s:quasiquote = timl#symbol('quasiquote')
-let s:setq       = timl#symbol('set!')
-let s:if         = timl#symbol('if')
-let s:define     = timl#symbol('define')
-let s:lambda     = timl#symbol('lambda')
-let s:recur      = timl#symbol('recur')
-let s:let        = timl#symbol('let')
-let s:begin      = timl#symbol('begin')
-let s:try        = timl#symbol('try')
-let s:colon      = timl#symbol(':')
+let s:function         = timl#symbol('function')
+let s:quote            = timl#symbol('quote')
+let s:quasiquote       = timl#symbol('quasiquote')
+let s:unquote          = timl#symbol('unquote')
+let s:unquote_splicing = timl#symbol('unquote-splicing')
+let s:setq             = timl#symbol('set!')
+let s:if               = timl#symbol('if')
+let s:define           = timl#symbol('define')
+let s:lambda           = timl#symbol('lambda')
+let s:recur            = timl#symbol('recur')
+let s:let              = timl#symbol('let')
+let s:begin            = timl#symbol('begin')
+let s:try              = timl#symbol('try')
+let s:catch            = timl#symbol('catch')
+let s:finally          = timl#symbol('finally')
+let s:colon            = timl#symbol(':')
+
 function! s:eval(x, envs) abort
   let x = a:x
   let envs = a:envs
@@ -668,7 +673,7 @@ function! s:eval(x, envs) abort
     let catches = []
     let finallies = []
     for _.form in rest
-      if type(_.form) == type([]) && get(_.form, 0) is timl#symbol('catch')
+      if type(_.form) == type([]) && get(_.form, 0) is s:catch
         let _.pattern = s:eval(get(_.form, 1, g:timl#nil), envs)
         if type(_.pattern) ==# type(0)
           let _.pattern = '^Vim\%((\a\+)\)\=:E' . _.pattern
@@ -679,7 +684,7 @@ function! s:eval(x, envs) abort
           throw 'timl: second catch argument must be a symbol'
         endif
         call add(catches, [_.pattern] + _.form[2:-1])
-      elseif type(_.form) == type([]) && get(_.form, 0) is timl#symbol('finally')
+      elseif type(_.form) == type([]) && get(_.form, 0) is s:finally
         call extend(finallies, _.form[1:-1])
       else
         call add(forms, _.form)
@@ -809,12 +814,12 @@ function! s:quasiquote(token, envs, id) abort
     endif
   elseif type(a:token) !=# type([]) || empty(a:token)
     return a:token
-  elseif timl#symbol('unquote') is a:token[0]
+  elseif a:token[0] is# s:unquote
     return s:eval(a:token[1], a:envs)
   else
     let ret = []
     for V in a:token
-      if type(V) == type([]) && get(V, 0, '') is timl#symbol('unquote-splicing')
+      if type(V) == type([]) && get(V, 0, '') is# s:unquote_splicing
         call extend(ret, s:eval(get(V, 1, g:timl#nil), a:envs))
       else
         call add(ret, s:quasiquote(V, a:envs, a:id))
