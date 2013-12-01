@@ -221,7 +221,7 @@ function! timl#core#slice(list, start, ...) abort
 endfunction
 
 function! timl#core#list_QMARK_(val) abort
-  return !timl#symbolp(a:val) && type(a:val) == type([])
+  return !timl#symbolp(a:val) && type(a:val) == type([]) ? s:true : s:false
 endfunction
 
 function! timl#core#append(...) abort
@@ -241,7 +241,7 @@ endfunction
 
 function! timl#core#dict(...) abort
   let list = copy(a:000)
-  while len(a:000) % 2 !=# 0 && timl#core#list_QMARK_(list[-1])
+  while len(a:000) % 2 !=# 0 && timl#core#list_QMARK_(list[-1]) is# s:true
     call extend(list, remove(list, -1))
   endwhile
   if len(list) % 2 !=# 0

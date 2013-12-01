@@ -43,7 +43,8 @@ function! timl#printer#string(x)
     let acc = []
     for [k, V] in items(a:x)
       if k !~# '^#'
-      call add(acc, timl#printer#string(k) . ' ' . timl#printer#string(V))
+        call add(acc, timl#printer#string(k) . ' ' . timl#printer#string(V))
+      endif
       unlet! V
     endfor
     return '#[' . join(acc, ' ') . ']'
