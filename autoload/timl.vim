@@ -294,7 +294,7 @@ function! timl#lookup(envs, sym) abort
   let env = timl#find(a:envs, sym)
   if type(env) ==# type({})
     return env[sym]
-  else
+  elseif env isnot# g:timl#nil
     let target = timl#munge(env.'#'.sym)
     if exists('*'.target)
       return function(target)
@@ -333,18 +333,15 @@ function! timl#find(envs, sym) abort
     endif
     unlet! env
   endfor
-  throw 'timl: ' . sym . ' undefined'
+  return g:timl#nil
 endfunction
 
 function! timl#qualify(envs, sym)
   let sym = type(a:sym) == type([]) ? a:sym[0] : a:sym
-  try
-    let ns = timl#find(a:envs, a:sym)
-    if type(ns) == type('')
-      return timl#symbol(ns . '#' . sym)
-    endif
-  catch /^timl:/
-  endtry
+  let ns = timl#find(a:envs, a:sym)
+  if type(ns) == type('')
+    return timl#symbol(ns . '#' . sym)
+  endif
   return a:sym
 endfunction
 
