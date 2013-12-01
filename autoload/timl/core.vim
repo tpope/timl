@@ -291,6 +291,25 @@ endfunction
 " }}}1
 " Section: Collections {{{1
 
+function! timl#core#seq(coll)
+  let t = timl#core#type(a:coll)
+  if type(a:coll) == type({})
+    if type(t) == type('')
+      let dict = copy(a:coll)
+      call remove(dict, '#tag')
+      let seq = items(dict)
+    else
+      let seq = items(a:coll)
+    endif
+  elseif type(a:coll) == type([])
+    let seq = a:coll[type(t) == type('') : -1]
+  endif
+  if exists('seq')
+    return empty(seq) ? g:timl#nil : seq
+  endif
+  throw 'timl: not seqable'
+endfunction
+
 function! timl#core#length(coll) abort
   let t = timl#core#type(a:coll)
   if type(t) == type('')
@@ -326,24 +345,12 @@ function! timl#core#get(coll, key, ...) abort
   return get(a:coll, timl#core#string(a:key), a:0 ? a:1 : def)
 endfunction
 
-function! s:bare(coll)
-  let t = timl#core#type(a:coll)
-  if type(a:coll) == type({})
-    if type(t) == type('')
-      let dict = copy(a:coll)
-      call remove(dict, '#tag')
-      return items(dict)
-    else
-      return items(a:coll)
-    endif
-  elseif type(a:coll) == type([])
-    return a:coll[type(t) == type('') : -1]
-  endif
-  throw 'timl: not a collection'
-endfunction
-
 function! timl#core#map(f, coll) abort
-  let result = map(s:bare(a:coll), 'timl#call(a:f, [v:val])')
+  let seq = timl#core#seq(a:coll)
+  if empty(seq)
+    return seq
+  endif
+  let result = map(seq, 'timl#call(a:f, [v:val])')
   lockvar result
   return result
 endfunction
@@ -352,9 +359,9 @@ function! timl#core#reduce(f, coll, ...) abort
   let _ = {}
   if a:0
     let _.val = a:coll
-    let coll = s:bare(a:1)
+    let coll = timl#core#seq(a:1)
   else
-    let coll = s:bare(a:coll)
+    let coll = timl#core#seq(a:coll)
     if empty(coll)
       return g:timl#nil
     endif
