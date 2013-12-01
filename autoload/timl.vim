@@ -454,9 +454,9 @@ function! timl#lookup(sym, ns, locals) abort
   elseif has_key(a:locals, sym)
     return a:locals[sym]
   endif
-  let env = timl#find([a:ns], sym)
-  if env isnot# g:timl#nil
-    let target = timl#munge(env.'#'.sym)
+  let ns = timl#find(sym, a:ns)
+  if ns isnot# g:timl#nil
+    let target = timl#munge(ns.'#'.sym)
     if exists('*'.target)
       return function(target)
     else
@@ -466,41 +466,38 @@ function! timl#lookup(sym, ns, locals) abort
   throw 'timl: ' . sym . ' undefined'
 endfunction
 
-function! timl#find(envs, sym) abort
+function! timl#find(sym, ns) abort
   let sym = type(a:sym) == type([]) ? a:sym[0] : a:sym
-  for env in a:envs
-    if type(env) == type({}) && has_key(env, sym)
-      return env
-    elseif type(env) == type('')
-      call timl#require(env)
-      let ns = timl#create_ns(env)
-      if sym =~# './.'
-        let alias = matchstr(sym, '.*\ze/')
-        let var = matchstr(sym, '.*/\zs.*')
-        if has_key(ns.aliases, alias)
-          return timl#find([ns.aliases[alias]], var)
-        endif
-      endif
-      let target = timl#munge(env.'#'.sym)
-      if exists('*'.target) || exists('g:'.target)
-        return env
-      endif
-      for refer in ns.referring
-        let target = timl#munge(s:string(refer).'#'.sym)
-        call timl#require(refer)
-        if exists('*'.target) || exists('g:'.target)
-          return s:string(refer)
-        endif
-      endfor
+  let env = a:ns
+  call timl#require(env)
+  let ns = timl#create_ns(env)
+  if sym =~# './.'
+    let alias = matchstr(sym, '.*\ze/')
+    let var = matchstr(sym, '.*/\zs.*')
+    if has_key(ns.aliases, alias)
+      return timl#find([ns.aliases[alias]], var)
     endif
-    unlet! env
+  endif
+  let target = timl#munge(env.'#'.sym)
+  if exists('*'.target) || exists('g:'.target)
+    return env
+  endif
+  for refer in ns.referring
+    let target = timl#munge(s:string(refer).'#'.sym)
+    call timl#require(refer)
+    if exists('*'.target) || exists('g:'.target)
+      return s:string(refer)
+    endif
   endfor
   return g:timl#nil
 endfunction
 
 function! timl#qualify(envs, sym)
   let sym = type(a:sym) == type([]) ? a:sym[0] : a:sym
-  let ns = timl#find(a:envs, a:sym)
+  if has_key(a:envs[0], sym)
+    return a:sym
+  endif
+  let ns = timl#find(a:sym, a:envs[1])
   if type(ns) == type('')
     return timl#symbol(ns . '#' . sym)
   endif
