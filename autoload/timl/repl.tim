@@ -1,6 +1,6 @@
 (define (impl fn)
   (if fn
-    (or (get timl#lambdas (string fn))
+    (or (f:get timl#lambdas (string fn) nil)
         (try
           (let ((output     (capture (: "silent verbose function" (f:join (list fn)))))
                 (raw        (f:split output "\n"))
@@ -14,8 +14,8 @@
 (define (source fn)
   (if-let (impl (impl fn))
     (list 'lambda
-          (get impl "arglist" '...)
-          (get impl "form" '...))))
+          (get impl :arglist '...)
+          (get impl :form '...))))
 
 (define special-forms
   '(if begin let lambda define :
