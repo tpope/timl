@@ -1,6 +1,6 @@
 (in-ns 'timl#core)
 
-(define (not-empty xs) (if (empty? xs) nil xs))
+(defn not-empty [xs] (if (empty? xs) nil xs))
 (define (next xs) (not-empty (rest xs)))
 (define (second xs) (first (rest xs)))
 (define (last xs) (if (next xs) (recur (next xs)) (first xs)))
