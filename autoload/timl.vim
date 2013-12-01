@@ -31,6 +31,8 @@ function! timl#type(val) abort
   if type == 'timl#vim#list'
     if timl#symbolp(a:val)
       return 'timl#lang#symbol'
+    elseif a:val is# g:timl#nil
+      return 'timl#lang#nil'
     elseif timl#symbolp(get(a:val, 0)) && a:val[0][0][0] ==# '#'
       return a:val[0][0][1:-1]
     endif
@@ -110,9 +112,11 @@ endfunction
 
 function! timl#dekey(key)
   if a:key =~# '^#'
-    throw 'timl.vim: invalid key'
-  elseif a:key =~# '^ \|^[-+]\=\d'
+    throw 'timl: invalid key '.a:key
+  elseif a:key =~# '^ '
     return timl#reader#read_string(a:key[1:-1])
+  elseif a:key =~# '^[-+]\=\d'
+    return timl#reader#read_string(a:key)
   else
     return timl#symbol(':'.a:key)
   endif
