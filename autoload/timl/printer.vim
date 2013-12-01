@@ -14,10 +14,13 @@ let s:escapes = {
 
 function! timl#printer#string(x)
   " TODO: guard against recursion
-  if timl#symbolp(a:x)
+  let type = timl#type(a:x)
+  if type == 'timl#lang#symbol'
     return a:x[0]
+
   elseif a:x is# g:timl#nil
     return 'nil'
+
   elseif type(a:x) == type([])
     if timl#symbolp(get(a:x, 0, '')) && a:x[0][0] =~# '^#'
       let index = 1
@@ -27,22 +30,35 @@ function! timl#printer#string(x)
       let prefix = ''
     endif
     return prefix.'('.join(map(a:x[index : ], 'timl#printer#string(v:val)'), ' ') . ')'
-  elseif type(a:x) == type({})
-    if timl#symbolp(get(a:x, '#tag', '')) && a:x['#tag'][0] =~# '^#'
-      let prefix = '#'.tr(a:x['#tag'][0][1:-1], '#', '.') . ' '
-      let skip = '#tag'
-    else
-      let prefix = ''
-      let skip = ''
-    endif
+
+  elseif type == 'timl#vim#dictionary'
     let acc = []
     for [k, V] in items(a:x)
-      if k !=# skip
-        call add(acc, timl#printer#string(k) . ' ' . timl#printer#string(V))
+      call add(acc, timl#printer#string(k) . ' ' . timl#printer#string(V))
+      unlet! V
+    endfor
+    return '#[' . join(acc, ' ') . ']'
+
+  elseif type == 'timl#lang#hash-set'
+    let acc = []
+    for [k, V] in items(a:x)
+      if k !~# '^#'
+      call add(acc, timl#printer#string(k) . ' ' . timl#printer#string(V))
+      unlet! V
+    endfor
+    return '#[' . join(acc, ' ') . ']'
+
+  elseif type(a:x) == type({})
+    let acc = []
+    for [k, V] in items(a:x)
+      if k[0] !=# '#'
+        call add(acc, timl#printer#string(timl#dekey(k)) . ' ' . timl#printer#string(V))
       endif
       unlet! V
     endfor
-    return prefix.'#[' . join(acc, ' ') . ']'
+    let prefix = type ==# 'timl#lang#hash-map' ? '' : '#'.tr(type, '#', '.')
+    return prefix.'{' . join(acc, ' ') . '}'
+
   elseif type(a:x) == type('')
     return '"'.substitute(a:x, "[\n\r\t\"\\\\]", '\=get(s:escapes, submatch(0))', 'g').'"'
   elseif type(a:x) == type(function('tr'))
