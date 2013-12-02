@@ -6,13 +6,6 @@
      fn#))
 (set! (. (f:get g:timl#lambdas "timl#core#defmacro") macro) 1)
 
-#_(defmacro ns [n]
-    (list
-      'begin
-      (if (not (f:exists (string "g:" (timl#munge (string n "#" "*uses*")))))
-        `(set! ,(f:timl#symbol (string n "#*uses*")) (list 'timl#core)))
-      `(in-ns ',n)))
-
 (defmacro defn [name params ...]
   `(define ,name (lambda ,name ,params ,@...)))
 
