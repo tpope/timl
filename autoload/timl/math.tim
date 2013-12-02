@@ -8,6 +8,6 @@
 (define (fib n)
   (first
     (loop ((xs (list 1 0)))
-      (if (< (length xs) n)
+      (if (< (count xs) n)
         (recur (cons (+ (first xs) (second xs)) xs))
         xs))))
