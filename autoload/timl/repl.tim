@@ -18,9 +18,9 @@
           (get impl :form '...))))
 
 (define special-forms
-  '(if begin let lambda define :
+  '[if begin let lambda define :
      quote quasiquote unquote unquote-splicing function
-     try catch finally))
+     try catch finally])
 
 (define-syntax (doc sym)
   (let ((topic (if (<= 0 (f:index special-forms sym))
@@ -28,5 +28,3 @@
     `(begin
        (throw (string "timl#repl: exit help " (or ,topic (f:substitute (string ,sym) "^\\w\\+\\zs$" "(" ""))))
        (throw "timl#repl: exit"))))
-
-(define-syntax (help sym) (doc sym))
