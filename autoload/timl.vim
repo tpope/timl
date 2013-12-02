@@ -731,8 +731,7 @@ function! s:eval(x, envs) abort
     return get(rest, 0, g:timl#nil)
 
   elseif F is# s:quasiquote
-    let s:gensym_id = get(s:, 'gensym_id', 0) + 1
-    return s:quasiquote(get(rest, 0, g:timl#nil), envs, s:gensym_id)
+    return timl#quasiquote(get(rest, 0, g:timl#nil), envs[1], envs[0])
 
   elseif F is# s:setq
     if len(rest) < 2
@@ -949,18 +948,23 @@ function! timl#load(ns) abort
   endfor
 endfunction
 
-function! s:quasiquote(token, envs, id) abort
+function! timl#quasiquote(form, ns, locals)
+  let s:gensym_id = get(s:, 'gensym_id', 0) + 1
+  return s:quasiquote(a:form, a:ns, a:locals, s:gensym_id)
+endfunction
+
+function! s:quasiquote(token, ns, locals, id) abort
   if timl#consp(a:token)
     if timl#car(a:token) is s:unquote
-      return s:eval(timl#car(timl#cdr(a:token)), a:envs)
+      return timl#eval(timl#car(timl#cdr(a:token)), a:ns, a:locals)
     endif
     let ret = []
     let token = timl#vec(a:token)
     for V in token
       if timl#consp(V) && timl#car(V) is# s:unquote_splicing
-        call extend(ret, timl#vec(s:eval(timl#car(timl#cdr(V)), a:envs)))
+        call extend(ret, timl#vec(timl#eval(timl#car(timl#cdr(V)), a:ns, a:locals)))
       else
-        call add(ret, s:quasiquote(V, a:envs, a:id))
+        call add(ret, s:quasiquote(V, a:ns, a:locals, a:id))
       endif
       unlet! V
     endfor
@@ -968,7 +972,7 @@ function! s:quasiquote(token, envs, id) abort
   elseif type(a:token) == type({})
     let dict = {}
     for [k, V] in items(a:token)
-      let dict[k] = s:quasiquote(V, a:envs, a:id)
+      let dict[k] = s:quasiquote(V, a:ns, a:locals, a:id)
       unlet! V
     endfor
     return dict
@@ -976,10 +980,10 @@ function! s:quasiquote(token, envs, id) abort
     if a:token[0] =~# '#$'
       return timl#symbol(substitute(a:token[0], '#$', '__'.a:id.'__', ''))
     else
-      return timl#qualify(a:envs, a:token)
+      return timl#qualify([a:locals, a:ns], a:token)
     endif
   elseif type(a:token) == type([])
-    return map(copy(a:token), 's:quasiquote(v:val, a:envs, a:id)')
+    return map(copy(a:token), 's:quasiquote(v:val, a:ns, a:locals, a:id)')
   else
     return a:token
   endif
