@@ -89,7 +89,7 @@ function! s:repl(...) abort
             echo "\n"
           endtry
         endwhile
-        let s:repl_env['*1'] = timl#eval(timl#cons(timl#symbol('begin'), read), g:timl#core#_STAR_ns_STAR_, s:repl_env)
+        let s:repl_env['*1'] = timl#eval(timl#cons(timl#symbol('do'), read), g:timl#core#_STAR_ns_STAR_, s:repl_env)
         echo timl#printer#string(s:repl_env['*1'])
       catch /^timl#repl: exit/
         return v:exception[16:-1]

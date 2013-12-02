@@ -13,11 +13,11 @@
 
 (defn source [fn]
   (if-let (impl (impl fn))
-    (list 'lambda
+    (list 'fn
           (get impl :arglist '...)
           (get impl :form '...))))
 
-(define special-forms
+(def special-forms
   '[if begin let lambda define :
      quote quasiquote unquote unquote-splicing function
      try catch finally])
@@ -25,6 +25,6 @@
 (defmacro doc [sym]
   (let ((topic (if (<= 0 (f:index special-forms sym))
                  (string "timl-" sym))))
-    `(begin
+    `(do
        (throw (string "timl#repl: exit help " (or ,topic (f:substitute (string ,sym) "^\\w\\+\\zs$" "(" ""))))
        (throw "timl#repl: exit"))))

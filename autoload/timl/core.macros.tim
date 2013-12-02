@@ -6,11 +6,15 @@
      fn#))
 (set! (. (f:get g:timl#lambdas "timl#core#defmacro") macro) 1)
 
+(defmacro def [...] `(define ,@...))
+(defmacro fn [...] `(lambda ,@...))
+(defmacro do [...] `(begin ,@...))
+
 (defmacro defn [name params ...]
-  `(define ,name (lambda ,name ,params ,@...)))
+  `(def ,name (fn ,name ,params ,@...)))
 
 (defmacro loop [bindings ...]
- `((lambda ,(map first bindings) ,@...) ,@(map (lambda (x) (first (rest x))) bindings)))
+ `((fn ,(map first bindings) ,@...) ,@(map (fn [x] (first (rest x))) bindings)))
 
 (defmacro or [x ...]
   (if ...
@@ -23,7 +27,7 @@
     x))
 
 (defmacro when [test ...]
-  `(if ,test (begin ,@...)))
+  `(if ,test (do ,@...)))
 
 (defmacro if-let [binding then ...]
   (let ((form (first binding))

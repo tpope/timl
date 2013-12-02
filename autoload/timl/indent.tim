@@ -3,6 +3,6 @@
    `(timl#core#include-guard ,param)))
 
 (defmacro setlocal [...]
-  `(begin
+  `(do
      (: (string "setlocal " ,(build-option-string ...)))
      (set! b:undo-indent ,(extract-option-restore ...))))

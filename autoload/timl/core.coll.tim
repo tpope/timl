@@ -14,7 +14,7 @@
 (defn reverse [xs] (f:reverse (f:copy xs)))
 
 (defn sorter [>]
-  (lambda (x y)
+  (fn [x y]
     (if (> x y)
       1
       (if (> y x)
@@ -31,4 +31,4 @@
     (reductions f (f init (first xs)) (rest xs)))))
 
 (defn get-in [m ks] (reduce get m ks))
-(defn filter [f coll] (reduce (lambda (m o) (if (f o) (append m (list o)) m)) '() coll))
+(defn filter [f coll] (reduce (fn [m o] (if (f o) (append m (list o)) m)) '() coll))

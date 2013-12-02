@@ -4,6 +4,6 @@
 
 ; should append to b:undo-ftplugin
 (defmacro setlocal [...]
-  `(begin
+  `(do
      (: (string "setlocal " ,(build-option-string ...)))
      (set! b:undo-ftplugin ,(extract-option-restore ...))))

@@ -7,16 +7,16 @@
 (defn read-string [string] (timl#reader#read-string string))
 (defn eval [form] (timl#eval form))
 
-(defn constantly [x] (lambda (...) x))
+(defn constantly [x] (fn [...] x))
 (defn partial [f ...]
   (let ((args ...))
-    (lambda (...) (apply f (append args ...)))))
+    (fn [...] (apply f (append args ...)))))
 (defn comp [f ...]
   (if-let (fns ...)
-    (lambda (...) (f (apply (apply comp fns) ...)))
+    (fn [...] (f (apply (apply comp fns) ...)))
     f))
 
 (defn 1- [n] (- n 1))
-(define 1+ (partial + 1))
-(define zero? (partial equal? 0))
-(define nonzero? (comp not zero?))
+(def 1+ (partial + 1))
+(def zero? (partial equal? 0))
+(def nonzero? (comp not zero?))
