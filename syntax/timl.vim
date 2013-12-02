@@ -7,21 +7,7 @@ if exists("b:current_syntax")
   finish
 endif
 
-runtime! syntax/lisp.vim
-
-setl iskeyword+=?,!,#,$,%,&,*,+,.,/,<,>,:,~
-
-syn cluster lispBaseListCluster add=timlSpecialForm,timlString
-
-syn keyword timlSpecialForm quote quasiquote unquote unquote-splicing function
-syn keyword timlSpecialForm if set! define lambda let begin recur
-syn keyword timlSpecialForm try catch finally
-syn region  timlString   start=+"+ skip=+\\\\\|\\"+ end=+"+
-syn match   timlComment  ";.*"
-
-hi def link timlSpecialForm       PreProc
-hi def link timlComment           Comment
-hi def link timlString            String
+runtime! syntax/clojure.vim
 
 let b:current_syntax = "timl"
 

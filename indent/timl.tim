@@ -1,4 +1,1 @@
-(refer 'timl#indent)
-(include-guard)
-
-(setlocal ai nosi lisp lispwords+="loop,if-let")
+(: "runtime! indent/clojure.vim")
