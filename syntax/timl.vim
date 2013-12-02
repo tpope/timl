@@ -8,6 +8,7 @@ if exists("b:current_syntax")
 endif
 
 runtime! syntax/clojure.vim
+setl iskeyword+=?,!,#,$,%,&,*,+,.,/,<,>,:,45
 
 let b:current_syntax = "timl"
 
