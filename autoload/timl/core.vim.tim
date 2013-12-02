@@ -11,7 +11,7 @@
 (define-syntax (include-guard var)
   (let ((str (timl#munge (string var))))
    `(if (f:exists ,str)
-     (: 'finish)
+     (: "finish")
      (set! ,var 1))))
 
 (define (build-option-string args)

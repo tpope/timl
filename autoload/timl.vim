@@ -103,6 +103,10 @@ if !exists('g:timl#nil')
   lockvar g:timl#nil g:timl#false g:timl#true
 endif
 
+function! timl#string(val) abort
+  return s:string(a:val)
+endfunction
+
 function! s:string(val) abort
   if type(a:val) == type('')
     return a:val
@@ -219,7 +223,7 @@ function! timl#a2env(f, a) abort
   endif
   let _ = {}
   for [k,_.V] in items(a:a)
-    if k !~# '^\d'
+    if k !~# '^\d' && k !=# 'firstline' && k !=# 'lastline'
       let k = timl#demunge(k)
       if k =~# ',$'
         let keys = split(k, ',')
@@ -400,10 +404,6 @@ endif
 " }}}1
 " Section: Eval {{{1
 
-function! s:pr_str(x)
-  return timl#printer#string(a:x)
-endfunction
-
 function! timl#call(Func, args, ...) abort
   let dict = (a:0 && type(a:1) == type({})) ? a:1 : {'__fn__': a:Func}
   if timl#symbolp(a:Func)
@@ -554,54 +554,6 @@ function! s:file4ns(ns) abort
   return file
 endfunction
 
-function! s:define_function(global, opts)
-  let file = s:file4ns(matchstr(a:global, '.*\ze#'))
-  call writefile(split(s:build_function(a:global, a:opts.arglist),"\n"), file)
-  execute 'source '.file
-  let g:timl#lambdas[a:global] = a:opts
-  return function(a:global)
-endfunction
-
-function! timl#setq(envs, target, val) abort
-  let val = s:eval(a:val, a:envs)
-  if timl#symbolp(a:target)
-    let unmunged = s:string(a:target)
-    let sym = timl#munge(unmunged)
-    let _ = {}
-    if unmunged =~# '^@.$\|^&'
-      if type(val) == type([])
-        exe 'let ' . unmunged . ' = join(val, ",")'
-      else
-        exe 'let ' . unmunged . ' = val'
-      endif
-      return val
-    elseif sym =~# '^[bwtgv]:[[:alpha:]][[:alnum:]_#]*$'
-      exe 'unlet! '.sym
-      exe 'let '.sym.' = val'
-      return val
-    elseif sym =~# '^[[:alpha:]][[:alnum:]_#]*$'
-      unlet! g:{sym}
-      let g:{sym} = val
-      return val
-    endif
-  elseif timl#consp(a:target)
-    let target = map(copy(timl#vec(a:target)), 's:eval(v:val, a:envs)')
-    if len(target) == 3
-          \ && type(target[0]) == type([])
-          \ && type(target[1]) == type(0)
-          \ && type(target[2]) == type(0)
-          \ && type(val)       == type([])
-      let target[0][target[1] : target[2]] = val
-      return val
-    elseif len(target) == 2
-          \ && (type(target[0]) == type([]) || type(target[0]) == type({}))
-      let target[0][target[1]] = val
-      return val
-    endif
-  endif
-  throw 'timl: invalid assignment target ' . s:pr_str(a:target)
-endfunction
-
 function! timl#build_exception(exception, throwpoint)
   let dict = {"exception": a:exception}
   let dict.line = +matchstr(a:throwpoint, '\d\+$')
@@ -617,9 +569,7 @@ if !exists('g:timl#core#_STAR_ns_STAR_')
 endif
 
 function! timl#eval(x, ...) abort
-  if a:0 > 1
-    return s:eval(a:x, [a:2, s:string(a:1)])
-  endif
+  return call('timl#compiler#eval', [a:x] + a:000)
 
   if a:0
     let g:timl#core#_STAR_ns_STAR_ = timl#symbol(a:1)
@@ -628,27 +578,6 @@ function! timl#eval(x, ...) abort
 
   return s:eval(a:x, envs)
 endfunction
-
-if !exists('g:timl#recur_token')
-  let g:timl#recur_token = timl#symbol('#recur')
-endif
-
-let s:function         = timl#symbol('function')
-let s:quote            = timl#symbol('quote')
-let s:quasiquote       = timl#symbol('quasiquote')
-let s:unquote          = timl#symbol('unquote')
-let s:unquote_splicing = timl#symbol('unquote-splicing')
-let s:setq             = timl#symbol('set!')
-let s:if               = timl#symbol('if')
-let s:define           = timl#symbol('define')
-let s:lambda           = timl#symbol('lambda')
-let s:recur            = timl#symbol('recur')
-let s:let              = timl#symbol('let')
-let s:begin            = timl#symbol('begin')
-let s:try              = timl#symbol('try')
-let s:catch            = timl#symbol('catch')
-let s:finally          = timl#symbol('finally')
-let s:colon            = timl#symbol(':')
 
 function! timl#define_global(global, val) abort
   if type(a:val) == type(function('tr'))
@@ -662,13 +591,12 @@ function! timl#define_global(global, val) abort
       if body[1] !~# '^\d'
         call remove(body, 1)
       endif
-      call map(body, 'matchstr(v:val, "\\s\\+\\zs.*")')
+      call map(body, 'matchstr(v:val, "^\\d*\\s*\\zs.*")')
       if body[0] !~# '^function'
         let body = []
       endif
       let body[0] = substitute(body[0], ' \zs\w\+', a:global, '') . ' abort'
-      let lambda = g:timl#lambdas[orig_name]
-      call s:define_function(a:global, lambda)
+      let g:timl#lambdas[a:global] = g:timl#lambdas[orig_name]
 
     elseif orig_name =~# '^\d'
       throw 'timl: cannot define anonymous non-TimL function'
@@ -696,217 +624,12 @@ function! timl#define_global(global, val) abort
   endif
 endfunction
 
-function! s:eval(x, envs) abort
-  let x = a:x
-  let envs = a:envs
-
-  let ns = g:timl#core#_STAR_ns_STAR_
-
-  if timl#symbolp(x)
-    return timl#lookup(x, envs[1], envs[0])
-
-  elseif type(x) == type([]) && x isnot# g:timl#nil
-    return map(copy(x), 's:eval(v:val, envs)')
-
-  elseif type(x) != type({})
-    return x
-
-  elseif !timl#consp(x)
-    if timl#implementsp('eval', x)
-      return timl#dispatch('eval', x, envs)
-    elseif timl#type(x) == 'timl#vim#dictionary'
-      return map(copy(x),  's:eval(v:val, envs)')
-    else
-      return x
-    endif
-  endif
-
-  let F = timl#car(x)
-  let rest = timl#vec(timl#cdr(x))
-
-  if F is s:function
-    return function(s:string(get(rest, 0)))
-
-  elseif F is# s:quote
-    return get(rest, 0, g:timl#nil)
-
-  elseif F is# s:quasiquote
-    return timl#quasiquote(get(rest, 0, g:timl#nil), envs[1], envs[0])
-
-  elseif F is# s:setq
-    if len(rest) < 2
-      throw 'timl:E119: set! requires 2 arguments'
-    endif
-    return call('timl#setq', [envs] + rest)
-
-  elseif F is# s:if
-    if len(rest) < 2
-      throw 'timl:E119: if requires 2 or 3 arguments'
-    endif
-    let Cond = s:eval(rest[0], envs)
-    return s:eval(get(rest, timl#truth(Cond) ? 1 : 2, g:timl#nil), envs)
-
-  elseif F is# s:define
-    if timl#consp(rest[0])
-      let proto = timl#vec(rest[0])
-      let form = len(rest) == 2 ? rest[1] : timl#list2([s:begin] + rest[1:-1])
-      return s:define_function(timl#munge(ns[0].'#'.s:string(proto[0])), {
-            \ 'ns': ns,
-            \ 'name': proto[0],
-            \ 'arglist': proto[1:-1],
-            \ 'env': envs[0],
-            \ 'form': form,
-            \ 'macro': 0})
-    endif
-    let var = s:string(rest[0])
-    let name = ns[0].'#'.var
-    let global = timl#munge(name)
-    let Val = s:eval(rest[1], envs)
-    return timl#define_global(global, Val)
-
-  elseif F is# s:lambda
-    if timl#symbolp(get(rest, 0))
-      let name = remove(rest, 0)
-    else
-      let name = ''
-    endif
-    if type(get(rest, 0)) != type([]) && !timl#consp(get(rest, 0))
-      throw 'timl(lambda): parameter list required'
-    endif
-    let form = len(rest) == 2 ? rest[1] : timl#list2([s:begin] + rest[1:-1])
-    return s:lambda(name, rest[0], form, ns[0], envs[0])
-
-  elseif F is# s:recur
-    return [g:timl#recur_token] + map(copy(rest), 's:eval(v:val, envs)')
-
-  elseif F is# g:timl#recur_token
-    throw 'timl: incorrect use of recur'
-
-  elseif F is# s:let
-    let env = copy(envs[0])
-    let _ = {}
-    for _.list in timl#vec(rest[0])
-      let _.let = timl#vec(_.list)
-      if timl#symbolp(_.let)
-        throw 'timl: let accepts a list of lists'
-      elseif len(_.let) != 2
-        throw 'timl: invalid binding '.s:pr_str(_.let)
-      endif
-      let [_.key, _.form] = _.let
-      let _.val = s:eval(_.form, [env] + envs[1:-1])
-      if _.key is timl#symbolp('_') || _.key is g:timl#nil
-        " ignore
-      elseif timl#symbolp(_.key)
-        let env[s:string(_.key)] = _.val
-      elseif type(_.key) == type([])
-        let _.array = timl#vec(_.val)
-        for i in range(len(_.key))
-          if type(_.val) == type([])
-            let env[s:string(_.key[i])] = get(_.array, i, g:timl#nil)
-          elseif type(_.val) == type({})
-            let env[s:string(_.key[i])] = get(_.array, s:string(_.key[i]), g:timl#nil)
-          endif
-        endfor
-      else
-        throw 'timl: unsupported binding form '.s:pr_str(_.key)
-      endif
-    endfor
-    let form = len(rest) == 2 ? rest[1] : timl#list2([s:begin] + rest[1:-1])
-    return s:eval(form, [env] + envs[1:-1])
-
-  elseif F is# s:begin
-    return get(map(copy(rest), 's:eval(v:val, envs)'), -1, g:timl#nil)
-
-  elseif F is# s:try
-    let _ = {}
-    let forms = []
-    let catches = []
-    let finallies = []
-    for _.form in rest
-      if type(_.form) == type([]) && get(_.form, 0) is s:catch
-        let _.pattern = s:eval(get(_.form, 1, g:timl#nil), envs)
-        if type(_.pattern) ==# type(0)
-          let _.pattern = '^Vim\%((\a\+)\)\=:E' . _.pattern
-        elseif type(_.pattern) !=# type('')
-          throw 'timl: first catch argument must be a string'
-        endif
-        if !timl#symbolp(get(_.form, 2, g:timl#nil))
-          throw 'timl: second catch argument must be a symbol'
-        endif
-        call add(catches, [_.pattern] + _.form[2:-1])
-      elseif type(_.form) == type([]) && get(_.form, 0) is s:finally
-        call extend(finallies, _.form[1:-1])
-      else
-        call add(forms, _.form)
-      endif
-    endfor
-
-    if empty(catches)
-      try
-        return get(map(forms, 's:eval(v:val, envs)'), -1, g:timl#nil)
-      finally
-        call map(finallies, 's:eval(v:val, envs)')
-      endtry
-    else
-      try
-        return get(map(forms, 's:eval(v:val, envs)'), -1, g:timl#nil)
-      catch
-        for catch in catches
-          if v:exception =~# catch[0]
-            let env = copy(envs[0])
-            if catch[2] isnot# timl#symbol('_')
-              let env[s:string(catch[2])] = timl#build_exception(v:exception, v:throwpoint)
-            endif
-            return get(map(catch[2:-1], 's:eval(v:val, [env] + envs[1:-1])'), -1, g:timl#nil)
-          endif
-        endfor
-        throw v:exception =~# '^Vim' ? 'T'.v:exception[1:-1] : v:exception
-      finally
-        call map(finallies, 's:eval(v:val, envs)')
-      endtry
-    endif
-
-  elseif F is s:colon
-    let strings = map(copy(rest), 's:string(s:eval(v:val, envs))')
-    execute F[0] . ' ' . join(strings, ' ')
-    return g:timl#nil
-
-  else
-    if timl#symbolp(F)
-      let Fn = timl#lookup(F, envs[1], envs[0])
-      if get(get(g:timl#lambdas, s:string(Fn), {}), 'macro')
-        return s:eval(timl#call(Fn, rest), envs)
-      endif
-      let evaled = [Fn] + map(copy(rest), 's:eval(v:val, envs)')
-    else
-      let evaled = map([F] + rest, 's:eval(v:val, envs)')
-    endif
-    if type(evaled[0]) == type({})
-      let dict = evaled[0]
-      if type(evaled[1]) == type(function('tr'))
-        let Func = evaled[1]
-      else
-        let Func = evaled[0][timl#symbol(evaled[1])[0]]
-      endif
-      let args = evaled[2:-1]
-    elseif type(evaled[0]) == type(function('tr')) || timl#symbolp(evaled[0])
-      let dict = 0
-      let Func = evaled[0]
-      let args = evaled[1:-1]
-    else
-      throw 'timl: cannot call ' . s:pr_str(x)
-    endif
-
-    return timl#call(Func, args, dict)
-  endif
-endfunction
-
 function! timl#re(str, ...) abort
   return call('timl#eval', [timl#reader#read_string(a:str)] + a:000)
 endfunction
 
 function! timl#rep(...) abort
-  return s:pr_str(call('timl#re', a:000))
+  return timl#printer#string(call('timl#re', a:000))
 endfunction
 
 function! timl#source_file(filename, ...)
@@ -948,47 +671,6 @@ function! timl#load(ns) abort
   endfor
 endfunction
 
-function! timl#quasiquote(form, ns, locals)
-  let s:gensym_id = get(s:, 'gensym_id', 0) + 1
-  return s:quasiquote(a:form, a:ns, a:locals, s:gensym_id)
-endfunction
-
-function! s:quasiquote(token, ns, locals, id) abort
-  if timl#consp(a:token)
-    if timl#car(a:token) is s:unquote
-      return timl#eval(timl#car(timl#cdr(a:token)), a:ns, a:locals)
-    endif
-    let ret = []
-    let token = timl#vec(a:token)
-    for V in token
-      if timl#consp(V) && timl#car(V) is# s:unquote_splicing
-        call extend(ret, timl#vec(timl#eval(timl#car(timl#cdr(V)), a:ns, a:locals)))
-      else
-        call add(ret, s:quasiquote(V, a:ns, a:locals, a:id))
-      endif
-      unlet! V
-    endfor
-    return timl#list2(ret)
-  elseif type(a:token) == type({})
-    let dict = {}
-    for [k, V] in items(a:token)
-      let dict[k] = s:quasiquote(V, a:ns, a:locals, a:id)
-      unlet! V
-    endfor
-    return dict
-  elseif timl#symbolp(a:token)
-    if a:token[0] =~# '#$'
-      return timl#symbol(substitute(a:token[0], '#$', '__'.a:id.'__', ''))
-    else
-      return timl#qualify([a:locals, a:ns], a:token)
-    endif
-  elseif type(a:token) == type([])
-    return map(copy(a:token), 's:quasiquote(v:val, a:ns, a:locals, a:id)')
-  else
-    return a:token
-  endif
-endfunction
-
 " }}}1
 " Section: Tests {{{1
 
@@ -1014,14 +696,11 @@ TimLAssert timl#re('(if 1 forty-two 69)') ==# 42
 TimLAssert timl#re('(if 0 "boo" "yay")') ==# "yay"
 TimLAssert timl#re('(begin 1 2)') ==# 2
 
-TimLAssert timl#re('(set! g:timl_setq (dict))') == {}
+TimLAssert empty(timl#re('(set! g:timl_setq (dict))'))
 TimLAssert g:timl_setq ==# {}
 let g:timl_setq = {}
-TimLAssert timl#re('(set! (g:timl_setq "key") ["a" "b"])') == ["a", "b"]
+TimLAssert empty(timl#re('(set! (. g:timl_setq key) ["a" "b"])'))
 TimLAssert g:timl_setq ==# {"key": ["a", "b"]}
-let g:timl_setq = {"key": ["a", "b"]}
-TimLAssert timl#re('(set! ((f:get g:timl_setq "key") 0 0) ["c"])') == ["c"]
-TimLAssert g:timl_setq == {"key": ["c", "b"]}
 unlet! g:timl_setq
 
 TimLAssert timl#re('(let (([j k] (dict "j" 1)) ([l m] [2])) [j k l m])') == [1, g:timl#nil, 2, g:timl#nil]

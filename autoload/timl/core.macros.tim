@@ -4,7 +4,7 @@
   `(let ((fn# (define ,@...)))
      (f:extend (f:get timl#lambdas (string fn#)) (dict "macro" 1))
      fn#))
-(set! ((f:get g:timl#lambdas "timl#core#define_syntax") "macro") 1)
+(set! (. (f:get g:timl#lambdas "timl#core#define_syntax") macro) 1)
 
 #_(define-syntax (ns n)
     (list
@@ -17,7 +17,7 @@
   `(define ,(cons name params) ,@...))
 
 (define-syntax (loop bindings ...)
- `((lambda ,(map first bindings) ,@...) ,@(map second bindings)))
+ `((lambda ,(map first bindings) ,@...) ,@(map (lambda (x) (first (rest x))) bindings)))
 
 (define-syntax (or x ...)
   (if ...
@@ -42,7 +42,7 @@
 (define-syntax (cond ...)
   (when ...
     (list 'if (first (first ...))
-          (second (first ...))
+          (first (rest (first ...)))
           (cons `cond (rest ...)))))
 
 (define-syntax (-> x ...)
