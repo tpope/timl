@@ -342,6 +342,15 @@ function! timl#core#length(coll) abort
   return len(a:coll)
 endfunction
 
+function! timl#core#partition(n, seq) abort
+  let seq = timl#core#seq(a:seq)
+  let out = []
+  for i in range(0, len(seq)-1, a:n)
+    call add(out, seq[i : i+a:n-1])
+  endfor
+  return out
+endfunction
+
 function! timl#core#count(list) abort
   return timl#count(a:list)
 endfunction
