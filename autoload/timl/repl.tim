@@ -1,4 +1,4 @@
-(define (impl fn)
+(defn impl [fn]
   (if fn
     (or (f:get timl#lambdas (string fn) nil)
         (try
@@ -11,7 +11,7 @@
             (filter (comp not nil? last) (dict "name" name "arglist" arglist "file" file)))
           (catch 123 e (dict))))))
 
-(define (source fn)
+(defn source [fn]
   (if-let (impl (impl fn))
     (list 'lambda
           (get impl :arglist '...)
@@ -22,7 +22,7 @@
      quote quasiquote unquote unquote-splicing function
      try catch finally])
 
-(define-syntax (doc sym)
+(defmacro doc [sym]
   (let ((topic (if (<= 0 (f:index special-forms sym))
                  (string "timl-" sym))))
     `(begin

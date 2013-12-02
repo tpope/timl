@@ -1,6 +1,6 @@
 (in-ns 'timl#core)
 
-(define-syntax (capture ...)
+(defmacro capture [...]
   `(begin
      (try
        (: "redir => g:timl_core_captured")
@@ -8,13 +8,13 @@
        (finally (: "redir END")))
      (f:substitute g:timl_core_captured "^\n" "" "")))
 
-(define-syntax (include-guard var)
+(defmacro include-guard [var]
   (let ((str (timl#munge (string var))))
    `(if (f:exists ,str)
      (: "finish")
      (set! ,var 1))))
 
-(define (build-option-string args)
+(defn build-option-string [args]
   (sublist
     (loop ((s "")
            (x (first args))
@@ -26,15 +26,15 @@
           (first more) (rest more))
         )) 1 -1))
 
-(define (extract-option-names args)
+(defn extract-option-names [args]
   (map (lambda (x) (f:matchstr (string x) "\\%(inv\\|no\\)\\=\\zs\\w\\+")) (filter symbol? args)))
 
-(define (extract-option-restore args)
+(defn extract-option-restore [args]
   (if-let (options (extract-option-names args))
     (string "setlocal " (f:join (map string options) "< ") "<")))
 
-(define-syntax (setlocal ...)
+(defmacro setlocal [...]
   `(: (string "setlocal " ,(build-option-string args))))
 
-(define-syntax (setglobal ...)
+(defmacro setglobal [...]
   `(: (string "setlocal " ,(build-option-string args))))

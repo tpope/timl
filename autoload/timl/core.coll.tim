@@ -1,19 +1,19 @@
 (in-ns 'timl#core)
 
 (defn not-empty [xs] (if (empty? xs) nil xs))
-(define (next xs) (not-empty (rest xs)))
-(define (second xs) (first (rest xs)))
-(define (last xs) (if (next xs) (recur (next xs)) (first xs)))
-(define (conj xs ...) (append xs ...))
-(define (butlast s)
+(defn next [xs] (not-empty (rest xs)))
+(defn second [xs] (first (rest xs)))
+(defn last [xs] (if (next xs) (recur (next xs)) (first xs)))
+(defn conj [xs ...] (append xs ...))
+(defn butlast [s]
   (loop ((ret '()) (s s))
     (if (next s)
       (recur (conj ret (first s)) (next s))
       ret)))
 
-(define (reverse xs) (f:reverse (f:copy xs)))
+(defn reverse [xs] (f:reverse (f:copy xs)))
 
-(define (sorter >)
+(defn sorter [>]
   (lambda (x y)
     (if (> x y)
       1
@@ -21,14 +21,14 @@
         -1
         0))))
 
-(define (sort xs ...)
+(defn sort [xs ...]
   (if ...
     (f:sort (f:copy xs) (sorter (first ...)) {})
     (f:sort (f:copy xs))))
 
-(define (reductions f init xs)
+(defn reductions [f init xs]
   (cons init (if xs
     (reductions f (f init (first xs)) (rest xs)))))
 
-(define (get-in m ks) (reduce get m ks))
-(define (filter f coll) (reduce (lambda (m o) (if (f o) (append m (list o)) m)) '() coll))
+(defn get-in [m ks] (reduce get m ks))
+(defn filter [f coll] (reduce (lambda (m o) (if (f o) (append m (list o)) m)) '() coll))
