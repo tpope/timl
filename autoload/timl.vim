@@ -27,7 +27,7 @@ let s:types = {
       \ 5: 'timl#vim#float'}
 
 function! timl#truth(val) abort
-  return empty(a:val) || a:val is 0
+  return !(empty(a:val) || a:val is 0)
 endfunction
 
 function! timl#type(val) abort
@@ -700,7 +700,7 @@ function! s:eval(x, envs) abort
       throw 'timl:E119: if requires 2 or 3 arguments'
     endif
     let Cond = s:eval(rest[0], envs)
-    return s:eval(get(rest, timl#truth(Cond) ? 2 : 1, g:timl#nil), envs)
+    return s:eval(get(rest, timl#truth(Cond) ? 1 : 2, g:timl#nil), envs)
 
   elseif F is# s:define
     if timl#consp(rest[0])
