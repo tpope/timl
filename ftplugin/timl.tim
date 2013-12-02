@@ -1,7 +1,7 @@
 (refer 'timl#ftplugin)
 (include-guard)
 
-(setlocal comments=":;,:;;;,:;;,sr:#|,mb:|,ex:|#")
+(setlocal comments=":;,:;;;,:;;,sr:#|,mb:|,ex:|#" commentstring=";%s")
 (setlocal define="^\\s*(def\\k*")
 (setlocal formatoptions+=croql)
 (setlocal omnifunc=timl#reflect#omnicomplete)
