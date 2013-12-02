@@ -5,15 +5,15 @@ if exists("g:autoloaded_timl_reader")
 endif
 let g:autoloaded_timl_reader = 1
 
-let s:iskeyword = '[[:alnum:]_=?!#$%&*+|./<>:~-]'
+let s:iskeyword = '[[:alnum:]_=?!#$%&*+|./<>:-]'
 
 let g:timl#reader#tag_handlers = {}
 
 function! s:read_token(port) abort
-  let pat = '^\%(#[[:punct:]]\|"\%(\\.\|[^"]\)*"\|[[:space:]]\|;.\{-\}\ze\%(\n\|$\)\|,@\|'.s:iskeyword.'\+\|@.\|.\)'
+  let pat = '^\%(#[[:punct:]]\|"\%(\\.\|[^"]\)*"\|[[:space:],]\|;.\{-\}\ze\%(\n\|$\)\|\~@\|'.s:iskeyword.'\+\|@.\|.\)'
   let match = matchstr(a:port.str, pat, a:port.pos)
   let a:port.pos += len(match)
-  while match =~# '^[[:space:]]'
+  while match =~# '^[[:space:],]'
     let match = matchstr(a:port.str, pat, a:port.pos)
     let a:port.pos += len(match)
   endwhile
@@ -129,10 +129,10 @@ function! s:read(port, ...) abort
   elseif token ==# "'"
     return timl#list(timl#symbol('quote'), s:read_bang(port))
   elseif token ==# '`'
-    return timl#list(timl#symbol('quasiquote'), s:read_bang(port))
-  elseif token ==# ','
+    return timl#list(timl#symbol('syntax-quote'), s:read_bang(port))
+  elseif token ==# '~'
     return timl#list(timl#symbol('unquote'), s:read_bang(port))
-  elseif token ==# ',@'
+  elseif token ==# '~@'
     return timl#list(timl#symbol('unquote-splicing'), s:read_bang(port))
   elseif token ==# '#*'
     return timl#list(timl#symbol('function'), s:read_bang(port))
@@ -228,8 +228,8 @@ TimLRAssert timl#reader#read_string('#["a" 1 "b" 2]') ==# {"a": 1, "b": 2}
 TimLRAssert timl#reader#read_string('{"a" 1 :b 2 3 "c"}') ==# {' "a"': 1, "b": 2, "3": "c", '#tag': timl#symbol('#timl#lang#hash-map')}
 TimLRAssert timl#reader#read_string("[1]\n; hi\n") ==# [1]
 TimLRAssert timl#reader#read_string("'[1 2 3]") ==# timl#list(timl#symbol('quote'), [1, 2, 3])
-TimLRAssert timl#reader#read_string("`foo") ==# timl#list(timl#symbol('quasiquote'), timl#symbol('foo'))
-TimLRAssert timl#reader#read_string(",foo") ==# timl#list(timl#symbol('unquote'), timl#symbol('foo'))
+TimLRAssert timl#reader#read_string("`foo") ==# timl#list(timl#symbol('syntax-quote'), timl#symbol('foo'))
+TimLRAssert timl#reader#read_string("~foo") ==# timl#list(timl#symbol('unquote'), timl#symbol('foo'))
 TimLRAssert timl#reader#read_string("#*tr") ==# timl#list(timl#symbol('function'), timl#symbol('tr'))
 TimLRAssert timl#reader#read_string("(1 #_2 3)") ==# timl#list(1, 3)
 

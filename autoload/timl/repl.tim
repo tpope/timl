@@ -19,12 +19,12 @@
 
 (def special-forms
   '[if begin let lambda define :
-     quote quasiquote unquote unquote-splicing function
+     quote syntax-quote unquote unquote-splicing function
      try catch finally])
 
 (defmacro doc [sym]
   (let ((topic (if (<= 0 (f:index special-forms sym))
                  (string "timl-" sym))))
     `(do
-       (throw (string "timl#repl: exit help " (or ,topic (f:substitute (string ,sym) "^\\w\\+\\zs$" "(" ""))))
+       (throw (string "timl#repl: exit help " (or ~topic (f:substitute (string ~sym) "^\\w\\+\\zs$" "(" ""))))
        (throw "timl#repl: exit"))))

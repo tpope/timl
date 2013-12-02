@@ -1,8 +1,8 @@
 (defmacro include-guard [...]
   (let ((param (or (first ...) 'b:did-indent)))
-   `(timl#core#include-guard ,param)))
+   `(timl#core#include-guard ~param)))
 
 (defmacro setlocal [...]
   `(do
-     (: (string "setlocal " ,(build-option-string ...)))
-     (set! b:undo-indent ,(extract-option-restore ...))))
+     (: (string "setlocal " ~(build-option-string ...)))
+     (set! b:undo-indent ~(extract-option-restore ...))))

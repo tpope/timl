@@ -52,7 +52,7 @@ Vim |Dictionaries| are printed as a flat list of keys and values preceded by
 |timl#core#dict()|.
 
 Quoting ~
-"'", "`", ",", and ",@" map to "quote", "quasiquote", "unquote", and
+"'", "`", ",", and ",@" map to "quote", "syntax-quote", "unquote", and
 "unquote-splicing".
 
 Comments ~
@@ -113,11 +113,11 @@ Set a Vim variable, in a manner similar to |:let|.  |g:var|, |b:var|, |w:var|,
 '{form} ~
 Returns {form} unevaluated.
 
-                        *timl-quasiquote* *timl-unquote* *timl-unquote-splicing*
-(quasiquote {form}) ~
+                    *timl-syntax-quote* *timl-unquote* *timl-unquote-splicing*
+(syntax-quote {form}) ~
 `{form} ~
-Standard Lisp quasiquoting, with Clojure style namespace resolution.  Can
-contain unquote (",") and unquote-splicing (",@").
+Lisp quasiquoting with Clojure semantics.  Can contain unquote ("~") and
+unquote-splicing ("~@").
 
                                         *timl-try* *timl-catch* *timl-finally*
 (try {body} ... (catch {pattern} {e} {body} ...) ... (finally {body} ...) ...) ~

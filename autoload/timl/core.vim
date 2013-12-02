@@ -158,14 +158,6 @@ function! timl#core#_LT__EQ_(x, y) abort
   return a:x <=# a:y ? s:true : s:false
 endfunction
 
-function! timl#core#_EQ__TILDE_(x, y) abort
-  return type(a:x) == type('') && type(a:y) == type('') && a:x =~# a:y ? s:true : s:false
-endfunction
-
-function! timl#core#_EQ__TILDE__QMARK_(x, y) abort
-  return type(a:x) == type('') && type(a:y) == type('') && a:x =~? a:y ? s:true : s:false
-endfunction
-
 function! s:numberp(x) abort
   let t = type(a:x)
   return t == 0 || t == 5

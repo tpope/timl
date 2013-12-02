@@ -4,15 +4,15 @@
   `(do
      (try
        (: "redir => g:timl_core_captured")
-       ,@...
+       ~@...
        (finally (: "redir END")))
      (f:substitute g:timl_core_captured "^\n" "" "")))
 
 (defmacro include-guard [var]
   (let ((str (timl#munge (string var))))
-   `(if (f:exists ,str)
+   `(if (f:exists ~str)
      (: "finish")
-     (set! ,var 1))))
+     (set! ~var 1))))
 
 (defn build-option-string [args]
   (sublist
@@ -34,7 +34,7 @@
     (string "setlocal " (f:join (map string options) "< ") "<")))
 
 (defmacro setlocal [...]
-  `(: (string "setlocal " ,(build-option-string args))))
+  `(: (string "setlocal " ~(build-option-string args))))
 
 (defmacro setglobal [...]
-  `(: (string "setlocal " ,(build-option-string args))))
+  `(: (string "setlocal " ~(build-option-string args))))

@@ -291,7 +291,7 @@ endfunction
 
 let s:unquote          = timl#symbol('unquote')
 let s:unquote_splicing = timl#symbol('unquote-splicing')
-function! timl#compiler#emit_quasiquote(file, context, ns, locals, form, ...) abort
+function! timl#compiler#emit_syntax_quote(file, context, ns, locals, form, ...) abort
   let gensyms = a:0 ? a:1 : {}
   let _ = {}
   if timl#consp(a:form)
@@ -305,7 +305,7 @@ function! timl#compiler#emit_quasiquote(file, context, ns, locals, form, ...) ab
       if timl#consp(_.v) && timl#car(_.v) is# s:unquote_splicing
         call s:emit(a:file, 'call extend('.tmp.', %s)', a:ns, a:locals, timl#car(timl#cdr(_.v)))
       else
-        call timl#compiler#emit_quasiquote(a:file, 'call add('.tmp.', %s)', a:ns, a:locals, _.v, gensyms)
+        call timl#compiler#emit_syntax_quote(a:file, 'call add('.tmp.', %s)', a:ns, a:locals, _.v, gensyms)
       endif
     endfor
     return s:printfln(a:file, a:context, 'timl#list2('.tmp.')')
@@ -323,14 +323,14 @@ function! timl#compiler#emit_quasiquote(file, context, ns, locals, form, ...) ab
     let tmp = s:tempsym('quasiquote')
     call s:println(a:file, 'let '.tmp.' = []')
     for _.v in a:form
-      call timl#compiler#emit_quasiquote(a:file, 'call add('.tmp.', %s)', a:ns, a:locals, _.v, gensyms)
+      call timl#compiler#emit_syntax_quote(a:file, 'call add('.tmp.', %s)', a:ns, a:locals, _.v, gensyms)
     endfor
     return s:printfln(a:file, a:context, tmp)
   elseif type(a:form) == type([])
     let tmp = s:tempsym('quasiquote')
     call s:println(a:file, 'let '.tmp.' = {}')
     for [k, _.v] in items(a:form)
-      call timl#compiler#emit_quasiquote(a:file, 'let '.tmp.'['.timl#compiler#serialize(k).'] = %s', a:ns, a:locals, _.v, gensyms)
+      call timl#compiler#emit_syntax_quote(a:file, 'let '.tmp.'['.timl#compiler#serialize(k).'] = %s', a:ns, a:locals, _.v, gensyms)
     endfor
     return s:printfln(a:file, a:context, tmp)
   else
