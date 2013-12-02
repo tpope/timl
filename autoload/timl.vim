@@ -703,7 +703,6 @@ TimLAssert empty(timl#re('(set! (. g:timl_setq key) ["a" "b"])'))
 TimLAssert g:timl_setq ==# {"key": ["a", "b"]}
 unlet! g:timl_setq
 
-TimLAssert timl#re('(let (([j k] (dict "j" 1)) ([l m] [2])) [j k l m])') == [1, g:timl#nil, 2, g:timl#nil]
 TimLAssert timl#re('(reduce (lambda (m (k v)) (append m (list v k))) ''() (dict "a" 1))') == [1, "a"]
 
 TimLAssert timl#re('(dict "a" 1 "b" 2)') ==# {"a": 1, "b": 2}
