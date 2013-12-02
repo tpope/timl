@@ -554,13 +554,12 @@ function! s:file4ns(ns) abort
   return file
 endfunction
 
-function! s:define_function(opts)
-  let munged = timl#munge(s:string(a:opts.ns).'#'.s:string(a:opts.name))
-  let file = s:file4ns(a:opts.ns)
-  call writefile(split(s:build_function(munged, a:opts.arglist),"\n"), file)
+function! s:define_function(global, opts)
+  let file = s:file4ns(matchstr(a:global, '.*\ze#'))
+  call writefile(split(s:build_function(a:global, a:opts.arglist),"\n"), file)
   execute 'source '.file
-  let g:timl#lambdas[munged] = a:opts
-  return function(munged)
+  let g:timl#lambdas[a:global] = a:opts
+  return function(a:global)
 endfunction
 
 function! timl#setq(envs, target, val) abort
@@ -651,6 +650,52 @@ let s:catch            = timl#symbol('catch')
 let s:finally          = timl#symbol('finally')
 let s:colon            = timl#symbol(':')
 
+function! timl#define_global(global, val) abort
+  if type(a:val) == type(function('tr'))
+    let orig_name = s:string(a:val)
+    let file = s:file4ns(matchstr(a:global, '.*\ze#'))
+    if has_key(g:timl#lambdas, orig_name)
+      redir => source
+      silent! function {orig_name}
+      redir END
+      let body = split(source, "\n")
+      if body[1] !~# '^\d'
+        call remove(body, 1)
+      endif
+      call map(body, 'matchstr(v:val, "\\s\\+\\zs.*")')
+      if body[0] !~# '^function'
+        let body = []
+      endif
+      let body[0] = substitute(body[0], ' \zs\w\+', a:global, '') . ' abort'
+      let lambda = g:timl#lambdas[orig_name]
+      call s:define_function(a:global, lambda)
+
+    elseif orig_name =~# '^\d'
+      throw 'timl: cannot define anonymous non-TimL function'
+
+    else
+      let body = [
+            \ "function! ".a:global."(...) abort",
+            \ "return call(".string(orig_name).", a:000)",
+            \ "endfunction"]
+    endif
+    call writefile(body, file)
+    let cmd = 'source '.file
+  else
+    let cmd = 'let g:'.a:global.' = a:val'
+  endif
+  if exists('*'.a:global) && a:global !~# '^[a-z][^#]*$'
+    execute 'delfunction '.a:global
+  endif
+  unlet! g:{a:global}
+  execute cmd
+  if type(a:val) == type(function('tr'))
+    return function(a:global)
+  else
+    return a:val
+  endif
+endfunction
+
 function! s:eval(x, envs) abort
   let x = a:x
   let envs = a:envs
@@ -706,7 +751,7 @@ function! s:eval(x, envs) abort
     if timl#consp(rest[0])
       let proto = timl#vec(rest[0])
       let form = len(rest) == 2 ? rest[1] : timl#list2([s:begin] + rest[1:-1])
-      return s:define_function({
+      return s:define_function(timl#munge(ns[0].'#'.s:string(proto[0])), {
             \ 'ns': ns,
             \ 'name': proto[0],
             \ 'arglist': proto[1:-1],
@@ -718,41 +763,9 @@ function! s:eval(x, envs) abort
     let name = ns[0].'#'.var
     let global = timl#munge(name)
     let Val = s:eval(rest[1], envs)
-    unlet! g:{global}
-    if exists('*'.global)
-      execute 'delfunction '.global
-    endif
-    if type(Val) == type(function('tr'))
-      let munged = timl#munge(Val)
-      if has_key(g:timl#lambdas, munged)
-        let lambda = g:timl#lambdas[munged]
-        call s:define_function({
-              \ 'ns': ns,
-              \ 'name': timl#symbol(var),
-              \ 'arglist': lambda.arglist,
-              \ 'env': lambda.env,
-              \ 'form': lambda.form,
-              \ 'macro': lambda.macro})
-      elseif munged =~# '^\d'
-        throw 'timl: cannot define anonymous non-TimL function'
-      else
-
-        let file = s:file4ns(ns)
-        call writefile([
-              \ "function! ".global."(...) abort",
-              \ "return call(".string(munged).", a:000)",
-              \ "endfunction"], file)
-        execute 'source '.file
-      endif
-    else
-      let g:{global} = Val
-    endif
-    return Val
+    return timl#define_global(global, Val)
 
   elseif F is# s:lambda
-    if rest[0] is '#cons'
-      throw string(rest)
-    endif
     if timl#symbolp(get(rest, 0))
       let name = remove(rest, 0)
     else
