@@ -325,7 +325,7 @@ function! timl#compiler#emit_syntax_quote(file, context, ns, locals, form, ...) 
     let form = timl#vec(a:form)
     for _.v in form
       if timl#consp(_.v) && timl#car(_.v) is# s:unquote_splicing
-        call s:emit(a:file, 'call extend('.tmp.', %s)', a:ns, a:locals, timl#car(timl#cdr(_.v)))
+        call s:emit(a:file, 'call extend('.tmp.', timl#vec(%s))', a:ns, a:locals, timl#car(timl#cdr(_.v)))
       else
         call timl#compiler#emit_syntax_quote(a:file, 'call add('.tmp.', %s)', a:ns, a:locals, _.v, gensyms)
       endif
