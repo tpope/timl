@@ -10,7 +10,7 @@ let s:iskeyword = '[[:alnum:]_=?!#$%&*+|./<>:-]'
 let g:timl#reader#tag_handlers = {}
 
 function! s:read_token(port) abort
-  let pat = '^\%(#"\%(\\\@<!\%(\\\\\)*\\"\|[^"]\)*"\|#[[:punct:]]\|"\%(\\.\|[^"]\)*"\|[[:space:],]\|;.\{-\}\ze\%(\n\|$\)\|\~@\|'.s:iskeyword.'\+\|@.\|.\)'
+  let pat = '^\%(#"\%(\\\@<!\%(\\\\\)*\\"\|[^"]\)*"\|#[[:punct:]]\|"\%(\\.\|[^"]\)*"\|[[:space:],]\|;.\{-\}\ze\%(\n\|$\)\|\~@\|'.s:iskeyword.'\+\|@.\|\\\%(space\|tab\|newline\|return\|.\)\|.\)'
   let match = matchstr(a:port.str, pat, a:port.pos)
   let a:port.pos += len(match)
   while match =~# '^[[:space:],]'
@@ -64,6 +64,15 @@ function! s:read_until(port, char)
   throw 'timl#reader: unexpected EOF at byte ' . a:port.pos
 endfunction
 
+let s:constants = {
+      \ 'nil': g:timl#nil,
+      \ 'false': g:timl#false,
+      \ 'true': g:timl#true,
+      \ '\space': " ",
+      \ '\tab': "\t",
+      \ '\newline': "\n",
+      \ '\return': "\r"}
+
 function! s:read(port, ...) abort
   let port = a:port
   let pos = a:0 ? a:2 : port.pos
@@ -112,12 +121,8 @@ function! s:read(port, ...) abort
     endfor
     lockvar dict
     return dict
-  elseif token ==# 'nil'
-    return g:timl#nil
-  elseif token ==# 'false'
-    return g:timl#false
-  elseif token ==# 'true'
-    return g:timl#true
+  elseif has_key(s:constants, token)
+    return s:constants[token]
   elseif token =~# '^\d\+e\d\+$'
     return eval(substitute(token, 'e', '.0e', ''))
   elseif token =~# '^\.\d'
@@ -126,6 +131,8 @@ function! s:read(port, ...) abort
     return eval(token)
   elseif token =~# '^#"'
     return substitute(token[2:-2], '\\\@<!\(\%(\\\\\)*\)\\"', '\1"', 'g')
+  elseif token[0] ==# '\'
+    return token[1]
   elseif token ==# "'"
     return timl#list(timl#symbol('quote'), s:read_bang(port))
   elseif token ==# '`'
