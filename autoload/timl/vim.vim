@@ -19,7 +19,7 @@ let g:timl#vim#List = {
       \    {"seq": function("timl#list2")}}}
 
 function! s:dict_seq(dict)
-  return timl#list2(items(a:dict)
+  return timl#list2(items(a:dict))
 endfunction
 
 let g:timl#vim#Dictionary = {
