@@ -229,6 +229,8 @@ function! timl#a2env(f, a) abort
   let env = {}
   if get(a:f.arglist, -1) is timl#symbol('...')
     let env['...'] = a:a['000']
+  elseif get(a:f.arglist, -2) is timl#symbol('&')
+    let env[timl#str(a:f.arglist[-1])] = a:a['000']
   endif
   let _ = {}
   for [k,_.V] in items(a:a)

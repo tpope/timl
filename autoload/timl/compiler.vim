@@ -216,6 +216,10 @@ function! timl#compiler#emit_fn_STAR_(file, context, ns, locals, params, ...) ab
     let body = a:000
   endif
   call s:println(a:file, "let ".sym."_impl.arglist = ".timl#compiler#serialize(params))
+  let sig = ''
+  if get(params, -2) is timl#symbol('&')
+    let params = params[0:-3] + timl#symbol('...')
+  endif
   let sig = join(map(copy(params), "v:val is# timl#symbol('...') ? '...' : timl#munge(v:val)"), ", ")
   call s:println(a:file, "function! ".sym."_func(".sig.") abort")
   call s:println(a:file, "let my_name = matchstr(expand('<sfile>'), '.*\\%(\\.\\.\\| \\)\\zs.*')")
