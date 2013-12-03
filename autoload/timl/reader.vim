@@ -159,7 +159,7 @@ function! s:read(port, ...) abort
     call timl#autoload(token[1:-1])
     if has_key(g:timl#reader#tag_handlers, token[1:-1])
       return g:timl#reader#tag_handlers[token[1:-1]](next)
-    elseif type(next) == type([])
+    elseif type(next) == type([]) && !timl#symbolp(next)
       return timl#lock(insert(next, timl#symbol(token)))
     elseif type(next) == type({})
       return timl#lock(extend(next, {'#tag': timl#symbol(token)}))
