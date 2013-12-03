@@ -15,7 +15,7 @@
      (set! ~var 1))))
 
 (defn build-option-string [args]
-  (rest
+  (subvec
     (loop [s ""
            x (first args)
            more (rest args)]
@@ -24,7 +24,7 @@
         (recur
           (if (symbol? x) (str s " " x) (str s (f:fnameescape (str x))))
           (first more) (rest more))
-        ))))
+        )) 1 -1))
 
 (defn extract-option-names [args]
   (map (fn [x] (f:matchstr (str x) "\\%(inv\\|no\\)\\=\\zs\\w\\+")) (filter symbol? args)))
