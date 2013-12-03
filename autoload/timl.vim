@@ -689,7 +689,7 @@ command! -nargs=1 TimLAssert
 
 TimLAssert timl#re('(+ 1 2 3)') == 6
 
-TimLAssert timl#re('(let () (define forty-two 42))')
+TimLAssert timl#re('(let [] (define forty-two 42))')
 TimLAssert timl#re('forty-two') ==# 42
 
 TimLAssert timl#re('(if 1 forty-two 69)') ==# 42
@@ -711,7 +711,7 @@ TimLAssert timl#re('(length "abc")') ==# 3
 
 TimLAssert timl#re('(reduce + 0 (list 1 2 3))') ==# 6
 
-TimLAssert timl#re("(loop ((n 5) (f 1)) (if (<= n 1) f (recur (1- n) (* f n))))") ==# 120
+TimLAssert timl#re("(loop [n 5 f 1] (if (<= n 1) f (recur (1- n) (* f n))))") ==# 120
 
 delcommand TimLAssert
 

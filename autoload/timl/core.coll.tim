@@ -6,7 +6,7 @@
 (defn last [xs] (if (next xs) (recur (next xs)) (first xs)))
 (defn conj [xs ...] (append xs ...))
 (defn butlast [s]
-  (loop ((ret '()) (s s))
+  (loop [ret '() s s]
     (if (next s)
       (recur (conj ret (first s)) (next s))
       ret)))

@@ -1,5 +1,5 @@
 (defmacro include-guard [...]
-  (let ((param (or (first ...) 'b:did-ftplugin)))
+  (let [param (or (first ...) 'b:did-ftplugin)]
    `(timl#core#include-guard ~param)))
 
 ; should append to b:undo-ftplugin

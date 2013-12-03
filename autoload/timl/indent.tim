@@ -1,5 +1,5 @@
 (defmacro include-guard [...]
-  (let ((param (or (first ...) 'b:did-indent)))
+  (let [param (or (first ...) 'b:did-indent)]
    `(timl#core#include-guard ~param)))
 
 (defmacro setlocal [...]

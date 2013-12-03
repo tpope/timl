@@ -1,7 +1,7 @@
 (in-ns 'timl#core)
 
 (define (defmacro name ...)
-  `(let ((fn# (define ~name (lambda ~name ~@...))))
+  `(let* [fn# (define ~name (lambda ~name ~@...))]
      (f:extend (f:get timl#lambdas (string fn#)) (dict "macro" 1))
      fn#))
 (set! (. (f:get g:timl#lambdas "timl#core#defmacro") macro) 1)
@@ -9,32 +9,34 @@
 (defmacro def [...] `(define ~@...))
 (defmacro fn [...] `(lambda ~@...))
 (defmacro do [...] `(begin ~@...))
+(defmacro let [...] `(let* ~@...))
 
 (defmacro defn [name params ...]
   `(def ~name (fn ~name ~params ~@...)))
 
-(defmacro loop [bindings ...]
- `((fn ~(map first bindings) ~@...) ~@(map (fn [x] (first (rest x))) bindings)))
+(defmacro loop [flat ...]
+  (let [bindings (partition 2 flat)]
+    `((fn ~(map first bindings) ~@...) ~@(map (fn [x] (first (rest x))) bindings))))
 
 (defmacro or [x ...]
   (if ...
-    `(let ((or# ~x)) (if or# or# (or ~@...)))
+    `(let [or# ~x] (if or# or# (or ~@...)))
     x))
 
 (defmacro and [x ...]
   (if ...
-    `(let ((and# ~x)) (if and# (and ~@...) and#))
+    `(let [and# ~x] (if and# (and ~@...) and#))
     x))
 
 (defmacro when [test ...]
   `(if ~test (do ~@...)))
 
 (defmacro if-let [binding then ...]
-  (let ((form (first binding))
-        (tst (first (rest binding))))
-    `(let ((temp# ~tst))
+  (let [form (first binding)
+        tst (first (rest binding))]
+    `(let [temp# ~tst]
       (if temp#
-        (let ((~form temp#)) ~then) ~@...))))
+        (let [~form temp#] ~then) ~@...))))
 
 (defmacro cond [...]
   (when ...
@@ -44,8 +46,8 @@
 
 (defmacro -> [x ...]
   (if ...
-    (let ((form (first ...))
-          (more (rest ...)))
+    (let [form (first ...)
+          more (rest ...)]
       (if more
         `(-> (-> ~x ~form) ~@more)
         (if (list? form)

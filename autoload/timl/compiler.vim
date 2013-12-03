@@ -241,17 +241,30 @@ function! timl#compiler#emit_lambda(file, context, ns, locals, params, ...) abor
   return s:printfln(a:file, a:context, sym."_func")
 endfunction
 
-function! timl#compiler#emit_let(file, context, ns, locals, bindings, ...) abort
+function! timl#compiler#emit_let_STAR_(file, context, ns, locals, bindings, ...) abort
   let _ = {}
   let locals = copy(a:locals)
   let tmp = s:tempsym('let')
   call s:println(a:file, "let ".tmp." = copy(locals[0])")
   call s:println(a:file, "call insert(locals, ".tmp.")")
-  for binding in timl#vec(a:bindings)
-    let [_.var, _.val] = timl#vec(binding)
-    call s:emit(a:file, "let ".tmp."[".string(_.var[0])."] = %s", a:ns, locals, _.val)
-    let locals[_.var[0]] = 1
-  endfor
+  if type(a:bindings) == type([])
+    if len(a:bindings) % 2 !=# 0
+      throw "timl(let): even number of forms required" . len(a:bindings)
+    endif
+    for i in range(0, len(a:bindings)-1, 2)
+      call s:emit(a:file,
+            \ "let ".tmp."[".string(timl#string(a:bindings[i]))."] = %s",
+            \ a:ns, locals, a:bindings[i+1])
+      let locals[timl#string(a:bindings[i])] = 1
+    endfor
+  else
+    let list = timl#vec(a:bindings)
+    for binding in timl#vec(a:bindings)
+      let [_.var, _.val] = timl#vec(binding)
+      call s:emit(a:file, "let ".tmp."[".string(timl#string(_.var))."] = %s", a:ns, locals, _.val)
+      let locals[timl#string(_.var)] = 1
+    endfor
+  endif
   call call('timl#compiler#emit_begin', [a:file, a:context, a:ns, a:locals] + a:000)
   return s:println(a:file, "call remove(locals, 0)")
 endfunction

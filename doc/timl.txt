@@ -72,7 +72,7 @@ values.  Everything else evaluates to itself.
 SPECIAL FORMS                                   *timl-special-forms*
 
                                                 *timl-if*
-(if {cond} {then} [{else}]) ~
+(if {cond} {then} {else}?) ~
 If {cond} is true, evaluate {then}, else evaluate {else}.  In a compromise
 between sanity and VimL compatibility (which lacks true Booleans), 0 and
 |empty()| expressions (including nil) are treated as false, and everything
@@ -83,11 +83,11 @@ else is treated as true.
 Evaluate a series of forms and return the result of the last one.
 
                                                 *timl-let*
-(let (({symbol} {value}) ...) {body} ...) ~
+(let [{symbol} {value} ...] {body} ...) ~
 Bind the given symbols lexically for the scope of the given body.
 
                                                 *timl-lambda*
-(lambda [{name}] ({param} ...) {body} ...) ~
+(lambda {name}? [{param} ...] {body} ...) ~
 Create an anonymous function.
 
                                                 *timl-recur*

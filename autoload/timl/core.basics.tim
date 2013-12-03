@@ -9,7 +9,7 @@
 
 (defn constantly [x] (fn [...] x))
 (defn partial [f ...]
-  (let ((args ...))
+  (let [args ...]
     (fn [...] (apply f (append args ...)))))
 (defn comp [f ...]
   (if-let (fns ...)
