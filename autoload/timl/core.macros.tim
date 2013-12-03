@@ -1,14 +1,12 @@
 (in-ns 'timl#core)
 
-(define (defmacro name ...)
-  `(let* [fn# (define ~name (fn* ~name ~@...))]
+(def (defmacro name ...)
+  `(let* [fn# (def ~name (fn* ~name ~@...))]
      (f:extend (f:get timl#lambdas (str fn#)) (dict "macro" 1))
      fn#))
 (set! (. (f:get g:timl#lambdas "timl#core#defmacro") macro) 1)
 
-(defmacro def [...] `(define ~@...))
 (defmacro fn [...] `(fn* ~@...))
-(defmacro do [...] `(begin ~@...))
 (defmacro let [...] `(let* ~@...))
 
 (defmacro defn [name params ...]

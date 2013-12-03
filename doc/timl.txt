@@ -78,8 +78,8 @@ between sanity and VimL compatibility (which lacks true Booleans), 0 and
 |empty()| expressions (including nil) are treated as false, and everything
 else is treated as true.
 
-                                                *timl-begin*
-(begin {form} ...) ~
+                                                *timl-do*
+(do {form} ...) ~
 Evaluate a series of forms and return the result of the last one.
 
                                                 *timl-let*
@@ -95,9 +95,9 @@ In tail position, re-calls the current function or |timl#core#loop| construct
 with the given parameters.  See Clojure's documentation at
 http://clojure.org/special_forms#recur .
 
-                                                *timl-define*
-(define {var} {value}) ~
-(define {function} ({param} ...) {body} ...) ~
+                                                *timl-def*
+(def {var} {value}) ~
+(def {function} ({param} ...) {body} ...) ~
 Define a variable or function.
 
                                                 *timl-set!*
@@ -136,7 +136,7 @@ Namespaces take the Clojure model and adapt it to fit the VimL |autoload|
 feature.
 >
         (in-ns 'foo#bar)
-        (define baz 1)
+        (def baz 1)
         (in-ns 'user)
         foo#bar#baz            ; evaluates to 1
         (alias 'quux 'foo#bar)

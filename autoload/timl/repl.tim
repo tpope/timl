@@ -18,7 +18,7 @@
           (get impl :form '...))))
 
 (def special-forms
-  '[if begin let fn define :
+  '[if do let fn def :
      quote syntax-quote unquote unquote-splicing function
      try catch finally])
 

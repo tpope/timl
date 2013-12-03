@@ -234,7 +234,7 @@ function! timl#compiler#emit_fn_STAR_(file, context, ns, locals, params, ...) ab
   if timl#symbolp(a:params)
     let locals[a:params[0]] = 1
   endif
-  call call('timl#compiler#emit_begin', [a:file, "return %s", a:ns, locals] + body)
+  call call('timl#compiler#emit_do', [a:file, "return %s", a:ns, locals] + body)
   call s:println(a:file, "endwhile")
   call s:println(a:file, "endfunction")
   call s:println(a:file, "let g:timl#lambdas[join([".sym."_func])] = ".sym."_impl")
@@ -265,11 +265,11 @@ function! timl#compiler#emit_let_STAR_(file, context, ns, locals, bindings, ...)
       let locals[timl#str(_.var)] = 1
     endfor
   endif
-  call call('timl#compiler#emit_begin', [a:file, a:context, a:ns, a:locals] + a:000)
+  call call('timl#compiler#emit_do', [a:file, a:context, a:ns, a:locals] + a:000)
   return s:println(a:file, "call remove(locals, 0)")
 endfunction
 
-function! timl#compiler#emit_begin(file, context, ns, locals, ...) abort
+function! timl#compiler#emit_do(file, context, ns, locals, ...) abort
   let _ = {}
   let sym = s:tempsym('trash')
   for _.x in a:000[0:-2]
@@ -279,8 +279,8 @@ function! timl#compiler#emit_begin(file, context, ns, locals, ...) abort
   return str
 endfunction
 
-function! timl#compiler#emit_define(file, context, ns, locals, sym, val) abort
-  let tmp = s:tempsym('define')
+function! timl#compiler#emit_def(file, context, ns, locals, sym, val) abort
+  let tmp = s:tempsym('def')
   if timl#consp(a:sym)
     let sym = timl#car(a:sym)
     call timl#compiler#emit_fn_STAR_(a:file, 'let '.tmp.' = %s', a:ns, a:locals, sym, timl#cdr(a:sym), a:val)
@@ -369,7 +369,7 @@ function! timl#compiler#emit_try(file, context, ns, locals, ...) abort
     let _.e = a:000[i]
     if timl#car(_.e) is s:finally
       call s:println(a:file, 'finally')
-      call call('timl#compiler#emit_begin', [a:file, 'let '.tmp.' = %s', a:ns, a:locals] + timl#vec(timl#cdr(_.e)))
+      call call('timl#compiler#emit_do', [a:file, 'let '.tmp.' = %s', a:ns, a:locals] + timl#vec(timl#cdr(_.e)))
     elseif timl#car(_.e) is s:catch
       let rest = timl#vec(timl#cdr(_.e))
       let _.pattern = rest[0]
@@ -380,7 +380,7 @@ function! timl#compiler#emit_try(file, context, ns, locals, ...) abort
       call s:println(a:file, 'catch /'._.pattern.'/')
       call s:println(a:file, "call insert(locals, copy(locals[0]))")
       call s:println(a:file, "let locals[0][".string(var[0])."] = timl#build_exception(v:exception, v:throwpoint)")
-      call call('timl#compiler#emit_begin', [a:file, a:context, a:ns, a:locals] + rest[2:-1])
+      call call('timl#compiler#emit_do', [a:file, a:context, a:ns, a:locals] + rest[2:-1])
       call s:println(a:file, "call remove(locals, 0)")
     endif
   endfor

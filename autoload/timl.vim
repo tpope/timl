@@ -682,12 +682,12 @@ command! -nargs=1 TimLAssert
 
 TimLAssert timl#re('(+ 1 2 3)') == 6
 
-TimLAssert timl#re('(let [] (define forty-two 42))')
+TimLAssert timl#re('(let [] (def forty-two 42))')
 TimLAssert timl#re('forty-two') ==# 42
 
 TimLAssert timl#re('(if 1 forty-two 69)') ==# 42
 TimLAssert timl#re('(if 0 "boo" "yay")') ==# "yay"
-TimLAssert timl#re('(begin 1 2)') ==# 2
+TimLAssert timl#re('(do 1 2)') ==# 2
 
 TimLAssert empty(timl#re('(set! g:timl_setq (dict))'))
 TimLAssert g:timl_setq ==# {}
