@@ -198,30 +198,8 @@ function! timl#core#list_STAR_(seq) abort
   return timl#list2(a:seq)
 endfunction
 
-function! timl#core#sublist(list, start, ...) abort
-  if a:0
-    return timl#lock(a:list[a:start : a:1])
-  else
-    return timl#lock(a:list[a:start :])
-  endif
-endfunction
-
-function! timl#core#slice(list, start, ...) abort
-  if a:0 && a:1 == 0
-    return type(a:list) == type('') ? '' : timl#lock([])
-  elseif a:0
-    return timl#lock(a:list[a:start : (a:1 < 0 ? a:1 : a:1-1)])
-  else
-    return timl#lock(a:list[a:start :])
-  endif
-endfunction
-
 function! timl#core#list_QMARK_(val) abort
   return timl#consp(a:val) ? s:true : s:false
-endfunction
-
-function! timl#core#vector_QMARK_(val) abort
-  return timl#vectorp(a:val) ? s:true : s:false
 endfunction
 
 function! timl#core#append(...) abort
@@ -233,8 +211,37 @@ function! timl#core#append(...) abort
   return timl#lock(acc)
 endfunction
 
-function! timl#core#cons(val, list) abort
-  return timl#cons(a:val, a:list)
+function! timl#core#cons(val, seq) abort
+  return timl#cons(a:val, timl#core#seq(a:seq))
+endfunction
+
+" }}}1
+" Section: Vectors {{{1
+
+function! timl#core#vector_QMARK_(val) abort
+  return timl#vectorp(a:val) ? s:true : s:false
+endfunction
+
+function! timl#core#vector(...) abort
+  return timl#persist(a:000)
+endfunction
+
+function! timl#core#vec(seq) abort
+  if timl#truth(timl#core#vector_QMARK_(type(a:seq)))
+    return a:seq
+  else
+    return timl#vec(timl#core#seq(a:seq))
+  endif
+endfunction
+
+function! timl#core#subvec(list, start, ...) abort
+  if a:0 && a:1 == 0
+    return type(a:list) == type('') ? '' : timl#lock([])
+  elseif a:0
+    return timl#lock(a:list[a:start : (a:1 < 0 ? a:1 : a:1-1)])
+  else
+    return timl#lock(a:list[a:start :])
+  endif
 endfunction
 
 " }}}1
@@ -317,12 +324,12 @@ function! timl#core#seq(coll)
   return empty(seq) ? g:timl#nil : seq
 endfunction
 
-function! timl#core#first(seq) abort
-  return get(timl#core#seq(a:seq), 0, g:timl#nil)
+function! timl#core#first(list) abort
+  return timl#dispatch('timl#lang#Seq', 'first', timl#core#seq(a:list))
 endfunction
 
 function! timl#core#rest(list) abort
-  return timl#lock(timl#core#seq(a:list)[1:-1])
+  return timl#dispatch('timl#lang#Seq', 'rest', timl#core#seq(a:list))
 endfunction
 
 function! timl#core#length(coll) abort
@@ -334,7 +341,7 @@ function! timl#core#length(coll) abort
 endfunction
 
 function! timl#core#partition(n, seq) abort
-  let seq = timl#core#seq(a:seq)
+  let seq = timl#core#vec(a:seq)
   let out = []
   for i in range(0, len(seq)-1, a:n)
     call add(out, seq[i : i+a:n-1])
@@ -362,30 +369,51 @@ function! timl#core#empty(coll) abort
 endfunction
 
 function! timl#core#map(f, coll) abort
-  let seq = timl#core#seq(a:coll)
-  if empty(seq)
-    return seq
+  if type(a:coll) == type([]) && !empty(a:coll) && !timl#symbolp(a:coll)
+    let result = map(copy(a:coll), 'timl#call(a:f, [v:val])')
+    lockvar result
+    return result
   endif
-  let result = map(timl#transient(seq), 'timl#call(a:f, [v:val])')
-  lockvar result
-  return result
+  let _ = {}
+  let _.seq = timl#core#seq(a:coll)
+  if empty(_.seq)
+    return a:coll
+  endif
+  let tag = timl#symbol('#timl#lang#Cons')
+  let head = {'#tag': tag,
+        \ 'car': timl#call(a:f, [timl#core#first(_.seq)]),
+        \ 'cdr': g:timl#nil}
+  let ptr = head
+  let _.seq = timl#core#next(_.seq)
+  while _.seq isnot# g:timl#nil
+    let next = timl#core#next(_.seq)
+    let ptr.cdr = {'#tag': tag,
+          \ 'car': timl#call(a:f, [timl#core#first(next)]),
+          \ 'cdr': g:timl#nil}
+    lockvar ptr
+    let _.seq = timl#core#next(_.seq)
+  endwhile
+  lockvar ptr
+  return head
 endfunction
 
 function! timl#core#reduce(f, coll, ...) abort
   let _ = {}
   if a:0
     let _.val = a:coll
-    let coll = timl#core#seq(a:1)
+    let _.seq = timl#core#seq(a:1)
   else
-    let coll = timl#transient(timl#core#seq(a:coll))
-    if empty(coll)
+    let _.seq = timl#core#seq(a:coll)
+    if empty(_.seq)
       return g:timl#nil
     endif
-    let _.val = remove(coll, 0)
+    let _.val = timl#core#first(_.seq)
+    let _.seq = timl#core#rest(_.seq)
   endif
-  for _.elem in coll
-    let _.val = timl#call(a:f, [_.val, _.elem])
-  endfor
+  while _.seq isnot# g:timl#nil
+    let _.val = timl#call(a:f, [_.val, timl#core#first(_.seq)])
+    let _.seq = timl#core#next(_.seq)
+  endwhile
   return _.val
 endfunction
 
