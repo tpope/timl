@@ -15,7 +15,7 @@ let s:escapes = {
 function! timl#printer#string(x)
   " TODO: guard against recursion
   let type = timl#type(a:x)
-  if type == 'timl#lang#symbol'
+  if type == 'timl#lang#Symbol'
     return a:x[0]
 
   elseif a:x is# g:timl#nil
@@ -43,7 +43,7 @@ function! timl#printer#string(x)
     endif
     return prefix.'['.join(map(a:x[index : ], 'timl#printer#string(v:val)'), ' ') . ']'
 
-  elseif type == 'timl#vim#dictionary'
+  elseif type == 'timl#vim#Dictionary'
     let acc = []
     for [k, V] in items(a:x)
       call add(acc, timl#printer#string(k) . ' ' . timl#printer#string(V))
@@ -51,15 +51,15 @@ function! timl#printer#string(x)
     endfor
     return '#[' . join(acc, ' ') . ']'
 
-  elseif type == 'timl#lang#hash-set'
+  elseif type == 'timl#lang#HashSet'
     let acc = []
     for [k, V] in items(a:x)
       if k !~# '^#'
-        call add(acc, timl#printer#string(k) . ' ' . timl#printer#string(V))
+        call add(acc, timl#printer#string(V))
       endif
       unlet! V
     endfor
-    return '#[' . join(acc, ' ') . ']'
+    return '#{' . join(acc, ' ') . '}'
 
   elseif type(a:x) == type({})
     let acc = []
@@ -69,7 +69,7 @@ function! timl#printer#string(x)
       endif
       unlet! V
     endfor
-    let prefix = type ==# 'timl#lang#hash-map' ? '' : '#'.tr(type, '#', '.')
+    let prefix = type ==# 'timl#lang#HashMap' ? '' : '#'.tr(type, '#', '.')
     return prefix.'{' . join(acc, ' ') . '}'
 
   elseif type(a:x) == type('')

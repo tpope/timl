@@ -19,12 +19,13 @@ endfunction
 " Section: Data types {{{1
 
 let s:types = {
-      \ 0: 'timl#vim#number',
-      \ 1: 'timl#vim#string',
-      \ 2: 'timl#vim#funcref',
-      \ 3: 'timl#vim#list',
-      \ 4: 'timl#vim#dictionary',
-      \ 5: 'timl#vim#float'}
+      \ 0: 'timl#vim#Number',
+      \ 1: 'timl#vim#String',
+      \ 2: 'timl#vim#Funcref',
+      \ 3: 'timl#vim#List',
+      \ 4: 'timl#vim#Dictionary',
+      \ 5: 'timl#vim#Float'}
+
 
 function! timl#truth(val) abort
   return !(empty(a:val) || a:val is 0)
@@ -32,15 +33,15 @@ endfunction
 
 function! timl#type(val) abort
   let type = get(s:types, type(a:val), 'timl#vim#unknown')
-  if type == 'timl#vim#list'
+  if type == 'timl#vim#List'
     if timl#symbolp(a:val)
-      return 'timl#lang#symbol'
+      return 'timl#lang#Symbol'
     elseif a:val is# g:timl#nil
-      return 'timl#lang#nil'
+      return 'timl#lang#Nil'
     elseif timl#symbolp(get(a:val, 0)) && a:val[0][0][0] ==# '#'
       return a:val[0][0][1:-1]
     endif
-  elseif type == 'timl#vim#dictionary'
+  elseif type == 'timl#vim#Dictionary'
     if timl#symbolp(get(a:val, '#tag')) && a:val['#tag'][0][0] ==# '#'
       return a:val['#tag'][0][1:-1]
     endif
@@ -52,13 +53,21 @@ function! timl#implementsp(fn, obj)
   return exists('*'.tr(timl#type(a:obj) . '#' . a:fn, '-', '_'))
 endfunction
 
-function! timl#dispatch(fn, obj, ...)
+runtime! autoload/timl/lang.vim
+runtime! autoload/timl/vim.vim
+function! timl#dispatch(proto, fn, obj, ...)
   let t = timl#type(a:obj)
-  let fn = tr(t . '#' . a:fn, '-', '_')
-  if exists('*'.fn)
-    return timl#call(fn, [a:obj] + a:000)
+  let obj = tr(t, '-', '_')
+  if type(get(g:, obj)) == type({})
+    let impls = get(g:{t}, "implements", {})
+    let proto = timl#str(a:proto)
+    if has_key(impls, proto)
+      return timl#call(impls[proto][timl#str(a:fn)], [a:obj] + a:000)
+    endif
+  else
+    throw "timl: type " . t . " undefined"
   endif
-  throw "timl:E117: can't " . a:fn . " this " . t
+  throw "timl:E117: ".t." doesn't implement ".a:proto
 endfunction
 
 function! timl#lock(val) abort
@@ -273,7 +282,7 @@ endfunction
 " }}}1
 " Section: Lists {{{1
 
-let s:cons = timl#symbol('#timl#lang#cons')
+let s:cons = timl#symbol('#timl#lang#Cons')
 
 function! timl#vectorp(obj) abort
   return type(a:obj) == type([]) && a:obj isnot# g:timl#nil && !timl#symbolp(a:obj)

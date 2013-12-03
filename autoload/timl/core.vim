@@ -292,12 +292,12 @@ endfunction
 function! timl#core#get(coll, key, ...) abort
   let def = a:0 ? a:1 : g:timl#nil
   let t = timl#type(a:coll)
-  if t ==# 'timl#vim#list'
+  if t ==# 'timl#vim#List'
     if type(a:key) != type(0)
       return a:0 ? a:1 : g:timl#nil
     endif
     return get(a:coll, a:key, def)
-  elseif t ==# 'timl#vim#dictionary'
+  elseif t ==# 'timl#vim#Dictionary'
     return get(a:coll, timl#core#str(a:key), def)
   elseif t !~# '^timl#vim#'
     return get(a:coll, timl#key(a:key), def)
@@ -313,16 +313,7 @@ endfunction
 " Section: Sequences {{{1
 
 function! timl#core#seq(coll)
-  let t = timl#type(a:coll)
-  if t ==# 'timl#lang#cons'
-    return timl#vec(a:coll)
-  elseif t == 'timl#vim#dictionary'
-    let seq = timl#lock(items(a:coll))
-  elseif t == 'timl#vim#list'
-    let seq = timl#persistent(a:coll)
-  else
-    let seq = timl#dispatch('seq', a:coll)
-  endif
+  let seq = timl#dispatch("timl#lang#Seqable", "seq", a:coll)
   return empty(seq) ? g:timl#nil : seq
 endfunction
 

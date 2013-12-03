@@ -30,7 +30,7 @@
   (map (fn [x] (f:matchstr (str x) "\\%(inv\\|no\\)\\=\\zs\\w\\+")) (filter symbol? args)))
 
 (defn extract-option-restore [args]
-  (if-let (options (extract-option-names args))
+  (if-let [options (extract-option-names args)]
     (str "setlocal " (f:join (map str options) "< ") "<")))
 
 (defmacro setlocal [...]

@@ -77,8 +77,7 @@ function! s:read(port, ...) abort
     if len(list) % 2 != 0
       let error = 'timl#reader: invalid dict literal'
     else
-      call timl#require('timl#lang#hash-map')
-      let dict = {'#tag': timl#symbol('#timl#lang#hash-map')}
+      let dict = {'#tag': timl#symbol('#timl#lang#HashMap')}
       for i in range(0, len(list)-1, 2)
         let key = timl#key(list[i])
         let dict[key] = list[i+1]
@@ -106,8 +105,7 @@ function! s:read(port, ...) abort
     endif
   elseif token == '#{'
     let list = s:read_until(port, '}')
-    call timl#require('timl#lang#hash-set')
-    let dict = {'#tag': timl#symbol('#timl#lang#hash-set')}
+    let dict = {'#tag': timl#symbol('#timl#lang#HashSet')}
     let _ = {}
     for _.key in list
       let dict[timl#key(_.key)] = _.key
@@ -149,7 +147,7 @@ function! s:read(port, ...) abort
     else
       let token = '#timl#lang'.token
     endif
-    call timl#autoload(token[1:-1],'#*')
+    call timl#autoload(token[1:-1])
     if has_key(g:timl#reader#tag_handlers, token[1:-1])
       return g:timl#reader#tag_handlers[token[1:-1]](next)
     elseif type(next) == type([])
@@ -225,7 +223,7 @@ TimLRAssert timl#reader#read_string('foo') ==# timl#symbol('foo')
 TimLRAssert timl#reader#read_string('":)"') ==# ':)'
 TimLRAssert timl#reader#read_string('(first [1 2])') ==# timl#list(timl#symbol('first'), [1, 2])
 TimLRAssert timl#reader#read_string('#["a" 1 "b" 2]') ==# {"a": 1, "b": 2}
-TimLRAssert timl#reader#read_string('{"a" 1 :b 2 3 "c"}') ==# {' "a"': 1, "b": 2, "3": "c", '#tag': timl#symbol('#timl#lang#hash-map')}
+TimLRAssert timl#reader#read_string('{"a" 1 :b 2 3 "c"}') ==# {' "a"': 1, "b": 2, "3": "c", '#tag': timl#symbol('#timl#lang#HashMap')}
 TimLRAssert timl#reader#read_string("[1]\n; hi\n") ==# [1]
 TimLRAssert timl#reader#read_string("'[1 2 3]") ==# timl#list(timl#symbol('quote'), [1, 2, 3])
 TimLRAssert timl#reader#read_string("`foo") ==# timl#list(timl#symbol('syntax-quote'), timl#symbol('foo'))
