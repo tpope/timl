@@ -11,12 +11,6 @@
             (filter (comp not nil? last) (dict "name" name "arglist" arglist "file" file)))
           (catch 123 e (dict))))))
 
-(defn source [fn]
-  (if-let (impl (impl fn))
-    (list 'fn
-          (get impl :arglist '...)
-          (get impl :form '...))))
-
 (def special-forms
   '[if do let fn def :
      quote syntax-quote unquote unquote-splicing function

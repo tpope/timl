@@ -1,9 +1,9 @@
-(defmacro include-guard [...]
-  (let [param (or (first ...) 'b:did-ftplugin)]
+(defmacro include-guard [& default]
+  (let [param (or (first more) 'b:did-ftplugin)]
    `(timl#core#include-guard ~param)))
 
 ; should append to b:undo-ftplugin
-(defmacro setlocal [...]
+(defmacro setlocal [& opts]
   `(do
-     (: (str "setlocal " ~(build-option-string ...)))
-     (set! b:undo-ftplugin ~(extract-option-restore ...))))
+     (: (str "setlocal " ~(build-option-string opts)))
+     (set! b:undo-ftplugin ~(extract-option-restore opts))))

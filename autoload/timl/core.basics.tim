@@ -2,18 +2,17 @@
 
 (defn not [x] (if x false true))
 
-(defn pr-str [...] (f:join (map timl#printer#string ...)))
-(defn pr [...] (echo (apply pr-str ...)))
+(defn pr-str [& xs] (f:join (map timl#printer#string xs)))
+(defn pr [& xs] (echo (apply pr-str xs)))
 (defn read-string [string] (timl#reader#read-string string))
 (defn eval [form] (timl#eval form))
 
-(defn constantly [x] (fn [...] x))
-(defn partial [f ...]
-  (let [args ...]
-    (fn [...] (apply f (append args ...)))))
-(defn comp [f ...]
-  (if-let (fns ...)
-    (fn [...] (f (apply (apply comp fns) ...)))
+(defn constantly [x] (fn [& args] x))
+(defn partial [f & args]
+  (fn [& more] (apply f (append args more))))
+(defn comp [f & fns]
+  (if fns
+    (fn [& args] (f (apply (apply comp fns) args)))
     f))
 
 (defn 1- [n] (- n 1))

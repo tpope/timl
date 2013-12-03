@@ -1,54 +1,54 @@
 (in-ns 'timl#core)
 
-(def (defmacro name ...)
-  `(let* [fn# (def ~name (fn* ~name ~@...))]
+(def (defmacro name & fdecl)
+  `(let* [fn# (def ~name (fn* ~name ~@fdecl))]
      (f:extend (f:get timl#lambdas (str fn#)) (dict "macro" 1))
      fn#))
 (set! (. (f:get g:timl#lambdas "timl#core#defmacro") macro) 1)
 
-(defmacro fn [...] `(fn* ~@...))
-(defmacro let [...] `(let* ~@...))
+(defmacro fn [& args] `(fn* ~@args))
+(defmacro let [& args] `(let* ~@args))
 
-(defmacro defn [name params ...]
-  `(def ~name (fn ~name ~params ~@...)))
+(defmacro defn [name params & fdecl]
+  `(def ~name (fn ~name ~params ~@fdecl)))
 
-(defmacro declare [...]
-  `(do ~@(map (fn [n] (list 'def n)) ...)))
+(defmacro declare [& names]
+  `(do ~@(map (fn [n] (list 'def n)) names)))
 
-(defmacro loop [flat ...]
+(defmacro loop [flat & body]
   (let [bindings (partition 2 flat)]
-    `((fn ~(map first bindings) ~@...) ~@(map (fn [x] (first (rest x))) bindings))))
+    `((fn ~(map first bindings) ~@body) ~@(map (fn [x] (first (rest x))) bindings))))
 
-(defmacro or [x ...]
-  (if ...
-    `(let [or# ~x] (if or# or# (or ~@...)))
+(defmacro or [x & xs]
+  (if (seq xs)
+    `(let [or# ~x] (if or# or# (or ~@xs)))
     x))
 
-(defmacro and [x ...]
-  (if ...
-    `(let [and# ~x] (if and# (and ~@...) and#))
+(defmacro and [x & xs]
+  (if (seq xs)
+    `(let [and# ~x] (if and# (and ~@xs) and#))
     x))
 
-(defmacro when [test ...]
-  `(if ~test (do ~@...)))
+(defmacro when [test & body]
+  `(if ~test (do ~@body)))
 
-(defmacro if-let [binding then ...]
+(defmacro if-let [binding then & else]
   (let [form (first binding)
         tst (first (rest binding))]
     `(let [temp# ~tst]
       (if temp#
-        (let [~form temp#] ~then) ~@...))))
+        (let [~form temp#] ~then) ~@else))))
 
-(defmacro cond [...]
-  (when ...
-    (list 'if (first (first ...))
-          (first (rest (first ...)))
-          (cons `cond (rest ...)))))
+(defmacro cond [& clauses]
+  (when (seq clauses)
+    (list 'if (first clauses)
+          (first (rest clauses))
+          (cons `cond (rest (rest clauses))))))
 
-(defmacro -> [x ...]
-  (if ...
-    (let [form (first ...)
-          more (rest ...)]
+(defmacro -> [x & forms]
+  (if (seq forms)
+    (let [form (first forms)
+          more (rest forms)]
       (if more
         `(-> (-> ~x ~form) ~@more)
         (if (list? form)

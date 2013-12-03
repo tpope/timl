@@ -1,6 +1,6 @@
 (in-ns 'timl#core)
 
-(defn conj [xs ...] (append xs ...))
+(defn conj [coll & xs] (append coll xs))
 
 (defn sorter [>]
   (fn [x y]
@@ -10,9 +10,9 @@
         -1
         0))))
 
-(defn sort [xs ...]
-  (if ...
-    (f:sort (f:copy xs) (sorter (first ...)) {})
+(defn sort [xs & args]
+  (if args
+    (f:sort (f:copy (first args)) (sorter xs) {})
     (f:sort (f:copy xs))))
 
 (defn get-in [m ks] (reduce get m ks))
