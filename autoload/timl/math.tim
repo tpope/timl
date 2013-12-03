@@ -1,13 +1,13 @@
 (in-ns 'timl#math)
 
 (defn fact [x]
-  (loop ((n x)
-         (f 1))
-    (if (<= n 1) f (recur (1- n) (* f n)))))
+  (loop [n x
+         f 1]
+    (if (<= n 1) f (recur (dec n) (* f n)))))
 
 (defn fib [n]
   (first
-    (loop ((xs (list 1 0)))
+    (loop [xs [1 0]]
       (if (< (count xs) n)
         (recur (cons (+ (first xs) (second xs)) xs))
         xs))))

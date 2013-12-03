@@ -21,7 +21,7 @@ function! timl#core#symbol_QMARK_(obj) abort
 endfunction
 
 function! timl#core#str_QMARK_(obj) abort
-  return type(a:obj) == type('')
+  return type(a:obj) == type('') ? s:true : s:false
 endfunction
 
 function! timl#core#integer_QMARK_(obj) abort
@@ -34,6 +34,14 @@ endfunction
 
 function! timl#core#number_QMARK_(obj) abort
   return type(a:obj) == type(0) || type(a:obj) == 5
+endfunction
+
+function! timl#core#number(obj) abort
+  if type(a:obj) == type(0) || type(a:obj) == 5
+    return a:obj
+  else
+    throw "timl: not a number"
+  endif
 endfunction
 
 function! timl#core#symbol(str) abort
@@ -116,19 +124,19 @@ endfunction
 
 function! timl#core#_(x, ...) abort
   if a:0
-    let acc = a:x
+    let acc = timl#core#number(a:x)
     for elem in a:000
       let acc -= elem
     endfor
     return acc
   else
-    return -a:x
+    return 0 - a:x
   endif
 endfunction
 
 function! timl#core#_SLASH_(x, ...) abort
   if a:0
-    let acc = a:x
+    let acc = timl#core#number(a:x)
     for elem in a:000
       let acc = acc / elem
     endfor
@@ -139,23 +147,23 @@ function! timl#core#_SLASH_(x, ...) abort
 endfunction
 
 function! timl#core#rem(x, y) abort
-  return a:x % a:y
+  return timl#core#number(a:x) % a:y
 endfunction
 
 function! timl#core#_GT_(x, y) abort
-  return a:x ># a:y ? s:true : s:false
+  return timl#core#number(a:x) ># timl#core#number(a:y) ? s:true : s:false
 endfunction
 
 function! timl#core#_LT_(x, y) abort
-  return a:x <# a:y ? s:true : s:false
+  return timl#core#number(a:x) <# timl#core#number(a:y) ? s:true : s:false
 endfunction
 
 function! timl#core#_GT__EQ_(x, y) abort
-  return a:x >=# a:y ? s:true : s:false
+  return timl#core#number(a:x) >=# timl#core#number(a:y) ? s:true : s:false
 endfunction
 
 function! timl#core#_LT__EQ_(x, y) abort
-  return a:x <=# a:y ? s:true : s:false
+  return timl#core#number(a:x) <=# timl#core#number(a:y) ? s:true : s:false
 endfunction
 
 function! s:numberp(x) abort
@@ -167,7 +175,7 @@ function! timl#core#_EQ_(x, y) abort
   return type(a:x) == type(a:y) && a:x ==# a:y ? s:true : s:false
 endfunction
 
-function! timl#core#equal_QMARK_(x, y) abort
+function! timl#core#_EQ__EQ_(x, y) abort
   if s:numberp(a:x) && s:numberp(a:y)
     return a:x == a:y ? s:true : s:false
   else
@@ -175,7 +183,7 @@ function! timl#core#equal_QMARK_(x, y) abort
   endif
 endfunction
 
-function! timl#core#eq_QMARK_(x, y) abort
+function! timl#core#identical_QMARK_(x, y) abort
   return a:x is# a:y ? s:true : s:false
 endfunction
 
