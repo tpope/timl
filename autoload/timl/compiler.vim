@@ -279,14 +279,19 @@ function! timl#compiler#emit_do(file, context, ns, locals, ...) abort
   return str
 endfunction
 
-function! timl#compiler#emit_def(file, context, ns, locals, sym, val) abort
+function! timl#compiler#emit_def(file, context, ns, locals, sym, ...) abort
+  if a:0
+    let Val = a:1
+  else
+    return s:printfln(a:file, a:context, "timl#define_global(timl#munge(g:timl#core#_STAR_ns_STAR_[0].".string('#'.timl#str(a:sym))."))")
+  endif
   let tmp = s:tempsym('def')
   if timl#consp(a:sym)
     let sym = timl#car(a:sym)
-    call timl#compiler#emit_fn_STAR_(a:file, 'let '.tmp.' = %s', a:ns, a:locals, sym, timl#cdr(a:sym), a:val)
+    call timl#compiler#emit_fn_STAR_(a:file, 'let '.tmp.' = %s', a:ns, a:locals, sym, timl#cdr(a:sym), Val)
   else
     let sym = a:sym
-    call s:emit(a:file, 'let '.tmp." = %s", a:ns, a:locals, a:val)
+    call s:emit(a:file, 'let '.tmp." = %s", a:ns, a:locals, Val)
   endif
   return s:printfln(a:file, a:context, "timl#define_global(timl#munge(g:timl#core#_STAR_ns_STAR_[0].".string('#'.sym[0]).") ,".tmp.")")
 endfunction

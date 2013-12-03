@@ -12,6 +12,9 @@
 (defmacro defn [name params ...]
   `(def ~name (fn ~name ~params ~@...)))
 
+(defmacro declare [...]
+  `(do ~@(map (fn [n] (list 'def n)) ...)))
+
 (defmacro loop [flat ...]
   (let [bindings (partition 2 flat)]
     `((fn ~(map first bindings) ~@...) ~@(map (fn [x] (first (rest x))) bindings))))

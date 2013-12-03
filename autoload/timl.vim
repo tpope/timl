@@ -572,9 +572,16 @@ function! timl#eval(x, ...) abort
   return s:eval(a:x, envs)
 endfunction
 
-function! timl#define_global(global, val) abort
-  if type(a:val) == type(function('tr'))
-    let orig_name = s:string(a:val)
+function! timl#define_global(global, ...) abort
+  if a:0
+    let Val = a:1
+  elseif exists('g:'.a:global)
+    return g:timl#nil
+  else
+    let Val = g:timl#nil
+  endif
+  if type(Val) == type(function('tr'))
+    let orig_name = s:string(Val)
     let file = s:file4ns(matchstr(a:global, '.*\ze#'))
     if has_key(g:timl#lambdas, orig_name)
       redir => source
@@ -603,17 +610,17 @@ function! timl#define_global(global, val) abort
     call writefile(body, file)
     let cmd = 'source '.file
   else
-    let cmd = 'let g:'.a:global.' = a:val'
+    let cmd = 'let g:'.a:global.' = Val'
   endif
   if exists('*'.a:global) && a:global !~# '^[a-z][^#]*$'
     execute 'delfunction '.a:global
   endif
   unlet! g:{a:global}
   execute cmd
-  if type(a:val) == type(function('tr'))
+  if type(Val) == type(function('tr'))
     return function(a:global)
   else
-    return a:val
+    return Val
   endif
 endfunction
 
