@@ -29,6 +29,14 @@ function! s:cons_cdr(cons)
   return a:cons.cdr
 endfunction
 
+let g:timl#lang#Nil = {
+      \ "implements":
+      \ {"timl#lang#Seqable":
+      \    {"seq": s:function("s:identity")},
+      \  "timl#lang#Seq":
+      \    {"first": s:function('s:identity'),
+      \     "rest": s:function('s:identity')}}}
+
 let g:timl#lang#Cons = {
       \ "implements":
       \ {"timl#lang#Seqable":
