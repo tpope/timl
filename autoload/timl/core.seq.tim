@@ -1,0 +1,16 @@
+(in-ns 'timl#core)
+
+(def conj)
+(defn not-empty [xs] (if (empty? xs) nil xs))
+(defn next [xs] (not-empty (rest xs)))
+(defn second [xs] (first (rest xs)))
+(defn last [xs] (if (next xs) (recur (next xs)) (first xs)))
+(defn butlast [s]
+  (loop [ret '() s s]
+    (if (next s)
+      (recur (conj ret (first s)) (next s))
+      ret)))
+(defn filter [f coll] (reduce (fn [m o] (if (f o) (append m (list o)) m)) '() coll))
+(defn reductions [f init xs]
+  (cons init (if xs
+    (reductions f (f init (first xs)) (rest xs)))))

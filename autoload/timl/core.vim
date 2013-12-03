@@ -442,6 +442,7 @@ endfunction
 
 call timl#source_file(expand('<sfile>:r') . '.macros.tim', 'timl#core')
 call timl#source_file(expand('<sfile>:r') . '.basics.tim', 'timl#core')
+call timl#source_file(expand('<sfile>:r') . '.seq.tim', 'timl#core')
 call timl#source_file(expand('<sfile>:r') . '.coll.tim', 'timl#core')
 call timl#source_file(expand('<sfile>:r') . '.vim.tim', 'timl#core')
 
