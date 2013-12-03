@@ -116,7 +116,7 @@ function! s:emit(file, context, ns, locals, x) abort
         else
           let _.k = timl#dekey(k)
           call s:emit(a:file, "let ".sym."_key = %s", a:ns, a:locals, _.k)
-          call s:emit(a:file, "let ".sym."[".sym."_key] = %s", a:ns, a:locals, _.v)
+          call s:emit(a:file, "let ".sym."[timl#key(".sym."_key)] = %s", a:ns, a:locals, _.v)
         endif
       else
         call s:emit(a:file, "let ".sym."[".timl#compiler#serialize(k)."] = %s", a:ns, a:locals, _.v)
