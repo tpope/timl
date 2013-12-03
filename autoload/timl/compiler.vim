@@ -204,8 +204,8 @@ function! timl#compiler#emit_recur(file, context, ns, locals, ...) abort
   throw 'timl#compiler: recur called outside tail position'
 endfunction
 
-function! timl#compiler#emit_lambda(file, context, ns, locals, params, ...) abort
-  let sym = s:tempsym('lambda')
+function! timl#compiler#emit_fn_STAR_(file, context, ns, locals, params, ...) abort
+  let sym = s:tempsym('fn')
   call s:println(a:file, "let ".sym."_impl = {'env': locals[0], 'ns': ".string(a:ns)."}")
   if timl#symbolp(a:params)
     call s:println(a:file, "let ".sym."_impl.name = ".string(a:params[0]))
@@ -283,7 +283,7 @@ function! timl#compiler#emit_define(file, context, ns, locals, sym, val) abort
   let tmp = s:tempsym('define')
   if timl#consp(a:sym)
     let sym = timl#car(a:sym)
-    call timl#compiler#emit_lambda(a:file, 'let '.tmp.' = %s', a:ns, a:locals, sym, timl#cdr(a:sym), a:val)
+    call timl#compiler#emit_fn_STAR_(a:file, 'let '.tmp.' = %s', a:ns, a:locals, sym, timl#cdr(a:sym), a:val)
   else
     let sym = a:sym
     call s:emit(a:file, 'let '.tmp." = %s", a:ns, a:locals, a:val)

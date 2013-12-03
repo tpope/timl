@@ -62,7 +62,7 @@ EVALUATION                                      *timl-evaluation*
 
 It's Lisp.
 
-Symbols evaluate to their value in lexical scope (from let or lambda) or the
+Symbols evaluate to their value in lexical scope (from let or fn) or the
 current namespace.  Symbols evaluating to special forms are handled as
 explained under |timl-special-forms|.
 
@@ -86,8 +86,8 @@ Evaluate a series of forms and return the result of the last one.
 (let [{symbol} {value} ...] {body} ...) ~
 Bind the given symbols lexically for the scope of the given body.
 
-                                                *timl-lambda*
-(lambda {name}? [{param} ...] {body} ...) ~
+                                                *timl-fn*
+(fn {name}? [{param} ...] {body} ...) ~
 Create an anonymous function.
 
                                                 *timl-recur*

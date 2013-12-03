@@ -536,22 +536,6 @@ function! s:build_function(name, arglist) abort
         \ . "endfunction"
 endfunction
 
-function! s:lambda(name, arglist, form, ns, env) abort
-  let dict = {}
-  execute s:build_function('dict.function', a:arglist)
-  let fn = matchstr(string(dict.function), "'\\zs.*\\ze'")
-  let g:timl#lambdas[fn] = {
-        \ 'ns': a:ns,
-        \ 'arglist': a:arglist,
-        \ 'env': a:env,
-        \ 'form': a:form,
-        \ 'macro': 0}
-  if !empty(a:name)
-    let g:timl#lambdas[fn].name = a:name
-  endif
-  return dict.function
-endfunction
-
 function! s:file4ns(ns) abort
   if !exists('s:tempdir')
     let s:tempdir = tempname()
@@ -711,8 +695,6 @@ let g:timl_setq = {}
 TimLAssert empty(timl#re('(set! (. g:timl_setq key) ["a" "b"])'))
 TimLAssert g:timl_setq ==# {"key": ["a", "b"]}
 unlet! g:timl_setq
-
-TimLAssert timl#re('(reduce (lambda (m (k v)) (append m (list v k))) ''() (dict "a" 1))') == [1, "a"]
 
 TimLAssert timl#re('(dict "a" 1 "b" 2)') ==# {"a": 1, "b": 2}
 TimLAssert timl#re('(dict "a" 1 ["b" 2])') ==# {"a": 1, "b": 2}
