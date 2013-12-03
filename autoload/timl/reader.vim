@@ -206,7 +206,7 @@ endfunction
 
 " Section: Tests {{{1
 
-if !exists('$TEST')
+if !$TIML_TEST
   finish
 endif
 
