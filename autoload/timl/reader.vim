@@ -10,7 +10,7 @@ let s:iskeyword = '[[:alnum:]_=?!#$%&*+|./<>:-]'
 let g:timl#reader#tag_handlers = {}
 
 function! s:read_token(port) abort
-  let pat = '^\%(#[[:punct:]]\|"\%(\\.\|[^"]\)*"\|[[:space:],]\|;.\{-\}\ze\%(\n\|$\)\|\~@\|'.s:iskeyword.'\+\|@.\|.\)'
+  let pat = '^\%(#"\%(\\\@<!\%(\\\\\)*\\"\|[^"]\)*"\|#[[:punct:]]\|"\%(\\.\|[^"]\)*"\|[[:space:],]\|;.\{-\}\ze\%(\n\|$\)\|\~@\|'.s:iskeyword.'\+\|@.\|.\)'
   let match = matchstr(a:port.str, pat, a:port.pos)
   let a:port.pos += len(match)
   while match =~# '^[[:space:],]'
@@ -124,6 +124,8 @@ function! s:read(port, ...) abort
     return eval('0'.token)
   elseif token =~# '^"\|^[+-]\=\d\%(.*\d\)\=$'
     return eval(token)
+  elseif token =~# '^#"'
+    return substitute(token[2:-2], '\\\@<!\(\%(\\\\\)*\)\\"', '\1"', 'g')
   elseif token ==# "'"
     return timl#list(timl#symbol('quote'), s:read_bang(port))
   elseif token ==# '`'
@@ -221,6 +223,8 @@ command! -nargs=1 TimLRAssert
 
 TimLRAssert timl#reader#read_string('foo') ==# timl#symbol('foo')
 TimLRAssert timl#reader#read_string('":)"') ==# ':)'
+TimLRAssert timl#reader#read_string('#"\(a\\\)"') ==# '\(a\\\)'
+TimLRAssert timl#reader#read_string('#"\""') ==# '"'
 TimLRAssert timl#reader#read_string('(first [1 2])') ==# timl#list(timl#symbol('first'), [1, 2])
 TimLRAssert timl#reader#read_string('#["a" 1 "b" 2]') ==# {"a": 1, "b": 2}
 TimLRAssert timl#reader#read_string('{"a" 1 :b 2 3 "c"}') ==# {' "a"': 1, "b": 2, "3": "c", '#tag': timl#symbol('#timl#lang#HashMap')}
@@ -230,6 +234,7 @@ TimLRAssert timl#reader#read_string("`foo") ==# timl#list(timl#symbol('syntax-qu
 TimLRAssert timl#reader#read_string("~foo") ==# timl#list(timl#symbol('unquote'), timl#symbol('foo'))
 TimLRAssert timl#reader#read_string("#*tr") ==# timl#list(timl#symbol('function'), timl#symbol('tr'))
 TimLRAssert timl#reader#read_string("(1 #_2 3)") ==# timl#list(1, 3)
+
 
 delcommand TimLRAssert
 

@@ -26,8 +26,8 @@ Numbers ~
 Same as Vim. See |expr-number|.
 
 Strings ~
-Same as double quoted strings in vim.  See |expr-string|.  There are no single
-quoted strings.
+Same as double quoted strings in vim.  See |expr-string|.  In lieu of single
+quoted strings, #"..." can be used, with the only valid escape being \".
 
                                                 *timl-nil*
 Nil ~
