@@ -225,7 +225,7 @@ function! timl#compiler#emit_fn_STAR_(file, context, ns, locals, params, ...) ab
   call s:println(a:file, "let my_name = matchstr(expand('<sfile>'), '.*\\%(\\.\\.\\| \\)\\zs.*')")
   call s:println(a:file, "let my_impl = g:timl#lambdas[my_name]")
   call s:println(a:file, "let temp = {}")
-  call s:println(a:file, "let locals = [extend(timl#a2env(my_impl, a:), copy(my_impl.env), 'keep')]")
+  call s:println(a:file, "let locals = [extend(timl#a2env(my_impl, a:), my_impl.env, 'keep')]")
   call s:println(a:file, "if !empty(get(my_impl, 'name', ''))")
   call s:println(a:file, "let locals[0][timl#symbol(my_impl.name)[0]] = my_name =~ '^\\d' ? self.__fn__ : function(my_name)")
   call s:println(a:file, "endif")
