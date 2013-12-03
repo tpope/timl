@@ -103,7 +103,7 @@ if !exists('g:timl#nil')
   lockvar g:timl#nil g:timl#false g:timl#true
 endif
 
-function! timl#string(val) abort
+function! timl#str(val) abort
   return s:string(a:val)
 endfunction
 

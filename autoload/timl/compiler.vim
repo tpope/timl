@@ -70,7 +70,7 @@ function! timl#compiler#build(x, ns, ...) abort
 endfunction
 
 function! timl#compiler#eval(x, ...) abort
-  let _ns = a:0 ? timl#string(a:1) : 'user'
+  let _ns = a:0 ? timl#str(a:1) : 'user'
   let locals = [{}]
   let temp = {}
   let _dict = {}
@@ -174,7 +174,7 @@ function! timl#compiler#emit_set_BANG_(file, context, ns, locals, var, value) ab
     if len(vec) == 3 && vec[0] is timl#symbol('.')
       let tmp = s:tempsym('setq')
       call s:emit(a:file, 'let '.tmp.'_coll =  %s', a:ns, a:locals, vec[1])
-      call s:emit(a:file, 'let '.tmp.'_coll['.timl#compiler#serialize(timl#string(vec[2])).'] =  %s', a:ns, a:locals, a:value)
+      call s:emit(a:file, 'let '.tmp.'_coll['.timl#compiler#serialize(timl#str(vec[2])).'] =  %s', a:ns, a:locals, a:value)
       return s:printfln(a:file, a:context, 'g:timl#nil')
     endif
   endif
@@ -229,7 +229,7 @@ function! timl#compiler#emit_lambda(file, context, ns, locals, params, ...) abor
   let locals = copy(a:locals)
   let _ = {}
   for _.param in params
-    let locals[timl#string(_.param)] = 1
+    let locals[timl#str(_.param)] = 1
   endfor
   if timl#symbolp(a:params)
     let locals[a:params[0]] = 1
@@ -253,16 +253,16 @@ function! timl#compiler#emit_let_STAR_(file, context, ns, locals, bindings, ...)
     endif
     for i in range(0, len(a:bindings)-1, 2)
       call s:emit(a:file,
-            \ "let ".tmp."[".string(timl#string(a:bindings[i]))."] = %s",
+            \ "let ".tmp."[".string(timl#str(a:bindings[i]))."] = %s",
             \ a:ns, locals, a:bindings[i+1])
-      let locals[timl#string(a:bindings[i])] = 1
+      let locals[timl#str(a:bindings[i])] = 1
     endfor
   else
     let list = timl#vec(a:bindings)
     for binding in timl#vec(a:bindings)
       let [_.var, _.val] = timl#vec(binding)
-      call s:emit(a:file, "let ".tmp."[".string(timl#string(_.var))."] = %s", a:ns, locals, _.val)
-      let locals[timl#string(_.var)] = 1
+      call s:emit(a:file, "let ".tmp."[".string(timl#str(_.var))."] = %s", a:ns, locals, _.val)
+      let locals[timl#str(_.var)] = 1
     endfor
   endif
   call call('timl#compiler#emit_begin', [a:file, a:context, a:ns, a:locals] + a:000)

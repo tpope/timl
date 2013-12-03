@@ -20,7 +20,7 @@ function! timl#core#symbol_QMARK_(obj) abort
   return timl#symbolp(a:obj)
 endfunction
 
-function! timl#core#string_QMARK_(obj) abort
+function! timl#core#str_QMARK_(obj) abort
   return type(a:obj) == type('')
 endfunction
 
@@ -40,7 +40,7 @@ function! timl#core#symbol(str) abort
   return timl#symbol(a:str)
 endfunction
 
-function! timl#core#string(...) abort
+function! timl#core#str(...) abort
   let acc = ''
   let _ = {}
   for _.x in a:000
@@ -86,12 +86,12 @@ endfunction
 " Section: IO {{{1
 
 function! timl#core#echo(...) abort
-  echo call('timl#core#string', a:000, {})
+  echo call('timl#core#str', a:000, {})
   return g:timl#nil
 endfunction
 
 function! timl#core#echomsg(...) abort
-  echomsg call('timl#core#string', a:000, {})
+  echomsg call('timl#core#str', a:000, {})
   return g:timl#nil
 endfunction
 
@@ -250,7 +250,7 @@ function! timl#core#dict(...) abort
   endif
   let dict = {}
   for i in range(0, len(list)-1, 2)
-    let dict[timl#core#string(list[i])] = list[i+1]
+    let dict[timl#core#str(list[i])] = list[i+1]
   endfor
   return timl#lock(dict)
 endfunction
@@ -298,7 +298,7 @@ function! timl#core#get(coll, key, ...) abort
     endif
     return get(a:coll, a:key, def)
   elseif t ==# 'timl#vim#dictionary'
-    return get(a:coll, timl#core#string(a:key), def)
+    return get(a:coll, timl#core#str(a:key), def)
   elseif t !~# '^timl#vim#'
     return get(a:coll, timl#key(a:key), def)
   endif
@@ -402,20 +402,20 @@ endfunction
 " Section: Namespaces {{{1
 
 function! timl#core#in_ns(ns)
-  call timl#create_ns(timl#core#string(a:ns))
+  call timl#create_ns(timl#core#str(a:ns))
   let g:timl#core#_STAR_ns_STAR_ = timl#symbol(a:ns)
   return g:timl#core#_STAR_ns_STAR_
 endfunction
 
 function! timl#core#refer(ns)
-  let me = timl#core#string(g:timl#core#_STAR_ns_STAR_)
+  let me = timl#core#str(g:timl#core#_STAR_ns_STAR_)
   call timl#create_ns(me, {'referring': [a:ns]})
   return g:timl#nil
 endfunction
 
 function! timl#core#alias(alias, ns)
-  let me = timl#core#string(g:timl#core#_STAR_ns_STAR_)
-  call timl#create_ns(me, {'aliases': {timl#core#string(a:alias): a:ns}})
+  let me = timl#core#str(g:timl#core#_STAR_ns_STAR_)
+  call timl#create_ns(me, {'aliases': {timl#core#str(a:alias): a:ns}})
   return g:timl#nil
 endfunction
 

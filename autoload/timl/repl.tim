@@ -1,6 +1,6 @@
 (defn impl [fn]
   (if fn
-    (or (f:get timl#lambdas (string fn) nil)
+    (or (f:get timl#lambdas (str fn) nil)
         (try
           (let [output     (capture (: "silent verbose function" (f:join (list fn))))
                 raw        (f:split output "\n")
@@ -24,7 +24,7 @@
 
 (defmacro doc [sym]
   (let [topic (if (<= 0 (f:index special-forms sym))
-                (string "timl-" sym))]
+                (str "timl-" sym))]
     `(do
-       (throw (string "timl#repl: exit help " (or ~topic (f:substitute (string ~sym) "^\\w\\+\\zs$" "(" ""))))
+       (throw (str "timl#repl: exit help " (or ~topic (f:substitute (str ~sym) "^\\w\\+\\zs$" "(" ""))))
        (throw "timl#repl: exit"))))
