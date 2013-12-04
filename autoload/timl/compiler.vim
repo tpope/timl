@@ -51,9 +51,6 @@ function! s:tempsym(...)
 endfunction
 
 function! s:println(file, line)
-  if a:line ==# 'g:timl#nil'
-    throw "WHAT THE FUCK"
-  endif
   call extend(a:file, split(a:line, "\n"))
   return a:line . "\n"
 endfunction
@@ -91,8 +88,10 @@ function! s:emit(file, context, ns, locals, x) abort
   if timl#symbolp(x)
     if has_key(a:locals, x[0])
       return s:printfln(a:file, a:context, "locals[0][".string(x[0])."]")
+    elseif x[0] =~# '^[:#]'
+      return s:printfln(a:file, a:context, timl#compiler#serialize(x))
     else
-      return s:printfln(a:file, a:context, "timl#lookup(".string(x[0]).", ".string(a:ns).")")
+      return s:printfln(a:file, a:context, timl#munge(timl#qualify(x[0], a:ns)))
     endif
 
   elseif x is# g:timl#nil
@@ -142,21 +141,16 @@ function! s:emit(file, context, ns, locals, x) abort
   let tmp = s:tempsym('invoke')
   if timl#symbolp(F) && !has_key(a:locals, F[0]) && F[0] !~# '^:'
     let Fn = timl#lookup(F, a:ns)
-    let name = join([Fn])
-    if type(Fn) == type(function('tr')) && get(get(g:timl#lambdas, name, {}), 'macro')
+    if timl#type(Fn) == 'timl#lang#Function' && get(Fn, 'macro')
       return s:emit(a:file, a:context, a:ns, a:locals, timl#call(Fn, vec))
-    elseif type(Fn) == type(function('tr'))
-      call s:emit(a:file, "let ".tmp."_args = %s", a:ns, a:locals, vec)
-      return s:printfln(a:file, a:context, "timl#call(function(".string(name).'), '.tmp."_args)")
     endif
-    call s:emit(a:file, "let ".tmp."_args = %s", a:ns, a:locals, vec)
-    let lookup = "timl#lookup(".string(F[0]).", ".string(a:ns).")"
-    return s:printfln(a:file, a:context, "timl#call(".lookup.", ".tmp."_args)")
-  else
-    call s:emit(a:file, "let ".tmp."_args = %s", a:ns, a:locals, vec)
-    call s:emit(a:file, "let ".tmp."_function = %s", a:ns, a:locals, F)
-    return s:printfln(a:file, a:context, "timl#call(".tmp."_function, ".tmp."_args)")
   endif
+  call s:emit(a:file, "let ".tmp."_args = %s", a:ns, a:locals, vec)
+  call s:emit(a:file, "let ".tmp."_function = %s", a:ns, a:locals, F)
+  return s:printfln(a:file, a:context,
+        \ 'timl#functionp('.tmp.'_function) ? '
+        \ . 'call('.tmp.'_function.call, '.tmp.'_args, '.tmp.'_function)'
+        \ . ' : timl#call('.tmp.'_function, '.tmp.'_args)')
 endfunction
 
 function! timl#compiler#emit_set_BANG_(file, context, ns, locals, var, value) abort
@@ -197,7 +191,7 @@ function! timl#compiler#emit_recur(file, context, ns, locals, ...) abort
   if a:context ==# "return %s"
     let sym = s:tempsym('recur')
     call s:println(a:file, "let newlocals = [copy(locals[0])]")
-    call s:emit(a:file, "call timl#arg2env(my_impl.arglist, %s, newlocals[0])", a:ns, a:locals, a:000)
+    call s:emit(a:file, "call timl#arg2env(self.arglist, %s, newlocals[0])", a:ns, a:locals, a:000)
     call s:println(a:file, "let locals = newlocals")
     return s:println(a:file, "continue")
   endif
@@ -206,24 +200,22 @@ endfunction
 
 function! timl#compiler#emit_fn_STAR_(file, context, ns, locals, params, ...) abort
   let sym = s:tempsym('fn')
-  call s:println(a:file, "let ".sym."_impl = {'env': locals[0], 'ns': ".string(a:ns)."}")
+  call s:println(a:file, "let ".sym." = {'#tag': timl#symbol('#timl#lang#Function'), 'locals': locals[0], 'ns': ".string(a:ns)."}")
   if timl#symbolp(a:params)
-    call s:println(a:file, "let ".sym."_impl.name = ".string(a:params[0]))
+    call s:println(a:file, "let ".sym.".name = ".string(a:params[0]))
     let params = timl#vec(get(a:000, 0, []))
     let body = a:000[1:-1]
   else
     let params = timl#vec(a:params)
     let body = a:000
   endif
-  call s:println(a:file, "let ".sym."_impl.arglist = ".timl#compiler#serialize(params))
-  call s:println(a:file, "function! ".sym."_func(...) abort")
-  call s:println(a:file, "let my_name = matchstr(expand('<sfile>'), '.*\\%(\\.\\.\\| \\)\\zs.*')")
-  call s:println(a:file, "let my_impl = g:timl#lambdas[my_name]")
+  call s:println(a:file, "let ".sym.".arglist = ".timl#compiler#serialize(params))
+  call s:println(a:file, "function! ".sym.".call(...) abort")
   call s:println(a:file, "let temp = {}")
-  call s:println(a:file, "let locals = [timl#arg2env(my_impl.arglist, a:000, copy(my_impl.env))]")
-  call s:println(a:file, "if !empty(get(my_impl, 'name', ''))")
-  call s:println(a:file, "let locals[0][timl#symbol(my_impl.name)[0]] = my_name =~ '^\\d' ? self.__fn__ : function(my_name)")
-  call s:println(a:file, "endif")
+  call s:println(a:file, "let locals = [timl#arg2env(self.arglist, a:000, copy(self.locals))]")
+  if timl#symbolp(a:params)
+    call s:println(a:file, "let locals[0][timl#symbol(self.name)[0]] = self.call")
+  endif
   call s:println(a:file, "while 1")
   let locals = copy(a:locals)
   let _ = {}
@@ -236,8 +228,7 @@ function! timl#compiler#emit_fn_STAR_(file, context, ns, locals, params, ...) ab
   call call('timl#compiler#emit_do', [a:file, "return %s", a:ns, locals] + body)
   call s:println(a:file, "endwhile")
   call s:println(a:file, "endfunction")
-  call s:println(a:file, "let g:timl#lambdas[join([".sym."_func])] = ".sym."_impl")
-  return s:printfln(a:file, a:context, sym."_func")
+  return s:printfln(a:file, a:context, sym)
 endfunction
 
 function! timl#compiler#emit_let_STAR_(file, context, ns, locals, bindings, ...) abort
@@ -279,20 +270,10 @@ function! timl#compiler#emit_do(file, context, ns, locals, ...) abort
 endfunction
 
 function! timl#compiler#emit_def(file, context, ns, locals, sym, ...) abort
-  if a:0
-    let Val = a:1
-  else
-    return s:printfln(a:file, a:context, "timl#define_global(timl#munge(g:timl#core#_STAR_ns_STAR_[0].".string('#'.timl#str(a:sym))."))")
-  endif
-  let tmp = s:tempsym('def')
-  if timl#consp(a:sym)
-    let sym = timl#car(a:sym)
-    call timl#compiler#emit_fn_STAR_(a:file, 'let '.tmp.' = %s', a:ns, a:locals, sym, timl#cdr(a:sym), Val)
-  else
-    let sym = a:sym
-    call s:emit(a:file, 'let '.tmp." = %s", a:ns, a:locals, Val)
-  endif
-  return s:printfln(a:file, a:context, "timl#define_global(timl#munge(g:timl#core#_STAR_ns_STAR_[0].".string('#'.sym[0]).") ,".tmp.")")
+  let var = "g:{timl#munge(g:timl#core#_STAR_ns_STAR_[0])}#".timl#munge(a:sym)
+  call s:println(a:file, "unlet! ".var)
+  call s:emit(a:file, 'let '.var.' = %s', a:ns, a:locals, a:0 ? a:1 : g:timl#nil)
+  return s:printfln(a:file, a:context, var)
 endfunction
 
 function! timl#compiler#emit__COLON_(file, context, ns, locals, ...) abort
@@ -335,7 +316,8 @@ function! timl#compiler#emit_syntax_quote(file, context, ns, locals, form, ...) 
     else
       let sym = a:form
     endif
-    return s:printfln(a:file, a:context, timl#compiler#serialize(timl#qualify(sym, a:ns)))
+    let ns = timl#find(sym, a:ns)
+    return s:printfln(a:file, a:context, timl#compiler#serialize(empty(ns) ? sym : timl#symbol(ns . '#' . sym[0])))
   elseif type(a:form) == type([])
     let tmp = s:tempsym('quasiquote')
     call s:println(a:file, 'let '.tmp.' = []')

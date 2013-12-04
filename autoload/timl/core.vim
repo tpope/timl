@@ -3,40 +3,50 @@ if exists("g:autoloaded_timl_core") || &cp || v:version < 700
 endif
 let g:autoloaded_timl_core = 1
 
+let s:fn = timl#symbol('#timl#lang#Function')
+
 let s:true = g:timl#true
 let s:false = g:timl#false
 
+command! -bar -bang -nargs=1 TLfunction
+      \ let g:{matchstr(<q-args>, '^[[:alnum:]_#]\+')} = {
+      \    '#tag': s:fn,
+      \    'ns': matchstr(<q-args>, '^[[:alnum:]_#]\+\ze#'),
+      \    'name': timl#demunge(matchstr(<q-args>, '^[[:alnum:]_#]\+#\zs[[:alnum:]_]*')),
+      \    'call': function(matchstr(<q-args>, '^[[:alnum:]_#]\+'))} |
+      \ function<bang> <args>
+
 " Section: Types {{{1
 
-function! timl#core#type(val) abort
+TLfunction! timl#core#type(val) abort
   return timl#symbol(timl#type(a:val))
 endfunction
 
-function! timl#core#nil_QMARK_(val) abort
+TLfunction! timl#core#nil_QMARK_(val) abort
   return a:val is# g:timl#nil
 endfunction
 
-function! timl#core#symbol_QMARK_(obj) abort
+TLfunction! timl#core#symbol_QMARK_(obj) abort
   return timl#symbolp(a:obj)
 endfunction
 
-function! timl#core#str_QMARK_(obj) abort
+TLfunction! timl#core#str_QMARK_(obj) abort
   return type(a:obj) == type('') ? s:true : s:false
 endfunction
 
-function! timl#core#integer_QMARK_(obj) abort
+TLfunction! timl#core#integer_QMARK_(obj) abort
   return type(a:obj) == type(0)
 endfunction
 
-function! timl#core#float_QMARK_(obj) abort
+TLfunction! timl#core#float_QMARK_(obj) abort
   return type(a:obj) == 5
 endfunction
 
-function! timl#core#number_QMARK_(obj) abort
+TLfunction! timl#core#number_QMARK_(obj) abort
   return type(a:obj) == type(0) || type(a:obj) == 5
 endfunction
 
-function! timl#core#number(obj) abort
+TLfunction! timl#core#number(obj) abort
   if type(a:obj) == type(0) || type(a:obj) == 5
     return a:obj
   else
@@ -44,11 +54,11 @@ function! timl#core#number(obj) abort
   endif
 endfunction
 
-function! timl#core#symbol(str) abort
+TLfunction! timl#core#symbol(str) abort
   return timl#symbol(a:str)
 endfunction
 
-function! timl#core#str(...) abort
+TLfunction! timl#core#str(...) abort
   let acc = ''
   let _ = {}
   for _.x in a:000
@@ -68,11 +78,11 @@ endfunction
 " }}}1
 " Section: Functional {{{1
 
-function! timl#core#identity(x) abort
+TLfunction! timl#core#identity(x) abort
   return a:x
 endfunction
 
-function! timl#core#apply(f, x, ...) abort
+TLfunction! timl#core#apply(f, x, ...) abort
   let args = [a:x] + a:000
   if timl#type(args[-1]) == 'timl#vim#Dictionary'
     let dict = remove(args, -1)
@@ -83,19 +93,19 @@ function! timl#core#apply(f, x, ...) abort
   return timl#call(a:f, args, dict)
 endfunction
 
-function! timl#core#throw(val) abort
+TLfunction! timl#core#throw(val) abort
   throw a:val
 endfunction
 
 " }}}1
 " Section: IO {{{1
 
-function! timl#core#echo(...) abort
+TLfunction! timl#core#echo(...) abort
   echo call('timl#core#str', a:000, {})
   return g:timl#nil
 endfunction
 
-function! timl#core#echomsg(...) abort
+TLfunction! timl#core#echomsg(...) abort
   echomsg call('timl#core#str', a:000, {})
   return g:timl#nil
 endfunction
@@ -103,7 +113,7 @@ endfunction
 " }}}1
 " Section: Operators {{{
 
-function! timl#core#_PLUS_(...) abort
+TLfunction! timl#core#_PLUS_(...) abort
   let acc = 0
   for elem in a:000
     let acc += elem
@@ -111,7 +121,7 @@ function! timl#core#_PLUS_(...) abort
   return acc
 endfunction
 
-function! timl#core#_STAR_(...) abort
+TLfunction! timl#core#_STAR_(...) abort
   let acc = 1
   for elem in a:000
     let acc = acc * elem
@@ -119,7 +129,7 @@ function! timl#core#_STAR_(...) abort
   return acc
 endfunction
 
-function! timl#core#_(x, ...) abort
+TLfunction! timl#core#_(x, ...) abort
   if a:0
     let acc = timl#core#number(a:x)
     for elem in a:000
@@ -131,7 +141,7 @@ function! timl#core#_(x, ...) abort
   endif
 endfunction
 
-function! timl#core#_SLASH_(x, ...) abort
+TLfunction! timl#core#_SLASH_(x, ...) abort
   if a:0
     let acc = timl#core#number(a:x)
     for elem in a:000
@@ -143,27 +153,27 @@ function! timl#core#_SLASH_(x, ...) abort
   endif
 endfunction
 
-function! timl#core#rem(x, y) abort
+TLfunction! timl#core#rem(x, y) abort
   return timl#core#number(a:x) % a:y
 endfunction
 
-function! timl#core#_GT_(x, y) abort
+TLfunction! timl#core#_GT_(x, y) abort
   return timl#core#number(a:x) ># timl#core#number(a:y) ? s:true : s:false
 endfunction
 
-function! timl#core#_LT_(x, y) abort
+TLfunction! timl#core#_LT_(x, y) abort
   return timl#core#number(a:x) <# timl#core#number(a:y) ? s:true : s:false
 endfunction
 
-function! timl#core#_GT__EQ_(x, y) abort
+TLfunction! timl#core#_GT__EQ_(x, y) abort
   return timl#core#number(a:x) >=# timl#core#number(a:y) ? s:true : s:false
 endfunction
 
-function! timl#core#_LT__EQ_(x, y) abort
+TLfunction! timl#core#_LT__EQ_(x, y) abort
   return timl#core#number(a:x) <=# timl#core#number(a:y) ? s:true : s:false
 endfunction
 
-function! timl#core#_EQ_(x, ...) abort
+TLfunction! timl#core#_EQ_(x, ...) abort
   for y in a:000
     if type(a:x) != type(y) || a:x !=# y
       return s:false
@@ -172,7 +182,7 @@ function! timl#core#_EQ_(x, ...) abort
   return s:true
 endfunction
 
-function! timl#core#_EQ__EQ_(x, ...) abort
+TLfunction! timl#core#_EQ__EQ_(x, ...) abort
   let x = timl#core#number(a:x)
   for y in a:000
     if x != timl#core#number(y)
@@ -182,7 +192,7 @@ function! timl#core#_EQ__EQ_(x, ...) abort
   return s:true
 endfunction
 
-function! timl#core#identical_QMARK_(x, ...) abort
+TLfunction! timl#core#identical_QMARK_(x, ...) abort
   for y in a:000
     if a:x isnot# y
       return s:false
@@ -194,27 +204,27 @@ endfunction
 " }}}1
 " Section: Lists {{{1
 
-function! timl#core#car(list) abort
+TLfunction! timl#core#car(list) abort
   return timl#car(a:list)
 endfunction
 
-function! timl#core#cdr(list) abort
+TLfunction! timl#core#cdr(list) abort
   return timl#cdr(a:list)
 endfunction
 
-function! timl#core#list(...) abort
+TLfunction! timl#core#list(...) abort
   return timl#list2(a:000)
 endfunction
 
-function! timl#core#list_STAR_(seq) abort
+TLfunction! timl#core#list_STAR_(seq) abort
   return timl#list2(a:seq)
 endfunction
 
-function! timl#core#list_QMARK_(val) abort
+TLfunction! timl#core#list_QMARK_(val) abort
   return timl#consp(a:val) ? s:true : s:false
 endfunction
 
-function! timl#core#append(...) abort
+TLfunction! timl#core#append(...) abort
   let acc = []
   let _ = {}
   for _.elem in a:000
@@ -223,22 +233,22 @@ function! timl#core#append(...) abort
   return timl#lock(acc)
 endfunction
 
-function! timl#core#cons(val, seq) abort
+TLfunction! timl#core#cons(val, seq) abort
   return timl#cons(a:val, timl#core#seq(a:seq))
 endfunction
 
 " }}}1
 " Section: Vectors {{{1
 
-function! timl#core#vector_QMARK_(val) abort
+TLfunction! timl#core#vector_QMARK_(val) abort
   return timl#vectorp(a:val) ? s:true : s:false
 endfunction
 
-function! timl#core#vector(...) abort
+TLfunction! timl#core#vector(...) abort
   return timl#persist(a:000)
 endfunction
 
-function! timl#core#vec(seq) abort
+TLfunction! timl#core#vec(seq) abort
   if timl#truth(timl#core#vector_QMARK_(type(a:seq)))
     return a:seq
   else
@@ -246,7 +256,7 @@ function! timl#core#vec(seq) abort
   endif
 endfunction
 
-function! timl#core#subvec(list, start, ...) abort
+TLfunction! timl#core#subvec(list, start, ...) abort
   if a:0 && a:1 == 0
     return type(a:list) == type('') ? '' : timl#lock([])
   elseif a:0
@@ -259,7 +269,7 @@ endfunction
 " }}}1
 " Section: Dictionaries {{{1
 
-function! timl#core#dict(...) abort
+TLfunction! timl#core#dict(...) abort
   let list = copy(a:000)
   while len(a:000) % 2 !=# 0 && type(list[-1]) == type([])
     call extend(list, timl#vec(remove(list, -1)))
@@ -274,7 +284,7 @@ function! timl#core#dict(...) abort
   return timl#lock(dict)
 endfunction
 
-function! timl#core#hash_map(...) abort
+TLfunction! timl#core#hash_map(...) abort
   let list = copy(a:000)
   while len(a:000) % 2 !=# 0 && timl#core#list_QMARK_(list[-1])
     call extend(list, remove(list, -1))
@@ -289,11 +299,11 @@ function! timl#core#hash_map(...) abort
   return timl#lock(dict)
 endfunction
 
-function! timl#core#dict_QMARK_(val) abort
+TLfunction! timl#core#dict_QMARK_(val) abort
   return type(a:val) == type({})
 endfunction
 
-function! timl#core#dissoc(dict, ...) abort
+TLfunction! timl#core#dissoc(dict, ...) abort
   let dict = copy(a:dict)
   let _ = {}
   for _.key in a:000
@@ -308,7 +318,7 @@ endfunction
 " }}}1
 " Section: Collections {{{1
 
-function! timl#core#get(coll, key, ...) abort
+TLfunction! timl#core#get(coll, key, ...) abort
   if a:0
     return timl#dispatch('timl#lang#ILookup', 'get', a:coll, a:key, a:1)
   else
@@ -329,11 +339,11 @@ function! timl#core#get(coll, key, ...) abort
   return def
 endfunction
 
-function! timl#core#assoc(coll, ...) abort
+TLfunction! timl#core#assoc(coll, ...) abort
   return timl#lock(extend(timl#core#dict(a:000), a:dict, 'keep'))
 endfunction
 
-function! timl#core#empty(coll) abort
+TLfunction! timl#core#empty(coll) abort
   if timl#consp(a:coll)
     " TODO: empty list
     return g:timl#nil
@@ -351,20 +361,20 @@ endfunction
 " }}}1
 " Section: Sequences {{{1
 
-function! timl#core#seq(coll)
+TLfunction! timl#core#seq(coll)
   let seq = timl#dispatch("timl#lang#Seqable", "seq", a:coll)
   return empty(seq) ? g:timl#nil : seq
 endfunction
 
-function! timl#core#first(list) abort
+TLfunction! timl#core#first(list) abort
   return timl#dispatch('timl#lang#ISeq', 'first', timl#core#seq(a:list))
 endfunction
 
-function! timl#core#rest(list) abort
+TLfunction! timl#core#rest(list) abort
   return timl#dispatch('timl#lang#ISeq', 'rest', timl#core#seq(a:list))
 endfunction
 
-function! timl#core#partition(n, seq) abort
+TLfunction! timl#core#partition(n, seq) abort
   let seq = timl#core#vec(a:seq)
   let out = []
   for i in range(0, len(seq)-1, a:n)
@@ -373,7 +383,7 @@ function! timl#core#partition(n, seq) abort
   return out
 endfunction
 
-function! timl#core#count(seq) abort
+TLfunction! timl#core#count(seq) abort
   let i = 0
   let _ = {'seq': a:seq}
   while timl#consp(_.seq)
@@ -383,11 +393,11 @@ function! timl#core#count(seq) abort
   return i + len(_.seq)
 endfunction
 
-function! timl#core#empty_QMARK_(coll)
+TLfunction! timl#core#empty_QMARK_(coll)
   return empty(timl#core#seq(a:coll))
 endfunction
 
-function! timl#core#map(f, coll) abort
+TLfunction! timl#core#map(f, coll) abort
   if type(a:coll) == type([]) && !empty(a:coll) && !timl#symbolp(a:coll)
     let result = map(copy(a:coll), 'timl#call(a:f, [v:val])')
     lockvar result
@@ -417,7 +427,7 @@ function! timl#core#map(f, coll) abort
   return head
 endfunction
 
-function! timl#core#reduce(f, coll, ...) abort
+TLfunction! timl#core#reduce(f, coll, ...) abort
   let _ = {}
   if a:0
     let _.val = a:coll
@@ -440,19 +450,19 @@ endfunction
 " }}}1
 " Section: Namespaces {{{1
 
-function! timl#core#in_ns(ns)
+TLfunction! timl#core#in_ns(ns)
   call timl#create_ns(timl#core#str(a:ns))
   let g:timl#core#_STAR_ns_STAR_ = timl#symbol(a:ns)
   return g:timl#core#_STAR_ns_STAR_
 endfunction
 
-function! timl#core#refer(ns)
+TLfunction! timl#core#refer(ns)
   let me = timl#core#str(g:timl#core#_STAR_ns_STAR_)
   call timl#create_ns(me, {'referring': [a:ns]})
   return g:timl#nil
 endfunction
 
-function! timl#core#alias(alias, ns)
+TLfunction! timl#core#alias(alias, ns)
   let me = timl#core#str(g:timl#core#_STAR_ns_STAR_)
   call timl#create_ns(me, {'aliases': {timl#core#str(a:alias): a:ns}})
   return g:timl#nil

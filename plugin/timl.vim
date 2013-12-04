@@ -42,6 +42,17 @@ if !exists('g:timl#requires')
   let g:timl#requires = {}
 endif
 
+function! s:file4ns(ns) abort
+  if !exists('s:tempdir')
+    let s:tempdir = tempname()
+  endif
+  let file = s:tempdir . '/' . tr(timl#munge(a:ns), '#', '/') . '.vim'
+  if !isdirectory(fnamemodify(file, ':h'))
+    call mkdir(fnamemodify(file, ':h'), 'p')
+  endif
+  return file
+endfunction
+
 function! s:autoload(function) abort
   let ns = matchstr(a:function, '.*\ze#')
 
@@ -50,8 +61,16 @@ function! s:autoload(function) abort
     for file in findfile('autoload/'.tr(ns,'#','/').'.tim', &rtp, -1)
       call timl#source_file(file, tr(ns, '_', '-'))
       " drop to run all if include guards are added
-      return
+      break
     endfor
+  endif
+  if has_key(g:, a:function)
+    let body = ["function ".a:function."(...)",
+          \ "  return timl#call(g:".a:function.", a:000)",
+          \ "endfunction"]
+    let file = s:file4ns(matchstr(a:function, '.*\ze#'))
+    call writefile(body, file)
+    exe 'source '.file
   endif
 endfunction
 

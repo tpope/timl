@@ -44,6 +44,17 @@ let g:timl#lang#Symbol = {
       \ {"timl#lang#IFn":
       \    {"invoke": s:function('s:this_get')}}}
 
+" Section: Function
+
+function! s:function_invoke(this, ...) abort
+  return call(a:this.call, a:000, a:this)
+endfunction
+
+let g:timl#lang#Function = {
+      \ "implements":
+      \ {"timl#lang#IFn":
+      \    {"invoke": s:function('s:function_invoke')}}}
+
 " Section: Cons
 
 function! s:cons_car(cons)

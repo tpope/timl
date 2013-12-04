@@ -1,16 +1,3 @@
-(defn impl [fn]
-  (if fn
-    (or (#*get g:timl#lambdas (str fn) nil)
-        (try
-          (let [output     (capture (: "silent verbose function" (#*join [fn])))
-                raw        (#*split output "\n")
-                file       (#*expand (#*matchstr (second raw) #"\S\+$"))
-                definition (first raw)
-                name       ((comp symbol #*timl#demunge) (#*matchstr definition #" \zs\S\+\ze("))
-                arglist    (map (comp symbol #*timl#demunge) (#*split (#*matchstr definition #"(\zs.*\ze)") ", "))]
-            (filter (comp not nil? last) (dict "name" name "arglist" arglist "file" file)))
-          (catch 123 e (dict))))))
-
 (def special-forms
   '[if do let fn def :
      quote syntax-quote unquote unquote-splicing function

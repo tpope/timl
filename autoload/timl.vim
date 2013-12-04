@@ -15,152 +15,8 @@ function! s:function(name) abort
   return function(s:funcname(a:name))
 endfunction
 
-" }}}1
-" Section: Data types {{{1
-
-let s:types = {
-      \ 0: 'timl#vim#Number',
-      \ 1: 'timl#vim#String',
-      \ 2: 'timl#vim#Funcref',
-      \ 3: 'timl#vim#List',
-      \ 4: 'timl#vim#Dictionary',
-      \ 5: 'timl#vim#Float'}
-
-
-function! timl#truth(val) abort
-  return !(empty(a:val) || a:val is 0)
-endfunction
-
-function! timl#type(val) abort
-  let type = get(s:types, type(a:val), 'timl#vim#unknown')
-  if type == 'timl#vim#List'
-    if timl#symbolp(a:val)
-      return 'timl#lang#Symbol'
-    elseif a:val is# g:timl#nil
-      return 'timl#lang#Nil'
-    elseif timl#symbolp(get(a:val, 0)) && a:val[0][0][0] ==# '#'
-      return a:val[0][0][1:-1]
-    endif
-  elseif type == 'timl#vim#Dictionary'
-    if timl#symbolp(get(a:val, '#tag')) && a:val['#tag'][0][0] ==# '#'
-      return a:val['#tag'][0][1:-1]
-    endif
-  endif
-  return type
-endfunction
-
-function! timl#satisfiesp(proto, obj)
-  let t = timl#type(a:obj)
-  let obj = tr(t, '-', '_')
-  if type(get(g:, obj)) == type({})
-    let proto = timl#str(a:proto)
-    return has_key(get(g:{t}, "implements", {}), proto)
-  else
-    throw "timl: type " . t . " undefined"
-  else
-endfunction
-
-runtime! autoload/timl/lang.vim
-runtime! autoload/timl/vim.vim
-function! timl#dispatch(proto, fn, obj, ...)
-  let t = timl#type(a:obj)
-  let obj = tr(t, '-', '_')
-  if type(get(g:, obj)) == type({})
-    let impls = get(g:{t}, "implements", {})
-    let proto = timl#str(a:proto)
-    if has_key(impls, proto)
-      return timl#call(impls[proto][timl#str(a:fn)], [a:obj] + a:000)
-    endif
-  else
-    throw "timl: type " . t . " undefined"
-  endif
-  throw "timl:E117: ".t." doesn't implement ".a:proto
-endfunction
-
-function! timl#lock(val) abort
-  let val = a:val
-  lockvar val
-  return val
-endfunction
-
-function! timl#persistentp(val) abort
-  let val = a:val
-  return islocked('val')
-endfunction
-
-function! timl#persistent(val) abort
-  let val = a:val
-  if islocked('val')
-    return val
-  else
-    let val = copy(a:val)
-    lockvar val
-    return val
-  endif
-endfunction
-
-function! timl#transient(val) abort
-  let val = a:val
-  if islocked('val')
-    return copy(val)
-  else
-    return val
-  endif
-endfunction
-
 function! s:freeze(...) abort
   return a:000
-endfunction
-
-if !exists('g:timl#nil')
-  let g:timl#nil = s:freeze()
-  let g:timl#false = g:timl#nil
-  let g:timl#true = 1
-  lockvar g:timl#nil g:timl#false g:timl#true
-endif
-
-function! timl#str(val) abort
-  if type(a:val) == type('')
-    return a:val
-  elseif type(a:val) == type(function('tr'))
-    return substitute(join([a:val]), '[{}]', '', 'g')
-  elseif timl#symbolp(a:val)
-    return substitute(a:val[0], '^:', '', '')
-  elseif timl#consp(a:val)
-    let _ = {'val': a:val}
-    let acc = ''
-    while timl#consp(_.val)
-      let acc .= timl#str(timl#car(_.val)) . ','
-      let _.val = timl#cdr(_.val)
-    endwhile
-    return acc
-  elseif type(a:val) == type([])
-    return join(map(copy(a:val), 'timl#str(v:val)'), ',').','
-  else
-    return string(a:val)
-  endif
-endfunction
-
-function! timl#key(key)
-  if type(a:key) == type(0)
-    return string(a:key)
-  elseif timl#symbolp(a:key) && a:key[0][0] =~# '[:#]'
-    return a:key[0][1:-1]
-  else
-    return ' '.timl#printer#string(a:key)
-  endif
-endfunction
-
-function! timl#dekey(key)
-  if a:key =~# '^#'
-    throw 'timl: invalid key '.a:key
-  elseif a:key =~# '^ '
-    return timl#reader#read_string(a:key[1:-1])
-  elseif a:key =~# '^[-+]\=\d'
-    return timl#reader#read_string(a:key)
-  else
-    return timl#symbol(':'.a:key)
-  endif
 endfunction
 
 " }}}1
@@ -260,6 +116,156 @@ function! timl#arg2env(arglist, args, env) abort
 endfunction
 
 " }}}1
+" Section: Data types {{{1
+
+let s:types = {
+      \ 0: 'timl#vim#Number',
+      \ 1: 'timl#vim#String',
+      \ 2: 'timl#vim#Funcref',
+      \ 3: 'timl#vim#List',
+      \ 4: 'timl#vim#Dictionary',
+      \ 5: 'timl#vim#Float'}
+
+
+function! timl#truth(val) abort
+  return !(empty(a:val) || a:val is 0)
+endfunction
+
+let s:function = timl#symbol('#timl#lang#Function')
+function! timl#functionp(val) abort
+  return type(a:val) == type({}) && get(a:val, '#tag') is# s:function
+endfunction
+
+function! timl#type(val) abort
+  let type = get(s:types, type(a:val), 'timl#vim#unknown')
+  if type == 'timl#vim#List'
+    if timl#symbolp(a:val)
+      return 'timl#lang#Symbol'
+    elseif a:val is# g:timl#nil
+      return 'timl#lang#Nil'
+    elseif timl#symbolp(get(a:val, 0)) && a:val[0][0][0] ==# '#'
+      return a:val[0][0][1:-1]
+    endif
+  elseif type == 'timl#vim#Dictionary'
+    if timl#symbolp(get(a:val, '#tag')) && a:val['#tag'][0][0] ==# '#'
+      return a:val['#tag'][0][1:-1]
+    endif
+  endif
+  return type
+endfunction
+
+function! timl#satisfiesp(proto, obj)
+  let t = timl#type(a:obj)
+  let obj = tr(t, '-', '_')
+  if type(get(g:, obj)) == type({})
+    let proto = timl#str(a:proto)
+    return has_key(get(g:{t}, "implements", {}), proto)
+  else
+    throw "timl: type " . t . " undefined"
+  else
+endfunction
+
+runtime! autoload/timl/lang.vim
+runtime! autoload/timl/vim.vim
+function! timl#dispatch(proto, fn, obj, ...)
+  let t = timl#type(a:obj)
+  let obj = tr(t, '-', '_')
+  if type(get(g:, obj)) == type({})
+    let impls = get(g:{t}, "implements", {})
+    let proto = timl#str(a:proto)
+    if has_key(impls, proto)
+      return timl#call(impls[proto][timl#str(a:fn)], [a:obj] + a:000)
+    endif
+  else
+    throw "timl: type " . t . " undefined"
+  endif
+  throw "timl:E117: ".t." doesn't implement ".a:proto
+endfunction
+
+function! timl#lock(val) abort
+  let val = a:val
+  lockvar val
+  return val
+endfunction
+
+function! timl#persistentp(val) abort
+  let val = a:val
+  return islocked('val')
+endfunction
+
+function! timl#persistent(val) abort
+  let val = a:val
+  if islocked('val')
+    return val
+  else
+    let val = copy(a:val)
+    lockvar val
+    return val
+  endif
+endfunction
+
+function! timl#transient(val) abort
+  let val = a:val
+  if islocked('val')
+    return copy(val)
+  else
+    return val
+  endif
+endfunction
+
+if !exists('g:timl#nil')
+  let g:timl#nil = s:freeze()
+  let g:timl#false = g:timl#nil
+  let g:timl#true = 1
+  lockvar g:timl#nil g:timl#false g:timl#true
+endif
+
+function! timl#str(val) abort
+  if type(a:val) == type('')
+    return a:val
+  elseif type(a:val) == type(function('tr'))
+    return substitute(join([a:val]), '[{}]', '', 'g')
+  elseif timl#symbolp(a:val)
+    return substitute(a:val[0], '^:', '', '')
+  elseif timl#consp(a:val)
+    let _ = {'val': a:val}
+    let acc = ''
+    while timl#consp(_.val)
+      let acc .= timl#str(timl#car(_.val)) . ','
+      let _.val = timl#cdr(_.val)
+    endwhile
+    return acc
+  elseif type(a:val) == type([])
+    return join(map(copy(a:val), 'timl#str(v:val)'), ',').','
+  else
+    let g:wtf = a:val
+    return string(a:val)
+  endif
+endfunction
+
+function! timl#key(key)
+  if type(a:key) == type(0)
+    return string(a:key)
+  elseif timl#symbolp(a:key) && a:key[0][0] =~# '[:#]'
+    return a:key[0][1:-1]
+  else
+    return ' '.timl#printer#string(a:key)
+  endif
+endfunction
+
+function! timl#dekey(key)
+  if a:key =~# '^#'
+    throw 'timl: invalid key '.a:key
+  elseif a:key =~# '^ '
+    return timl#reader#read_string(a:key[1:-1])
+  elseif a:key =~# '^[-+]\=\d'
+    return timl#reader#read_string(a:key)
+  else
+    return timl#symbol(':'.a:key)
+  endif
+endfunction
+
+" }}}1
 " Section: Lists {{{1
 
 let s:cons = timl#symbol('#timl#lang#Cons')
@@ -318,35 +324,6 @@ function! timl#vec(cons)
 endfunction
 
 " }}}1
-" Section: Garbage collection {{{1
-
-if !exists('g:timl#lambdas')
-  let g:timl#lambdas = {}
-endif
-
-function! timl#gc()
-  let l:count = 0
-  for fn in keys(g:timl#lambdas)
-    try
-      if fn =~# '^\d'
-        let Fn = function('{'.fn.'}')
-      else
-        let Fn = function(fn)
-      endif
-    catch /^Vim\%((\a\+)\)\=:E700/
-      call remove(g:timl#lambdas, fn)
-      let l:count += 1
-    endtry
-  endfor
-  return l:count
-endfunction
-
-augroup timl#gc
-  autocmd!
-  autocmd CursorHold * call timl#gc()
-augroup END
-
-" }}}1
 " Section: Namespaces {{{1
 
 let s:ns = timl#symbol('#namespace')
@@ -383,10 +360,11 @@ endif
 " }}}1
 " Section: Eval {{{1
 
-function! timl#call(Func, args, ...) abort
-  let dict = (a:0 && type(a:1) == type({})) ? a:1 : {'__fn__': a:Func}
+function! timl#call(Func, args) abort
   if type(a:Func) == type(function('tr'))
-    return call(a:Func, a:args, dict)
+    return call(a:Func, a:args)
+  elseif timl#functionp(a:Func)
+    return call(a:Func.call, a:args, a:Func)
   else
     return call('timl#dispatch', ['timl#lang#IFn', 'invoke', a:Func] + a:args)
   endif
@@ -454,37 +432,47 @@ function! timl#find(sym, ns) abort
     endif
   endif
   let target = timl#munge(env.'#'.sym)
-  if exists('*'.target) || exists('g:'.target)
+  if exists('g:'.target)
     return env
   endif
   for refer in ns.referring
     let target = timl#munge(timl#str(refer).'#'.sym)
     call timl#require(refer)
-    if exists('*'.target) || exists('g:'.target)
+    if exists('g:'.target)
       return timl#str(refer)
     endif
   endfor
   return g:timl#nil
 endfunction
 
+let s:specials = {
+      \ 'if': 1,
+      \ 'do': 1,
+      \ 'let': 1,
+      \ 'fn': 1,
+      \ 'def': 1,
+      \ ':': 1,
+      \ 'quote': 1,
+      \ 'syntax-quote': 1,
+      \ 'unquote': 1,
+      \ 'unquote-splicing': 1,
+      \ 'function': 1,
+      \ 'try': 1,
+      \ 'catch': 1,
+      \ 'finally': 1}
+
 function! timl#qualify(sym, ns)
   let sym = type(a:sym) == type('') ? a:sym : a:sym[0]
+  if has_key(s:specials, sym) || sym =~# '^\w:'
+    return sym
+  elseif sym =~# '#' && exists('g:'.timl#munge(sym))
+    return 'g:'.sym
+  endif
   let ns = timl#find(a:sym, a:ns)
   if type(ns) == type('')
-    return timl#symbol(ns . '#' . sym)
+    return timl#symbol('g:' . ns . '#' . sym)
   endif
-  return a:sym
-endfunction
-
-function! s:file4ns(ns) abort
-  if !exists('s:tempdir')
-    let s:tempdir = tempname()
-  endif
-  let file = s:tempdir . '/' . tr(timl#munge(a:ns), '#', '/') . '.vim'
-  if !isdirectory(fnamemodify(file, ':h'))
-    call mkdir(fnamemodify(file, ':h'), 'p')
-  endif
-  return file
+  throw 'Could not resolve '.a:sym
 endfunction
 
 function! timl#build_exception(exception, throwpoint)
@@ -510,58 +498,6 @@ function! timl#eval(x, ...) abort
   let envs = [{}, g:timl#core#_STAR_ns_STAR_[0]]
 
   return s:eval(a:x, envs)
-endfunction
-
-function! timl#define_global(global, ...) abort
-  if a:0
-    let Val = a:1
-  elseif exists('g:'.a:global)
-    return g:timl#nil
-  else
-    let Val = g:timl#nil
-  endif
-  if type(Val) == type(function('tr'))
-    let orig_name = timl#str(Val)
-    let file = s:file4ns(matchstr(a:global, '.*\ze#'))
-    if has_key(g:timl#lambdas, orig_name)
-      redir => source
-      silent! function {orig_name}
-      redir END
-      let body = split(source, "\n")
-      if body[1] !~# '^\d'
-        call remove(body, 1)
-      endif
-      call map(body, 'matchstr(v:val, "^\\d*\\s*\\zs.*")')
-      if body[0] !~# '^function'
-        let body = []
-      endif
-      let body[0] = substitute(body[0], ' \zs\w\+', a:global, '') . ' abort'
-      let g:timl#lambdas[a:global] = g:timl#lambdas[orig_name]
-
-    elseif orig_name =~# '^\d'
-      throw 'timl: cannot define anonymous non-TimL function'
-
-    else
-      let body = [
-            \ "function! ".a:global."(...) abort",
-            \ "return call(".string(orig_name).", a:000)",
-            \ "endfunction"]
-    endif
-    call writefile(body, file)
-    let cmd = 'source '.file
-  else
-    let cmd = 'let g:'.a:global.' = Val'
-  endif
-  if exists('*'.a:global) && a:global !~# '^[a-z][^#]*$'
-    execute 'delfunction '.a:global
-  endif
-  unlet! g:{a:global}
-  execute cmd
-  if type(Val) == type(function('tr'))
-    return function(a:global)
-  else
-    return Val
-  endif
 endfunction
 
 function! timl#re(str, ...) abort
