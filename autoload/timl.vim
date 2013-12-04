@@ -228,44 +228,19 @@ function! timl#demunge(var) abort
   return tr(substitute(var, '_\(\u\+\)_', '\=get(s:demunge, submatch(0), submatch(0))', 'g'), '_', '-')
 endfunction
 
-function! timl#a2env(f, a) abort
-  let env = {}
-  if get(a:f.arglist, -1) is timl#symbol('...')
-    let env['...'] = a:a['000']
-  elseif get(a:f.arglist, -2) is timl#symbol('&')
-    let env[timl#str(a:f.arglist[-1])] = a:a['000']
-  endif
-  let _ = {}
-  for [k,_.V] in items(a:a)
-    if k !~# '^\d' && k !=# 'firstline' && k !=# 'lastline'
-      let k = timl#demunge(k)
-      if k =~# ',$'
-        let keys = split(k, ',')
-        for i in range(len(keys))
-          if type(_.V) == type([])
-            let env[keys[i]] = get(_.V, i, g:timl#nil)
-          elseif type(_.V) == type({})
-            let env[keys[i]] = get(_.V, keys[i], g:timl#nil)
-          endif
-        endfor
-      else
-        let env[k] = _.V
-      endif
-    endif
-  endfor
-  return env
-endfunction
-
-function! timl#l2env(f, args) abort
+let s:amp = timl#symbol('&')
+function! timl#arg2env(arglist, args, env) abort
   let args = a:args
-  let env = {}
+  let env = a:env
   let _ = {}
   let i = 0
-  for _.param in timl#vec(a:f.arglist)
-    if i >= len(args)
-      throw 'timl: arity error'
-    endif
-    if timl#symbolp(_.param)
+  for _.param in timl#vec(a:arglist)
+    if _.param is s:amp
+      let env[get(a:arglist, i+1, ['...'])[0]] = args[i : -1]
+      break
+    elseif i >= len(args)
+      throw 'timl: arity error'.i.string(args)
+    elseif timl#symbolp(_.param)
       let env[_.param[0]] = args[i]
     elseif type(_.param) == type([])
       for j in range(len(_.param))
@@ -508,29 +483,6 @@ function! timl#qualify(sym, ns, locals)
     return timl#symbol(ns . '#' . sym)
   endif
   return a:sym
-endfunction
-
-function! s:build_function(name, arglist) abort
-  let arglist = map(copy(timl#vec(a:arglist)), 'v:val is timl#symbol("...") ? "..." : timl#munge(v:val)')
-  let dict = {}
-  return 'function! '.a:name.'('.join(arglist, ',').") abort\n"
-        \ . "let name = matchstr(expand('<sfile>'), '.*\\%(\\.\\.\\| \\)\\zs.*')\n"
-        \ . "let fn = g:timl#lambdas[name]\n"
-        \ . "let env = extend(timl#a2env(fn, a:), copy(fn.env), 'keep')\n"
-        \ . "let nameenv = {}\n"
-        \ . "if !empty(get(fn, 'name', ''))\n"
-        \ . "let nameenv = {fn.name[0]: name =~ '^\\d' ? self.__fn__ : function(name)}\n"
-        \ . "endif\n"
-        \ . "call extend(env, nameenv, 'keep')\n"
-        \ . "let _ = {}\n"
-        \ . "let _.result = timl#eval(fn.form, fn.ns, env)\n"
-        \ . "while type(_.result) == type([]) && get(_.result, 0) is# g:timl#recur_token\n"
-        \ . "let env = extend(timl#l2env(fn, _.result[1:-1]), copy(fn.env), 'keep')\n"
-        \ . "call extend(env, nameenv, 'keep')\n"
-        \ . "let _.result = timl#eval(fn.form, fn.ns, env)\n"
-        \ . "endwhile\n"
-        \ . "return _.result\n"
-        \ . "endfunction"
 endfunction
 
 function! s:file4ns(ns) abort

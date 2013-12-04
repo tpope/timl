@@ -197,7 +197,7 @@ function! timl#compiler#emit_recur(file, context, ns, locals, ...) abort
   if a:context ==# "return %s"
     let sym = s:tempsym('recur')
     call s:println(a:file, "let newlocals = [copy(locals[0])]")
-    call s:emit(a:file, "call extend(newlocals[0], timl#l2env(my_impl, %s))", a:ns, a:locals, a:000)
+    call s:emit(a:file, "call timl#arg2env(my_impl.arglist, %s, newlocals[0])", a:ns, a:locals, a:000)
     call s:println(a:file, "let locals = newlocals")
     return s:println(a:file, "continue")
   endif
@@ -216,16 +216,11 @@ function! timl#compiler#emit_fn_STAR_(file, context, ns, locals, params, ...) ab
     let body = a:000
   endif
   call s:println(a:file, "let ".sym."_impl.arglist = ".timl#compiler#serialize(params))
-  let sig = ''
-  if get(params, -2) is timl#symbol('&')
-    let params = params[0:-3] + [timl#symbol('...')]
-  endif
-  let sig = join(map(copy(params), "v:val is# timl#symbol('...') ? '...' : timl#munge(v:val)"), ", ")
-  call s:println(a:file, "function! ".sym."_func(".sig.") abort")
+  call s:println(a:file, "function! ".sym."_func(...) abort")
   call s:println(a:file, "let my_name = matchstr(expand('<sfile>'), '.*\\%(\\.\\.\\| \\)\\zs.*')")
   call s:println(a:file, "let my_impl = g:timl#lambdas[my_name]")
   call s:println(a:file, "let temp = {}")
-  call s:println(a:file, "let locals = [extend(timl#a2env(my_impl, a:), my_impl.env, 'keep')]")
+  call s:println(a:file, "let locals = [timl#arg2env(my_impl.arglist, a:000, copy(my_impl.env))]")
   call s:println(a:file, "if !empty(get(my_impl, 'name', ''))")
   call s:println(a:file, "let locals[0][timl#symbol(my_impl.name)[0]] = my_name =~ '^\\d' ? self.__fn__ : function(my_name)")
   call s:println(a:file, "endif")
