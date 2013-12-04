@@ -17,5 +17,5 @@
 
 (defn dec [n] (- n 1))
 (def inc (partial + 1))
-(def zero? (partial equal? 0))
+(def zero? (partial == 0))
 (def nonzero? (comp not zero?))
