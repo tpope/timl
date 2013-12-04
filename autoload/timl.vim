@@ -339,16 +339,6 @@ function! timl#vec(cons)
   return timl#persistent(extend(array, _.cons))
 endfunction
 
-function! timl#count(cons) abort
-  let i = 0
-  let _ = {'cons': a:cons}
-  while timl#consp(_.cons)
-    let i += 1
-    let _.cons = timl#cdr(_.cons)
-  endwhile
-  return i + len(_.cons)
-endfunction
-
 " }}}1
 " Section: Garbage collection {{{1
 

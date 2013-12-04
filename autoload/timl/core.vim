@@ -328,6 +328,21 @@ function! timl#core#assoc(coll, ...) abort
   return timl#lock(extend(timl#core#dict(a:000), a:dict, 'keep'))
 endfunction
 
+function! timl#core#empty(coll) abort
+  if timl#consp(a:coll)
+    " TODO: empty list
+    return g:timl#nil
+  endif
+  if type(a:coll) == type({})
+    return {}
+  elseif type(a:coll) == type('')
+    return ''
+  elseif type(a:coll) == type([]) && !timl#symbolp(a:coll)
+    return []
+  endif
+  return g:timl#nil
+endfunction
+
 " }}}1
 " Section: Sequences {{{1
 
@@ -344,14 +359,6 @@ function! timl#core#rest(list) abort
   return timl#dispatch('timl#lang#Seq', 'rest', timl#core#seq(a:list))
 endfunction
 
-function! timl#core#length(coll) abort
-  let t = timl#type(a:coll)
-  if t !~# '^timl#vim'
-    return len(a:coll) - 1
-  endif
-  return len(a:coll)
-endfunction
-
 function! timl#core#partition(n, seq) abort
   let seq = timl#core#vec(a:seq)
   let out = []
@@ -361,23 +368,18 @@ function! timl#core#partition(n, seq) abort
   return out
 endfunction
 
-function! timl#core#count(list) abort
-  return timl#count(a:list)
+function! timl#core#count(seq) abort
+  let i = 0
+  let _ = {'seq': a:seq}
+  while timl#consp(_.seq)
+    let i += 1
+    let _.seq = timl#cdr(_.seq)
+  endwhile
+  return i + len(_.seq)
 endfunction
 
 function! timl#core#empty_QMARK_(coll)
-  return timl#core#length(a:coll) ? s:false : s:true
-endfunction
-
-function! timl#core#empty(coll) abort
-  if type(a:coll) == type({})
-    return {}
-  elseif type(a:coll) == type('')
-    return ''
-  elseif type(a:coll) == type([]) && !timl#symbolp(a:coll)
-    return []
-  endif
-  return g:timl#nil
+  return empty(timl#core#seq(a:coll))
 endfunction
 
 function! timl#core#map(f, coll) abort
@@ -398,11 +400,12 @@ function! timl#core#map(f, coll) abort
   let ptr = head
   let _.seq = timl#core#next(_.seq)
   while _.seq isnot# g:timl#nil
-    let next = timl#core#next(_.seq)
     let ptr.cdr = {'#tag': tag,
-          \ 'car': timl#call(a:f, [timl#core#first(next)]),
+          \ 'car': timl#call(a:f, [timl#core#first(_.seq)]),
           \ 'cdr': g:timl#nil}
     lockvar ptr
+    unlockvar 1 ptr
+    let ptr = ptr.cdr
     let _.seq = timl#core#next(_.seq)
   endwhile
   lockvar ptr

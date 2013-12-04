@@ -1,8 +1,8 @@
 (in-ns 'timl#core-coll-test)
 (refer 'timl#test)
 
-(assert (= 3 (length (list 1 2 3))))
-(assert (= 1 (length (dict "a" "b"))))
+(assert (= 3 (count (list 1 2 3))))
+(assert (= 1 (count (dict "a" "b"))))
 
 (assert (= (list) (empty (list 1 2 3))))
 (assert (= (dict) (empty (dict "a" "b"))))
@@ -14,4 +14,4 @@
 (assert (= (list "a") (map first (dict "a" "b"))))
 
 (assert (= 6 (reduce + (list 1 2 3))))
-(assert (= (list "c" "a" "b") (reduce append (list "c") (dict "a" "b"))))
+(assert (= (list "c" "a" "b") (reduce cons "c" (dict "a" "b"))))
