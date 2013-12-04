@@ -674,47 +674,5 @@ function! timl#load(ns) abort
 endfunction
 
 " }}}1
-" Section: Tests {{{1
-
-if !$TIML_TEST
-  finish
-endif
-
-command! -nargs=1 TimLAssert
-      \ try |
-      \   if !eval(<q-args>) |
-      \     echomsg "Failed: ".<q-args> |
-      \   endif |
-      \ catch /.*/ |
-      \  echomsg "Error:  ".<q-args>." (".v:exception.")" . v:throwpoint |
-      \ endtry
-
-TimLAssert timl#re('(+ 1 2 3)') == 6
-
-TimLAssert timl#re('(let [] (def forty-two 42))')
-TimLAssert timl#re('forty-two') ==# 42
-
-TimLAssert timl#re('(if 1 forty-two 69)') ==# 42
-TimLAssert timl#re('(if 0 "boo" "yay")') ==# "yay"
-TimLAssert timl#re('(do 1 2)') ==# 2
-
-TimLAssert empty(timl#re('(set! g:timl_setq (dict))'))
-TimLAssert g:timl_setq ==# {}
-let g:timl_setq = {}
-TimLAssert empty(timl#re('(set! (. g:timl_setq key) ["a" "b"])'))
-TimLAssert g:timl_setq ==# {"key": ["a", "b"]}
-unlet! g:timl_setq
-
-TimLAssert timl#re('(dict "a" 1 "b" 2)') ==# {"a": 1, "b": 2}
-TimLAssert timl#re('(dict "a" 1 ["b" 2])') ==# {"a": 1, "b": 2}
-TimLAssert timl#re('(length "abc")') ==# 3
-
-TimLAssert timl#re('(reduce + 0 (list 1 2 3))') ==# 6
-
-TimLAssert timl#re("(loop [n 5 f 1] (if (<= n 1) f (recur (1- n) (* f n))))") ==# 120
-
-delcommand TimLAssert
-
-" }}}1
 
 " vim:set et sw=2:
