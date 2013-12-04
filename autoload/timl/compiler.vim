@@ -147,11 +147,11 @@ function! s:emit(file, context, ns, locals, x) abort
       return s:emit(a:file, a:context, a:ns, a:locals, timl#call(Fn, vec))
     elseif type(Fn) == type(function('tr'))
       call s:emit(a:file, "let ".tmp."_args = %s", a:ns, a:locals, vec)
-      return s:printfln(a:file, a:context, "timl#call(".string(name).', '.tmp."_args)")
+      return s:printfln(a:file, a:context, "timl#call(function(".string(name).'), '.tmp."_args)")
     endif
     call s:emit(a:file, "let ".tmp."_args = %s", a:ns, a:locals, vec)
     let lookup = "timl#lookup(".string(F).", ".string(a:ns).", locals[0])"
-    return s:printfln(a:file, a:context, "timl#call(".lookup.", ".tmp."_args)")
+    return s:printfln(a:file, a:context, "timl#call(function(".lookup."), ".tmp."_args)")
   else
     call s:emit(a:file, "let ".tmp."_args = %s", a:ns, a:locals, vec)
     call s:emit(a:file, "let ".tmp."_function = %s", a:ns, a:locals, F)

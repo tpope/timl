@@ -7,25 +7,64 @@ function! s:function(name) abort
   return function(substitute(a:name,'^s:',matchstr(expand('<sfile>'), '.*\zs<SNR>\d\+_'),''))
 endfunction
 
+" Section: Number
+
 let g:timl#vim#Number = {}
 
-let g:timl#vim#String = {}
+" Section: String
+
+" Characters, not bytes
+function! s:str_get(this, idx, ...) abort
+  if type(a:idx) == type(0)
+    let ch = matchstr(a:this, repeat('.', a:idx).'\zs.')
+    return empty(ch) ? (a:0 ? a:1 : g:timl#nil) : ch
+  endif
+  return a:0 ? a:1 : g:timl#nil
+endfunction
+
+let g:timl#vim#String = {
+      \ "implements":
+      \ {"timl#lang#ILookup":
+      \    {"get": s:function("s:str_get")}}}
+
+" Section: Funcref
 
 let g:timl#vim#Funcref = {}
+
+" Section: List
+
+function! s:list_get(this, idx, ...) abort
+  if type(a:idx) == type(0)
+    return get(a:this, a:idx, a:0 ? a:1 : g:timl#nil)
+  endif
+  return a:0 ? a:1 : g:timl#nil
+endfunction
 
 let g:timl#vim#List = {
       \ "implements":
       \ {"timl#lang#Seqable":
-      \    {"seq": function("timl#list2")}}}
+      \    {"seq": function("timl#list2")},
+      \  "timl#lang#ILookup":
+      \    {"get": s:function("s:list_get")}}}
 
-function! s:dict_seq(dict)
+" Section: Dictionary
+
+function! s:dict_seq(dict) abort
   return timl#list2(items(a:dict))
+endfunction
+
+function! s:dict_get(this, key, ...) abort
+  return get(a:this, timl#str(a:key), a:0 ? a:1 : g:timl#nil)
 endfunction
 
 let g:timl#vim#Dictionary = {
       \ "implements":
       \ {"timl#lang#Seqable":
-      \    {"seq": s:function("s:dict_seq")}}}
+      \    {"seq": s:function("s:dict_seq")},
+      \  "timl#lang#ILookup":
+      \    {"get": s:function("s:dict_get")}}}
+
+" Section: Float
 
 if has('float')
   let g:timl#vim#Float = {}

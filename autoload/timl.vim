@@ -49,8 +49,15 @@ function! timl#type(val) abort
   return type
 endfunction
 
-function! timl#implementsp(fn, obj)
-  return exists('*'.tr(timl#type(a:obj) . '#' . a:fn, '-', '_'))
+function! timl#satisfiesp(proto, obj)
+  let t = timl#type(a:obj)
+  let obj = tr(t, '-', '_')
+  if type(get(g:, obj)) == type({})
+    let proto = timl#str(a:proto)
+    return has_key(get(g:{t}, "implements", {}), proto)
+  else
+    throw "timl: type " . t . " undefined"
+  else
 endfunction
 
 runtime! autoload/timl/lang.vim
@@ -403,8 +410,12 @@ endif
 
 function! timl#call(Func, args, ...) abort
   let dict = (a:0 && type(a:1) == type({})) ? a:1 : {'__fn__': a:Func}
-  if timl#symbolp(a:Func)
+  if type(a:Func) == type(function('tr'))
+    return call(a:Func, a:args, dict)
+  elseif timl#symbolp(a:Func)
     return call('timl#core#get', a:args[0:0] + [a:Func] + a:args[1:-1])
+  elseif timl#satisfiesp('timl#lang#ILookup', a:Func)
+    return call('timl#dispatch', ['timl#lang#ILookup', 'get', a:Func] + a:args)
   else
     return call(a:Func, a:args, dict)
   endif

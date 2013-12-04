@@ -309,6 +309,11 @@ endfunction
 " Section: Collections {{{1
 
 function! timl#core#get(coll, key, ...) abort
+  if a:0
+    return timl#dispatch('timl#lang#ILookup', 'get', a:coll, a:key, a:1)
+  else
+    return timl#dispatch('timl#lang#ILookup', 'get', a:coll, a:key)
+  endif
   let def = a:0 ? a:1 : g:timl#nil
   let t = timl#type(a:coll)
   if t ==# 'timl#vim#List'
@@ -352,11 +357,11 @@ function! timl#core#seq(coll)
 endfunction
 
 function! timl#core#first(list) abort
-  return timl#dispatch('timl#lang#Seq', 'first', timl#core#seq(a:list))
+  return timl#dispatch('timl#lang#ISeq', 'first', timl#core#seq(a:list))
 endfunction
 
 function! timl#core#rest(list) abort
-  return timl#dispatch('timl#lang#Seq', 'rest', timl#core#seq(a:list))
+  return timl#dispatch('timl#lang#ISeq', 'rest', timl#core#seq(a:list))
 endfunction
 
 function! timl#core#partition(n, seq) abort
