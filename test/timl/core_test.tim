@@ -1,6 +1,6 @@
 (refer 'timl#test)
 
 (let [sentinel (dict)]
-  (assert (eq? sentinel ((constantly sentinel)))))
+  (assert (identical? sentinel ((constantly sentinel)))))
 
 (assert (= "42" (capture (: "silent echo 42"))))
