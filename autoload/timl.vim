@@ -410,7 +410,7 @@ function! timl#ns_for_file(file) abort
   return substitute(tr(fnamemodify(path, ':r:r'), '\/_', '##-'), '^\%(autoload\|plugin\|test\)#', '', '')
 endfunction
 
-function! timl#lookup(sym, ns, locals) abort
+function! timl#lookup(sym, ns) abort
   let sym = a:sym[0]
   if sym =~# '^[#:].'
     return a:sym
@@ -428,8 +428,6 @@ function! timl#lookup(sym, ns, locals) abort
     else
       throw 'timl: ' . sym . ' undefined'
     endif
-  elseif has_key(a:locals, sym)
-    return a:locals[sym]
   endif
   let ns = timl#find(sym, a:ns)
   if ns isnot# g:timl#nil

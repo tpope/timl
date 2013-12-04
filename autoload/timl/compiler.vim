@@ -92,7 +92,7 @@ function! s:emit(file, context, ns, locals, x) abort
     if has_key(a:locals, x[0])
       return s:printfln(a:file, a:context, "locals[0][".string(x[0])."]")
     else
-      return s:printfln(a:file, a:context, "timl#lookup(".timl#compiler#serialize(x).", ".string(a:ns).", locals[0])")
+      return s:printfln(a:file, a:context, "timl#lookup(".timl#compiler#serialize(x).", ".string(a:ns).")")
     endif
 
   elseif x is# g:timl#nil
@@ -141,7 +141,7 @@ function! s:emit(file, context, ns, locals, x) abort
 
   let tmp = s:tempsym('invoke')
   if timl#symbolp(F) && !has_key(a:locals, F[0]) && F[0] !~# '^:'
-    let Fn = timl#lookup(F, a:ns, {})
+    let Fn = timl#lookup(F, a:ns)
     let name = join([Fn])
     if type(Fn) == type(function('tr')) && get(get(g:timl#lambdas, name, {}), 'macro')
       return s:emit(a:file, a:context, a:ns, a:locals, timl#call(Fn, vec))
@@ -150,7 +150,7 @@ function! s:emit(file, context, ns, locals, x) abort
       return s:printfln(a:file, a:context, "timl#call(function(".string(name).'), '.tmp."_args)")
     endif
     call s:emit(a:file, "let ".tmp."_args = %s", a:ns, a:locals, vec)
-    let lookup = "timl#lookup(".string(F).", ".string(a:ns).", locals[0])"
+    let lookup = "timl#lookup(".string(F).", ".string(a:ns).")"
     return s:printfln(a:file, a:context, "timl#call(function(".lookup."), ".tmp."_args)")
   else
     call s:emit(a:file, "let ".tmp."_args = %s", a:ns, a:locals, vec)
@@ -264,7 +264,7 @@ function! timl#compiler#emit_let_STAR_(file, context, ns, locals, bindings, ...)
       let locals[timl#str(_.var)] = 1
     endfor
   endif
-  call call('timl#compiler#emit_do', [a:file, a:context, a:ns, a:locals] + a:000)
+  call call('timl#compiler#emit_do', [a:file, a:context, a:ns, locals] + a:000)
   return s:println(a:file, "call remove(locals, 0)")
 endfunction
 
@@ -384,7 +384,9 @@ function! timl#compiler#emit_try(file, context, ns, locals, ...) abort
       call s:println(a:file, 'catch /'._.pattern.'/')
       call s:println(a:file, "call insert(locals, copy(locals[0]))")
       call s:println(a:file, "let locals[0][".string(var[0])."] = timl#build_exception(v:exception, v:throwpoint)")
-      call call('timl#compiler#emit_do', [a:file, a:context, a:ns, a:locals] + rest[2:-1])
+      let locals = copy(a:locals)
+      let locals[var[0]] = 1
+      call call('timl#compiler#emit_do', [a:file, a:context, a:ns, locals] + rest[2:-1])
       call s:println(a:file, "call remove(locals, 0)")
     endif
   endfor
