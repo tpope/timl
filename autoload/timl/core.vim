@@ -166,25 +166,32 @@ function! timl#core#_LT__EQ_(x, y) abort
   return timl#core#number(a:x) <=# timl#core#number(a:y) ? s:true : s:false
 endfunction
 
-function! s:numberp(x) abort
-  let t = type(a:x)
-  return t == 0 || t == 5
+function! timl#core#_EQ_(x, ...) abort
+  for y in a:000
+    if type(a:x) != type(y) || a:x !=# y
+      return s:false
+    endif
+  endfor
+  return s:true
 endfunction
 
-function! timl#core#_EQ_(x, y) abort
-  return type(a:x) == type(a:y) && a:x ==# a:y ? s:true : s:false
+function! timl#core#_EQ__EQ_(x, ...) abort
+  let x = timl#core#number(a:x)
+  for y in a:000
+    if x != timl#core#number(y)
+      return s:false
+    endif
+  endfor
+  return s:true
 endfunction
 
-function! timl#core#_EQ__EQ_(x, y) abort
-  if s:numberp(a:x) && s:numberp(a:y)
-    return a:x == a:y ? s:true : s:false
-  else
-    return timl#core#_EQ_(a:x, a:y)
-  endif
-endfunction
-
-function! timl#core#identical_QMARK_(x, y) abort
-  return a:x is# a:y ? s:true : s:false
+function! timl#core#identical_QMARK_(x, ...) abort
+  for y in a:000
+    if a:x isnot# y
+      return s:false
+    endif
+  endfor
+  return s:true
 endfunction
 
 " }}}1
