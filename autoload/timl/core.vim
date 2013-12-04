@@ -234,7 +234,7 @@ TLfunction! timl#core#append(...) abort
 endfunction
 
 TLfunction! timl#core#cons(val, seq) abort
-  return timl#cons(a:val, timl#core#seq(a:seq))
+  return timl#cons(a:val, a:seq)
 endfunction
 
 " }}}1
@@ -362,8 +362,7 @@ endfunction
 " Section: Sequences {{{1
 
 TLfunction! timl#core#seq(coll)
-  let seq = timl#dispatch("timl#lang#Seqable", "seq", a:coll)
-  return empty(seq) ? g:timl#nil : seq
+  return timl#seq(a:coll)
 endfunction
 
 TLfunction! timl#core#first(list) abort

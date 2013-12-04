@@ -1,6 +1,8 @@
 (in-ns 'timl#core)
 
 (def conj)
+(defmacro lazy-seq [& body]
+  `(#*timl#lang#create_lazy_seq (fn [] ~@body)))
 (defn not-empty [xs] (if (empty? xs) nil xs))
 (defn next [xs] (not-empty (rest xs)))
 (defn second [xs] (first (rest xs)))
@@ -10,7 +12,33 @@
     (if (next s)
       (recur (conj ret (first s)) (next s))
       ret)))
-(defn filter [f coll] (reduce (fn [m o] (if (f o) (append m (list o)) m)) '() coll))
+
 (defn reductions [f init xs]
-  (cons init (if xs
-    (reductions f (f init (first xs)) (rest xs)))))
+  (cons init
+        (lazy-seq
+          (if xs
+            (reductions f (f init (first xs)) (rest xs))))))
+
+(defn filter [pred coll]
+  (lazy-seq
+    (when-let [s (seq coll)]
+      (let [f (first s) r (rest s)]
+        (if (pred f)
+          (cons f (filter pred r))
+          (filter pred r))))))
+
+(defn concat [x y]
+  (lazy-seq
+    (let [s (seq x)]
+      (if s
+        (cons (first s) (concat (rest s) y))
+        y))))
+
+(defn take [n coll]
+  (lazy-seq
+    (when (pos? n)
+      (when-let [s (seq coll)]
+        (cons (first s) (take (dec n) (rest s)))))))
+
+(defn iterate [f x]
+  (cons x (lazy-seq (iterate f (f x)))))

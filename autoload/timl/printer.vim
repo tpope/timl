@@ -27,9 +27,9 @@ function! timl#printer#string(x)
   elseif timl#consp(a:x)
     let acc = []
     let _ = {'x': a:x}
-    while timl#consp(_.x)
-      call add(acc, timl#printer#string(timl#car(_.x)))
-      let _.x = timl#cdr(_.x)
+    while !empty(timl#seq(_.x))
+      call add(acc, timl#printer#string(timl#core#first(_.x)))
+      let _.x = timl#core#rest(_.x)
     endwhile
     if _.x isnot# g:timl#nil
       call extend(acc, ['.', timl#printer#string(_.x)])
@@ -63,6 +63,9 @@ function! timl#printer#string(x)
       unlet! V
     endfor
     return '#{' . join(acc, ' ') . '}'
+
+  elseif type !=# 'timl#vim#Dictionary' && timl#satisfiesp('timl#lang#Seqable', a:x)
+    return timl#printer#string(timl#dispatch('timl#lang#Seqable', 'seq', a:x))
 
   elseif type(a:x) == type({})
     let acc = []

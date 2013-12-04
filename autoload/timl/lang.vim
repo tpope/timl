@@ -9,6 +9,32 @@ function! s:function(name) abort
   return function(substitute(a:name,'^s:',matchstr(expand('<sfile>'), '.*\zs<SNR>\d\+_'),''))
 endfunction
 
+" Section: Lazy Seqs
+
+function! timl#lang#create_lazy_seq(fn)
+  let seq = {'#tag': timl#symbol('#timl#lang#LazySeq'), 'fn': a:fn}
+  lockvar seq
+  return seq
+endfunction
+
+function! s:deref_lazy_seq(lseq) abort
+  if !has_key(a:lseq, 'seq')
+    unlockvar a:lseq
+    let _ = {'seq': timl#call(a:lseq.fn, [])}
+    while !timl#satisfiesp('timl#lang#ISeq', _.seq)
+      let _.seq = timl#dispatch('timl#lang#Seqable', 'seq', _.seq)
+    endwhile
+    let a:lseq.seq = _.seq
+    lockvar a:lseq
+  endif
+  return a:lseq.seq
+endfunction
+
+let g:timl#lang#LazySeq = {
+      \ "implements":
+      \ {"timl#lang#Seqable":
+      \   {"seq": s:function('s:deref_lazy_seq')}}}
+
 " Section: Nil
 
 function! s:identity(x)
@@ -62,7 +88,7 @@ function! s:cons_car(cons)
 endfunction
 
 function! s:cons_cdr(cons)
-  return a:cons.cdr
+  return timl#seq(a:cons.cdr)
 endfunction
 
 let g:timl#lang#Cons = {

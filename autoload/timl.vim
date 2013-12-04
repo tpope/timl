@@ -271,8 +271,9 @@ endfunction
 
 let s:cons = timl#symbol('#timl#lang#Cons')
 
-function! timl#vectorp(obj) abort
-  return type(a:obj) == type([]) && a:obj isnot# g:timl#nil && !timl#symbolp(a:obj)
+function! timl#seq(coll) abort
+  let seq = timl#dispatch("timl#lang#Seqable", "seq", a:coll)
+  return empty(seq) ? g:timl#nil : seq
 endfunction
 
 function! timl#consp(obj) abort
@@ -284,9 +285,13 @@ function! timl#list(...) abort
 endfunction
 
 function! timl#cons(car, cdr) abort
-  let cons = {'#tag': s:cons, 'car': a:car, 'cdr': a:cdr}
-  lockvar cons
-  return cons
+  if timl#satisfiesp('timl#lang#Seqable', a:cdr)
+    let cons = {'#tag': s:cons, 'car': a:car, 'cdr': a:cdr}
+    lockvar cons
+    return cons
+  else
+  endif
+  throw 'timl: not seqable'
 endfunction
 
 function! timl#car(cons) abort
@@ -322,6 +327,10 @@ function! timl#vec(cons)
     let _.cons = timl#cdr(_.cons)
   endwhile
   return timl#persistent(extend(array, _.cons))
+endfunction
+
+function! timl#vectorp(obj) abort
+  return type(a:obj) == type([]) && a:obj isnot# g:timl#nil && !timl#symbolp(a:obj)
 endfunction
 
 " }}}1
@@ -363,7 +372,7 @@ endif
 
 function! timl#call(Func, args) abort
   if type(a:Func) == type(function('tr'))
-    return call(a:Func, a:args)
+    return call(a:Func, a:args, {})
   elseif timl#functionp(a:Func)
     return call(a:Func.call, a:args, a:Func)
   else
