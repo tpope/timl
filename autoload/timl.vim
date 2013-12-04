@@ -468,7 +468,7 @@ function! timl#lookup(sym, ns, locals) abort
 endfunction
 
 function! timl#find(sym, ns) abort
-  let sym = type(a:sym) == type([]) ? a:sym[0] : a:sym
+  let sym = type(a:sym) == type('') ? a:sym : a:sym[0]
   let env = a:ns
   call timl#require(env)
   let ns = timl#create_ns(env)
@@ -493,12 +493,12 @@ function! timl#find(sym, ns) abort
   return g:timl#nil
 endfunction
 
-function! timl#qualify(envs, sym)
-  let sym = type(a:sym) == type([]) ? a:sym[0] : a:sym
-  if has_key(a:envs[0], sym)
+function! timl#qualify(sym, ns, locals)
+  let sym = type(a:sym) == type('') ? a:sym : a:sym[0]
+  if has_key(a:locals, sym)
     return a:sym
   endif
-  let ns = timl#find(a:sym, a:envs[1])
+  let ns = timl#find(a:sym, a:ns)
   if type(ns) == type('')
     return timl#symbol(ns . '#' . sym)
   endif
