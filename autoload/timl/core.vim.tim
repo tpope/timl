@@ -9,7 +9,7 @@
      (#*substitute g:timl_core_captured "^\n" "" "")))
 
 (defmacro include-guard [var]
-  (let [string (timl#munge (str var))]
+  (let [string (#*timl#munge (str var))]
    `(if (#*exists ~string)
      (: "finish")
      (set! ~var 1))))

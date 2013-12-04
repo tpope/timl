@@ -2,10 +2,10 @@
 
 (defn not [x] (if x false true))
 
-(defn pr-str [& xs] (#*join (map timl#printer#string xs)))
+(defn pr-str [& xs] (#*join (map #*timl#printer#string xs)))
 (defn pr [& xs] (echo (apply pr-str xs)))
-(defn read-string [string] (timl#reader#read-string string))
-(defn eval [form] (timl#eval form))
+(defn read-string [string] (#*timl#reader#read-string string))
+(defn eval [form] (#*timl#eval form))
 
 (defn constantly [x] (fn [& args] x))
 (defn partial [f & args]
