@@ -90,7 +90,7 @@ TLfunction! timl#core#apply(f, x, ...) abort
     let dict = 0
   endif
   let args = args[0:-2] + timl#core#vec(args[-1])
-  return timl#call(a:f, args, dict)
+  return timl#call(a:f, args)
 endfunction
 
 TLfunction! timl#core#throw(val) abort
