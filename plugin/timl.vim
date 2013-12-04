@@ -117,7 +117,7 @@ function! s:repl(...) abort
       catch
         let s:repl_env['*e'] = timl#build_exception(v:exception, v:throwpoint)
         echohl ErrorMSG
-        echo v:exception
+        echo v:exception . '('.v:throwpoint.')'
         echohl NONE
       endtry
       let input = input(g:timl#core#_STAR_ns_STAR_[0].'=> ', '', cmpl)
