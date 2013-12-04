@@ -214,7 +214,7 @@ function! timl#compiler#emit_fn_STAR_(file, context, ns, locals, params, ...) ab
   call s:println(a:file, "let temp = {}")
   call s:println(a:file, "let locals = [timl#arg2env(self.arglist, a:000, copy(self.locals))]")
   if timl#symbolp(a:params)
-    call s:println(a:file, "let locals[0][timl#symbol(self.name)[0]] = self.call")
+    call s:println(a:file, "let locals[0][timl#symbol(self.name)[0]] = self")
   endif
   call s:println(a:file, "while 1")
   let locals = copy(a:locals)
