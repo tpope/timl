@@ -74,15 +74,12 @@ endfunction
 
 function! timl#core#apply(f, x, ...) abort
   let args = [a:x] + a:000
-  if type(args[-1]) == type({})
+  if timl#type(args[-1]) == 'timl#vim#Dictionary'
     let dict = remove(args, -1)
   else
     let dict = 0
   endif
-  if type(args[-1]) != type([])
-    throw 'timl: last non-dict argument to apply must be a list'
-  endif
-  let args = args[0:-2] + args[-1]
+  let args = args[0:-2] + timl#core#vec(args[-1])
   return timl#call(a:f, args, dict)
 endfunction
 
