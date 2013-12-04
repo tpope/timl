@@ -3,6 +3,6 @@
 (defmacro assert [form]
   `(try
      (if ~form
-       1
+       true
        (echo "Failed: " (pr-str '~form)))
      (catch "" e (echo "Error on " (pr-str '~form) ": " v:exception))))
