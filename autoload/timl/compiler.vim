@@ -92,7 +92,7 @@ function! s:emit(file, context, ns, locals, x) abort
     if has_key(a:locals, x[0])
       return s:printfln(a:file, a:context, "locals[0][".string(x[0])."]")
     else
-      return s:printfln(a:file, a:context, "timl#lookup(".timl#compiler#serialize(x).", ".string(a:ns).")")
+      return s:printfln(a:file, a:context, "timl#lookup(".string(x[0]).", ".string(a:ns).")")
     endif
 
   elseif x is# g:timl#nil
@@ -150,8 +150,8 @@ function! s:emit(file, context, ns, locals, x) abort
       return s:printfln(a:file, a:context, "timl#call(function(".string(name).'), '.tmp."_args)")
     endif
     call s:emit(a:file, "let ".tmp."_args = %s", a:ns, a:locals, vec)
-    let lookup = "timl#lookup(".string(F).", ".string(a:ns).")"
-    return s:printfln(a:file, a:context, "timl#call(function(".lookup."), ".tmp."_args)")
+    let lookup = "timl#lookup(".string(F[0]).", ".string(a:ns).")"
+    return s:printfln(a:file, a:context, "timl#call(".lookup.", ".tmp."_args)")
   else
     call s:emit(a:file, "let ".tmp."_args = %s", a:ns, a:locals, vec)
     call s:emit(a:file, "let ".tmp."_function = %s", a:ns, a:locals, F)

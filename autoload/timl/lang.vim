@@ -31,7 +31,7 @@ let g:timl#lang#Nil = {
 
 " Section: Symbol
 
-function! s:this_get(this, coll, ...)
+function! s:this_get(this, coll, ...) abort
   if a:0
     return timl#dispatch('timl#lang#ILookup', 'get', a:coll, a:this, a:1)
   else

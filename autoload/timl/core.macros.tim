@@ -2,7 +2,7 @@
 
 (def (defmacro name & fdecl)
   `(let* [fn# (def ~name (fn* ~name ~@fdecl))]
-     (#*extend (#*get g:timl#lambdas (str fn#)) (dict "macro" 1))
+     (set! (. (#*get g:timl#lambdas (#*join [fn#]) 69) macro) 1)
      fn#))
 (set! (. (#*get g:timl#lambdas "timl#core#defmacro") macro) 1)
 

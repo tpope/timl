@@ -411,7 +411,7 @@ function! timl#ns_for_file(file) abort
 endfunction
 
 function! timl#lookup(sym, ns) abort
-  let sym = a:sym[0]
+  let sym = type(a:sym) == type('') ? a:sym : a:sym[0]
   if sym =~# '^[#:].'
     return a:sym
   elseif sym =~# '^&.\|^\w:' && exists(sym)
