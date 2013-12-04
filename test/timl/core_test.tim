@@ -1,3 +1,4 @@
+(in-ns 'timl#core-test)
 (refer 'timl#test)
 
 (let [sentinel (dict)]
