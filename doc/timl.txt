@@ -39,8 +39,7 @@ Any sequence of identifier characters that doesn't look like a number.
 Identifier characters include alphanumeris and the special characters
 "-_?!*+/<>". "#" is also allowed in the middle of a symbol to refer to
 namespaced functions. ":" is reserved for internal use and can be used to
-refer to Vim variables (|b:var,| |w:var|, |t:var|, |g:var|, |v:var|) or to
-global functions not in a namespace (f:tr refers to |tr()|).
+refer to Vim variables (|b:var,| |w:var|, |t:var|, |g:var|, |v:var|).
 
 Lists ~
 Zero or more forms enclosed in parentheses.  Lists are just Vim |Lists|, not
@@ -118,6 +117,12 @@ Returns {form} unevaluated.
 `{form} ~
 Lisp quasiquoting with Clojure semantics.  Can contain unquote ("~") and
 unquote-splicing ("~@").
+
+                                                *timl-function*
+(function {form}) ~
+#*{form} ~
+Returns a |Funcref| to a built-in or user defined Vim function.  Can be called
+like any other function.
 
                                         *timl-try* *timl-catch* *timl-finally*
 (try {body} ... (catch {pattern} {e} {body} ...) ... (finally {body} ...) ...) ~
