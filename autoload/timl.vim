@@ -113,10 +113,6 @@ if !exists('g:timl#nil')
 endif
 
 function! timl#str(val) abort
-  return s:string(a:val)
-endfunction
-
-function! s:string(val) abort
   if type(a:val) == type('')
     return a:val
   elseif type(a:val) == type(function('tr'))
@@ -127,12 +123,12 @@ function! s:string(val) abort
     let _ = {'val': a:val}
     let acc = ''
     while timl#consp(_.val)
-      let acc .= s:string(timl#car(_.val)) . ','
+      let acc .= timl#str(timl#car(_.val)) . ','
       let _.val = timl#cdr(_.val)
     endwhile
     return acc
   elseif type(a:val) == type([])
-    return join(map(copy(a:val), 's:string(v:val)'), ',').','
+    return join(map(copy(a:val), 'timl#str(v:val)'), ',').','
   else
     return string(a:val)
   endif
@@ -216,12 +212,12 @@ endfor
 unlet! s:key
 
 function! timl#munge(var) abort
-  let var = s:string(a:var)
+  let var = timl#str(a:var)
   return tr(substitute(var, '[^[:alnum:]:#_-]', '\=get(s:munge,submatch(0), submatch(0))', 'g'), '-', '_')
 endfunction
 
 function! timl#demunge(var) abort
-  let var = s:string(a:var)
+  let var = timl#str(a:var)
   return tr(substitute(var, '_\(\u\+\)_', '\=get(s:demunge, submatch(0), submatch(0))', 'g'), '_', '-')
 endfunction
 
@@ -266,7 +262,7 @@ function! timl#l2env(f, args) abort
       let env[_.param[0]] = args[i]
     elseif type(_.param) == type([])
       for j in range(len(_.param))
-        let key = s:string(_.param[j])
+        let key = timl#str(_.param[j])
         if type(args[i]) == type([])
           let env[key] = get(args[i], j, g:timl#nil)
         elseif type(args[i]) == type({})
@@ -374,7 +370,7 @@ augroup END
 let s:ns = timl#symbol('#namespace')
 
 function! timl#create_ns(name, ...)
-  let name = s:string(a:name)
+  let name = timl#str(a:name)
   if !has_key(g:timl#namespaces, a:name)
     let g:timl#namespaces[a:name] = {'#tag': s:ns, 'referring': ['timl#core'], 'aliases': {}}
   endif
@@ -385,13 +381,13 @@ function! timl#create_ns(name, ...)
   let opts = a:1
   let _ = {}
   for _.refer in get(opts, 'referring', [])
-    let str = s:string(_.refer)
+    let str = timl#str(_.refer)
     if name !=# str && index(ns.referring, str) < 0
       call insert(ns.referring, str)
     endif
   endfor
   for [_.name, _.target] in items(get(opts, 'aliases', {}))
-    let ns.aliases[_.name] = s:string(_.target)
+    let ns.aliases[_.name] = timl#str(_.target)
   endfor
   return ns
 endfunction
@@ -484,10 +480,10 @@ function! timl#find(sym, ns) abort
     return env
   endif
   for refer in ns.referring
-    let target = timl#munge(s:string(refer).'#'.sym)
+    let target = timl#munge(timl#str(refer).'#'.sym)
     call timl#require(refer)
     if exists('*'.target) || exists('g:'.target)
-      return s:string(refer)
+      return timl#str(refer)
     endif
   endfor
   return g:timl#nil
@@ -573,7 +569,7 @@ function! timl#define_global(global, ...) abort
     let Val = g:timl#nil
   endif
   if type(Val) == type(function('tr'))
-    let orig_name = s:string(Val)
+    let orig_name = timl#str(Val)
     let file = s:file4ns(matchstr(a:global, '.*\ze#'))
     if has_key(g:timl#lambdas, orig_name)
       redir => source
