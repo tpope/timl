@@ -12,7 +12,7 @@
 
 (defn sort [xs & args]
   (if args
-    (f:sort (f:copy (first args)) (sorter xs) {})
-    (f:sort (f:copy xs))))
+    (#*sort (#*copy (first args)) (sorter xs) {})
+    (#*sort (#*copy xs))))
 
 (defn get-in [m ks] (reduce get m ks))

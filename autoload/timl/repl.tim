@@ -1,13 +1,13 @@
 (defn impl [fn]
   (if fn
-    (or (f:get timl#lambdas (str fn) nil)
+    (or (#*get timl#lambdas (str fn) nil)
         (try
-          (let [output     (capture (: "silent verbose function" (f:join [fn])))
-                raw        (f:split output "\n")
-                file       (f:expand (f:matchstr (second raw) #"\S\+$"))
+          (let [output     (capture (: "silent verbose function" (#*join [fn])))
+                raw        (#*split output "\n")
+                file       (#*expand (#*matchstr (second raw) #"\S\+$"))
                 definition (first raw)
-                name       ((comp symbol timl#demunge) (f:matchstr definition #" \zs\S\+\ze("))
-                arglist    (map (comp symbol timl#demunge) (f:split (f:matchstr definition #"(\zs.*\ze)") ", "))]
+                name       ((comp symbol timl#demunge) (#*matchstr definition #" \zs\S\+\ze("))
+                arglist    (map (comp symbol timl#demunge) (#*split (#*matchstr definition #"(\zs.*\ze)") ", "))]
             (filter (comp not nil? last) (dict "name" name "arglist" arglist "file" file)))
           (catch 123 e (dict))))))
 
@@ -17,8 +17,8 @@
      try catch finally])
 
 (defmacro doc [sym]
-  (let [topic (if (<= 0 (f:index special-forms sym))
+  (let [topic (if (<= 0 (#*index special-forms sym))
                 (str "timl-" sym))]
     `(do
-       (throw (str "timl#repl: exit help " (or ~topic (f:substitute (str ~sym) #"^\w\+\zs$" "(" ""))))
+       (throw (str "timl#repl: exit help " (or ~topic (#*substitute (str ~sym) #"^\w\+\zs$" "(" ""))))
        (throw "timl#repl: exit"))))

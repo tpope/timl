@@ -6,11 +6,11 @@
        (: "redir => g:timl_core_captured")
        ~@body
        (finally (: "redir END")))
-     (f:substitute g:timl_core_captured "^\n" "" "")))
+     (#*substitute g:timl_core_captured "^\n" "" "")))
 
 (defmacro include-guard [var]
   (let [string (timl#munge (str var))]
-   `(if (f:exists ~string)
+   `(if (#*exists ~string)
      (: "finish")
      (set! ~var 1))))
 
@@ -22,16 +22,16 @@
       (if (nil? x)
         s
         (recur
-          (if (symbol? x) (str s " " x) (str s (f:fnameescape (str x))))
+          (if (symbol? x) (str s " " x) (str s (#*fnameescape (str x))))
           (first more) (rest more))
         )) 1 -1))
 
 (defn extract-option-names [args]
-  (map (fn [x] (f:matchstr (str x) #"\%(inv\|no\)\=\zs\w\+")) (filter symbol? args)))
+  (map (fn [x] (#*matchstr (str x) #"\%(inv\|no\)\=\zs\w\+")) (filter symbol? args)))
 
 (defn extract-option-restore [args]
   (if-let [options (extract-option-names args)]
-    (str "setlocal " (f:join (map str options) "< ") "<")))
+    (str "setlocal " (#*join (map str options) "< ") "<")))
 
 (defmacro setlocal [& opts]
   `(: (str "setlocal " ~(build-option-string opts))))

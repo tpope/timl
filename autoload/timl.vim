@@ -443,8 +443,6 @@ function! timl#lookup(sym, ns, locals) abort
   let sym = a:sym[0]
   if sym =~# '^[#:].'
     return a:sym
-  elseif sym =~# '^f:' && exists('*'.sym[2:-1])
-    return function(sym[2:-1])
   elseif sym =~# '^&.\|^\w:' && exists(sym)
     return eval(sym)
   elseif sym =~# '^@.$'

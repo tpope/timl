@@ -2,9 +2,9 @@
 
 (def (defmacro name & fdecl)
   `(let* [fn# (def ~name (fn* ~name ~@fdecl))]
-     (f:extend (f:get timl#lambdas (str fn#)) (dict "macro" 1))
+     (#*extend (#*get timl#lambdas (str fn#)) (dict "macro" 1))
      fn#))
-(set! (. (f:get g:timl#lambdas "timl#core#defmacro") macro) 1)
+(set! (. (#*get g:timl#lambdas "timl#core#defmacro") macro) 1)
 
 (defmacro fn [& args] `(fn* ~@args))
 (defmacro let [& args] `(let* ~@args))
