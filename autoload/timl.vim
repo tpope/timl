@@ -43,6 +43,7 @@ endfunction
 
 " From clojure/lange/Compiler.java
 let s:munge = {
+      \ '.': "#",
       \ ',': "_COMMA_",
       \ ':': "_COLON_",
       \ '+': "_PLUS_",
@@ -76,7 +77,7 @@ unlet! s:key
 
 function! timl#munge(var) abort
   let var = timl#str(a:var)
-  return tr(substitute(var, '[^[:alnum:]:#_-]', '\=get(s:munge,submatch(0), submatch(0))', 'g'), '-', '_')
+  return tr(substitute(substitute(var, '[^[:alnum:]:#_-]', '\=get(s:munge,submatch(0), submatch(0))', 'g'), '_SLASH_\ze.', '#', ''), '-', '_')
 endfunction
 
 function! timl#demunge(var) abort
@@ -527,12 +528,12 @@ if !exists('g:timl#requires')
 endif
 
 function! timl#autoload(function) abort
-  let ns = matchstr(a:function, '.*\ze#')
+  let ns = matchstr(a:function, '.*\ze[#/].')
   call timl#require(ns)
 endfunction
 
 function! timl#require(ns) abort
-  let ns = a:ns
+  let ns = tr(a:ns, '#.-', '//_')
   if !has_key(g:timl#requires, ns)
     let g:timl#requires[ns] = 1
     call timl#load(ns)
@@ -540,7 +541,7 @@ function! timl#require(ns) abort
 endfunction
 
 function! timl#load(ns) abort
-  let base = tr(a:ns,'#-','/_')
+  let base = tr(a:ns,'#.-','//_')
   execute 'runtime! autoload/'.base.'.vim'
   for file in findfile('autoload/'.base.'.tim', &rtp, -1)
     call timl#source_file(file, tr(a:ns, '_', '-'))

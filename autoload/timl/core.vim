@@ -450,19 +450,24 @@ endfunction
 " }}}1
 " Section: Namespaces {{{1
 
-TLfunction! timl#core#in_ns(ns)
+TLfunction! timl#core#require(ns) abort
+  call timl#require(timl#str(a:ns))
+  return g:timl#nil
+endfunction
+
+TLfunction! timl#core#in_ns(ns) abort
   call timl#create_ns(timl#core#str(a:ns))
   let g:timl#core#_STAR_ns_STAR_ = timl#symbol(a:ns)
   return g:timl#core#_STAR_ns_STAR_
 endfunction
 
-TLfunction! timl#core#refer(ns)
+TLfunction! timl#core#refer(ns) abort
   let me = timl#core#str(g:timl#core#_STAR_ns_STAR_)
   call timl#create_ns(me, {'referring': [a:ns]})
   return g:timl#nil
 endfunction
 
-TLfunction! timl#core#alias(alias, ns)
+TLfunction! timl#core#alias(alias, ns) abort
   let me = timl#core#str(g:timl#core#_STAR_ns_STAR_)
   call timl#create_ns(me, {'aliases': {timl#core#str(a:alias): a:ns}})
   return g:timl#nil
