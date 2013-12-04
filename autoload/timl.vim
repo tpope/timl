@@ -387,12 +387,8 @@ function! timl#call(Func, args, ...) abort
   let dict = (a:0 && type(a:1) == type({})) ? a:1 : {'__fn__': a:Func}
   if type(a:Func) == type(function('tr'))
     return call(a:Func, a:args, dict)
-  elseif timl#symbolp(a:Func)
-    return call('timl#core#get', a:args[0:0] + [a:Func] + a:args[1:-1])
-  elseif timl#satisfiesp('timl#lang#ILookup', a:Func)
-    return call('timl#dispatch', ['timl#lang#ILookup', 'get', a:Func] + a:args)
   else
-    return call(a:Func, a:args, dict)
+    return call('timl#dispatch', ['timl#lang#IFn', 'invoke', a:Func] + a:args)
   endif
 endfunction
 

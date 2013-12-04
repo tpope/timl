@@ -29,7 +29,14 @@ let g:timl#vim#String = {
 
 " Section: Funcref
 
-let g:timl#vim#Funcref = {}
+function! s:funcall(this, args)
+  return call(a:this, a:args, {'__fn__': a:this})
+endfunction
+
+let g:timl#vim#Funcref = {
+      \ "implements":
+      \ {"timl#lang#IFn":
+      \   {"invoke": s:function('s:funcall')}}}
 
 " Section: List
 
@@ -45,7 +52,9 @@ let g:timl#vim#List = {
       \ {"timl#lang#Seqable":
       \    {"seq": function("timl#list2")},
       \  "timl#lang#ILookup":
-      \    {"get": s:function("s:list_get")}}}
+      \    {"get": s:function("s:list_get")},
+      \  "timl#lang#IFn":
+      \    {"invoke": s:function("s:list_get")}}}
 
 " Section: Dictionary
 
@@ -62,10 +71,14 @@ let g:timl#vim#Dictionary = {
       \ {"timl#lang#Seqable":
       \    {"seq": s:function("s:dict_seq")},
       \  "timl#lang#ILookup":
-      \    {"get": s:function("s:dict_get")}}}
+      \    {"get": s:function("s:dict_get")},
+      \  "timl#lang#IFn":
+      \    {"invoke": s:function("s:dict_get")}}}
 
 " Section: Float
 
 if has('float')
   let g:timl#vim#Float = {}
 endif
+
+" vim:set et sw=2:

@@ -9,7 +9,7 @@ function! s:function(name) abort
   return function(substitute(a:name,'^s:',matchstr(expand('<sfile>'), '.*\zs<SNR>\d\+_'),''))
 endfunction
 
-" Nil {{{1
+" Section: Nil
 
 function! s:identity(x)
   return a:x
@@ -29,8 +29,22 @@ let g:timl#lang#Nil = {
       \ "timl#lang#ILookup":
       \    {"get": s:function('s:nil_get')}}}
 
-" }}}1
-" Cons {{{1
+" Section: Symbol
+
+function! s:this_get(this, coll, ...)
+  if a:0
+    return timl#dispatch('timl#lang#ILookup', 'get', a:coll, a:this, a:1)
+  else
+    return timl#dispatch('timl#lang#ILookup', 'get', a:coll, a:this)
+  endif
+endfunction
+
+let g:timl#lang#Symbol = {
+      \ "implements":
+      \ {"timl#lang#IFn":
+      \    {"invoke": s:function('s:this_get')}}}
+
+" Section: Cons
 
 function! s:cons_car(cons)
   return a:cons.car
@@ -48,8 +62,7 @@ let g:timl#lang#Cons = {
       \    {"first": s:function('s:cons_car'),
       \     "rest": s:function('s:cons_cdr')}}}
 
-" }}}1
-" Hashes {{{1
+" Section: Hashes
 
 function! s:map_seq(hash)
   return timl#list2(map(filter(items(a:hash), 'v:val[0][0] !=# "#"'), '[timl#dekey(v:val[0]), v:val[1]]'))
@@ -64,7 +77,9 @@ let g:timl#lang#HashMap = {
       \ {"timl#lang#Seqable":
       \    {"seq": s:function('s:map_seq')},
       \  "timl#lang#ILookup":
-      \    {"get": s:function('s:map_get')}}}
+      \    {"get": s:function('s:map_get')},
+      \  "timl#lang#IFn":
+      \    {"invoke": s:function('s:map_get')}}}
 
 function! s:set_seq(hash)
   return timl#list2(map(filter(items(a:hash), 'v:val[0][0] !=# "#"'), 'v:val[1]'))
@@ -79,6 +94,8 @@ let g:timl#lang#HashSet = {
       \ {"timl#lang#Seqable":
       \    {"seq": s:function("s:set_seq")},
       \  "timl#lang#ILookup":
-      \    {"get": s:function('s:set_get')}}}
+      \    {"get": s:function('s:set_get')},
+      \  "timl#lang#IFn":
+      \    {"invoke": s:function('s:set_get')}}}
 
-" }}}1
+" vim:set et sw=2:
