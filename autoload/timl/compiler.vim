@@ -140,7 +140,7 @@ function! s:emit(file, context, ns, locals, x) abort
   endif
 
   let tmp = s:tempsym('invoke')
-  if timl#symbolp(F) && !has_key(a:locals, F[0])
+  if timl#symbolp(F) && !has_key(a:locals, F[0]) && F[0] !~# '^:'
     let Fn = timl#lookup(F, a:ns, {})
     let name = join([Fn])
     if type(Fn) == type(function('tr')) && get(get(g:timl#lambdas, name, {}), 'macro')
