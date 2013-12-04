@@ -335,7 +335,7 @@ function! timl#compiler#emit_syntax_quote(file, context, ns, locals, form, ...) 
     else
       let sym = a:form
     endif
-    return s:printfln(a:file, a:context, timl#compiler#serialize(timl#qualify(sym, a:ns, a:locals)))
+    return s:printfln(a:file, a:context, timl#compiler#serialize(timl#qualify(sym, a:ns)))
   elseif type(a:form) == type([])
     let tmp = s:tempsym('quasiquote')
     call s:println(a:file, 'let '.tmp.' = []')

@@ -469,11 +469,8 @@ function! timl#find(sym, ns) abort
   return g:timl#nil
 endfunction
 
-function! timl#qualify(sym, ns, locals)
+function! timl#qualify(sym, ns)
   let sym = type(a:sym) == type('') ? a:sym : a:sym[0]
-  if has_key(a:locals, sym)
-    return a:sym
-  endif
   let ns = timl#find(a:sym, a:ns)
   if type(ns) == type('')
     return timl#symbol(ns . '#' . sym)
