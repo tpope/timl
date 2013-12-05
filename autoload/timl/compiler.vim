@@ -99,6 +99,7 @@ let s:specials = {
       \ 'fn': 1,
       \ 'def': 1,
       \ ':': 1,
+      \ '.': 1,
       \ 'quote': 1,
       \ 'syntax-quote': 1,
       \ 'unquote': 1,
@@ -161,6 +162,8 @@ function! timl#compiler#eval(x, ...) abort
   return _dict.func(a:0 > 1 ? a:2 : {})
 endfunction
 
+let s:colon = timl#symbol(':')
+let s:dot = timl#symbol('.')
 function! s:emit(file, context, ns, locals, x) abort
   let _ = {}
   let x = a:x
@@ -211,8 +214,10 @@ function! s:emit(file, context, ns, locals, x) abort
   let rest = timl#cdr(x)
   let vec = timl#vec(rest)
 
-  if F is timl#symbol(':')
+  if F is s:colon
     return call('timl#compiler#emit__COLON_', [a:file, a:context, a:ns, a:locals] + vec)
+  elseif F is s:dot
+    return call('timl#compiler#emit__DOT_', [a:file, a:context, a:ns, a:locals] + vec)
   elseif timl#symbolp(F) && exists('*timl#compiler#emit_'.timl#munge(F))
     return call("timl#compiler#emit_".timl#munge(F), [a:file, a:context, a:ns, a:locals] + vec)
   endif
@@ -247,7 +252,7 @@ function! timl#compiler#emit_set_BANG_(file, context, ns, locals, var, value) ab
     if len(vec) == 3 && vec[0] is timl#symbol('.')
       let tmp = s:tempsym('setq')
       call s:emit(a:file, 'let '.tmp.'_coll =  %s', a:ns, a:locals, vec[1])
-      call s:emit(a:file, 'let '.tmp.'_coll['.timl#compiler#serialize(timl#str(vec[2])).'] =  %s', a:ns, a:locals, a:value)
+      call s:emit(a:file, 'let '.tmp.'_coll['.string(substitute(timl#str(vec[2]), '^-', '', '')).'] =  %s', a:ns, a:locals, a:value)
       return s:printfln(a:file, a:context, 'g:timl#nil')
     endif
   endif
@@ -398,6 +403,17 @@ function! timl#compiler#emit__COLON_(file, context, ns, locals, ...) abort
   call s:emit(a:file, 'let '.tmp." = %s", a:ns, a:locals, a:000)
   call s:println(a:file, "execute join(".tmp.", ' ')")
   return s:printfln(a:file, a:context, "g:timl#nil")
+endfunction
+
+function! timl#compiler#emit__DOT_(file, context, ns, locals, obj, fn, ...) abort
+  let tmp = s:tempsym('dot')
+  let fn = timl#str(a:fn)
+  call s:emit(a:file, 'let '.tmp."_obj = %s", a:ns, a:locals, a:obj)
+  if fn =~# '^-'
+    return s:printfln(a:file, a:context, tmp.'_obj['.string(fn[1:-1]).']')
+  endif
+  call s:emit(a:file, 'let '.tmp."_args = %s", a:ns, a:locals, a:000)
+  return s:printfln(a:file, a:context, 'timl#call('.tmp.'_obj['.string(timl#str(a:fn)).'], '.tmp.'_args, '.tmp.'_obj)')
 endfunction
 
 function! timl#compiler#emit_quote(file, context, ns, locals, form) abort

@@ -139,6 +139,10 @@ Pass the given {string} to |:throw|.
 (: {command}) ~
 Run the given string as an ex command.
 
+                                                *timl-.* *timl-dot*
+(. {dict} {key} {args}*) ~
+Call the given key of the given dict as a |Dictionary-function|.
+
 NAMESPACES                                      *timl-namespaces*
 
 Namespaces take the Clojure model and adapt it to fit the VimL |autoload|

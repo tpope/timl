@@ -248,7 +248,6 @@ function! timl#str(val) abort
   elseif type(a:val) == type([])
     return join(map(copy(a:val), 'timl#str(v:val)'), ',').','
   else
-    let g:wtf = a:val
     return string(a:val)
   endif
 endfunction
@@ -413,13 +412,13 @@ endif
 " }}}1
 " Section: Eval {{{1
 
-function! timl#call(Func, args) abort
+function! timl#call(Func, args, ...) abort
   if type(a:Func) == type(function('tr'))
-    return call(a:Func, a:args, {})
+    return call(a:Func, a:args, a:0 ? a:1 : {})
   elseif timl#functionp(a:Func)
-    return call(a:Func.call, a:args, a:Func)
+    return call(a:Func.call, (a:0 ? [a:1] : []) + a:args, a:Func)
   else
-    return call('timl#dispatch', ['timl#lang#IFn', 'invoke', a:Func] + a:args)
+    return call('timl#dispatch', ['timl#lang#IFn', 'invoke', a:Func] + (a:0 ? [a:1] : []) + a:args)
   endif
 endfunction
 
