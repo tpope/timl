@@ -32,16 +32,17 @@ if !exists('g:timl#symbols')
 endif
 
 function! timl#symbol(str)
-  let str = type(a:str) == type([]) ? a:str[0] : a:str
+  let str = type(a:str) == type({}) ? a:str[0] : a:str
   if !has_key(g:timl#symbols, str)
-    let g:timl#symbols[str] = s:freeze(str)
+    let g:timl#symbols[str] = {'0': str}
+    lockvar g:timl#symbols[str]
   endif
   return g:timl#symbols[str]
 endfunction
 
 function! timl#symbolp(symbol)
-  return type(a:symbol) == type([]) &&
-        \ len(a:symbol) == 1 &&
+  return type(a:symbol) == type({}) &&
+        \ has_key(a:symbol, 0) &&
         \ type(a:symbol[0]) == type('') &&
         \ get(g:timl#symbols, a:symbol[0], 0) is a:symbol
 endfunction
@@ -145,15 +146,15 @@ endfunction
 function! timl#type(val) abort
   let type = get(s:types, type(a:val), 'timl#vim#unknown')
   if type == 'timl#vim#List'
-    if timl#symbolp(a:val)
-      return 'timl#lang#Symbol'
-    elseif a:val is# g:timl#nil
+    if a:val is# g:timl#nil
       return 'timl#lang#Nil'
     elseif timl#symbolp(get(a:val, 0)) && a:val[0][0][0] ==# '#'
       return a:val[0][0][1:-1]
     endif
   elseif type == 'timl#vim#Dictionary'
-    if timl#symbolp(get(a:val, '#tag')) && a:val['#tag'][0][0] ==# '#'
+    if timl#symbolp(a:val)
+      return 'timl#lang#Symbol'
+    elseif timl#symbolp(get(a:val, '#tag')) && a:val['#tag'][0][0] ==# '#'
       return a:val['#tag'][0][1:-1]
     endif
   endif
