@@ -54,8 +54,6 @@ function! timl#compiler#lookup(sym, ns) abort
     let sym = timl#munge(sym)
     if exists('g:'.sym)
       return g:{sym}
-    elseif exists('*'.sym)
-      return function(sym)
     else
       throw 'timl: ' . sym . ' undefined'
     endif
@@ -63,11 +61,7 @@ function! timl#compiler#lookup(sym, ns) abort
   let ns = timl#compiler#find(sym, a:ns)
   if ns isnot# g:timl#nil
     let target = timl#munge(ns.'#'.sym)
-    if exists('*'.target)
-      return function(target)
-    else
-      return g:{target}
-    endif
+    return g:{target}
   endif
   throw 'timl: ' . sym . ' undefined'
 endfunction
