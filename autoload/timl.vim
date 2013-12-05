@@ -442,15 +442,18 @@ endfunction
 
 function! timl#source_file(filename, ...)
   let old_ns = g:timl#core#_STAR_ns_STAR_
+  let file = timl#reader#open(a:filename)
   try
     let ns = a:0 ? a:1 : timl#ns_for_file(fnamemodify(a:filename, ':p'))
     let g:timl#core#_STAR_ns_STAR_ = timl#symbol(ns)
-    for expr in timl#reader#read_file(a:filename)
-      call timl#eval(expr, ns)
-    endfor
+    let _ = {}
+    while !timl#reader#eofp(file)
+      call timl#eval(timl#reader#read(file), ns)
+    endwhile
   catch /^Vim\%((\a\+)\)\=:E168/
   finally
     let g:timl#core#_STAR_ns_STAR_ = old_ns
+    call timl#reader#close(file)
   endtry
 endfunction
 

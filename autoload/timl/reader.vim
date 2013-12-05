@@ -31,17 +31,17 @@ function! s:tokenize(str) abort
   return tokens
 endfunction
 
-function! s:eof(port)
+function! timl#reader#eofp(port)
   return a:port.pos >= len(a:port.str)
 endfunction
 
-let s:eof = []
+let g:timl#reader#eof = []
 
 function! timl#reader#read(port) abort
   let error = 'timl#reader: EOF'
   try
     let val = s:read(a:port)
-    if val isnot# s:eof
+    if val isnot# g:timl#reader#eof
       return val
     endif
   catch /^timl.*/
@@ -191,7 +191,7 @@ function! s:read(port, ...) abort
   elseif token =~# '^'.s:iskeyword || token =~# '^@.$'
     return timl#symbol(token)
   elseif empty(token)
-    return s:eof
+    return g:timl#reader#eof
   else
     let error = 'timl#reader: unexpected token '.string(token)
   endif
@@ -200,10 +200,19 @@ endfunction
 
 function! s:read_bang(port) abort
   let val = s:read(a:port)
-  if val isnot# s:eof
+  if val isnot# g:timl#reader#eof
     return val
   endif
   throw 'timl#reader: unexpected EOF'
+endfunction
+
+function! timl#reader#open(filename) abort
+  let str = join(readfile(a:filename), "\n")
+  return {'str': str, 'filename': a:filename, 'pos': 0}
+endfunction
+
+function! timl#reader#close(port)
+  return a:port
 endfunction
 
 function! timl#reader#read_all(port) abort
@@ -212,7 +221,7 @@ function! timl#reader#read_all(port) abort
   try
     while 1
       let _.form = s:read(a:port)
-      if _.form is# s:eof
+      if _.form is# g:timl#reader#eof
         return all
       endif
       call add(all, _.form)
