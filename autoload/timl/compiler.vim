@@ -450,20 +450,23 @@ function! timl#compiler#emit_try(file, context, ns, locals, ...) abort
   let _ = {}
   let tmp = s:tempsym('try')
   call s:println(a:file, 'try')
+  call s:println(a:file, 'let '.tmp.' = g:timl#nil')
+  let i = -1
   for i in range(a:0)
     let _.e = a:000[i]
-    if timl#car(_.e) is s:catch || timl#car(_.e) is s:finally
+    if timl#consp(_.e) && (timl#car(_.e) is s:catch || timl#car(_.e) is s:finally)
+      let i -= 1
       break
     endif
     call s:emit(a:file, 'let '.tmp.' = %s', a:ns, a:locals, _.e)
   endfor
   call s:printfln(a:file, a:context, tmp)
-  for i in range(i, a:0-1)
+  for i in range(i+1, a:0-1)
     let _.e = a:000[i]
-    if timl#car(_.e) is s:finally
+    if timl#consp(_.e) && timl#car(_.e) is s:finally
       call s:println(a:file, 'finally')
       call call('timl#compiler#emit_do', [a:file, 'let '.tmp.' = %s', a:ns, a:locals] + timl#vec(timl#cdr(_.e)))
-    elseif timl#car(_.e) is s:catch
+    elseif timl#consp(_.e) && timl#car(_.e) is s:catch
       let rest = timl#vec(timl#cdr(_.e))
       let _.pattern = rest[0]
       if type(_.pattern) == type(0)
@@ -477,6 +480,8 @@ function! timl#compiler#emit_try(file, context, ns, locals, ...) abort
       let locals[var[0]] = 1
       call call('timl#compiler#emit_do', [a:file, a:context, a:ns, locals] + rest[2:-1])
       call s:println(a:file, "call remove(locals, 0)")
+    else
+      throw 'timl#compiler: invalid form in try after first catch/finally'
     endif
   endfor
   return s:println(a:file, 'endtry')
