@@ -281,6 +281,7 @@ function! timl#compiler#emit_fn_STAR_(file, context, ns, locals, params, ...) ab
   let tmp = s:tempsym('fn')
   let locals = copy(a:locals)
   call s:println(a:file, "call insert(locals, copy(locals[0]))")
+  call s:println(a:file, "try")
   call s:println(a:file, "let ".tmp." = {'#tag': timl#intern_type('timl#lang#Function'), 'locals': locals[0], 'ns': ".string(a:ns)."}")
   if timl#symbolp(a:params)
     call s:println(a:file, "let locals[0][".string(a:params[0])."] = ".tmp)
@@ -308,7 +309,9 @@ function! timl#compiler#emit_fn_STAR_(file, context, ns, locals, params, ...) ab
   call s:println(a:file, "endwhile")
   call s:println(a:file, "endfunction")
   call s:printfln(a:file, a:context, tmp)
+  call s:println(a:file, "finally")
   call s:println(a:file, "call remove(locals, 0)")
+  return s:println(a:file, "endtry")
 endfunction
 
 let s:ampersand = timl#symbol('&')
@@ -337,7 +340,9 @@ function! s:emit_multifn(file, context, ns, locals, name, tmp, fns)
   call s:println(a:file, "endif")
   call s:println(a:file, "endfunction")
   call s:printfln(a:file, a:context, a:tmp)
+  call s:println(a:file, "finally")
   call s:println(a:file, "call remove(locals, 0)")
+  return s:println(a:file, "endtry")
 endfunction
 
 function! timl#compiler#emit_let_STAR_(file, context, ns, locals, bindings, ...) abort
@@ -345,6 +350,7 @@ function! timl#compiler#emit_let_STAR_(file, context, ns, locals, bindings, ...)
   let locals = copy(a:locals)
   let tmp = s:tempsym('let')
   call s:println(a:file, "let ".tmp." = copy(locals[0])")
+  call s:println(a:file, "try")
   call s:println(a:file, "call insert(locals, ".tmp.")")
   if type(a:bindings) == type([])
     if len(a:bindings) % 2 !=# 0
@@ -365,7 +371,9 @@ function! timl#compiler#emit_let_STAR_(file, context, ns, locals, bindings, ...)
     endfor
   endif
   call call('timl#compiler#emit_do', [a:file, a:context, a:ns, locals] + a:000)
-  return s:println(a:file, "call remove(locals, 0)")
+  call s:println(a:file, "finally")
+  call s:println(a:file, "call remove(locals, 0)")
+  return s:println(a:file, "endtry")
 endfunction
 
 function! timl#compiler#emit_do(file, context, ns, locals, ...) abort
@@ -477,11 +485,14 @@ function! timl#compiler#emit_try(file, context, ns, locals, ...) abort
       let var = rest[1]
       call s:println(a:file, 'catch /'._.pattern.'/')
       call s:println(a:file, "call insert(locals, copy(locals[0]))")
+      call s:println(a:file, "try")
       call s:println(a:file, "let locals[0][".string(var[0])."] = timl#build_exception(v:exception, v:throwpoint)")
       let locals = copy(a:locals)
       let locals[var[0]] = 1
       call call('timl#compiler#emit_do', [a:file, a:context, a:ns, locals] + rest[2:-1])
+      call s:println(a:file, "finally")
       call s:println(a:file, "call remove(locals, 0)")
+      call s:println(a:file, "endtry")
     else
       throw 'timl#compiler: invalid form in try after first catch/finally'
     endif
