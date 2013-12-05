@@ -93,10 +93,6 @@ TLfunction! timl#core#apply(f, x, ...) abort
   return timl#call(a:f, args)
 endfunction
 
-TLfunction! timl#core#throw(val) abort
-  throw a:val
-endfunction
-
 " }}}1
 " Section: IO {{{1
 

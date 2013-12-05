@@ -110,7 +110,7 @@ Set a Vim variable, in a manner similar to |:let|.  |g:var|, |b:var|, |w:var|,
                                                 *timl-quote*
 (quote {form}) ~
 '{form} ~
-Returns {form} unevaluated.
+Return {form} unevaluated.
 
                     *timl-syntax-quote* *timl-unquote* *timl-unquote-splicing*
 (syntax-quote {form}) ~
@@ -121,19 +121,23 @@ unquote-splicing ("~@").
                                                 *timl-function*
 (function {form}) ~
 #*{form} ~
-Returns a |Funcref| to a built-in or user defined Vim function.  Can be called
+Return a |Funcref| for a built-in or user defined Vim function.  Can be called
 like any other function.
 
                                         *timl-try* *timl-catch* *timl-finally*
 (try {body} ... (catch {pattern} {e} {body} ...) ... (finally {body} ...) ...) ~
-Wraps a set of forms in a |:try| block.  The {pattern} is a regexp to match
+Wrap a set of forms in a |:try| block.  The {pattern} is a regexp to match
 the string exception as explained under |:catch|, or can also be a Vim error
 number.  You can access |v:exception| and |v:throwpoint| for information about
 the exception, or look in dictionary {e}.
 
+                                                *timl-throw*
+(throw {string}) ~
+Pass the given {string} to |:throw|.
+
                                                 *timl-:* *timl-colon*
 (: {command}) ~
-Runs the given string as an ex command.
+Run the given string as an ex command.
 
 NAMESPACES                                      *timl-namespaces*
 

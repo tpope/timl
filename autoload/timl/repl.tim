@@ -1,7 +1,7 @@
 (def special-forms
   '[if do let fn def :
      quote syntax-quote unquote unquote-splicing function
-     try catch finally])
+     throw try catch finally])
 
 (defmacro doc [sym]
   (let [topic (if (<= 0 (#*index special-forms sym))

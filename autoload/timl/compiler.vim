@@ -110,6 +110,7 @@ let s:specials = {
       \ 'unquote': 1,
       \ 'unquote-splicing': 1,
       \ 'function': 1,
+      \ 'throw': 1,
       \ 'try': 1,
       \ 'catch': 1,
       \ 'finally': 1}
@@ -455,6 +456,10 @@ function! timl#compiler#emit_try(file, context, ns, locals, ...) abort
     endif
   endfor
   return s:println(a:file, 'endtry')
+endfunction
+
+function! timl#compiler#emit_throw(file, context, ns, locals, str) abort
+  call s:emit(a:file, "throw %s", a:ns, a:locals, a:str)
 endfunction
 
 " Section: Tests {{{1
