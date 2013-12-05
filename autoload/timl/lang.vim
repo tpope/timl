@@ -12,7 +12,7 @@ endfunction
 " Section: Lazy Seqs
 
 function! timl#lang#create_lazy_seq(fn)
-  let seq = {'#tag': timl#symbol('#timl#lang#LazySeq'), 'fn': a:fn}
+  let seq = {'#tag': timl#intern_type('timl#lang#LazySeq'), 'fn': a:fn}
   lockvar seq
   return seq
 endfunction

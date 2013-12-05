@@ -186,7 +186,7 @@ function! s:emit(file, context, ns, locals, x) abort
     let sym = s:tempsym('dict')
     call s:println(a:file, 'let '.sym." = {}")
     for [k, _.v] in items(x)
-      if timl#symbolp(get(x, '#tag')) && x['#tag'][0] =~# '^#'
+      if timl#objectp(x)
         if k =~# '^#'
           call s:emit(a:file, "let ".sym."[".timl#compiler#serialize(k)."] = %s", a:ns, a:locals, _.v)
         else
@@ -279,7 +279,7 @@ function! timl#compiler#emit_fn_STAR_(file, context, ns, locals, params, ...) ab
   let tmp = s:tempsym('fn')
   let locals = copy(a:locals)
   call s:println(a:file, "call insert(locals, copy(locals[0]))")
-  call s:println(a:file, "let ".tmp." = {'#tag': timl#symbol('#timl#lang#Function'), 'locals': locals[0], 'ns': ".string(a:ns)."}")
+  call s:println(a:file, "let ".tmp." = {'#tag': timl#intern_type('timl#lang#Function'), 'locals': locals[0], 'ns': ".string(a:ns)."}")
   if timl#symbolp(a:params)
     call s:println(a:file, "let locals[0][".string(a:params[0])."] = ".tmp)
     let locals[a:params[0]] = 1

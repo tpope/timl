@@ -22,7 +22,7 @@ function! timl#printer#string(x)
     return 'nil'
 
   elseif type == 'timl#lang#Function'
-    return '#<'.get(a:x, 'ns', '').'#'.get(a:x, 'name', '...').'>'
+    return '#<'.get(a:x, 'ns', '').'#'.get(a:x, 'name', '...').' '.join([a:x.call]).'>'
 
   elseif timl#consp(a:x)
     let acc = []
@@ -37,14 +37,7 @@ function! timl#printer#string(x)
     return '('.join(acc, ' ').')'
 
   elseif type(a:x) == type([])
-    if timl#symbolp(get(a:x, 0, '')) && a:x[0][0] =~# '^#'
-      let index = 1
-      let prefix = '#'.tr(a:x[0][0][1:-1], '#', '.') . ' '
-    else
-      let index = 0
-      let prefix = ''
-    endif
-    return prefix.'['.join(map(a:x[index : ], 'timl#printer#string(v:val)'), ' ') . ']'
+    return '['.join(map(a:x[:], 'timl#printer#string(v:val)'), ' ') . ']'
 
   elseif type == 'timl#vim#Dictionary'
     let acc = []
@@ -64,7 +57,7 @@ function! timl#printer#string(x)
     endfor
     return '#{' . join(acc, ' ') . '}'
 
-  elseif type !=# 'timl#vim#Dictionary' && timl#satisfiesp('timl#lang#Seqable', a:x)
+  elseif type !=# 'timl#vim#Dictionary' && type !=# 'timl#lang#HashMap' && timl#satisfiesp('timl#lang#Seqable', a:x)
     return timl#printer#string(timl#dispatch('timl#lang#Seqable', 'seq', a:x))
 
   elseif type(a:x) == type({})

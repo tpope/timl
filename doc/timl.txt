@@ -46,8 +46,8 @@ Zero or more forms enclosed in parentheses.  Lists are just Vim |Lists|, not
 actual linked lists.
 
 Dictionaries ~
-Vim |Dictionaries| are printed as a flat list of keys and values preceded by
-"#dict".  Keys must be strings.  To create a dictionary, use
+Vim |Dictionaries| are printed as a flat list of keys and values surrounded by
+#[ and ].  Keys must be strings.  To create a dictionary, use
 |timl#core#dict()|.
 
 Quoting ~

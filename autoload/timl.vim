@@ -24,6 +24,10 @@ function! timl#gensym(...)
   return timl#symbol((a:0 ? a:1 : 'G__').s:id)
 endfunction
 
+function! timl#truth(val) abort
+  return !(empty(a:val) || a:val is 0)
+endfunction
+
 " }}}1
 " Section: Symbols {{{1
 
@@ -59,7 +63,6 @@ let s:munge = {
       \ '~': "_TILDE_",
       \ '!': "_BANG_",
       \ '@': "_CIRCA_",
-      \ '#': "_SHARP_",
       \ "'": "_SINGLEQUOTE_",
       \ '"': "_DOUBLEQUOTE_",
       \ '%': "_PERCENT_",
@@ -134,27 +137,27 @@ let s:types = {
       \ 5: 'timl#vim#Float'}
 
 
-function! timl#truth(val) abort
-  return !(empty(a:val) || a:val is 0)
+function! timl#intern_type(type)
+  return timl#symbol('#'.a:type)
 endfunction
 
-let s:function = timl#symbol('#timl#lang#Function')
+function! timl#objectp(obj)
+  return type(a:obj) == type({}) && timl#symbolp(get(a:obj, '#tag')) && a:obj['#tag'][0][0] ==# '#'
+endfunction
+
+let s:function = timl#intern_type('timl#lang#Function')
 function! timl#functionp(val) abort
   return type(a:val) == type({}) && get(a:val, '#tag') is# s:function
 endfunction
 
 function! timl#type(val) abort
   let type = get(s:types, type(a:val), 'timl#vim#unknown')
-  if type == 'timl#vim#List'
-    if a:val is# g:timl#nil
-      return 'timl#lang#Nil'
-    elseif timl#symbolp(get(a:val, 0)) && a:val[0][0][0] ==# '#'
-      return a:val[0][0][1:-1]
-    endif
+  if type == 'timl#vim#List' && a:val is# g:timl#nil
+    return 'timl#lang#Nil'
   elseif type == 'timl#vim#Dictionary'
     if timl#symbolp(a:val)
       return 'timl#lang#Symbol'
-    elseif timl#symbolp(get(a:val, '#tag')) && a:val['#tag'][0][0] ==# '#'
+    elseif timl#objectp(a:val)
       return a:val['#tag'][0][1:-1]
     endif
   endif
@@ -275,7 +278,7 @@ endfunction
 " }}}1
 " Section: Lists {{{1
 
-let s:cons = timl#symbol('#timl#lang#Cons')
+let s:cons = timl#intern_type('timl#lang#Cons')
 
 function! timl#seq(coll) abort
   let seq = timl#dispatch("timl#lang#Seqable", "seq", a:coll)
@@ -342,7 +345,7 @@ endfunction
 " }}}1
 " Section: Namespaces {{{1
 
-let s:ns = timl#symbol('#namespace')
+let s:ns = timl#intern_type('timl#lang#Namespace')
 
 function! timl#create_ns(name, ...)
   let name = timl#str(a:name)
