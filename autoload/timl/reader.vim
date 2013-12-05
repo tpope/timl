@@ -148,6 +148,28 @@ function! s:read(port, ...) abort
   elseif token ==# '#_'
     call s:read(port)
     return s:read(port)
+  elseif token ==# '#('
+    if has_key(port, 'argsyms')
+      throw "timl#reader: can't nest #()"
+    endif
+    try
+      let port.argsyms = {}
+      let list = s:read_until(port, ')')
+      let rest = has_key(port.argsyms, '%&')
+      let args = map(range(1, len(port.argsyms) - rest), 'port.argsyms["%".v:val]')
+      if rest
+        call add(args, a:port.argsyms['%&'])
+      endif
+      return timl#list(timl#symbol('fn*'), args, timl#list2(list))
+    finally
+      unlet! a:port.argsyms
+    endtry
+  elseif token =~# '^%\d*$\|^%&$' && has_key(port, 'argsyms')
+    let token = (token ==# '%' ? '%1' : token)
+    if !has_key(port.argsyms, token)
+      let port.argsyms[token] = timl#gensym('p1__')
+    endif
+    return port.argsyms[token]
   elseif token =~# '^#\a'
     let next = s:read(port)
     unlockvar next

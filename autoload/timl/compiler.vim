@@ -128,15 +128,8 @@ function! timl#compiler#qualify(sym, ns)
   throw 'Could not resolve '.a:sym
 endfunction
 
-
-
-function! s:gensym(...)
-  let s:id = get(s:, 'id', 0) + 1
-  return (a:0 ? a:1 : 'G__').s:id
-endfunction
-
 function! s:tempsym(...)
-  return 'temp.'.s:gensym(a:0 ? a:1 : 'emit')
+  return 'temp.'.timl#gensym(a:0 ? a:1 : 'emit')[0]
 endfunction
 
 function! s:println(file, line)
@@ -399,7 +392,7 @@ function! timl#compiler#emit_syntax_quote(file, context, ns, locals, form, ...) 
   elseif timl#symbolp(a:form)
     if a:form[0] =~# '#$'
       if !has_key(gensyms, a:form[0])
-        let gensyms[a:form[0]] = timl#symbol(s:gensym(a:form[0][0:-2]))
+        let gensyms[a:form[0]] = timl#symbol(timl#gensym(a:form[0][0:-2])[0])
       endif
       let sym = gensyms[a:form[0]]
     else

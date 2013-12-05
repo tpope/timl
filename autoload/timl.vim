@@ -19,6 +19,11 @@ function! s:freeze(...) abort
   return a:000
 endfunction
 
+function! timl#gensym(...)
+  let s:id = get(s:, 'id', 0) + 1
+  return timl#symbol((a:0 ? a:1 : 'G__').s:id)
+endfunction
+
 " }}}1
 " Section: Symbols {{{1
 
