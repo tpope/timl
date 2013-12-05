@@ -26,12 +26,15 @@
           (cons f (filter pred r))
           (filter pred r))))))
 
-(defn concat [x y]
-  (lazy-seq
-    (let [s (seq x)]
-      (if s
-        (cons (first s) (concat (rest s) y))
-        y))))
+(defn concat
+  ([] (lazy-seq nil))
+  ([x] (lazy-seq x))
+  ([x y]
+   (lazy-seq
+     (let [s (seq x)]
+       (if s
+         (cons (first s) (concat (rest s) y))
+         y)))))
 
 (defn take [n coll]
   (lazy-seq
