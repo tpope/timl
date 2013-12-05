@@ -276,36 +276,66 @@ function! timl#compiler#emit_recur(file, context, ns, locals, ...) abort
 endfunction
 
 function! timl#compiler#emit_fn_STAR_(file, context, ns, locals, params, ...) abort
-  let sym = s:tempsym('fn')
-  call s:println(a:file, "let ".sym." = {'#tag': timl#symbol('#timl#lang#Function'), 'locals': locals[0], 'ns': ".string(a:ns)."}")
+  let tmp = s:tempsym('fn')
+  let locals = copy(a:locals)
+  call s:println(a:file, "call insert(locals, copy(locals[0]))")
+  call s:println(a:file, "let ".tmp." = {'#tag': timl#symbol('#timl#lang#Function'), 'locals': locals[0], 'ns': ".string(a:ns)."}")
   if timl#symbolp(a:params)
-    call s:println(a:file, "let ".sym.".name = ".string(a:params[0]))
-    let params = timl#vec(get(a:000, 0, []))
+    call s:println(a:file, "let locals[0][".string(a:params[0])."] = ".tmp)
+    let locals[a:params[0]] = 1
+    call s:println(a:file, "let ".tmp.".name = ".string(a:params[0]))
+    let params = get(a:000, 0, [])
     let body = a:000[1:-1]
   else
-    let params = timl#vec(a:params)
+    let params = a:params
     let body = a:000
   endif
-  call s:println(a:file, "let ".sym.".arglist = ".timl#compiler#serialize(params))
-  call s:println(a:file, "function! ".sym.".call(...) abort")
+  if timl#consp(params)
+    return s:emit_multifn(a:file, a:context, a:ns, locals, timl#symbolp(a:params) ? a:params : [], tmp, [params] + body)
+  endif
+  call s:println(a:file, "let ".tmp.".arglist = ".timl#compiler#serialize(params))
+  call s:println(a:file, "function! ".tmp.".call(...) abort")
   call s:println(a:file, "let temp = {}")
   call s:println(a:file, "let locals = [timl#arg2env(self.arglist, a:000, copy(self.locals))]")
-  if timl#symbolp(a:params)
-    call s:println(a:file, "let locals[0][timl#symbol(self.name)[0]] = self")
-  endif
   call s:println(a:file, "while 1")
-  let locals = copy(a:locals)
   let _ = {}
   for _.param in params
     let locals[timl#str(_.param)] = 1
   endfor
-  if timl#symbolp(a:params)
-    let locals[a:params[0]] = 1
-  endif
   call call('timl#compiler#emit_do', [a:file, "return %s", a:ns, locals] + body)
   call s:println(a:file, "endwhile")
   call s:println(a:file, "endfunction")
-  return s:printfln(a:file, a:context, sym)
+  call s:printfln(a:file, a:context, tmp)
+  call s:println(a:file, "call remove(locals, 0)")
+endfunction
+
+let s:ampersand = timl#symbol('&')
+function! s:emit_multifn(file, context, ns, locals, name, tmp, fns)
+  let _ = {}
+  let dispatch = {}
+  for fn in a:fns
+    let _.args = timl#car(fn)
+    let arity = get(_.args, -2) is# s:ampersand ? 1-len(_.args) : len(_.args)
+    let dispatch[arity < 0 ? 30-arity : 10 + arity] = arity
+    call call('timl#compiler#emit_fn_STAR_', [a:file, "let ".a:tmp."[".string(arity)."] = %s", a:ns, a:locals, _.args] + timl#vec(timl#cdr(fn)))
+  endfor
+  call s:println(a:file, "function! ".a:tmp.".call(...) abort")
+  call s:println(a:file, "if 0")
+  for arity in map(sort(keys(dispatch)), 'dispatch[v:val]')
+    if arity < 0
+      call s:println(a:file, "elseif len(a:000) >= ".(-1 - arity))
+      call s:println(a:file, "return call(self[".arity."].call, a:000, self[".arity."])")
+    else
+      call s:println(a:file, "elseif len(a:000) == ".arity)
+    endif
+    call s:println(a:file, "return call(self[".arity."].call, a:000, self[".arity."])")
+  endfor
+  call s:println(a:file, "else")
+  call s:println(a:file, "throw 'timl: arity error'")
+  call s:println(a:file, "endif")
+  call s:println(a:file, "endfunction")
+  call s:printfln(a:file, a:context, a:tmp)
+  call s:println(a:file, "call remove(locals, 0)")
 endfunction
 
 function! timl#compiler#emit_let_STAR_(file, context, ns, locals, bindings, ...) abort

@@ -19,15 +19,15 @@
   (let [bindings (partition 2 flat)]
     `((fn ~(map first bindings) ~@body) ~@(map (fn [x] (first (rest x))) bindings))))
 
-(defmacro or [x & xs]
-  (if (seq xs)
-    `(let [or# ~x] (if or# or# (or ~@xs)))
-    x))
+(defmacro or
+  ([] nil)
+  ([x] x)
+  ([x & xs] `(let [or# ~x] (if or# or# (or ~@xs)))))
 
-(defmacro and [x & xs]
-  (if (seq xs)
-    `(let [and# ~x] (if and# (and ~@xs) and#))
-    x))
+(defmacro and
+  ([] true)
+  ([x] x)
+  ([x & xs] `(let [and# ~x] (if and# (and ~@xs) and#))))
 
 (defmacro when [test & body]
   `(if ~test (do ~@body)))
