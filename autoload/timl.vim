@@ -280,9 +280,33 @@ endfunction
 
 let s:cons = timl#intern_type('timl#lang#Cons')
 
+let s:ary = type([])
+
 function! timl#seq(coll) abort
   let seq = timl#dispatch("timl#lang#Seqable", "seq", a:coll)
   return empty(seq) ? g:timl#nil : seq
+endfunction
+
+function! timl#first(coll) abort
+  return type(a:coll) == s:ary ? get(a:coll, 0, g:timl#nil) :
+        \ timl#dispatch('timl#lang#ISeq', 'first', timl#core#seq(a:coll))
+endfunction
+
+function! timl#rest(coll) abort
+  return timl#dispatch('timl#lang#ISeq', 'rest', timl#core#seq(a:coll))
+endfunction
+
+function! timl#next(coll) abort
+  let rest = timl#rest(a:coll)
+  return empty(rest) ? g:timl#nil : rest
+endfunction
+
+function! timl#get(coll, key, ...) abort
+  if a:0
+    return timl#dispatch('timl#lang#ILookup', 'get', a:coll, a:key, a:1)
+  else
+    return timl#dispatch('timl#lang#ILookup', 'get', a:coll, a:key)
+  endif
 endfunction
 
 function! timl#consp(obj) abort
@@ -301,6 +325,16 @@ function! timl#cons(car, cdr) abort
   else
   endif
   throw 'timl: not seqable'
+endfunction
+
+function! timl#count(seq) abort
+  let i = 0
+  let _ = {'seq': a:seq}
+  while timl#consp(_.seq)
+    let i += 1
+    let _.seq = timl#cdr(_.seq)
+  endwhile
+  return i + len(_.seq)
 endfunction
 
 function! timl#car(cons) abort
@@ -472,6 +506,7 @@ function! timl#require(ns) abort
     let g:timl#requires[ns] = 1
     call timl#load(ns)
   endif
+  return g:timl#nil
 endfunction
 
 function! timl#load(ns) abort

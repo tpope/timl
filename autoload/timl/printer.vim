@@ -28,8 +28,8 @@ function! timl#printer#string(x)
     let acc = []
     let _ = {'x': a:x}
     while !empty(timl#seq(_.x))
-      call add(acc, timl#printer#string(timl#core#first(_.x)))
-      let _.x = timl#core#rest(_.x)
+      call add(acc, timl#printer#string(timl#first(_.x)))
+      let _.x = timl#rest(_.x)
     endwhile
     if _.x isnot# g:timl#nil
       call extend(acc, ['.', timl#printer#string(_.x)])
