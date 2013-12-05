@@ -109,16 +109,18 @@ let s:specials = {
       \ 'catch': 1,
       \ 'finally': 1}
 
-function! timl#compiler#qualify(sym, ns)
+function! timl#compiler#resolve(sym, ns)
   let sym = type(a:sym) == type('') ? a:sym : a:sym[0]
   if has_key(s:specials, sym) || sym =~# '^\w:'
     return sym
   elseif sym =~# '#' && exists('g:'.timl#munge(sym))
     return 'g:'.sym
+  elseif sym =~# '^&\w' && exists(sym)
+    return sym
   endif
   let ns = timl#compiler#find(a:sym, a:ns)
   if type(ns) == type('')
-    return timl#symbol('g:' . ns . '#' . sym)
+    return 'g:' . timl#munge(ns . '#' . sym)
   endif
   throw 'Could not resolve '.a:sym
 endfunction
@@ -168,7 +170,7 @@ function! s:emit(file, context, ns, locals, x) abort
     elseif x[0] =~# '^[:#]'
       return s:printfln(a:file, a:context, timl#compiler#serialize(x))
     else
-      return s:printfln(a:file, a:context, timl#munge(timl#compiler#qualify(x[0], a:ns)))
+      return s:printfln(a:file, a:context, timl#compiler#resolve(x[0], a:ns))
     endif
 
   elseif x is# g:timl#nil
