@@ -37,30 +37,8 @@ command! -bang -nargs=1 TLpredicate TLexpr <args> ? s:true : s:false
 
 " Section: Types {{{1
 
-TLexpr type(val) timl#symbol(timl#type(a:val))
 TLpredicate nil_QMARK_(val)     a:val is# g:timl#nil
-TLpredicate symbol_QMARK_(obj)  timl#symbolp(a:obj)
-TLpredicate str_QMARK_(obj)     type(a:obj) == type('')
-
-TLalias symbol timl#symbol
-
-TLfunction! str(...) abort
-  let acc = ''
-  let _ = {}
-  for _.x in a:000
-    if timl#symbolp(_.x)
-      let acc .= substitute(_.x[0], '^:', '', '')
-    elseif type(_.x) == type('')
-      let acc .= _.x
-    elseif type(_.x) == type(function('tr'))
-      return substitute(join([_.x]), '[{}]', '', 'g')
-    else
-      let acc .= string(_.x)
-    endif
-  endfor
-  return acc
-endfunction
-
+TLexpr type(val) timl#symbol(timl#type(a:val))
 " }}}1
 " Section: Functional {{{1
 
@@ -80,15 +58,61 @@ endfunction
 " }}}1
 " Section: IO {{{1
 
-TLfunction! echo(...) abort
+TLfunction echon(...)
+  echon call('timl#core#str', a:000, {})
+  return g:timl#nil
+endfunction
+
+TLfunction echo(...)
   echo call('timl#core#str', a:000, {})
   return g:timl#nil
 endfunction
 
-TLfunction! echomsg(...) abort
+TLfunction echomsg(...)
   echomsg call('timl#core#str', a:000, {})
   return g:timl#nil
 endfunction
+
+TLfunction print(...)
+  echon call('timl#core#str', a:000, {})
+  return g:timl#nil
+endfunction
+
+TLfunction println(...)
+  echon call('timl#core#str', a:000, {})."\n"
+  return g:timl#nil
+endfunction
+
+TLfunction newline()
+  echon "\n"
+  return g:timl#nil
+endfunction
+
+TLfunction printf(fmt, ...) abort
+  echon call('printf', [timl#str(a:fmt)] + a:000)."\n"
+  return g:timl#nil
+endfunction
+
+TLfunction pr(...)
+  echon join(map(copy(a:000), 'timl#printer#string(v:val)'), ' ')
+  return g:timl#nil
+endfunction
+
+TLfunction prn(...)
+  echon join(map(copy(a:000), 'timl#printer#string(v:val)'), ' ')."\n"
+  return g:timl#nil
+endfunction
+
+TLfunction spit(filename, body)
+  if type(body) == type([])
+    call writefile(body, a:filename)
+  else
+    call writefile(split(body, "\n"), a:filename, 'b')
+endfunction
+
+TLexpr slurp(filename) join(readfile(a:filename, 'b'), "\n")
+
+TLalias read_string timl#reader#read_string
 
 " }}}1
 " Section: Equality {{{1
@@ -255,6 +279,44 @@ TLfunction _EQ__EQ_(x, ...)
   endfor
   return s:true
 endfunction
+
+" }}}1
+" Section: Strings {{{1
+
+TLpredicate str_QMARK_(obj)     type(a:obj) == type('')
+TLpredicate symbol_QMARK_(obj)  timl#symbolp(a:obj)
+TLpredicate keyword_QMARK_(obj)  timl#symbolp(a:obj) && a:obj[0][0] ==# ':'
+
+TLalias symbol timl#symbol
+TLexpr keyword(ns, ...) timl#symbol(substitute(
+      \ a:0 ? timl#str(a:ns) . '#' . substitute(timl#str(a:1), '^:', '', '') : timl#str(a:ns),
+      \ '^:\=', ':', ''))
+
+TLexpr pr_str(...) join(map(copy(a:000), 'timl#printer#string(v:val)'), ' ')
+TLexpr prn_str(...) join(map(copy(a:000), 'timl#printer#string(v:val)'), ' ')."\n"
+TLexpr print_str(...) join(map(copy(a:000), 'timl#str(v:val)'), ' ')
+TLexpr println_str(...) join(map(copy(a:000), 'timl#str(v:val)'), ' ')."\n"
+
+TLexpr str(...) join(map(copy(a:000), 'timl#str(v:val)'), '')."\n"
+TLexpr format(fmt, ...) call('printf', [timl#str(a:fmt)] + a:000)
+
+TLfunction subs(str, start, ...)
+  if a:0 && a:1 <= a:start
+    return ''
+  elseif a:0
+    return matchstr(a:str, '.\{,'.(a:1-a:start).'\}', byteidx(a:str, a:start))
+  else
+    return a:str[byteidx(a:str, a:start) :]
+  endif
+endfunction
+
+TLexpr join(sep_or_coll, ...)
+      \ join(map(copy(a:0 ? a:1 : a:sep_or_coll), 'timl#str(v:val)'), a:0 ? a:sep_or_coll : '')
+TLexpr split(s, re) split(a:s, '\C'.a:re)
+TLexpr replace(s, re, repl)     substitute(a:s, '\C'.a:re, a:repl, 'g')
+TLexpr replace_one(s, re, repl) substitute(a:s, '\C'.a:re, a:repl, '')
+TLexpr re_quote_replacement(re) escape(a:re, '\~')
+TLexpr re_find(re, s)           matchstr(a:s, '\C'.a:re)
 
 " }}}1
 " Section: Lists {{{1

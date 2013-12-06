@@ -63,3 +63,14 @@
           `(~(first form) ~x ~@(rest form))
           (list form x))))
     x))
+
+; does not nest
+(defmacro with-out-str [& body]
+  `(do
+     (try
+       (set! l:TimLfn (fn [] ~@body))
+       (: "redraw")
+       (: "redir => l:TimLcaptured")
+       (: "silent call timl#call(l:TimLfn, [])")
+       (finally (: "unlet! l:TimLfn") (: "redir END")))
+     (#*substitute l:TimLcaptured "^\n" "" "g")))

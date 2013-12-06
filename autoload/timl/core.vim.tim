@@ -1,13 +1,5 @@
 (in-ns 'timl#core)
 
-(defmacro capture [& body]
-  `(do
-     (try
-       (: "redir => g:timl_core_captured")
-       ~@body
-       (finally (: "redir END")))
-     (#*substitute g:timl_core_captured "^\n" "" "")))
-
 (defmacro include-guard [var]
   (let [string (#*timl#munge (str var))]
    `(if (#*exists ~string)
@@ -31,7 +23,7 @@
 
 (defn extract-option-restore [args]
   (if-let [options (extract-option-names args)]
-    (str "setlocal " (#*join (map str options) "< ") "<")))
+    (str "setlocal " (#*join (vec (map str options)) "< ") "<")))
 
 (defmacro setlocal [& opts]
   `(: (str "setlocal " ~(build-option-string opts))))

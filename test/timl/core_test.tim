@@ -4,4 +4,4 @@
 (let [sentinel (dict)]
   (assert (identical? sentinel ((constantly sentinel)))))
 
-(assert (= "42" (capture (: "silent echo 42"))))
+(assert (= "42\n" (with-out-str (println 42))))

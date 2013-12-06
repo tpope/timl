@@ -57,6 +57,15 @@ function! timl#printer#string(x)
     endfor
     return '#{' . join(acc, ' ') . '}'
 
+  elseif type !=# 'timl#vim#Dictionary' && type !=# 'timl#lang#HashMap' && timl#satisfiesp('timl#lang#ISeq', a:x)
+    let _ = {'seq': a:x}
+    let output = []
+    while !empty(_.seq)
+      call add(output, timl#printer#string(timl#first(_.seq)))
+      let _.seq = timl#next(_.seq)
+    endwhile
+    return '('.join(output, ' ').')'
+
   elseif type !=# 'timl#vim#Dictionary' && type !=# 'timl#lang#HashMap' && timl#satisfiesp('timl#lang#Seqable', a:x)
     return timl#printer#string(timl#dispatch('timl#lang#Seqable', 'seq', a:x))
 
