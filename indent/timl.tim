@@ -1,1 +1,2 @@
+(in-ns 'indent#timl)
 (: "runtime! indent/clojure.vim")

@@ -1,3 +1,4 @@
+(in-ns 'ftplugin#timl)
 (refer 'timl#ftplugin)
 (include-guard)
 
