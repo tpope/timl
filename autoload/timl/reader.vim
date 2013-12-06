@@ -8,7 +8,7 @@ let g:autoloaded_timl_reader = 1
 let s:iskeyword = '[[:alnum:]_=?!#$%&*+|./<>:-]'
 
 function! s:read_token(port) abort
-  let pat = '^\%(#"\%(\\\@<!\%(\\\\\)*\\"\|[^"]\)*"\|#[[:punct:]]\|"\%(\\.\|[^"]\)*"\|[[:space:],]\|;.\{-\}\ze\%(\n\|$\)\|\~@\|'.s:iskeyword.'\+\|@.\|\\\%(space\|tab\|newline\|return\|.\)\|.\)'
+  let pat = '^\%(#"\%(\\\@<!\%(\\\\\)*\\"\|[^"]\)*"\|#[[:punct:]]\|"\%(\\.\|[^"]\)*"\|[[:space:],]\|;.\{-\}\ze\%(\n\|$\)\|\~@\|'.s:iskeyword.'\+\|\\\%(space\|tab\|newline\|return\|.\)\|.\)'
   let match = matchstr(a:port.str, pat, a:port.pos)
   let a:port.pos += len(match)
   while match =~# '^[[:space:],]'
@@ -62,6 +62,9 @@ function! s:read_until(port, char)
   throw 'timl#reader: unexpected EOF at byte ' . a:port.pos
 endfunction
 
+if !exists('g:timl#nil')
+  runtime! autoload/timl.vim
+endif
 let s:constants = {
       \ 'nil': g:timl#nil,
       \ 'false': g:timl#false,
@@ -183,8 +186,10 @@ function! s:read(port, ...) abort
     endif
   elseif token =~# '^:'
     return timl#keyword(token[1:-1])
-  elseif token =~# '^'.s:iskeyword || token =~# '^@.$'
+  elseif token =~# '^'.s:iskeyword
     return timl#symbol(token)
+  elseif token ==# '@'
+    return timl#list(timl#symbol('timl.core/deref'), s:read_bang(port))
   elseif empty(token)
     return g:timl#reader#eof
   else
