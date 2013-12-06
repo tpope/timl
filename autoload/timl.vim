@@ -168,6 +168,12 @@ let s:types = {
       \ 4: 'timl#vim#Dictionary',
       \ 5: 'timl#vim#Float'}
 
+function! timl#meta(obj)
+  if timl#objectp(a:obj)
+    return get(a:obj, '#meta', g:timl#nil)
+  endif
+  return g:timl#nil
+endfunction
 
 function! timl#objectp(obj)
   return type(a:obj) == type({}) && timl#keywordp(get(a:obj, '#tag')) && a:obj['#tag'][0][0] ==# '#'

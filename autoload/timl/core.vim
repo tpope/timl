@@ -35,10 +35,11 @@ command! -bang -nargs=1 TLexpr
 
 command! -bang -nargs=1 TLpredicate TLexpr <args> ? s:true : s:false
 
-" Section: Types {{{1
+" Section: Misc {{{1
 
-TLpredicate nil_QMARK_(val)     a:val is# g:timl#nil
+TLpredicate nil_QMARK_(val) a:val is# g:timl#nil
 TLexpr type(val) timl#symbol(timl#type(a:val))
+TLalias meta timl#meta
 
 " }}}1
 " Section: Functional {{{1
