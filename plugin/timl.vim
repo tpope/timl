@@ -28,7 +28,7 @@ function! s:load_filetype(ft) abort
   for kind in ['ftplugin', 'indent']
     for file in findfile(kind.'/'.ft.'.tim', &rtp, -1)
       try
-        call timl#source_file(file, kind.'#'.ft)
+        call timl#source_file(file)
       catch
         echohl WarningMSG
         echo v:exception . ' (' . v:throwpoint .')'
@@ -54,15 +54,19 @@ function! s:file4ns(ns) abort
 endfunction
 
 function! s:autoload(function) abort
-  let ns = matchstr(a:function, '.*\ze#')
+  let ns = tr(matchstr(a:function, '.*\ze#'), '_', '-')
+  let base = tr(ns, '#-', '/_')
 
   if !has_key(g:timl#requires, ns)
-    let g:timl#requires[ns] = 1
-    for file in findfile('autoload/'.tr(ns,'#','/').'.tim', &rtp, -1)
-      call timl#source_file(file, tr(ns, '_', '-'))
-      " drop to run all if include guards are added
-      break
-    endfor
+    if !empty(findfile('autoload/'.base.'.vim'))
+      let g:timl#requires[ns] = 1
+    else
+      for file in findfile('autoload/'.base.'.tim', &rtp, -1)
+        call timl#source_file(file))
+        let g:timl#requires[ns] = 1
+        break
+      endfor
+    endif
   endif
   if has_key(g:, a:function) && timl#satisfiesp('timl#lang#IFn', g:{a:function})
     let body = ["function ".a:function."(...)",
@@ -88,7 +92,10 @@ function! s:repl(...) abort
       let guess = 'user'
     endif
     let g:timl#core#_STAR_ns_STAR_ = timl#symbol(a:0 ? a:1 : guess)
-    call timl#core#refer(timl#symbol('timl#repl'))
+    if timl#name(g:timl#core#_STAR_ns_STAR_) == 'user'
+      call timl#require('timl#repl')
+      call timl#core#refer('timl#repl')
+    endif
     let input = input(g:timl#core#_STAR_ns_STAR_[0].'=> ', '', cmpl)
     if input =~# '^:q\%[uit]'
       return ''

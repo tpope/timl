@@ -496,7 +496,7 @@ endfunction
 " }}}1
 " Section: Namespaces {{{1
 
-TLexpr require(ns)  timl#require(timl#str(a:ns))
+TLalias require timl#require
 
 TLfunction! in_ns(ns) abort
   call timl#create_ns(timl#str(a:ns))
@@ -508,6 +508,11 @@ TLfunction! refer(ns) abort
   let me = timl#str(g:timl#core#_STAR_ns_STAR_)
   call timl#create_ns(me, {'referring': [a:ns]})
   return g:timl#nil
+endfunction
+
+TLfunction! use(ns) abort
+  call timl#require(a:ns)
+  return g:timl#core#refer.call(a:ns)
 endfunction
 
 TLfunction! alias(alias, ns) abort
@@ -524,10 +529,10 @@ delcommand TLexpr
 delcommand TLpredicate
 unlet s:dict
 
-call timl#source_file(expand('<sfile>:r') . '.macros.tim', 'timl#core')
-call timl#source_file(expand('<sfile>:r') . '.basics.tim', 'timl#core')
-call timl#source_file(expand('<sfile>:r') . '.seq.tim', 'timl#core')
-call timl#source_file(expand('<sfile>:r') . '.coll.tim', 'timl#core')
-call timl#source_file(expand('<sfile>:r') . '.vim.tim', 'timl#core')
+call timl#source_file(expand('<sfile>:r') . '.macros.tim')
+call timl#source_file(expand('<sfile>:r') . '.basics.tim')
+call timl#source_file(expand('<sfile>:r') . '.seq.tim')
+call timl#source_file(expand('<sfile>:r') . '.coll.tim')
+call timl#source_file(expand('<sfile>:r') . '.vim.tim')
 
 " vim:set et sw=2:

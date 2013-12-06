@@ -19,6 +19,11 @@
   (let [bindings (partition 2 flat)]
     `((fn ~(map first bindings) ~@body) ~@(map (fn [x] (first (rest x))) bindings))))
 
+(defmacro ns [name]
+  `(do
+     (in-ns '~name)
+     (refer 'timl#core)))
+
 (defmacro or
   ([] nil)
   ([x] x)

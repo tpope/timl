@@ -1,4 +1,4 @@
-(in-ns 'timl#test)
+(ns timl#test)
 
 (defmacro assert [form]
   `(try

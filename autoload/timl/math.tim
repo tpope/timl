@@ -1,4 +1,4 @@
-(in-ns 'timl#math)
+(ns timl#math)
 
 (defn fact [x]
   (loop [n x

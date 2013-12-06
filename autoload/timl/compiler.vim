@@ -50,7 +50,6 @@ function! timl#compiler#lookup(sym, ns) abort
   elseif sym =~# '^@.$'
     return eval(sym)
   elseif sym =~# '.#'
-    call timl#autoload(sym)
     let sym = timl#munge(sym)
     if exists('g:'.sym)
       return g:{sym}
@@ -69,7 +68,6 @@ endfunction
 function! timl#compiler#find(sym, ns) abort
   let sym = type(a:sym) == type('') ? a:sym : a:sym[0]
   let env = a:ns
-  call timl#require(env)
   let ns = timl#create_ns(env)
   if sym =~# './.'
     let alias = matchstr(sym, '.*\ze/')
@@ -84,7 +82,6 @@ function! timl#compiler#find(sym, ns) abort
   endif
   for refer in ns.referring
     let target = timl#munge(timl#str(refer).'#'.sym)
-    call timl#require(refer)
     if exists('g:'.target)
       return timl#str(refer)
     endif

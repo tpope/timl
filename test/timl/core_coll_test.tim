@@ -1,5 +1,5 @@
-(in-ns 'timl#core-coll-test)
-(refer 'timl#test)
+(ns timl#core-coll-test)
+(use 'timl#test)
 
 (assert (= 3 (count (list 1 2 3))))
 (assert (= 1 (count (dict "a" "b"))))

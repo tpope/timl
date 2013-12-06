@@ -85,12 +85,12 @@ endfor
 unlet! s:key
 
 function! timl#munge(var) abort
-  let var = timl#str(a:var)
+  let var = timl#name(a:var)
   return tr(substitute(substitute(var, '[^[:alnum:]:#_-]', '\=get(s:munge,submatch(0), submatch(0))', 'g'), '_SLASH_\ze.', '#', ''), '-', '_')
 endfunction
 
 function! timl#demunge(var) abort
-  let var = timl#str(a:var)
+  let var = timl#name(a:var)
   return tr(substitute(var, '_\(\u\+\)_', '\=get(s:demunge, submatch(0), submatch(0))', 'g'), '_', '-')
 endfunction
 
@@ -229,6 +229,16 @@ if !exists('g:timl#nil')
   let g:timl#true = 1
   lockvar g:timl#nil g:timl#false g:timl#true
 endif
+
+function! timl#name(val) abort
+  if type(a:val) == type('')
+    return a:val
+  elseif timl#symbolp(a:val)
+    return substitute(a:val[0], '^:', '', '')
+  else
+    throw "timl: no name for ".timl#type(a:val)
+  endif
+endfunction
 
 function! timl#str(val) abort
   if type(a:val) == type('')
@@ -503,15 +513,14 @@ function! timl#rep(...) abort
   return timl#printer#string(call('timl#re', a:000))
 endfunction
 
-function! timl#source_file(filename, ...)
+function! timl#source_file(filename)
   let old_ns = g:timl#core#_STAR_ns_STAR_
   let file = timl#reader#open(a:filename)
   try
-    let ns = a:0 ? a:1 : timl#ns_for_file(fnamemodify(a:filename, ':p'))
-    let g:timl#core#_STAR_ns_STAR_ = timl#symbol(ns)
+    let g:timl#core#_STAR_ns_STAR_ = timl#symbol('user')
     let _ = {}
     while !timl#reader#eofp(file)
-      call timl#eval(timl#reader#read(file), ns)
+      call timl#eval(timl#reader#read(file), g:timl#core#_STAR_ns_STAR_[0])
     endwhile
   catch /^Vim\%((\a\+)\)\=:E168/
   finally
@@ -524,27 +533,29 @@ if !exists('g:timl#requires')
   let g:timl#requires = {}
 endif
 
-function! timl#autoload(function) abort
-  let ns = matchstr(a:function, '.*\ze[#/].')
-  call timl#require(ns)
-endfunction
-
 function! timl#require(ns) abort
-  let ns = tr(a:ns, '#.-', '//_')
+  let ns = timl#name(a:ns)
   if !has_key(g:timl#requires, ns)
-    let g:timl#requires[ns] = 1
     call timl#load(ns)
+    let g:timl#requires[ns] = 1
   endif
   return g:timl#nil
 endfunction
 
 function! timl#load(ns) abort
-  let base = tr(a:ns,'#.-','//_')
-  execute 'runtime! autoload/'.base.'.vim'
+  let base = tr(a:ns,'#-','/_')
+  if !empty(findfile('autoload/'.base.'.vim'))
+    execute 'runtime! autoload/'.base.'.vim'
+    return g:timl#nil
+  endif
   for file in findfile('autoload/'.base.'.tim', &rtp, -1)
-    call timl#source_file(file, tr(a:ns, '_', '-'))
+    call timl#source_file(file)
+    return g:timl#nil
   endfor
+  throw 'timl: could not load '.a:ns
 endfunction
+
+call timl#require('timl#core')
 
 " }}}1
 

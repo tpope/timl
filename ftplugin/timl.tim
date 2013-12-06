@@ -1,5 +1,5 @@
-(in-ns 'ftplugin#timl)
-(refer 'timl#ftplugin)
+(ns ftplugin#timl)
+(use 'timl#ftplugin)
 (include-guard)
 
 (setlocal comments=":;,:;;;,:;;,sr:#|,mb:|,ex:|#" commentstring=";%s")

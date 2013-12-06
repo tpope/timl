@@ -7,8 +7,6 @@ let g:autoloaded_timl_reader = 1
 
 let s:iskeyword = '[[:alnum:]_=?!#$%&*+|./<>:-]'
 
-let g:timl#reader#tag_handlers = {}
-
 function! s:read_token(port) abort
   let pat = '^\%(#"\%(\\\@<!\%(\\\\\)*\\"\|[^"]\)*"\|#[[:punct:]]\|"\%(\\.\|[^"]\)*"\|[[:space:],]\|;.\{-\}\ze\%(\n\|$\)\|\~@\|'.s:iskeyword.'\+\|@.\|\\\%(space\|tab\|newline\|return\|.\)\|.\)'
   let match = matchstr(a:port.str, pat, a:port.pos)
@@ -178,12 +176,7 @@ function! s:read(port, ...) abort
     else
       let token = 'timl#lang'.token
     endif
-    call timl#autoload(token)
-    if has_key(g:timl#reader#tag_handlers, token)
-      return g:timl#reader#tag_handlers[token](next)
-    elseif type(next) == type([]) && !timl#symbolp(next)
-      return timl#lock(insert(next, timl#symbol(token)))
-    elseif type(next) == type({})
+    if type(next) == type({})
       return timl#lock(extend(next, {'#tag': timl#intern_type(token)}))
     else
       return timl#lock({'value': next, '#tag': timl#intern_type(token)})

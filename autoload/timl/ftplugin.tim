@@ -1,4 +1,5 @@
-(in-ns 'timl#ftplugin)
+(ns timl#ftplugin)
+
 (defmacro include-guard [& default]
   (let [param (or (first default) 'b:did-ftplugin)]
    `(timl#core#include-guard ~param)))

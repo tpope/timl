@@ -1,5 +1,5 @@
-(in-ns 'timl#core-test)
-(refer 'timl#test)
+(ns timl#core-test)
+(use 'timl#test)
 
 (let [sentinel (dict)]
   (assert (identical? sentinel ((constantly sentinel)))))

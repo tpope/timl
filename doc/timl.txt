@@ -148,7 +148,7 @@ NAMESPACES                                      *timl-namespaces*
 Namespaces take the Clojure model and adapt it to fit the VimL |autoload|
 feature.
 >
-        (in-ns 'foo#bar)
+        (ns foo#bar)
         (def baz 1)
         (in-ns 'user)
         foo#bar#baz            ; evaluates to 1

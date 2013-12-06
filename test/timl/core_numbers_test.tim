@@ -1,5 +1,5 @@
-(in-ns 'timl#core-numbers-test)
-(refer 'timl#test)
+(ns timl#core-numbers-test)
+(use 'timl#test)
 
 (assert (number? 3))
 (assert (number? 3.0))
