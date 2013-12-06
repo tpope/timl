@@ -62,13 +62,7 @@ function! s:read_until(port, char)
   throw 'timl#reader: unexpected EOF at byte ' . a:port.pos
 endfunction
 
-if !exists('g:timl#nil')
-  runtime! autoload/timl.vim
-endif
 let s:constants = {
-      \ 'nil': g:timl#nil,
-      \ 'false': g:timl#false,
-      \ 'true': g:timl#true,
       \ '\space': " ",
       \ '\tab': "\t",
       \ '\newline': "\n",
@@ -124,6 +118,12 @@ function! s:read(port, ...) abort
     return dict
   elseif has_key(s:constants, token)
     return s:constants[token]
+  elseif token ==# 'nil'
+    return g:timl#nil
+  elseif token ==# 'false'
+    return g:timl#false
+  elseif token ==# 'true'
+    return g:timl#true
   elseif token =~# '^\d\+e\d\+$'
     return eval(substitute(token, 'e', '.0e', ''))
   elseif token =~# '^\.\d'
