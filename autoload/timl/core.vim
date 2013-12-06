@@ -59,27 +59,27 @@ endfunction
 " Section: IO {{{1
 
 TLfunction echon(...)
-  echon call('timl#core#str', a:000, {})
+  echon join(map(copy(a:000), 'timl#str(v:val)'), ' ')
   return g:timl#nil
 endfunction
 
 TLfunction echo(...)
-  echo call('timl#core#str', a:000, {})
+  echo join(map(copy(a:000), 'timl#str(v:val)'), ' ')
   return g:timl#nil
 endfunction
 
 TLfunction echomsg(...)
-  echomsg call('timl#core#str', a:000, {})
+  echomsg join(map(copy(a:000), 'timl#str(v:val)'), ' ')
   return g:timl#nil
 endfunction
 
 TLfunction print(...)
-  echon call('timl#core#str', a:000, {})
+  echon join(map(copy(a:000), 'timl#str(v:val)'), ' ')
   return g:timl#nil
 endfunction
 
 TLfunction println(...)
-  echon call('timl#core#str', a:000, {})."\n"
+  echon join(map(copy(a:000), 'timl#str(v:val)'), ' ')."\n"
   return g:timl#nil
 endfunction
 
@@ -297,7 +297,7 @@ TLexpr prn_str(...) join(map(copy(a:000), 'timl#printer#string(v:val)'), ' ')."\
 TLexpr print_str(...) join(map(copy(a:000), 'timl#str(v:val)'), ' ')
 TLexpr println_str(...) join(map(copy(a:000), 'timl#str(v:val)'), ' ')."\n"
 
-TLexpr str(...) join(map(copy(a:000), 'timl#str(v:val)'), '')."\n"
+TLexpr str(...) join(map(copy(a:000), 'timl#str(v:val)'), '')
 TLexpr format(fmt, ...) call('printf', [timl#str(a:fmt)] + a:000)
 
 TLfunction subs(str, start, ...)
@@ -365,7 +365,7 @@ TLfunction! dict(...) abort
   endif
   let dict = {}
   for i in range(0, len(list)-1, 2)
-    let dict[timl#core#str(list[i])] = list[i+1]
+    let dict[timl#str(list[i])] = list[i+1]
   endfor
   return timl#lock(dict)
 endfunction
@@ -499,20 +499,20 @@ endfunction
 TLexpr require(ns)  timl#require(timl#str(a:ns))
 
 TLfunction! in_ns(ns) abort
-  call timl#create_ns(timl#core#str(a:ns))
+  call timl#create_ns(timl#str(a:ns))
   let g:timl#core#_STAR_ns_STAR_ = timl#symbol(a:ns)
   return g:timl#core#_STAR_ns_STAR_
 endfunction
 
 TLfunction! refer(ns) abort
-  let me = timl#core#str(g:timl#core#_STAR_ns_STAR_)
+  let me = timl#str(g:timl#core#_STAR_ns_STAR_)
   call timl#create_ns(me, {'referring': [a:ns]})
   return g:timl#nil
 endfunction
 
 TLfunction! alias(alias, ns) abort
-  let me = timl#core#str(g:timl#core#_STAR_ns_STAR_)
-  call timl#create_ns(me, {'aliases': {timl#core#str(a:alias): a:ns}})
+  let me = timl#str(g:timl#core#_STAR_ns_STAR_)
+  call timl#create_ns(me, {'aliases': {timl#str(a:alias): a:ns}})
   return g:timl#nil
 endfunction
 
