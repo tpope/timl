@@ -1,3 +1,4 @@
+(in-ns 'timl#core-numbers-test)
 (refer 'timl#test)
 
 (assert (number? 3))
