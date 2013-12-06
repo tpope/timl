@@ -55,7 +55,7 @@ function! timl#symbol(str)
 endfunction
 
 function! timl#keyword(str)
-  return timl#symbol(':'.timl#name(a:str))
+  return timl#symbol(':'.timl#str(a:str))
 endfunction
 
 function! timl#symbolp(symbol)
