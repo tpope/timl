@@ -11,8 +11,8 @@ function! timl#compiler#lookup(sym, ns) abort
   let sym = type(a:sym) == type('') ? a:sym : a:sym[0]
   if sym =~# '^[#:].'
     return a:sym
-  elseif sym =~# '^&.\|^\w:' && exists(sym)
-    return eval(sym)
+  elseif sym =~# '^&.\|^\w:' && exists(sym[0].timl#munge(sym[1:-1]))
+    return eval(sym[0].timl#munge(sym[1:-1]))
   elseif sym =~# '^@.$'
     return eval(sym)
   elseif sym =~# '/.'
@@ -79,8 +79,10 @@ let s:specials = {
 
 function! timl#compiler#resolve(sym, ns)
   let sym = type(a:sym) == type('') ? a:sym : a:sym[0]
-  if has_key(s:specials, sym) || sym =~# '^\w:'
+  if has_key(s:specials, sym)
     return sym
+  elseif sym =~# '^\w:'
+    return timl#munge(sym)
   elseif sym =~# '[#/.]' && exists('g:'.timl#munge(sym))
     return 'g:'.timl#munge(sym)
   elseif sym =~# '^&\w' && exists(sym)
@@ -230,8 +232,9 @@ function! timl#compiler#emit_set_BANG_(file, context, ns, locals, var, value) ab
     if var =~# '^\w:\|^&'
       let var = var[0].timl#munge(var[1:-1])
     else
-      let var = 'g:'.timl#munge(var)
+      let var = timl#compiler#resolve(var, a:ns)
     endif
+    call s:println(a:file, 'unlet! '.var)
     call s:emit(a:file, 'let '.var.' =  %s', a:ns, a:locals, a:value)
     return s:printfln(a:file, a:context, 'g:timl#nil')
   elseif timl#consp(a:var)
