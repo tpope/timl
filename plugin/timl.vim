@@ -46,7 +46,7 @@ function! s:file4ns(ns) abort
   if !exists('s:tempdir')
     let s:tempdir = tempname()
   endif
-  let file = s:tempdir . '/' . tr(timl#munge(a:ns), '#', '/') . '.vim'
+  let file = s:tempdir . '/' . a:ns . '.vim'
   if !isdirectory(fnamemodify(file, ':h'))
     call mkdir(fnamemodify(file, ':h'), 'p')
   endif
@@ -54,8 +54,8 @@ function! s:file4ns(ns) abort
 endfunction
 
 function! s:autoload(function) abort
-  let ns = tr(matchstr(a:function, '.*\ze#'), '_', '-')
-  let base = tr(ns, '#-', '/_')
+  let ns = tr(matchstr(a:function, '.*\ze#'), '#_', '.-')
+  let base = tr(ns, '.-', '/_')
 
   if !has_key(g:timl#requires, ns)
     if !empty(findfile('autoload/'.base.'.vim'))
@@ -72,7 +72,7 @@ function! s:autoload(function) abort
     let body = ["function ".a:function."(...)",
           \ "  return timl#call(g:".a:function.", a:000)",
           \ "endfunction"]
-    let file = s:file4ns(matchstr(a:function, '.*\ze#'))
+    let file = s:file4ns(base)
     call writefile(body, file)
     exe 'source '.file
   endif
@@ -93,8 +93,8 @@ function! s:repl(...) abort
     endif
     let g:timl#core#_STAR_ns_STAR_ = timl#symbol(a:0 ? a:1 : guess)
     if timl#name(g:timl#core#_STAR_ns_STAR_) == 'user'
-      call timl#require('timl#repl')
-      call timl#core#refer('timl#repl')
+      call timl#require('timl.repl')
+      call timl#core#refer('timl.repl')
     endif
     let input = input(g:timl#core#_STAR_ns_STAR_[0].'=> ', '', cmpl)
     if input =~# '^:q\%[uit]'

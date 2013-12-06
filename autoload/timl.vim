@@ -336,11 +336,11 @@ endfunction
 
 function! timl#first(coll) abort
   return type(a:coll) == s:ary ? get(a:coll, 0, g:timl#nil) :
-        \ timl#dispatch('timl#lang#ISeq', 'first', timl#core#seq(a:coll))
+        \ timl#dispatch('timl#lang#ISeq', 'first', timl#seq(a:coll))
 endfunction
 
 function! timl#rest(coll) abort
-  return timl#dispatch('timl#lang#ISeq', 'rest', timl#core#seq(a:coll))
+  return timl#dispatch('timl#lang#ISeq', 'rest', timl#seq(a:coll))
 endfunction
 
 function! timl#next(coll) abort
@@ -431,7 +431,7 @@ let s:ns = timl#intern_type('timl#lang#Namespace')
 function! timl#create_ns(name, ...)
   let name = timl#name(a:name)
   if !has_key(g:timl#namespaces, a:name)
-    let g:timl#namespaces[a:name] = {'#tag': s:ns, 'name': name, 'referring': ['timl#core'], 'aliases': {}}
+    let g:timl#namespaces[a:name] = {'#tag': s:ns, 'name': name, 'referring': [], 'aliases': {}}
   endif
   let ns = g:timl#namespaces[a:name]
   if !a:0
@@ -453,8 +453,8 @@ endfunction
 
 if !exists('g:timl#namespaces')
   let g:timl#namespaces = {
-        \ 'timl#core': {'#tag': s:ns, 'name': 'timl#core', 'referring': [], 'aliases': {}},
-        \ 'user':      {'#tag': s:ns, 'name': 'timl#core', 'referring': ['timl#core'], 'aliases': {}}}
+        \ 'timl.core': {'#tag': s:ns, 'name': 'timl.core', 'referring': [], 'aliases': {}},
+        \ 'user':      {'#tag': s:ns, 'name': 'user', 'referring': ['timl.core'], 'aliases': {}}}
 endif
 
 " }}}1
@@ -539,7 +539,7 @@ function! timl#require(ns) abort
 endfunction
 
 function! timl#load(ns) abort
-  let base = tr(a:ns,'#-','/_')
+  let base = tr(a:ns,'.-','/_')
   if !empty(findfile('autoload/'.base.'.vim'))
     execute 'runtime! autoload/'.base.'.vim'
     return g:timl#nil
@@ -551,7 +551,7 @@ function! timl#load(ns) abort
   throw 'timl: could not load '.a:ns
 endfunction
 
-call timl#require('timl#core')
+call timl#require('timl.core')
 
 " }}}1
 

@@ -37,8 +37,7 @@ VimL has no concept of nil, so this is actually just a particular empty list.
 Symbols ~
 Any sequence of identifier characters that doesn't look like a number.
 Identifier characters include alphanumeris and the special characters
-"-_?!*+/<>". "#" is also allowed in the middle of a symbol to refer to
-namespaced functions. ":" is reserved for internal use and can be used to
+"-_?!*+/<>".  ":" and "#" are reserved for internal use and can be used to
 refer to Vim variables (|b:var,| |w:var|, |t:var|, |g:var|, |v:var|).
 
 Lists ~
@@ -148,13 +147,13 @@ NAMESPACES                                      *timl-namespaces*
 Namespaces take the Clojure model and adapt it to fit the VimL |autoload|
 feature.
 >
-        (ns foo#bar)
+        (ns foo.bar)
         (def baz 1)
         (in-ns 'user)
-        foo#bar#baz            ; evaluates to 1
-        (alias 'quux 'foo#bar)
+        foo.bar/baz            ; evaluates to 1
+        (alias 'quux 'foo.bar)
         quux/baz               ; evaluates to 1
-        (refer 'foo#bar)
+        (refer 'foo.bar)
         baz                    ; evaluates to 1
 <
 TimL files placed in the |autoload| directory will automatically be loaded in

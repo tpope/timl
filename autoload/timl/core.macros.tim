@@ -1,4 +1,4 @@
-(in-ns 'timl#core)
+(in-ns 'timl.core)
 
 (def defmacro (fn* defmacro [name & fdecl]
   `(let* [fn# (def ~name (fn* ~name ~@fdecl))]
@@ -22,7 +22,7 @@
 (defmacro ns [name]
   `(do
      (in-ns '~name)
-     (refer 'timl#core)))
+     (refer 'timl.core)))
 
 (defmacro or
   ([] nil)

@@ -13,7 +13,7 @@ let s:dict = {}
 command! -bang -nargs=1 TLfunction
       \ let g:timl#core#{matchstr(<q-args>, '^[[:alnum:]_]\+')} = {
       \    '#tag': s:fn,
-      \    'ns': 'timl#core',
+      \    'ns': 'timl.core',
       \    'name': timl#demunge(matchstr(<q-args>, '^\zs[[:alnum:]_]\+')),
       \    'call': function('timl#core#'.matchstr(<q-args>, '^[[:alnum:]_#]\+'))} |
       \ function! timl#core#<args> abort
@@ -21,7 +21,7 @@ command! -bang -nargs=1 TLfunction
 command! -bang -nargs=+ TLalias
       \ let g:timl#core#{[<f-args>][0]} = {
       \    '#tag': s:fn,
-      \    'ns': 'timl#core',
+      \    'ns': 'timl.core',
       \    'name': timl#demunge(([<f-args>][0])),
       \    'call': function([<f-args>][1])}
 
@@ -29,7 +29,7 @@ command! -bang -nargs=1 TLexpr
       \ exe "function! s:dict.call".matchstr(<q-args>, '([^)]*)')." abort\nreturn".matchstr(<q-args>, ')\zs.*')."\nendfunction" |
       \ let g:timl#core#{matchstr(<q-args>, '^[[:alnum:]_]\+')} = {
       \    '#tag': s:fn,
-      \    'ns': 'timl#core',
+      \    'ns': 'timl.core',
       \    'name': timl#demunge(matchstr(<q-args>, '^\zs[[:alnum:]_]\+')),
       \    'call': s:dict.call}
 
@@ -499,13 +499,14 @@ endfunction
 TLalias require timl#require
 
 TLfunction! in_ns(ns) abort
-  call timl#create_ns(timl#str(a:ns))
-  let g:timl#core#_STAR_ns_STAR_ = timl#symbol(a:ns)
+  let name = timl#name(a:ns)
+  call timl#create_ns(name)
+  let g:timl#core#_STAR_ns_STAR_ = timl#symbol(name)
   return g:timl#core#_STAR_ns_STAR_
 endfunction
 
 TLfunction! refer(ns) abort
-  let me = timl#str(g:timl#core#_STAR_ns_STAR_)
+  let me = timl#name(g:timl#core#_STAR_ns_STAR_)
   call timl#create_ns(me, {'referring': [a:ns]})
   return g:timl#nil
 endfunction
@@ -516,8 +517,8 @@ TLfunction! use(ns) abort
 endfunction
 
 TLfunction! alias(alias, ns) abort
-  let me = timl#str(g:timl#core#_STAR_ns_STAR_)
-  call timl#create_ns(me, {'aliases': {timl#str(a:alias): a:ns}})
+  let me = timl#name(g:timl#core#_STAR_ns_STAR_)
+  call timl#create_ns(me, {'aliases': {timl#name(a:alias): a:ns}})
   return g:timl#nil
 endfunction
 

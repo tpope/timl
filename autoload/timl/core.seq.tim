@@ -1,4 +1,4 @@
-(in-ns 'timl#core)
+(in-ns 'timl.core)
 
 (def conj)
 (defmacro lazy-seq [& body]

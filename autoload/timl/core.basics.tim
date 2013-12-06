@@ -1,4 +1,4 @@
-(in-ns 'timl#core)
+(in-ns 'timl.core)
 
 (defn not [x] (if x false true))
 

@@ -1,4 +1,4 @@
-(ns timl#repl)
+(ns timl.repl)
 
 (def special-forms
   '[if do let fn def :

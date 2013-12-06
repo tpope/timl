@@ -1,4 +1,4 @@
-(in-ns 'timl#core)
+(in-ns 'timl.core)
 
 (defmacro include-guard [var]
   (let [string (#*timl#munge (str var))]
