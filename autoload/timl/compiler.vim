@@ -16,7 +16,7 @@ function! timl#compiler#lookup(sym, ns) abort
   elseif sym =~# '^@.$'
     return eval(sym)
   elseif sym =~# '/.'
-    let ns = g:timl#namespaces[g:timl#core#_STAR_ns_STAR_[0]]
+    let ns = timl#the_ns(a:ns)
     if has_key(ns.aliases, matchstr(sym, '.*\ze/.'))
       let sym = ns.aliases[matchstr(sym, '.*\ze/.')].'/'.matchstr(sym, '/\zs.*')
     endif
@@ -379,7 +379,7 @@ function! timl#compiler#emit_do(file, context, ns, locals, ...) abort
 endfunction
 
 function! timl#compiler#emit_def(file, context, ns, locals, sym, ...) abort
-  let var = "g:{timl#munge(g:timl#core#_STAR_ns_STAR_[0])}#".timl#munge(a:sym)
+  let var = "g:{timl#munge(g:timl#core#_STAR_ns_STAR_.name)}#".timl#munge(a:sym)
   call s:println(a:file, "unlet! ".var)
   call s:emit(a:file, 'let '.var.' = %s', a:ns, a:locals, a:0 ? a:1 : g:timl#nil)
   return s:printfln(a:file, a:context, var)
@@ -517,7 +517,7 @@ function! timl#compiler#build(x, ns, ...) abort
 endfunction
 
 function! timl#compiler#eval(x, ...) abort
-  let _ns = timl#name(a:0 ? a:1 : g:timl#core#_STAR_ns_STAR_)
+  let _ns = timl#name(a:0 ? a:1 : g:timl#core#_STAR_ns_STAR_.name)
   let str = timl#compiler#build(a:x, _ns, "return %s")
   let g:str = str
   return timl#compiler#execute(str, a:0 > 1 ? a:2 : {})
@@ -557,7 +557,7 @@ function! timl#compiler#source_file(filename)
   let old_ns = g:timl#core#_STAR_ns_STAR_
   let cache = s:cache_filename(a:filename)
   try
-    let g:timl#core#_STAR_ns_STAR_ = timl#symbol('user')
+    let g:timl#core#_STAR_ns_STAR_ = g:timl#namespaces['user']
     let ftime = getftime(cache)
     if !exists('$TIML_EXPIRE_CACHE') && ftime > getftime(a:filename) && ftime > s:myftime
       try
@@ -572,7 +572,7 @@ function! timl#compiler#source_file(filename)
     let file = timl#reader#open(a:filename)
     let strs = ["let s:d = {}"]
     while !timl#reader#eofp(file)
-      let str = timl#compiler#build(timl#reader#read(file), g:timl#core#_STAR_ns_STAR_[0])
+      let str = timl#compiler#build(timl#reader#read(file), g:timl#core#_STAR_ns_STAR_.name)
       call timl#compiler#execute(str)
       call add(strs, "function! s:d.f() abort\nlet locals = [{}]\nlet temp ={}\n".str."endfunction\ncall s:d.f()\n")
     endwhile

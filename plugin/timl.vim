@@ -91,12 +91,12 @@ function! s:repl(...) abort
     if !has_key(g:timl#namespaces, guess)
       let guess = 'user'
     endif
-    let g:timl#core#_STAR_ns_STAR_ = timl#symbol(a:0 ? a:1 : guess)
-    if timl#name(g:timl#core#_STAR_ns_STAR_) == 'user'
+    let g:timl#core#_STAR_ns_STAR_ = g:timl#namespaces[a:0 ? a:1 : guess]
+    if g:timl#core#_STAR_ns_STAR_.name == 'user'
       call timl#require('timl.repl')
       call timl#core#refer('timl.repl')
     endif
-    let input = input(g:timl#core#_STAR_ns_STAR_[0].'=> ', '', cmpl)
+    let input = input(g:timl#core#_STAR_ns_STAR_.name.'=> ', '', cmpl)
     if input =~# '^:q\%[uit]'
       return ''
     elseif input =~# '^:'
@@ -110,12 +110,12 @@ function! s:repl(...) abort
             let read = timl#reader#read_string_all(input)
             break
           catch /^timl#reader: unexpected EOF/
-            let space = repeat(' ', len(g:timl#core#_STAR_ns_STAR_[0])-2)
+            let space = repeat(' ', len(g:timl#core#_STAR_ns_STAR_.name)-2)
             let input .= "\n" . input(space.'#_=> ', '', cmpl)
             echo "\n"
           endtry
         endwhile
-        let s:repl_env['*1'] = timl#eval(timl#cons(timl#symbol('do'), read), g:timl#core#_STAR_ns_STAR_, s:repl_env)
+        let s:repl_env['*1'] = timl#eval(timl#cons(timl#symbol('do'), read), g:timl#core#_STAR_ns_STAR_.name, s:repl_env)
         echo timl#printer#string(s:repl_env['*1'])
       catch /^timl#repl: exit/
         return v:exception[16:-1]
@@ -127,7 +127,7 @@ function! s:repl(...) abort
         echo v:exception . '('.v:throwpoint.')'
         echohl NONE
       endtry
-      let input = input(g:timl#core#_STAR_ns_STAR_[0].'=> ', '', cmpl)
+      let input = input(g:timl#core#_STAR_ns_STAR_.name.'=> ', '', cmpl)
     endwhile
     return input
   finally

@@ -428,6 +428,21 @@ endfunction
 
 let s:ns = timl#intern_type('timl#lang#Namespace')
 
+function! timl#find_ns(name)
+  return get(g:timl#namespaces, timl#name(a:name), g:timl#nil)
+endfunction
+
+function! timl#the_ns(name)
+  if timl#type(a:name) == 'timl#lang#Namespace'
+    return a:name
+  endif
+  let name = timl#name(a:name)
+  if has_key(g:timl#namespaces, name)
+    return g:timl#namespaces[name]
+  endif
+  throw 'timl: no such namespace '.name
+endfunction
+
 function! timl#create_ns(name, ...)
   let name = timl#name(a:name)
   if !has_key(g:timl#namespaces, a:name)
@@ -455,6 +470,10 @@ if !exists('g:timl#namespaces')
   let g:timl#namespaces = {
         \ 'timl.core': {'#tag': s:ns, 'name': 'timl.core', 'referring': [], 'aliases': {}},
         \ 'user':      {'#tag': s:ns, 'name': 'user', 'referring': ['timl.core'], 'aliases': {}}}
+endif
+
+if !exists('g:timl#core#_STAR_ns_STAR_')
+  let g:timl#core#_STAR_ns_STAR_ = g:timl#namespaces['user']
 endif
 
 " }}}1
@@ -498,19 +517,8 @@ function! timl#build_exception(exception, throwpoint)
   return dict
 endfunction
 
-if !exists('g:timl#core#_STAR_ns_STAR_')
-  let g:timl#core#_STAR_ns_STAR_ = timl#symbol('user')
-endif
-
 function! timl#eval(x, ...) abort
   return call('timl#compiler#eval', [a:x] + a:000)
-
-  if a:0
-    let g:timl#core#_STAR_ns_STAR_ = timl#symbol(a:1)
-  endif
-  let envs = [{}, g:timl#core#_STAR_ns_STAR_[0]]
-
-  return s:eval(a:x, envs)
 endfunction
 
 function! timl#re(str, ...) abort

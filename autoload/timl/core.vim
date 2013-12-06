@@ -497,16 +497,17 @@ endfunction
 " Section: Namespaces {{{1
 
 TLalias require timl#require
+TLalias find_ns timl#find_ns
+TLalias the_ns timl#the_ns
 
 TLfunction! in_ns(ns) abort
   let name = timl#name(a:ns)
-  call timl#create_ns(name)
-  let g:timl#core#_STAR_ns_STAR_ = timl#symbol(name)
+  let g:timl#core#_STAR_ns_STAR_ = timl#create_ns(name)
   return g:timl#core#_STAR_ns_STAR_
 endfunction
 
 TLfunction! refer(ns) abort
-  let me = timl#name(g:timl#core#_STAR_ns_STAR_)
+  let me = g:timl#core#_STAR_ns_STAR_.name
   call timl#create_ns(me, {'referring': [a:ns]})
   return g:timl#nil
 endfunction
@@ -517,7 +518,7 @@ TLfunction! use(ns) abort
 endfunction
 
 TLfunction! alias(alias, ns) abort
-  let me = timl#name(g:timl#core#_STAR_ns_STAR_)
+  let me = g:timl#core#_STAR_ns_STAR_.name
   call timl#create_ns(me, {'aliases': {timl#name(a:alias): a:ns}})
   return g:timl#nil
 endfunction
