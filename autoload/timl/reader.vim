@@ -181,10 +181,13 @@ function! s:read(port, ...) abort
     let meta = s:read(port)
     let data = s:read(port)
     if timl#objectp(data)
-      unlockvar data
+      if timl#symbolp(data)
+        let data = copy(data)
+      else
+        unlockvar data
+      endif
       if has_key(data, '#meta')
         unlockvar data['#meta']
-      else
         let data['#meta'] = []
       endif
       if timl#keywordp(meta)

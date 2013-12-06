@@ -36,6 +36,41 @@ if !exists('g:timl#symbols')
   let g:timl#keywords = {}
 endif
 
+function! timl#keyword(str)
+  let str = type(a:str) == type({}) ? a:str[0] : a:str
+  if !has_key(g:timl#keywords, str)
+    let g:timl#keywords[str] = {'0': str}
+    lockvar g:timl#keywords[str]
+  endif
+  return g:timl#keywords[str]
+endfunction
+
+function! timl#keywordp(keyword)
+  return type(a:keyword) == type({}) &&
+        \ has_key(a:keyword, 0) &&
+        \ type(a:keyword[0]) == type('') &&
+        \ get(g:timl#keywords, a:keyword[0], 0) is a:keyword
+endfunction
+
+function! timl#intern_type(type)
+  return timl#keyword('#'.a:type)
+endfunction
+
+let s:symbol = timl#intern_type('timl#lang#Symbol')
+function! timl#symbol(str)
+  let str = type(a:str) == type({}) ? a:str[0] : a:str
+  if !has_key(g:timl#symbols, str)
+    let g:timl#symbols[str] = {'0': str, '#tag': s:symbol}
+    lockvar g:timl#symbols[str]
+  endif
+  return g:timl#symbols[str]
+endfunction
+
+function! timl#symbolp(symbol)
+  return type(a:symbol) == type({}) &&
+        \ get(a:symbol, '#tag') is# s:symbol
+endfunction
+
 function! timl#name(val) abort
   if type(a:val) == type('')
     return a:val
@@ -46,38 +81,6 @@ function! timl#name(val) abort
   else
     throw "timl: no name for ".timl#type(a:val)
   endif
-endfunction
-
-function! timl#symbol(str)
-  let str = type(a:str) == type({}) ? a:str[0] : a:str
-  if !has_key(g:timl#symbols, str)
-    let g:timl#symbols[str] = {'0': str}
-    lockvar g:timl#symbols[str]
-  endif
-  return g:timl#symbols[str]
-endfunction
-
-function! timl#keyword(str)
-  let str = type(a:str) == type({}) ? a:str[0] : a:str
-  if !has_key(g:timl#keywords, str)
-    let g:timl#keywords[str] = {'0': str}
-    lockvar g:timl#keywords[str]
-  endif
-  return g:timl#keywords[str]
-endfunction
-
-function! timl#symbolp(symbol)
-  return type(a:symbol) == type({}) &&
-        \ has_key(a:symbol, 0) &&
-        \ type(a:symbol[0]) == type('') &&
-        \ get(g:timl#symbols, a:symbol[0], 0) is a:symbol
-endfunction
-
-function! timl#keywordp(keyword)
-  return type(a:keyword) == type({}) &&
-        \ has_key(a:keyword, 0) &&
-        \ type(a:keyword[0]) == type('') &&
-        \ get(g:timl#keywords, a:keyword[0], 0) is a:keyword
 endfunction
 
 " From clojure/lange/Compiler.java
@@ -166,10 +169,6 @@ let s:types = {
       \ 5: 'timl#vim#Float'}
 
 
-function! timl#intern_type(type)
-  return timl#keyword('#'.a:type)
-endfunction
-
 function! timl#objectp(obj)
   return type(a:obj) == type({}) && timl#keywordp(get(a:obj, '#tag')) && a:obj['#tag'][0][0] ==# '#'
 endfunction
@@ -184,12 +183,10 @@ function! timl#type(val) abort
   if type == 'timl#vim#List' && a:val is# g:timl#nil
     return 'timl#lang#Nil'
   elseif type == 'timl#vim#Dictionary'
-    if timl#symbolp(a:val)
-      return 'timl#lang#Symbol'
+    if timl#objectp(a:val)
+      return a:val['#tag'][0][1:-1]
     elseif timl#keywordp(a:val)
       return 'timl#lang#Keyword'
-    elseif timl#objectp(a:val)
-      return a:val['#tag'][0][1:-1]
     endif
   endif
   return type
