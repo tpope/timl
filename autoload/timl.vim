@@ -429,9 +429,9 @@ endfunction
 let s:ns = timl#intern_type('timl#lang#Namespace')
 
 function! timl#create_ns(name, ...)
-  let name = timl#str(a:name)
+  let name = timl#name(a:name)
   if !has_key(g:timl#namespaces, a:name)
-    let g:timl#namespaces[a:name] = {'#tag': s:ns, 'referring': ['timl#core'], 'aliases': {}}
+    let g:timl#namespaces[a:name] = {'#tag': s:ns, 'name': name, 'referring': ['timl#core'], 'aliases': {}}
   endif
   let ns = g:timl#namespaces[a:name]
   if !a:0
@@ -453,8 +453,8 @@ endfunction
 
 if !exists('g:timl#namespaces')
   let g:timl#namespaces = {
-        \ 'timl#core': {'#tag': s:ns, 'referring': [], 'aliases': {}},
-        \ 'user':      {'#tag': s:ns, 'referring': ['timl#core'], 'aliases': {}}}
+        \ 'timl#core': {'#tag': s:ns, 'name': 'timl#core', 'referring': [], 'aliases': {}},
+        \ 'user':      {'#tag': s:ns, 'name': 'timl#core', 'referring': ['timl#core'], 'aliases': {}}}
 endif
 
 " }}}1

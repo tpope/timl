@@ -27,6 +27,9 @@ function! timl#printer#string(x)
   elseif type == 'timl#lang#Function'
     return '#<'.get(a:x, 'ns', '').'#'.get(a:x, 'name', '...').' '.join([a:x.call]).'>'
 
+  elseif type == 'timl#lang#Namespace'
+    return '#<Namespace '.get(a:x, 'name', '').'>'
+
   elseif timl#consp(a:x)
     let acc = []
     let _ = {'x': a:x}

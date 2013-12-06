@@ -169,4 +169,8 @@ let g:timl#lang#HashSet = {
       \  "timl#lang#IFn":
       \    {"invoke": s:function('s:set_get')}}}
 
+" Section: Namespaces
+
+let g:timl#lang#Namespace = {}
+
 " vim:set et sw=2:
