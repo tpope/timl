@@ -7,63 +7,11 @@ let g:autoloaded_timl_compiler = 1
 
 " Section: Symbol resolution {{{1
 
-function! timl#compiler#lookup(sym, ns) abort
-  let sym = type(a:sym) == type('') ? a:sym : a:sym[0]
-  if sym =~# '^[#:].'
-    return a:sym
-  elseif sym =~# '^&.\|^\w:' && exists(sym[0].timl#munge(sym[1:-1]))
-    return eval(sym[0].timl#munge(sym[1:-1]))
-  elseif sym =~# '^@.$'
-    return eval(sym)
-  elseif sym =~# '/.'
-    let ns = timl#the_ns(a:ns)
-    if has_key(ns.aliases, matchstr(sym, '.*\ze/.'))
-      let sym = ns.aliases[matchstr(sym, '.*\ze/.')].'/'.matchstr(sym, '/\zs.*')
-    endif
-    let sym = timl#munge(sym)
-    if exists('g:'.sym)
-      return g:{sym}
-    else
-      throw 'timl: ' . sym . ' undefined'
-    endif
-  endif
-  let ns = timl#compiler#find(sym, a:ns)
-  if ns isnot# g:timl#nil
-    let target = timl#munge(ns.'/'.sym)
-    return g:{target}
-  endif
-  throw 'timl: ' . sym . ' undefined'
-endfunction
-
-function! timl#compiler#find(sym, ns) abort
-  let sym = type(a:sym) == type('') ? a:sym : a:sym[0]
-  let env = a:ns
-  let ns = timl#create_ns(env)
-  if sym =~# './.'
-    let alias = matchstr(sym, '.*\ze/')
-    let var = matchstr(sym, '.*/\zs.*')
-    if has_key(ns.aliases, alias)
-      return timl#compiler#find([ns.aliases[alias]], var)
-    endif
-  endif
-  let target = timl#munge(env.'/'.sym)
-  if exists('g:'.target)
-    return env
-  endif
-  for refer in ns.referring
-    let target = timl#munge(timl#str(refer).'/'.sym)
-    if exists('g:'.target)
-      return timl#str(refer)
-    endif
-  endfor
-  return g:timl#nil
-endfunction
-
 let s:specials = {
       \ 'if': 1,
       \ 'do': 1,
-      \ 'let': 1,
-      \ 'fn': 1,
+      \ 'let*': 1,
+      \ 'fn*': 1,
       \ 'def': 1,
       \ ':': 1,
       \ '.': 1,
@@ -77,22 +25,46 @@ let s:specials = {
       \ 'catch': 1,
       \ 'finally': 1}
 
-function! timl#compiler#resolve(sym, ns)
+function! timl#compiler#qualify(sym, ns, ...)
   let sym = type(a:sym) == type('') ? a:sym : a:sym[0]
+  let the_ns = timl#the_ns(a:ns)
   if has_key(s:specials, sym)
+    return sym
+  elseif sym =~# '^\w:\|^\$'
+    return sym
+  elseif sym =~# '^&\w' && exists(sym)
+    return sym
+  elseif sym =~# '/.' && has_key(the_ns.aliases, matchstr(sym, '.\{-\}\ze/.'))
+    let sym = the_ns.aliases[matchstr(sym, '.\{-\}\ze/.')] . '/' . matchstr(sym, '.\{-\}/\zs.\+')
+  endif
+  if sym =~# '/.' && exists('g:'.timl#munge(sym))
+    return sym
+  endif
+  for ns in [a:ns] + the_ns.referring
+    let target = timl#str(ns).'/'.sym
+    if exists('g:'.timl#munge(target))
+      return target
+    endif
+  endfor
+  if a:0
+    return a:1
+  endif
+  throw 'timl#compiler: could not resolve '.timl#str(a:sym)
+endfunction
+
+function! timl#compiler#resolve(sym, ns)
+  let sym = timl#compiler#qualify(a:sym, a:ns)
+  if sym =~# '^[&$]'
     return sym
   elseif sym =~# '^\w:'
     return timl#munge(sym)
-  elseif sym =~# '[#/.]' && exists('g:'.timl#munge(sym))
-    return 'g:'.timl#munge(sym)
-  elseif sym =~# '^&\w' && exists(sym)
-    return sym
+  else
+    return timl#munge('g:'.sym)
   endif
-  let ns = timl#compiler#find(a:sym, a:ns)
-  if type(ns) == type('')
-    return 'g:' . timl#munge(ns . '/' . sym)
-  endif
-  throw 'Could not resolve '.a:sym
+endfunction
+
+function! timl#compiler#lookup(sym, ns) abort
+  return eval(timl#compiler#resolve(a:sym, a:ns))
 endfunction
 
 " }}}1
@@ -161,6 +133,8 @@ function! s:emit(file, context, ns, locals, x) abort
       return s:printfln(a:file, a:context, "locals[0][".string(x[0])."]")
     elseif x[0] =~# '^[:#]'
       return s:printfln(a:file, a:context, timl#compiler#serialize(x))
+    elseif x[0] =~# '^$\w\+$'
+      return s:printfln(a:file, a:context, "(exists('".x[0]."') ? ".x[0]." : g:timl#nil)")
     else
       return s:printfln(a:file, a:context, timl#compiler#resolve(x[0], a:ns))
     endif
@@ -441,8 +415,8 @@ function! timl#compiler#emit_syntax_quote(file, context, ns, locals, form, ...) 
     else
       let sym = a:form
     endif
-    let ns = timl#compiler#find(sym, a:ns)
-    return s:printfln(a:file, a:context, timl#compiler#serialize(empty(ns) ? sym : timl#symbol(ns . '/' . sym[0])))
+    let var = timl#compiler#qualify(sym, a:ns, sym)
+    return s:printfln(a:file, a:context, timl#compiler#serialize(timl#symbol(var)))
   elseif type(a:form) == type([])
     let tmp = s:tempsym('quasiquote')
     call s:println(a:file, 'let '.tmp.' = []')
