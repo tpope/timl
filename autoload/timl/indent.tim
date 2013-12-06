@@ -1,8 +1,8 @@
 (ns timl.indent)
 
 (defmacro include-guard [& default]
-  (let [param (or (first & default) 'b:did-indent)]
-   `(timl#core#include-guard ~param)))
+  (let [param (or (first default) 'b:did-indent)]
+   `(timl.core/include-guard ~param)))
 
 (defmacro setlocal [& opts]
   `(do

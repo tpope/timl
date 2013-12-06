@@ -4,31 +4,22 @@ endif
 let g:autoloaded_timl_reflect = 1
 
 function! timl#reflect#ns_uses(ns) abort
-  return get(g:, timl#munge(a:ns.'#*uses*'), [timl#symbol('timl#core')])
+  return timl#the_ns(a:ns).referring
 endfunction
 
-function! timl#reflect#functions_matching(pattern) abort
-  redir => str
-  silent execute 'function! /'.a:pattern
-  redir END
-  let fns = {}
-  for line in split(str, "\n")
-    let fn = matchstr(line, ' \zs.*\ze(')
-    let sig = matchstr(line, '(\zs.*\ze)')
-    if len(fn)
-      let fns[timl#demunge(fn)] = map(split(sig, ', '), 'timl#demunge(v:val)')
-    endif
-  endfor
-  return fns
+function! timl#reflect#vars_matching(pattern) abort
+  return filter(copy(g:), 'v:key =~# a:pattern')
 endfunction
 
-function! timl#reflect#ns_function_completion(ns) abort
+function! timl#reflect#ns_var_completion(ns) abort
   let nses = [a:ns] + timl#reflect#ns_uses(a:ns)
-  let g:nses = nses
-  let fns = timl#reflect#functions_matching('^\%('.join(map(copy(nses),'timl#munge(v:val)'),'\|').'\)#')
+  let fns = timl#reflect#vars_matching('^\%('.join(map(copy(nses),'timl#munge(timl#str(v:val))'),'\|').'\)#')
   let locals = {}
-  for [fn, sig] in items(fns)
-    let locals[matchstr(fn, '.*#\zs.*')] = sig
+  let _ = {}
+  for [fn, _.var] in items(fns)
+    if type(_.var) == type({})
+      let locals[timl#demunge(matchstr(fn, '.*#\zs.*'))] = get(_.var, 'arglist', g:timl#nil)
+    endif
   endfor
   return locals
 endfunction
@@ -39,9 +30,13 @@ function! timl#reflect#omnicomplete(findstart, base) abort
     return col('.') - strlen(matchstr(line, '\k\+$')) - 1
   endif
   let results = []
-  let found = timl#reflect#ns_function_completion(timl#ns_for_file(expand('%')))
+  let ns = timl#ns_for_file(expand('%'))
+  if !has_key(g:timl#namespaces, ns)
+    let ns = 'user'
+  endif
+  let found = timl#reflect#ns_var_completion(ns)
   for fn in sort(keys(found))
-    call add(results, {'word': fn, 'menu': '(' . join(found[fn], ' ') . ')'})
+    call add(results, {'word': fn, 'menu': '(' . join(map(copy(found[fn]), 'timl#str(v:val)'), ' ') . ')'})
   endfor
   return filter(results, 'a:base ==# "" || a:base ==# v:val.word[0 : strlen(a:base)-1]')
 endfunction

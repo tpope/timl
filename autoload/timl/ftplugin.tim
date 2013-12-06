@@ -2,7 +2,7 @@
 
 (defmacro include-guard [& default]
   (let [param (or (first default) 'b:did-ftplugin)]
-   `(timl#core#include-guard ~param)))
+   `(timl.core/include-guard ~param)))
 
 ; should append to b:undo-ftplugin
 (defmacro setlocal [& opts]
