@@ -113,7 +113,7 @@ function! s:repl(...) abort
             echo "\n"
           endtry
         endwhile
-        let _.val = timl#eval(timl#cons(timl#symbol('do'), read), g:timl#core#_STAR_ns_STAR_.name, s:repl_env)
+        let _.val = timl#eval(timl#cons(timl#symbol('do'), read), g:timl#core#_STAR_ns_STAR_.name)
         unlet! g:timl#core#_STAR_3
         let g:timl#core#_STAR_3 = g:timl#core#_STAR_2
         unlet! g:timl#core#_STAR_2
