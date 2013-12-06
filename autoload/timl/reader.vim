@@ -18,17 +18,6 @@ function! s:read_token(port) abort
   return match
 endfunction
 
-function! s:tokenize(str) abort
-  let tokens = []
-  let port = {'pos': 0, 'str': a:str}
-  let token = s:read_token(port)
-  while !empty(token)
-    call add(tokens, token)
-    let token = s:read_token(port)
-  endwhile
-  return tokens
-endfunction
-
 function! timl#reader#eofp(port)
   return a:port.pos >= len(a:port.str)
 endfunction
@@ -184,7 +173,7 @@ function! s:read(port, ...) abort
     else
       return timl#lock({'value': next, '#tag': timl#intern_type(token)})
     endif
-  elseif token =~# '^:'
+  elseif token =~# '^:.'
     return timl#keyword(token[1:-1])
   elseif token =~# '^'.s:iskeyword
     return timl#symbol(token)

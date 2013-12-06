@@ -33,13 +33,16 @@ endfunction
 
 if !exists('g:timl#symbols')
   let g:timl#symbols = {}
+  let g:timl#keywords = {}
 endif
 
 function! timl#name(val) abort
   if type(a:val) == type('')
     return a:val
   elseif timl#symbolp(a:val)
-    return substitute(a:val[0], '^:', '', '')
+    return a:val[0]
+  elseif timl#keywordp(a:val)
+    return a:val[0]
   else
     throw "timl: no name for ".timl#type(a:val)
   endif
@@ -55,7 +58,12 @@ function! timl#symbol(str)
 endfunction
 
 function! timl#keyword(str)
-  return timl#symbol(':'.timl#str(a:str))
+  let str = type(a:str) == type({}) ? a:str[0] : a:str
+  if !has_key(g:timl#keywords, str)
+    let g:timl#keywords[str] = {'0': str}
+    lockvar g:timl#keywords[str]
+  endif
+  return g:timl#keywords[str]
 endfunction
 
 function! timl#symbolp(symbol)
@@ -66,7 +74,10 @@ function! timl#symbolp(symbol)
 endfunction
 
 function! timl#keywordp(keyword)
-  return timl#symbolp(a:keyword) && a:keyword[0][0] ==# ':'
+  return type(a:keyword) == type({}) &&
+        \ has_key(a:keyword, 0) &&
+        \ type(a:keyword[0]) == type('') &&
+        \ get(g:timl#keywords, a:keyword[0], 0) is a:keyword
 endfunction
 
 " From clojure/lange/Compiler.java
@@ -174,7 +185,9 @@ function! timl#type(val) abort
     return 'timl#lang#Nil'
   elseif type == 'timl#vim#Dictionary'
     if timl#symbolp(a:val)
-      return a:val[0][0] ==# ':' ? 'timl#lang#Keyword' : 'timl#lang#Symbol'
+      return 'timl#lang#Symbol'
+    elseif timl#keywordp(a:val)
+      return 'timl#lang#Keyword'
     elseif timl#objectp(a:val)
       return a:val['#tag'][0][1:-1]
     endif
@@ -303,7 +316,9 @@ endfunction
 function! timl#key(key)
   if type(a:key) == type(0)
     return string(a:key)
-  elseif timl#symbolp(a:key) && a:key[0][0] =~# '[:#]'
+  elseif timl#keywordp(a:key)
+    return a:key[0]
+  elseif timl#symbolp(a:key) && a:key[0][0] ==# '#'
     return a:key[0][1:-1]
   else
     return ' '.timl#printer#string(a:key)
@@ -318,7 +333,7 @@ function! timl#dekey(key)
   elseif a:key =~# '^[-+]\=\d'
     return timl#reader#read_string(a:key)
   else
-    return timl#symbol(':'.a:key)
+    return timl#keyword(a:key)
   endif
 endfunction
 
