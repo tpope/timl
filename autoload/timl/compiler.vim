@@ -131,8 +131,6 @@ function! s:emit(file, context, ns, locals, x) abort
   if timl#symbolp(x)
     if has_key(a:locals, x[0])
       return s:printfln(a:file, a:context, "locals[0][".string(x[0])."]")
-    elseif x[0] =~# '^#'
-      return s:printfln(a:file, a:context, timl#compiler#serialize(x))
     elseif x[0] =~# '^$\w\+$'
       return s:printfln(a:file, a:context, "(exists('".x[0]."') ? ".x[0]." : g:timl#nil)")
     else

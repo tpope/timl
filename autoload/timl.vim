@@ -167,11 +167,11 @@ let s:types = {
 
 
 function! timl#intern_type(type)
-  return timl#symbol('#'.a:type)
+  return timl#keyword('#'.a:type)
 endfunction
 
 function! timl#objectp(obj)
-  return type(a:obj) == type({}) && timl#symbolp(get(a:obj, '#tag')) && a:obj['#tag'][0][0] ==# '#'
+  return type(a:obj) == type({}) && timl#keywordp(get(a:obj, '#tag')) && a:obj['#tag'][0][0] ==# '#'
 endfunction
 
 let s:function = timl#intern_type('timl#lang#Function')
@@ -318,8 +318,6 @@ function! timl#key(key)
     return string(a:key)
   elseif timl#keywordp(a:key)
     return a:key[0]
-  elseif timl#symbolp(a:key) && a:key[0][0] ==# '#'
-    return a:key[0][1:-1]
   else
     return ' '.timl#printer#string(a:key)
   endif
