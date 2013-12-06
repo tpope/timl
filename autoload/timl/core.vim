@@ -412,11 +412,11 @@ TLfunction! empty(coll) abort
     " TODO: empty list
     return g:timl#nil
   endif
-  if type(a:coll) == type({})
+  if type(a:coll) == type({}) && !timl#symbolp(a:coll)
     return {}
   elseif type(a:coll) == type('')
     return ''
-  elseif type(a:coll) == type([]) && !timl#symbolp(a:coll)
+  elseif type(a:coll) == type([])
     return []
   endif
   return g:timl#nil
