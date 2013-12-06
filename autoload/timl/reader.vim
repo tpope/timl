@@ -188,12 +188,15 @@ function! s:read(port, ...) abort
       endif
       if has_key(data, '#meta')
         unlockvar data['#meta']
-        let data['#meta'] = []
+      else
+        let data['#meta'] = {'#tag': timl#intern_type('timl#lang#HashMap')}
       endif
       if timl#keywordp(meta)
-        call add(data['#meta'], [meta, g:timl#true])
+        let data['#meta'][meta[0]] = g:timl#true
       elseif timl#symbolp(meta)
-        call add(data['#meta'], [timl#keyword('tag'), meta])
+        let data['#meta'][timl#keyword('tag')] = meta
+      else
+        call extend(data['#meta'], meta)
       endif
       lockvar data['#meta']
       lockvar data
@@ -285,6 +288,9 @@ TimLRAssert timl#reader#read_string("`foo") ==# timl#list(timl#symbol('syntax-qu
 TimLRAssert timl#reader#read_string("~foo") ==# timl#list(timl#symbol('unquote'), timl#symbol('foo'))
 TimLRAssert timl#reader#read_string("#*tr") ==# timl#list(timl#symbol('function'), timl#symbol('tr'))
 TimLRAssert timl#reader#read_string("(1 #_2 3)") ==# timl#list(1, 3)
+TimLRAssert timl#reader#read_string("^:foo {}") ==#
+      \ {'#tag': timl#intern_type('timl#lang#HashMap'),
+      \  '#meta': {'#tag': timl#intern_type('timl#lang#HashMap'), 'foo': g:timl#true}}
 
 
 delcommand TimLRAssert
