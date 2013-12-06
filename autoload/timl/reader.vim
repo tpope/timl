@@ -181,6 +181,8 @@ function! s:read(port, ...) abort
     else
       return timl#lock({'value': next, '#tag': timl#intern_type(token)})
     endif
+  elseif token =~# '^:'
+    return timl#keyword(token[1:-1])
   elseif token =~# '^'.s:iskeyword || token =~# '^@.$'
     return timl#symbol(token)
   elseif empty(token)

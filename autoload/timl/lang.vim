@@ -44,6 +44,11 @@ let g:timl#lang#Symbol = {
       \ {"timl#lang#IFn":
       \    {"invoke": s:function('s:this_get')}}}
 
+let g:timl#lang#Keyword = {
+      \ "implements":
+      \ {"timl#lang#IFn":
+      \    {"invoke": s:function('s:this_get')}}}
+
 " Section: Function
 
 function! s:function_invoke(this, ...) abort

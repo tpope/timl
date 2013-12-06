@@ -39,6 +39,7 @@ command! -bang -nargs=1 TLpredicate TLexpr <args> ? s:true : s:false
 
 TLpredicate nil_QMARK_(val)     a:val is# g:timl#nil
 TLexpr type(val) timl#symbol(timl#type(a:val))
+
 " }}}1
 " Section: Functional {{{1
 
@@ -285,12 +286,11 @@ endfunction
 
 TLpredicate str_QMARK_(obj)     type(a:obj) == type('')
 TLpredicate symbol_QMARK_(obj)  timl#symbolp(a:obj)
-TLpredicate keyword_QMARK_(obj)  timl#symbolp(a:obj) && a:obj[0][0] ==# ':'
+TLpredicate keyword_QMARK_(obj) timl#keywordp(a:obj)
 
-TLalias symbol timl#symbol
-TLexpr keyword(ns, ...) timl#symbol(substitute(
-      \ a:0 ? timl#str(a:ns) . '#' . substitute(timl#str(a:1), '^:', '', '') : timl#str(a:ns),
-      \ '^:\=', ':', ''))
+TLalias name    timl#name
+TLalias symbol  timl#symbol
+TLalias keyword timl#keyword
 
 TLexpr pr_str(...) join(map(copy(a:000), 'timl#printer#string(v:val)'), ' ')
 TLexpr prn_str(...) join(map(copy(a:000), 'timl#printer#string(v:val)'), ' ')."\n"

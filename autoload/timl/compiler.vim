@@ -104,7 +104,10 @@ let s:escapes = {
 
 function! timl#compiler#serialize(x)
   " TODO: guard against recursion
-  if timl#symbolp(a:x)
+  if timl#keywordp(a:x)
+    return 'timl#keyword('.timl#compiler#serialize(timl#name(a:x)).')'
+
+  elseif timl#symbolp(a:x)
     return 'timl#symbol('.timl#compiler#serialize(a:x[0]).')'
 
   elseif a:x is# g:timl#nil

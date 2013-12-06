@@ -18,6 +18,9 @@ function! timl#printer#string(x)
   if type == 'timl#lang#Symbol'
     return a:x[0]
 
+  elseif type == 'timl#lang#Keyword'
+    return ':'.timl#name(a:x)
+
   elseif a:x is# g:timl#nil
     return 'nil'
 
