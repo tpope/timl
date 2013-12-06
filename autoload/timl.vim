@@ -252,6 +252,36 @@ function! timl#str(val) abort
   endif
 endfunction
 
+function! timl#num(obj) abort
+  if type(a:obj) == type(0) || type(a:obj) == 5
+    return a:obj
+  endif
+  throw "timl: not a number"
+endfunction
+
+function! timl#int(obj) abort
+  if type(a:obj) == type(0)
+    return a:obj
+  endif
+  throw "timl: not an integer"
+endfunction
+
+function! timl#float(obj) abort
+  if type(a:obj) == 5
+    return a:obj
+  endif
+  throw "timl: not a float"
+endfunction
+
+function! timl#equalsp(x, ...) abort
+  for y in a:000
+    if type(a:x) != type(y) || a:x !=# y
+      return 0
+    endif
+  endfor
+  return 1
+endfunction
+
 function! timl#key(key)
   if type(a:key) == type(0)
     return string(a:key)

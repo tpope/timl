@@ -14,10 +14,3 @@
   (if fns
     (fn [& args] (f (apply (apply comp fns) args)))
     f))
-
-(defn dec [n] (- n 1))
-(def inc (partial + 1))
-(def zero? (partial == 0))
-(def nonzero? (comp not zero?))
-(def pos? (partial < 0))
-(def neg? (partial > 0))

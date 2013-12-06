@@ -16,7 +16,7 @@ command! -bang -nargs=1 TLfunction
       \    'ns': 'timl#core',
       \    'name': timl#demunge(matchstr(<q-args>, '^\zs[[:alnum:]_]\+')),
       \    'call': function('timl#core#'.matchstr(<q-args>, '^[[:alnum:]_#]\+'))} |
-      \ function<bang> timl#core#<args> abort
+      \ function! timl#core#<args> abort
 
 command! -bang -nargs=+ TLalias
       \ let g:timl#core#{[<f-args>][0]} = {
@@ -41,17 +41,6 @@ TLexpr type(val) timl#symbol(timl#type(a:val))
 TLpredicate nil_QMARK_(val)     a:val is# g:timl#nil
 TLpredicate symbol_QMARK_(obj)  timl#symbolp(a:obj)
 TLpredicate str_QMARK_(obj)     type(a:obj) == type('')
-TLpredicate integer_QMARK_(obj) type(a:obj) == type(0)
-TLpredicate float_QMARK_(obj)   type(a:obj) == 5
-TLpredicate number_QMARK_(obj)  type(a:obj) == type(0) || type(a:obj) == 5
-
-TLfunction! number(obj) abort
-  if type(a:obj) == type(0) || type(a:obj) == 5
-    return a:obj
-  else
-    throw "timl: not a number"
-  endif
-endfunction
 
 TLalias symbol timl#symbol
 
@@ -102,9 +91,31 @@ TLfunction! echomsg(...) abort
 endfunction
 
 " }}}1
-" Section: Operators {{{
+" Section: Equality {{{1
 
-TLfunction! _PLUS_(...) abort
+TLpredicate _EQ_(...)     call('timl#equalsp', a:000)
+TLpredicate not_EQ_(...) !call('timl#equalsp', a:000)
+
+TLfunction! identical_QMARK_(x, ...) abort
+  for y in a:000
+    if a:x isnot# y
+      return s:false
+    endif
+  endfor
+  return s:true
+endfunction
+
+" }}}1
+" Section: Numbers {{{
+
+TLalias num timl#num
+TLalias int timl#int
+TLalias float timl#float
+TLpredicate integer_QMARK_(obj) type(a:obj) == type(0)
+TLpredicate float_QMARK_(obj)   type(a:obj) == 5
+TLpredicate number_QMARK_(obj)  type(a:obj) == type(0) || type(a:obj) == 5
+
+TLfunction _PLUS_(...)
   let acc = 0
   for elem in a:000
     let acc += elem
@@ -112,7 +123,7 @@ TLfunction! _PLUS_(...) abort
   return acc
 endfunction
 
-TLfunction! _STAR_(...) abort
+TLfunction _STAR_(...)
   let acc = 1
   for elem in a:000
     let acc = acc * elem
@@ -120,9 +131,9 @@ TLfunction! _STAR_(...) abort
   return acc
 endfunction
 
-TLfunction! _(x, ...) abort
+TLfunction _(x, ...)
   if a:0
-    let acc = timl#core#number(a:x)
+    let acc = timl#num(a:x)
     for elem in a:000
       let acc -= elem
     endfor
@@ -132,9 +143,9 @@ TLfunction! _(x, ...) abort
   endif
 endfunction
 
-TLfunction! _SLASH_(x, ...) abort
+TLfunction _SLASH_(x, ...)
   if a:0
-    let acc = timl#core#number(a:x)
+    let acc = timl#num(a:x)
     for elem in a:000
       let acc = acc / elem
     endfor
@@ -144,46 +155,101 @@ TLfunction! _SLASH_(x, ...) abort
   endif
 endfunction
 
-TLexpr rem(x, y) timl#core#number(a:x) % a:y
-
-TLfunction! _GT_(x, y) abort
-  return timl#core#number(a:x) ># timl#core#number(a:y) ? s:true : s:false
+TLexpr inc(x) timl#num(a:x) + 1
+TLexpr dec(x) timl#num(a:x) - 1
+TLexpr rem(x, y) timl#num(a:x) % a:y
+TLexpr quot(x, y) type(a:x) == 5 || type(a:y) == type(5) ? trunc(a:x/a:y) : timl#num(a:x)/a:y
+TLfunction mod(x, y)
+  if (timl#num(a:x) < 0 && timl#num(a:y) > 0 || timl#num(a:x) > 0 && timl#num(a:y) < 0) && a:x % a:y != 0
+    return (a:x % a:y) + a:y
+  else
+    return a:x % a:y
+  endif
 endfunction
 
-TLfunction! _LT_(x, y) abort
-  return timl#core#number(a:x) <# timl#core#number(a:y) ? s:true : s:false
-endfunction
+TLexpr min(...) min(a:000)
+TLexpr max(...) max(a:000)
 
-TLfunction! _GT__EQ_(x, y) abort
-  return timl#core#number(a:x) >=# timl#core#number(a:y) ? s:true : s:false
+TLexpr bit_not(x) invert(a:x)
+TLexpr bit_or(x, y, ...)  a:0 ? call(self.call, [ or(a:x, a:y)] + a:000, self) :  or(a:x, a:y)
+TLexpr bit_xor(x, y, ...) a:0 ? call(self.call, [xor(a:x, a:y)] + a:000, self) : xor(a:x, a:y)
+TLexpr bit_and(x, y, ...) a:0 ? call(self.call, [and(a:x, a:y)] + a:000, self) : and(a:x, a:y)
+TLexpr bit_and_not(x, y, ...) a:0 ? call(self.call, [and(a:x, invert(a:y))] + a:000, self) : and(a:x, invert(a:y))
+TLfunction bit_shift_left(x, n)
+  let x = timl#int(a:x)
+  for i in range(timl#int(a:n))
+    let x = x * 2
+  endfor
+  return x
 endfunction
-
-TLfunction! _LT__EQ_(x, y) abort
-  return timl#core#number(a:x) <=# timl#core#number(a:y) ? s:true : s:false
+TLfunction bit_shift_right(x, n)
+  let x = timl#int(a:x)
+  for i in range(timl#int(a:n))
+    let x = x / 2
+  endfor
+  return x
 endfunction
+TLexpr bit_flip(x, n)  xor(a:x, g:timl#core#bit_shift_left.call(1, a:n))
+TLexpr bit_set(x, n)    or(a:x, g:timl#core#bit_shift_left.call(1, a:n))
+TLexpr bit_clear(x, n) and(a:x, invert(g:timl#core#bit_shift_left.call(1, a:n)))
+TLpredicate bit_test(x, n) and(a:x, g:timl#core#bit_shift_left.call(1, a:n))
 
-TLfunction! _EQ_(x, ...) abort
+TLexpr      not_negative(x) timl#num(a:x) < 0 ? g:timl#nil : a:x
+TLpredicate zero_QMARK_(x) timl#num(a:x) == 0
+TLpredicate nonzero_QMARK_(x) timl#num(a:x) != 0
+TLpredicate pos_QMARK_(x) timl#num(a:x) > 0
+TLpredicate neg_QMARK_(x) timl#num(a:x) < 0
+TLpredicate odd_QMARK_(x) timl#num(a:x) % 2
+TLpredicate even_QMARK_(x) timl#num(a:x) % 2 == 0
+
+TLfunction _GT_(x, ...)
+  let x = timl#num(a:x)
   for y in a:000
-    if type(a:x) != type(y) || a:x !=# y
+    if !(timl#num(x) > y)
       return s:false
     endif
+    let x = y
   endfor
   return s:true
 endfunction
 
-TLfunction! _EQ__EQ_(x, ...) abort
-  let x = timl#core#number(a:x)
+TLfunction _LT_(x, ...)
+  let x = timl#num(a:x)
   for y in a:000
-    if x != timl#core#number(y)
+    if !(timl#num(x) < y)
       return s:false
     endif
+    let x = y
   endfor
   return s:true
 endfunction
 
-TLfunction! identical_QMARK_(x, ...) abort
+TLfunction _GT__EQ_(x, ...)
+  let x = timl#num(a:x)
   for y in a:000
-    if a:x isnot# y
+    if !(timl#num(x) >= y)
+      return s:false
+    endif
+    let x = y
+  endfor
+  return s:true
+endfunction
+
+TLfunction _LT__EQ_(x, ...)
+  let x = timl#num(a:x)
+  for y in a:000
+    if !(timl#num(x) <= y)
+      return s:false
+    endif
+    let x = y
+  endfor
+  return s:true
+endfunction
+
+TLfunction _EQ__EQ_(x, ...)
+  let x = timl#num(a:x)
+  for y in a:000
+    if x != timl#num(y)
       return s:false
     endif
   endfor
@@ -244,13 +310,14 @@ endfunction
 
 TLfunction! hash_map(...) abort
   let list = copy(a:000)
-  while len(a:000) % 2 !=# 0 && timl#core#list_QMARK_(list[-1])
-    call extend(list, remove(list, -1))
-  endwhile
-  if len(list) % 2 !=# 0
-    throw 'timl: dict requires a even number of arguments'
-  endif
   let dict = {}
+  while len(list) % 2 !=# 0
+    if timl#consp(get(list,-1, ''))
+      call extend(list, remove(list, -1))
+    else
+      throw 'timl: dict requires a even number of arguments'
+    endif
+  endwhile
   for i in range(0, len(list)-1, 2)
     let dict[timl#key(list[i])] = list[i+1]
   endfor
@@ -393,6 +460,7 @@ delcommand TLfunction
 delcommand TLalias
 delcommand TLexpr
 delcommand TLpredicate
+unlet s:dict
 
 call timl#source_file(expand('<sfile>:r') . '.macros.tim', 'timl#core')
 call timl#source_file(expand('<sfile>:r') . '.basics.tim', 'timl#core')
