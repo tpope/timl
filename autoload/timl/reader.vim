@@ -188,6 +188,27 @@ function! s:read(port, ...) abort
     return timl#keyword(token[1:-1])
   elseif token =~# '^'.s:iskeyword
     return timl#symbol(token)
+  elseif token ==# '^'
+    let meta = s:read(port)
+    let data = s:read(port)
+    if timl#objectp(data)
+      unlockvar data
+      if has_key(data, '#meta')
+        unlockvar data['#meta']
+      else
+        let data['#meta'] = []
+      endif
+      if timl#keywordp(meta)
+        call add(data['#meta'], [meta, g:timl#true])
+      elseif timl#symbolp(meta)
+        call add(data['#meta'], [timl#keyword('tag'), meta])
+      endif
+      lockvar data['#meta']
+      lockvar data
+    else
+      throw 'timl#reader: cannot attach metadata to a '.timl#type(data)
+    endif
+    return data
   elseif token ==# '@'
     return timl#list(timl#symbol('timl.core/deref'), s:read_bang(port))
   elseif empty(token)
