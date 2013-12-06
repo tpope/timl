@@ -1,5 +1,7 @@
 (in-ns 'timl.core)
 
+(declare *1 *2 *3 *e)
+
 (defn not [x] (if x false true))
 
 (defn eval [form] (#*timl#eval form))

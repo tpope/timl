@@ -79,9 +79,6 @@ function! s:autoload(function) abort
 endfunction
 
 function! s:repl(...) abort
-  if !exists('s:repl_env')
-    let s:repl_env = {'*e': g:timl#nil, '*1': g:timl#nil}
-  endif
 
   let cmpl = 'customlist,timl#reflect#input_complete'
   let more = &more
@@ -102,6 +99,7 @@ function! s:repl(...) abort
     elseif input =~# '^:'
       return input
     endif
+    let _ = {}
     while !empty(input)
       echo "\n"
       try
@@ -115,16 +113,23 @@ function! s:repl(...) abort
             echo "\n"
           endtry
         endwhile
-        let s:repl_env['*1'] = timl#eval(timl#cons(timl#symbol('do'), read), g:timl#core#_STAR_ns_STAR_.name, s:repl_env)
-        echo timl#printer#string(s:repl_env['*1'])
+        let _.val = timl#eval(timl#cons(timl#symbol('do'), read), g:timl#core#_STAR_ns_STAR_.name, s:repl_env)
+        unlet! g:timl#core#_STAR_3
+        let g:timl#core#_STAR_3 = g:timl#core#_STAR_2
+        unlet! g:timl#core#_STAR_2
+        let g:timl#core#_STAR_2 = g:timl#core#_STAR_1
+        unlet! g:timl#core#_STAR_1
+        let g:timl#core#_STAR_1 = _.val
+        echo timl#printer#string(_.val)
       catch /^timl#repl: exit/
         return v:exception[16:-1]
       catch /^Vim\%((\a\+)\)\=:E168/
         return ''
       catch
-        let s:repl_env['*e'] = timl#build_exception(v:exception, v:throwpoint)
+        unlet! g:timl#core#_STAR_e
+        let g:timl#core#_STAR_e = timl#build_exception(v:exception, v:throwpoint)
         echohl ErrorMSG
-        echo v:exception . '('.v:throwpoint.')'
+        echo v:exception
         echohl NONE
       endtry
       let input = input(g:timl#core#_STAR_ns_STAR_.name.'=> ', '', cmpl)
