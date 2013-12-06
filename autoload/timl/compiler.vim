@@ -5,41 +5,7 @@ if exists('g:autoloaded_timl_compiler')
 endif
 let g:autoloaded_timl_compiler = 1
 
-let s:escapes = {
-      \ "\b": '\b',
-      \ "\e": '\e',
-      \ "\f": '\f',
-      \ "\n": '\n',
-      \ "\r": '\r',
-      \ "\t": '\t',
-      \ "\"": '\"',
-      \ "\\": '\\'}
-
-function! timl#compiler#serialize(x)
-  " TODO: guard against recursion
-  if timl#symbolp(a:x)
-    return 'timl#symbol('.timl#compiler#serialize(a:x[0]).')'
-
-  elseif a:x is# g:timl#nil
-    return 'g:timl#nil'
-
-  elseif type(a:x) == type([])
-    return '['.join(map(copy(a:x), 'timl#compiler#serialize(v:val)'), ', ').']'
-
-  elseif type(a:x) == type({})
-    let acc = []
-    for [k, V] in items(a:x)
-      call add(acc, timl#compiler#serialize(k) . ': ' . timl#compiler#serialize(V))
-      unlet! V
-    endfor
-    return '{' . join(acc, ', ') . '}'
-
-  elseif type(a:x) == type('')
-    return '"'.substitute(a:x, "[\001-\037\"\\\\]", '\=get(s:escapes, submatch(0), printf("\\%03o", char2nr(submatch(0))))', 'g').'"'
-  else
-    return string(a:x)
-  endif
-endfunction
+" Section: Symbol resolution {{{1
 
 function! timl#compiler#lookup(sym, ns) abort
   let sym = type(a:sym) == type('') ? a:sym : a:sym[0]
@@ -123,6 +89,45 @@ function! timl#compiler#resolve(sym, ns)
   throw 'Could not resolve '.a:sym
 endfunction
 
+" }}}1
+" Section: Emission {{{1
+
+let s:escapes = {
+      \ "\b": '\b',
+      \ "\e": '\e',
+      \ "\f": '\f',
+      \ "\n": '\n',
+      \ "\r": '\r',
+      \ "\t": '\t',
+      \ "\"": '\"',
+      \ "\\": '\\'}
+
+function! timl#compiler#serialize(x)
+  " TODO: guard against recursion
+  if timl#symbolp(a:x)
+    return 'timl#symbol('.timl#compiler#serialize(a:x[0]).')'
+
+  elseif a:x is# g:timl#nil
+    return 'g:timl#nil'
+
+  elseif type(a:x) == type([])
+    return '['.join(map(copy(a:x), 'timl#compiler#serialize(v:val)'), ', ').']'
+
+  elseif type(a:x) == type({})
+    let acc = []
+    for [k, V] in items(a:x)
+      call add(acc, timl#compiler#serialize(k) . ': ' . timl#compiler#serialize(V))
+      unlet! V
+    endfor
+    return '{' . join(acc, ', ') . '}'
+
+  elseif type(a:x) == type('')
+    return '"'.substitute(a:x, "[\001-\037\"\\\\]", '\=get(s:escapes, submatch(0), printf("\\%03o", char2nr(submatch(0))))', 'g').'"'
+  else
+    return string(a:x)
+  endif
+endfunction
+
 function! s:tempsym(...)
   return 'temp.'.timl#gensym(a:0 ? a:1 : 'emit')[0]
 endfunction
@@ -135,28 +140,6 @@ endfunction
 function! s:printfln(file, ...)
   let line = call('printf', a:000)
   return s:println(a:file, line)
-endfunction
-
-function! timl#compiler#build(x, ns, ...) abort
-  let file = []
-  call s:emit(file, a:0 ? a:1 : "return %s", a:ns, {}, a:x)
-  return join(file, "\n") . "\n"
-endfunction
-
-function! timl#compiler#eval(x, ...) abort
-  let _ns = a:0 ? timl#str(a:1) : 'user'
-  let locals = [{}]
-  let temp = {}
-  let _dict = {}
-  let _str = "function _dict.func(locals) abort\n"
-        \ . "let locals=[a:locals]\n"
-        \ . "let temp={}\n"
-        \ . "while 1\n"
-        \ . timl#compiler#build(a:x, _ns, "return %s")
-        \ . "endwhile\n"
-        \ . "endfunction"
-  execute _str
-  return _dict.func(a:0 > 1 ? a:2 : {})
 endfunction
 
 let s:colon = timl#symbol(':')
@@ -517,6 +500,87 @@ function! timl#compiler#emit_throw(file, context, ns, locals, str) abort
   call s:emit(a:file, "throw %s", a:ns, a:locals, a:str)
 endfunction
 
+" }}}1
+" Section: Execution {{{1
+
+function! timl#compiler#build(x, ns, ...) abort
+  let file = []
+  call s:emit(file, a:0 ? a:1 : "return %s", a:ns, {}, a:x)
+  return join(file, "\n") . "\n"
+endfunction
+
+function! timl#compiler#eval(x, ...) abort
+  let _ns = timl#str(a:0 ? a:1 : g:timl#core#_STAR_ns_STAR_)
+  let str = timl#compiler#build(a:x, _ns, "return %s")
+  let g:str = str
+  return timl#compiler#execute(str, a:0 > 1 ? a:2 : {})
+endfunction
+
+function! timl#compiler#execute(str, ...)
+  let locals = [a:0 ? a:1 : {}]
+  let temp = {}
+  let _dict = {}
+  let _str = "function _dict.func(locals) abort\n"
+        \ . "let locals=[a:locals]\n"
+        \ . "let temp={}\n"
+        \ . "while 1\n"
+        \ . a:str
+        \ . "endwhile\n"
+        \ . "endfunction"
+  execute _str
+  return _dict.func(a:0 > 1 ? a:2 : {})
+endfunction
+
+let s:dir = (has('win32') ? '$APPCACHE/Vim' :
+      \ match(system('uname'), "Darwin") > -1 ? '~/Library/Vim' :
+      \ empty($XDG_CACHE_HOME) ? '~/.cache/vim' : '$XDG_CACHE_HOME/vim').'/timl'
+
+function! s:cache_filename(file)
+  let base = expand(s:dir)
+  if !isdirectory(base)
+    call mkdir(base, 'p')
+  endif
+  let filename = tr(substitute(fnamemodify(a:file, ':p:~'), '^\~.', '', ''), '\/:', '%%%') . '.vim'
+  return base . '/' . filename
+endfunction
+
+let s:myftime = getftime(expand('<sfile>'))
+
+function! timl#compiler#source_file(filename)
+  let old_ns = g:timl#core#_STAR_ns_STAR_
+  let cache = s:cache_filename(a:filename)
+  try
+    let g:timl#core#_STAR_ns_STAR_ = timl#symbol('user')
+    let ftime = getftime(cache)
+    if !exists('$TIML_EXPIRE_CACHE') && ftime > getftime(a:filename) && ftime > s:myftime
+      try
+        execute 'source '.fnameescape(cache)
+      catch
+        let error = 1
+      endtry
+      if !exists('error')
+        return
+      endif
+    endif
+    let file = timl#reader#open(a:filename)
+    let strs = ["let s:d = {}"]
+    while !timl#reader#eofp(file)
+      let str = timl#compiler#build(timl#reader#read(file), g:timl#core#_STAR_ns_STAR_[0])
+      call timl#compiler#execute(str)
+      call add(strs, "function! s:d.f() abort\nlet locals = [{}]\nlet temp ={}\n".str."endfunction\ncall s:d.f()\n")
+    endwhile
+    call add(strs, 'unlet s:d')
+    call writefile(split(join(strs, "\n"), "\n"), cache)
+  catch /^Vim\%((\a\+)\)\=:E168/
+  finally
+    let g:timl#core#_STAR_ns_STAR_ = old_ns
+    if exists('file')
+      call timl#reader#close(file)
+    endif
+  endtry
+endfunction
+
+" }}}1
 " Section: Tests {{{1
 
 if !$TIML_TEST

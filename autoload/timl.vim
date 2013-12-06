@@ -514,19 +514,7 @@ function! timl#rep(...) abort
 endfunction
 
 function! timl#source_file(filename)
-  let old_ns = g:timl#core#_STAR_ns_STAR_
-  let file = timl#reader#open(a:filename)
-  try
-    let g:timl#core#_STAR_ns_STAR_ = timl#symbol('user')
-    let _ = {}
-    while !timl#reader#eofp(file)
-      call timl#eval(timl#reader#read(file), g:timl#core#_STAR_ns_STAR_[0])
-    endwhile
-  catch /^Vim\%((\a\+)\)\=:E168/
-  finally
-    let g:timl#core#_STAR_ns_STAR_ = old_ns
-    call timl#reader#close(file)
-  endtry
+  return timl#compiler#source_file(a:filename)
 endfunction
 
 if !exists('g:timl#requires')
