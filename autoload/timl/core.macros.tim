@@ -61,13 +61,19 @@
 (defmacro -> [x & forms]
   (if (seq forms)
     (let [form (first forms)
-          more (rest forms)]
-      (if more
-        `(-> (-> ~x ~form) ~@more)
-        (if (list? form)
+          more (rest forms)] (if more `(-> (-> ~x ~form) ~@more) (if (list? form)
           `(~(first form) ~x ~@(rest form))
           (list form x))))
     x))
+
+(defmacro binding [bindings & body]
+  (if (seq bindings)
+    `(let [old# ~(first bindings)]
+       (try
+         (set! ~(first bindings) ~(first (rest bindings)))
+         (binding ~(vec (rest (rest bindings))) ~@body)
+         (finally (set! ~(first bindings) old#))))
+    `(do ~@body)))
 
 ; does not nest
 (defmacro with-out-str [& body]

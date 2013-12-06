@@ -234,7 +234,9 @@ function! timl#compiler#emit_set_BANG_(file, context, ns, locals, var, value) ab
     else
       let var = timl#compiler#resolve(var, a:ns)
     endif
-    call s:println(a:file, 'unlet! '.var)
+    if var[0][0] !=# '&'
+      call s:println(a:file, 'unlet! '.var)
+    endif
     call s:emit(a:file, 'let '.var.' =  %s', a:ns, a:locals, a:value)
     return s:printfln(a:file, a:context, 'g:timl#nil')
   elseif timl#consp(a:var)
