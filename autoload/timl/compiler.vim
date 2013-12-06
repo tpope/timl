@@ -115,7 +115,7 @@ function! timl#compiler#resolve(sym, ns)
   if has_key(s:specials, sym) || sym =~# '^\w:'
     return sym
   elseif sym =~# '#' && exists('g:'.timl#munge(sym))
-    return 'g:'.sym
+    return 'g:'.timl#munge(sym)
   elseif sym =~# '^&\w' && exists(sym)
     return sym
   endif
