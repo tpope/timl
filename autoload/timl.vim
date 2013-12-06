@@ -105,7 +105,7 @@ function! timl#arg2env(arglist, args, env) abort
       let env[get(a:arglist, i+1, ['...'])[0]] = args[i : -1]
       break
     elseif i >= len(args)
-      throw 'timl: arity error'.i.string(args)
+      throw 'timl: arity error: need '.timl#printer#string(a:arglist).' but got '.timl#printer#string(a:args)
     elseif timl#symbolp(_.param)
       let env[_.param[0]] = args[i]
     elseif type(_.param) == type([])
