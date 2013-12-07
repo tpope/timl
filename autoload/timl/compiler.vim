@@ -272,9 +272,9 @@ endfunction
 function! timl#compiler#emit_recur(file, context, ns, form, locals, ...) abort
   if a:context ==# "return %s"
     let sym = s:tempsym('recur')
-    call s:println(a:file, "let newlocals = [copy(locals[0])]")
-    call s:emit(a:file, "call timl#arg2env(self.arglist, %s, newlocals[0])", a:ns, a:locals, a:000)
-    call s:println(a:file, "let locals = newlocals")
+    call s:println(a:file, "let newlocals = copy(self.locals)")
+    call s:emit(a:file, "call timl#arg2env(self.arglist, %s, newlocals)", a:ns, a:locals, a:000)
+    call s:println(a:file, "let locals[-1] = newlocals")
     return s:println(a:file, "continue")
   endif
   throw 'timl#compiler: recur called outside tail position'

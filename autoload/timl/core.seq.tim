@@ -19,11 +19,12 @@
 
 (defn filter [pred coll]
   (lazy-seq
-    (when-let [s (seq coll)]
-      (let [f (first s) r (rest s)]
-        (if (pred f)
-          (cons f (filter pred r))
-          (filter pred r))))))
+    (loop [s (seq coll)]
+      (when s
+        (let [f (first s) r (rest s)]
+          (if (pred f)
+            (cons f (filter pred r))
+            (recur (seq r))))))))
 
 (defn concat
   ([] (lazy-seq nil))
