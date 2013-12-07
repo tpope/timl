@@ -6,9 +6,10 @@
 
 (defn eval [form] (#*timl#eval form))
 
+(declare concat)
 (defn constantly [x] (fn [& args] x))
 (defn partial [f & args]
-  (fn [& more] (apply f (append args more))))
+  (fn [& more] (apply f (concat args more))))
 (defn comp [f & fns]
   (if fns
     (fn [& args] (f (apply (apply comp fns) args)))

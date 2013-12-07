@@ -1,6 +1,5 @@
 (in-ns 'timl.core)
 
-(def conj)
 (defmacro lazy-seq [& body]
   `(#*timl#lang#create_lazy_seq (fn [] ~@body)))
 (defn not-empty [xs] (if (empty? xs) nil xs))

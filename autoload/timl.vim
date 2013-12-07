@@ -321,7 +321,7 @@ function! timl#equalsp(x, ...) abort
 endfunction
 
 " }}}1
-" Section: Hash maps {{{1
+" Section: Collections {{{1
 
 function! timl#key(key)
   if type(a:key) == type(0)
@@ -371,7 +371,7 @@ function! timl#set(coll) abort
 endfunction
 
 function! timl#assocb(coll, ...) abort
-  let keyvals = a:0 == 1 ? a:1 : a:000
+  let keyvals = a:0 == 1 ? timl#vec(a:1) : a:000
   if len(keyvals) % 2 == 0
     let type = timl#type(a:coll)
     for i in range(0, len(keyvals) - 1, 2)
@@ -405,6 +405,30 @@ endfunction
 
 function! timl#dissoc(coll, ...) abort
   return timl#persistentb(call('timl#dissocb', [timl#transient(a:coll)] + a:000))
+endfunction
+
+function! timl#conj(coll, x, ...) abort
+  let t = timl#type(a:coll)
+  if t ==# 'timl.vim/List'
+    return timl#persistentb(extend(timl#transient(a:coll), [a:x] + a:000))
+  elseif t ==# 'timl.lang/HashSet'
+    let coll = timl#transient(a:coll)
+    let coll[timl#key(a:x)] = a:x
+    let _ = {}
+    for _.v in a:000
+      let coll[timl#key(_.v)] = _.v
+    endfor
+    return timl#persistentb(coll)
+  elseif t ==# 'timl.lang/HashMap' || t ==# 'timl.vim/Dictionary'
+    let coll = timl#transient(a:coll)
+    let _ = {}
+    for _.v in a:000
+      call timl#assocb(a:coll, timl#vec(_.v))
+    endfor
+    return timl#persistentb(coll)
+  else
+    return timl#cons(a:x, a:coll)
+  endif
 endfunction
 
 " }}}1

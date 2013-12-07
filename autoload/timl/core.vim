@@ -373,15 +373,7 @@ TLalias list timl#list
 TLalias list_STAR_ timl#list2
 TLpredicate list_QMARK_(val) timl#consp(a:val)
 TLalias cons timl#cons
-
-TLfunction! append(...) abort
-  let acc = []
-  let _ = {}
-  for _.elem in a:000
-    call extend(acc, timl#vec(_.elem))
-  endfor
-  return timl#persistentb(acc)
-endfunction
+TLalias conj timl#conj
 
 " }}}1
 " Section: Vectors {{{1

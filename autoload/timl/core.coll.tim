@@ -1,7 +1,5 @@
 (in-ns 'timl.core)
 
-(defn conj [coll & xs] (append coll xs))
-
 (defn sorter [>]
   (fn [x y]
     (if (> x y)
