@@ -1,5 +1,11 @@
 (ns timl.repl)
 
+(defn qf
+  ([] (qf *e))
+  ([e]
+   (#*setqflist (get e "qflist"))
+   (throw "timl#repl: exit copen")))
+
 (def special-forms
   '[if do let fn def :
      quote syntax-quote unquote unquote-splicing function

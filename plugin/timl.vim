@@ -21,7 +21,14 @@ augroup END
 
 command! -bar -nargs=?                                             TLrepl :execute s:repl(<f-args>)
 command! -nargs=1 -complete=expression                          TLinspect :echo timl#printer#string(<args>)
-command! -nargs=1 -complete=customlist,timl#reflect#input_complete TLeval :echo timl#rep(<q-args>)
+command! -nargs=1 -complete=customlist,timl#reflect#input_complete TLeval
+      \ try |
+      \    echo timl#rep(<q-args>) |
+      \ catch |
+      \    unlet! g:timl#core#_STAR_e |
+      \    let g:timl#core#_STAR_e = timl#build_exception(v:exception, v:throwpoint) |
+      \    echoerr v:exception |
+      \ endtry
 
 function! s:load_filetype(ft) abort
   let ft = split(a:ft)[0]
@@ -122,6 +129,7 @@ function! s:repl(...) abort
         let g:timl#core#_STAR_1 = _.val
         echo timl#printer#string(_.val)
       catch /^timl#repl: exit/
+        redraw
         return v:exception[16:-1]
       catch /^Vim\%((\a\+)\)\=:E168/
         return ''
