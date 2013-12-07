@@ -129,7 +129,6 @@ function! s:deref_lazy_seq(lseq) abort
       unlockvar 1 a:lseq
       let _ = {'seq': timl#call(a:lseq.fn, [])}
       while !timl#satisfiesp('timl.lang/ISeq', _.seq)
-        echo timl#type(_.seq)
         let _.seq = timl#dispatch('timl.lang/Seqable', 'seq', _.seq)
       endwhile
       let a:lseq.seq = _.seq

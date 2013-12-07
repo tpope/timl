@@ -332,7 +332,7 @@ endfunction
 " }}}1
 " Section: Strings {{{1
 
-TLpredicate str_QMARK_(obj)     type(a:obj) == type('')
+TLpredicate string_QMARK_(obj)  type(a:obj) == type('')
 TLpredicate symbol_QMARK_(obj)  timl#symbolp(a:obj)
 TLpredicate keyword_QMARK_(obj) timl#keywordp(a:obj)
 
