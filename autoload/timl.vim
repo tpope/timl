@@ -178,12 +178,19 @@ endfunction
 
 function! timl#with_meta(obj, meta)
   if timl#objectp(a:obj)
-    let obj = copy(a:obj)
-    let obj['#meta'] = a:meta
-    lockvar obj
-    return obj
+    if !timl#equalsp(get(a:obj, '#meta', g:timl#nil), a:meta)
+      let obj = copy(a:obj)
+      if a:meta is# g:timl#nil
+        call remove(obj, '#meta')
+      else
+        let obj['#meta'] = a:meta
+      endif
+      lockvar obj
+      return obj
+    endif
+    return a:obj
   endif
-  throw 'timl: cannot attach metadata to a '.timl#type(data)
+  throw 'timl: cannot attach metadata to a '.timl#type(a:obj)
 endfunction
 
 function! timl#objectp(obj)

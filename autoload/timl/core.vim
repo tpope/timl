@@ -56,12 +56,12 @@ let s:form = timl#symbol('&form')
 let s:env = timl#symbol('&env')
 
 TLfunction fn(form, env, ...)
-  return timl#with_meta(timl#list2([s:fns] + a:000), a:form)
+  return timl#with_meta(timl#list2([s:fns] + a:000), timl#meta(a:form))
 endfunction
 let g:timl#core#fn.macro = g:timl#true
 
 TLfunction defn(form, env, name, ...)
-  return timl#list(s:def, a:name, timl#with_meta(timl#list2([s:fn1, a:name] + a:000), a:form))
+  return timl#list(s:def, a:name, timl#with_meta(timl#list2([s:fn1, a:name] + a:000), timl#meta(a:form)))
 endfunction
 let g:timl#core#defn.macro = g:timl#true
 
