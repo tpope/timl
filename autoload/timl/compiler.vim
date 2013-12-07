@@ -247,6 +247,34 @@ function! timl#compiler#emit_recur(file, context, ns, form, locals, ...) abort
   throw 'timl#compiler: recur called outside tail position'
 endfunction
 
+if !exists('g:timl_functions')
+  let g:timl_functions = {}
+endif
+
+function! s:loc_meta(form)
+  let meta = timl#meta(a:form)
+  if type(meta) == type({}) && has_key(meta, 'file') && has_key(meta, 'line')
+    return {'file': meta.file, 'line': meta.line}
+  else
+    return {}
+  endif
+endfunction
+
+function! s:function_gc()
+  for fn in keys(g:timl_functions)
+    try
+      call function('{'.fn.'}')
+    catch /^Vim.*E700/
+      call remove(g:timl_functions, fn)
+    endtry
+  endfor
+endfunction
+
+augroup timl#compiler#fn
+  autocmd!
+  autocmd CursorHold * call s:function_gc()
+augroup END
+
 function! timl#compiler#emit_fn_STAR_(file, context, ns, form, locals, params, ...) abort
   let tmp = s:tempsym('fn')
   let locals = copy(a:locals)
@@ -278,6 +306,11 @@ function! timl#compiler#emit_fn_STAR_(file, context, ns, form, locals, params, .
   call call('timl#compiler#emit_do', [a:file, "return %s", a:ns, a:form, locals] + body)
   call s:println(a:file, "endwhile")
   call s:println(a:file, "endfunction")
+  let meta = s:loc_meta(a:form)
+  if !empty(meta)
+    call s:println(a:file, "let g:timl_functions[join([".tmp.".call])] = "
+          \ . timl#compiler#serialize(meta))
+  endif
   call s:printfln(a:file, a:context, tmp)
   call s:println(a:file, "finally")
   call s:println(a:file, "call remove(locals, 0)")
@@ -494,12 +527,11 @@ endfunction
 function! timl#compiler#eval(x, ...) abort
   let _ns = timl#name(a:0 ? a:1 : g:timl#core#_STAR_ns_STAR_.name)
   let str = timl#compiler#build(a:x, _ns, "return %s")
-  let g:str = str
-  return timl#compiler#execute(str, a:0 > 1 ? a:2 : {})
+  return s:execute(a:x, str)
 endfunction
 
-function! timl#compiler#execute(str, ...)
-  let locals = [a:0 ? a:1 : {}]
+function! s:execute(form, str)
+  let locals = [{}]
   let temp = {}
   let _dict = {}
   let _str = "function _dict.func(locals) abort\n"
@@ -510,6 +542,10 @@ function! timl#compiler#execute(str, ...)
         \ . "endwhile\n"
         \ . "endfunction"
   execute _str
+  let meta = s:loc_meta(a:form)
+  if !empty(meta)
+    let g:timl_functions[join([_dict.func])] = meta
+  endif
   return _dict.func(a:0 > 1 ? a:2 : {})
 endfunction
 
@@ -546,10 +582,17 @@ function! timl#compiler#source_file(filename)
     endif
     let file = timl#reader#open(a:filename)
     let strs = ["let s:d = {}"]
+    let _ = {}
     while !timl#reader#eofp(file)
-      let str = timl#compiler#build(timl#reader#read(file), g:timl#core#_STAR_ns_STAR_.name)
-      call timl#compiler#execute(str)
-      call add(strs, "function! s:d.f() abort\nlet locals = [{}]\nlet temp ={}\n".str."endfunction\ncall s:d.f()\n")
+      let _.read = timl#reader#read(file)
+      let str = timl#compiler#build(_.read, g:timl#core#_STAR_ns_STAR_.name)
+      call s:execute(_.read, str)
+      call add(strs, "function! s:d.f() abort\nlet locals = [{}]\nlet temp ={}\n".str."endfunction\n")
+      let meta = s:loc_meta(_.read)
+      if !empty(meta)
+        let strs[-1] .= 'let g:timl_functions[join([s:d.f])] = '.string(meta)."\n"
+      endif
+      let strs[-1] .= "call s:d.f()\n"
     endwhile
     call add(strs, 'unlet s:d')
     call writefile(split(join(strs, "\n"), "\n"), cache)
