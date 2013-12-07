@@ -81,11 +81,12 @@ let s:escapes = {
       \ "\\": '\\'}
 
 function! timl#compiler#serialize(x)
+  let t = timl#type(a:x)
   " TODO: guard against recursion
-  if timl#keywordp(a:x)
+  if t ==# 'timl.lang/Keyword'
     return 'timl#keyword('.timl#compiler#serialize(timl#name(a:x)).')'
 
-  elseif timl#symbolp(a:x)
+  elseif t ==# 'timl.lang/Symbol'
     return 'timl#symbol('.timl#compiler#serialize(a:x[0]).')'
 
   elseif a:x is# g:timl#nil
@@ -93,6 +94,26 @@ function! timl#compiler#serialize(x)
 
   elseif type(a:x) == type([])
     return '['.join(map(copy(a:x), 'timl#compiler#serialize(v:val)'), ', ').']'
+
+  elseif t ==# 'timl.lang/HashMap'
+    let _ = {}
+    let keyvals = []
+    let _.seq = timl#seq(a:x)
+    while _.seq isnot# g:timl#nil
+      call extend(keyvals, timl#vec(timl#first(_.seq)))
+      let _.seq = timl#next(_.seq)
+    endwhile
+    return 'timl#hash_map('.timl#compiler#serialize(keyvals).')'
+
+  elseif t ==# 'timl.lang/HashSet'
+    let _ = {}
+    let keyvals = []
+    let _.seq = timl#seq(a:x)
+    while _.seq isnot# g:timl#nil
+      call add(keyvals, timl#first(_.seq))
+      let _.seq = timl#next(_.seq)
+    endwhile
+    return 'timl#set('.timl#compiler#serialize(keyvals).')'
 
   elseif type(a:x) == type({})
     let acc = []
