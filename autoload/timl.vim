@@ -287,8 +287,8 @@ function! timl#str(val) abort
     return a:val
   elseif type(a:val) == type(function('tr'))
     return substitute(join([a:val]), '[{}]', '', 'g')
-  elseif timl#symbolp(a:val)
-    return substitute(a:val[0], '^:', '', '')
+  elseif timl#symbolp(a:val) || timl#keywordp(a:val)
+    return a:val[0]
   elseif timl#consp(a:val)
     let _ = {'val': a:val}
     let acc = ''
