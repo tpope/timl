@@ -9,6 +9,9 @@ function! s:function(name) abort
   return function(substitute(a:name,'^s:',matchstr(expand('<sfile>'), '.*\zs<SNR>\d\+_'),''))
 endfunction
 
+let s:type = timl#intern_type('timl.lang/Type')
+let g:timl#lang#Type = {'#tag': s:type, 'name': timl#symbol('timl.lang/Type')}
+
 " Section: Nil
 
 function! s:identity(x)
@@ -20,6 +23,7 @@ function! s:nil_get(this, key, ...)
 endfunction
 
 let g:timl#lang#Nil = {
+      \ "#tag": s:type, "name": timl#symbol('timl.lang/Nil'),
       \ "implements":
       \ {"timl.lang/Seqable":
       \    {"seq": s:function("s:identity")},
@@ -40,11 +44,13 @@ function! s:this_get(this, coll, ...) abort
 endfunction
 
 let g:timl#lang#Symbol = {
+      \ "#tag": s:type, "name": timl#symbol('timl.lang/Symbol'),
       \ "implements":
       \ {"timl.lang/IFn":
       \    {"invoke": s:function('s:this_get')}}}
 
 let g:timl#lang#Keyword = {
+      \ "#tag": s:type, "name": timl#symbol('timl.lang/Keyword'),
       \ "implements":
       \ {"timl.lang/IFn":
       \    {"invoke": s:function('s:this_get')}}}
@@ -56,6 +62,7 @@ function! s:function_invoke(this, ...) abort
 endfunction
 
 let g:timl#lang#Function = {
+      \ "#tag": s:type, "name": timl#symbol('timl.lang/Function'),
       \ "implements":
       \ {"timl.lang/IFn":
       \    {"invoke": s:function('s:function_invoke')}}}
@@ -71,6 +78,7 @@ function! s:cons_cdr(cons)
 endfunction
 
 let g:timl#lang#Cons = {
+      \ "#tag": s:type, "name": timl#symbol('timl.lang/Cons'),
       \ "implements":
       \ {"timl.lang/Seqable":
       \    {"seq": s:function("s:identity")},
@@ -93,6 +101,7 @@ function! s:chunk_rest(seq) abort
 endfunction
 
 let g:timl#lang#ChunkedCons = {
+      \ "#tag": s:type, "name": timl#symbol('timl.lang/ChunkedCons'),
       \ "implements":
       \ {"timl.lang/Seqable":
       \    {"seq": s:function('s:identity')},
@@ -129,6 +138,7 @@ function! s:deref_lazy_seq(lseq) abort
 endfunction
 
 let g:timl#lang#LazySeq = {
+      \ "#tag": s:type, "name": timl#symbol('timl.lang/LazySeq'),
       \ "implements":
       \ {"timl.lang/Seqable":
       \   {"seq": s:function('s:deref_lazy_seq')}}}
@@ -144,6 +154,7 @@ function! s:map_get(this, key, ...)
 endfunction
 
 let g:timl#lang#HashMap = {
+      \ "#tag": s:type, "name": timl#symbol('timl.lang/HashMap'),
       \ "implements":
       \ {"timl.lang/Seqable":
       \    {"seq": s:function('s:map_seq')},
@@ -161,6 +172,7 @@ function! s:set_get(this, key, ...)
 endfunction
 
 let g:timl#lang#HashSet = {
+      \ "#tag": s:type, "name": timl#symbol('timl.lang/HashSet'),
       \ "implements":
       \ {"timl.lang/Seqable":
       \    {"seq": s:function("s:set_seq")},

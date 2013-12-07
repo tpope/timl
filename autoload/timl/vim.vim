@@ -7,9 +7,12 @@ function! s:function(name) abort
   return function(substitute(a:name,'^s:',matchstr(expand('<sfile>'), '.*\zs<SNR>\d\+_'),''))
 endfunction
 
+let s:type = timl#intern_type('timl.lang/Type')
+
 " Section: Number
 
-let g:timl#vim#Number = {}
+let g:timl#vim#Number = {
+      \ "#tag": s:type, "name": timl#symbol('timl.vim/Number')}
 
 " Section: String
 
@@ -23,6 +26,7 @@ function! s:str_get(this, idx, ...) abort
 endfunction
 
 let g:timl#vim#String = {
+      \ "#tag": s:type, "name": timl#symbol('timl.vim/String'),
       \ "implements":
       \ {"timl.lang/ILookup":
       \    {"get": s:function("s:str_get")}}}
@@ -34,6 +38,7 @@ function! s:funcall(this, args)
 endfunction
 
 let g:timl#vim#Funcref = {
+      \ "#tag": s:type, "name": timl#symbol('timl.vim/Funcref'),
       \ "implements":
       \ {"timl.lang/IFn":
       \   {"invoke": s:function('s:funcall')}}}
@@ -48,6 +53,7 @@ function! s:list_get(this, idx, ...) abort
 endfunction
 
 let g:timl#vim#List = {
+      \ "#tag": s:type, "name": timl#symbol('timl.vim/List'),
       \ "implements":
       \ {"timl.lang/Seqable":
       \    {"seq": function("timl#list2")},
@@ -67,6 +73,7 @@ function! s:dict_get(this, key, ...) abort
 endfunction
 
 let g:timl#vim#Dictionary = {
+      \ "#tag": s:type, "name": timl#symbol('timl.vim/Dictionary'),
       \ "implements":
       \ {"timl.lang/Seqable":
       \    {"seq": s:function("s:dict_seq")},
@@ -78,7 +85,8 @@ let g:timl#vim#Dictionary = {
 " Section: Float
 
 if has('float')
-  let g:timl#vim#Float = {}
+  let g:timl#vim#Float = {
+      \ "#tag": s:type, "name": timl#symbol('timl.vim/Float')}
 endif
 
 " vim:set et sw=2:

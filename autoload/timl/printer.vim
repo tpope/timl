@@ -30,6 +30,9 @@ function! timl#printer#string(x)
   elseif type == 'timl.lang/Namespace'
     return '#<Namespace '.get(a:x, 'name', '').'>'
 
+  elseif type == 'timl.lang/Type'
+    return timl#str(a:x.name)
+
   elseif timl#consp(a:x)
     let acc = []
     let _ = {'x': a:x}
