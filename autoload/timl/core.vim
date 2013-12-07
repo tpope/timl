@@ -42,7 +42,46 @@ TLexpr type(val) timl#symbol(timl#type(a:val))
 TLalias meta timl#meta
 
 " }}}1
-" Section: Functional {{{1
+" Section: Functions {{{1
+
+let s:def = timl#symbol('def')
+let s:lets = timl#symbol('let*')
+let s:fns = timl#symbol('fn*')
+let s:fn1 = timl#symbol('timl.core/fn')
+let s:defn = timl#symbol('timl.core/defn')
+let s:setq = timl#symbol('set!')
+let s:dot = timl#symbol('.')
+let s:form = timl#symbol('&form')
+let s:env = timl#symbol('&env')
+
+TLfunction fn(form, env, ...)
+  return timl#list2([s:fns] + a:000)
+endfunction
+let g:timl#core#fn.macro = g:timl#true
+
+TLfunction defn(form, env, name, ...)
+  return timl#list(s:def, a:name, timl#list2([s:fn1, a:name] + a:000))
+endfunction
+let g:timl#core#defn.macro = g:timl#true
+
+TLfunction defmacro(form, env, name, params, ...)
+  let extra = [s:form, s:env]
+  if type(a:params) == type([])
+    let body = [extra + a:params] + a:000
+  else
+    let _ = {}
+    let body = []
+    for _.list in [a:params] + a:000
+      call add(body, timl#cons(extra + timl#first(_.list), timl#next(_.list)))
+    endfor
+  endif
+  let fn = timl#gensym('fn')
+  return timl#list(s:lets,
+        \ [fn, timl#list2([s:defn, a:name] + body)],
+        \ timl#list(s:setq, timl#list(s:dot, fn, timl#symbol('macro')), 1),
+        \ fn)
+endfunction
+let g:timl#core#defmacro.macro = g:timl#true
 
 TLexpr identity(x) a:x
 

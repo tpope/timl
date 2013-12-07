@@ -188,7 +188,7 @@ function! s:emit(file, context, ns, locals, x) abort
   if timl#symbolp(F) && !has_key(a:locals, F[0]) && F[0] !~# '^:'
     let Fn = timl#compiler#lookup(F, a:ns)
     if timl#type(Fn) == 'timl#lang#Function' && get(Fn, 'macro')
-      return s:emit(a:file, a:context, a:ns, a:locals, timl#call(Fn, vec))
+      return s:emit(a:file, a:context, a:ns, a:locals, timl#call(Fn, [x, a:locals] + vec))
     endif
   endif
   call s:emit(a:file, "let ".tmp."_args = %s", a:ns, a:locals, vec)

@@ -1,16 +1,6 @@
 (in-ns 'timl.core)
 
-(def defmacro (fn* defmacro [name & fdecl]
-  `(let* [fn# (def ~name (fn* ~name ~@fdecl))]
-     (set! (. fn# macro) 1)
-     fn#)))
-(set! (. defmacro macro) 1)
-
-(defmacro fn [& args] `(fn* ~@args))
 (defmacro let [& args] `(let* ~@args))
-
-(defmacro defn [name params & fdecl]
-  `(def ~name (fn ~name ~params ~@fdecl)))
 
 (defmacro declare [& names]
   `(do ~@(map (fn [n] (list 'def n)) names)))
