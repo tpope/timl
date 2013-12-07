@@ -334,6 +334,9 @@ function! timl#equalsp(x, ...) abort
   return 1
 endfunction
 
+" }}}1
+" Section: Hash maps {{{1
+
 function! timl#key(key)
   if type(a:key) == type(0)
     return string(a:key)
@@ -353,6 +356,38 @@ function! timl#dekey(key)
     return timl#reader#read_string(a:key)
   else
     return timl#keyword(a:key)
+  endif
+endfunction
+
+let s:hash_map = timl#intern_type('timl#lang#HashMap')
+function! timl#hash_map(...) abort
+  let keyvals = a:0 == 1 ? a:1 : a:000
+  if len(keyvals) % 2 == 0
+    let dict = {'#tag': s:hash_map}
+    for i in range(0, len(keyvals) - 1, 2)
+      let key = timl#key(keyvals[i])
+      let dict[keyvals[i]] = keyvals[i+1]
+    endfor
+    lockvar dict
+    return dict
+  endif
+  throw 'timl: more keys than values'
+endfunction
+
+let s:hash_set = timl#intern_type('timl#lang#HashSet')
+function! timl#hash_set(...) abort
+  return timl#set(a:000)
+endfunction
+
+function! timl#set(coll)
+  let dict = {'#tag': s:hash_set}
+  if type(a:coll) == type([])
+    let _ = {}
+    for _.val in a:coll
+      let dict[timl#key(_.val)] = _.val
+    endfor
+    lockvar dict
+    return dict
   endif
 endfunction
 

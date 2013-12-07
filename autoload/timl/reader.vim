@@ -97,15 +97,9 @@ function! s:process(port, token, pos, line) abort
   elseif token == '{'
     let list = s:read_until(port, '}')
     if len(list) % 2 != 0
-      let error = 'timl#reader: invalid dict literal'
+      let error = 'timl#reader: invalid hash map literal'
     else
-      let dict = {'#tag': timl#intern_type('timl#lang#HashMap')}
-      for i in range(0, len(list)-1, 2)
-        let key = timl#key(list[i])
-        let dict[key] = list[i+1]
-      endfor
-      lockvar dict
-      return dict
+      return timl#hash_map(list)
     endif
   elseif token == '#['
     let list = s:read_until(port, ']')
@@ -126,14 +120,7 @@ function! s:process(port, token, pos, line) abort
       return dict
     endif
   elseif token == '#{'
-    let list = s:read_until(port, '}')
-    let dict = {'#tag': timl#intern_type('timl#lang#HashSet')}
-    let _ = {}
-    for _.key in list
-      let dict[timl#key(_.key)] = _.key
-    endfor
-    lockvar dict
-    return dict
+    return timl#set(s:read_until(port, '}'))
   elseif has_key(s:constants, token)
     return s:constants[token]
   elseif token ==# 'nil'

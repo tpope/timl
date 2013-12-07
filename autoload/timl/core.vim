@@ -416,21 +416,9 @@ TLfunction! dict(...) abort
   return timl#lock(dict)
 endfunction
 
-TLfunction! hash_map(...) abort
-  let list = copy(a:000)
-  let dict = {}
-  while len(list) % 2 !=# 0
-    if timl#consp(get(list,-1, ''))
-      call extend(list, remove(list, -1))
-    else
-      throw 'timl: dict requires a even number of arguments'
-    endif
-  endwhile
-  for i in range(0, len(list)-1, 2)
-    let dict[timl#key(list[i])] = list[i+1]
-  endfor
-  return timl#lock(dict)
-endfunction
+TLalias hash_map timl#hash_map
+TLalias hash_set timl#hash_set
+TLalias set timl#set
 
 TLfunction! dict_QMARK_(val) abort
   return type(a:val) == type({}) ? s:true : s:false
