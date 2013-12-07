@@ -9,11 +9,11 @@ let s:iskeyword = '[[:alnum:]_=?!#$%&*+|./<>:-]'
 
 function! s:read_token(port) abort
   let pat = '^\%(#"\%(\\\@<!\%(\\\\\)*\\"\|[^"]\)*"\|#[[:punct:]]\|"\%(\\.\|[^"]\)*"\|[[:space:],]\|;.\{-\}\ze\%(\n\|$\)\|\~@\|'.s:iskeyword.'\+\|\\\%(space\|tab\|newline\|return\|.\)\|.\)'
-  let match = matchstr(a:port.str, pat, a:port.pos)
-  let a:port.pos += len(match)
+  let match = ' '
   while match =~# '^[[:space:],]'
     let match = matchstr(a:port.str, pat, a:port.pos)
     let a:port.pos += len(match)
+    let a:port.line += len(substitute(match, "[^\n]", '', 'g'))
   endwhile
   return match
 endfunction
@@ -41,14 +41,14 @@ function! s:read_until(port, char)
   let list = []
   let token = s:read_token(a:port)
   while token !=# a:char && token !=# ''
-    call add(list, s:read(a:port, token, a:port.pos))
+    call add(list, s:read(a:port, token, a:port.pos, a:port.line))
     let token = s:read_token(a:port)
   endwhile
   if token ==# a:char
     lockvar list
     return list
   endif
-  throw 'timl#reader: unexpected EOF at byte ' . a:port.pos
+  throw 'timl#reader: unexpected EOF on line ' . a:port.line
 endfunction
 
 let s:constants = {
@@ -211,7 +211,7 @@ function! s:read(port, ...) abort
   else
     let error = 'timl#reader: unexpected token '.string(token)
   endif
-  throw error . ' at byte ' . pos
+  throw error . ' on line ' . (a:0 > 2 ? a:3 : port.line)
 endfunction
 
 function! s:read_bang(port) abort
@@ -224,7 +224,7 @@ endfunction
 
 function! timl#reader#open(filename) abort
   let str = join(readfile(a:filename), "\n")
-  return {'str': str, 'filename': a:filename, 'pos': 0}
+  return {'str': str, 'filename': a:filename, 'pos': 0, 'line': 1}
 endfunction
 
 function! timl#reader#close(port)
@@ -249,11 +249,11 @@ function! timl#reader#read_all(port) abort
 endfunction
 
 function! timl#reader#read_string_all(str) abort
-  return timl#reader#read_all({'str': a:str, 'pos': 0})
+  return timl#reader#read_all({'str': a:str, 'pos': 0, 'line': 1})
 endfunction
 
 function! timl#reader#read_string(str) abort
-  return timl#reader#read({'str': a:str, 'pos': 0})
+  return timl#reader#read({'str': a:str, 'pos': 0, 'line': 1})
 endfunction
 
 function! timl#reader#read_file(filename) abort
