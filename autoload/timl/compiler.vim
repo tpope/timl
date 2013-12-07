@@ -228,7 +228,7 @@ function! timl#compiler#emit_set_BANG_(file, context, ns, form, locals, var, val
 endfunction
 
 function! timl#compiler#emit_function(file, context, ns, form, locals, name) abort
-  return s:printfln(a:file, a:context, 'function('.string(a:name[0]).')')
+  return s:printfln(a:file, a:context, 'function('.string(timl#munge(a:name[0])).')')
 endfunction
 
 function! timl#compiler#emit_if(file, context, ns, form, locals, cond, then, ...) abort
