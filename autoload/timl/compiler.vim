@@ -616,8 +616,10 @@ function! timl#compiler#source_file(filename)
     let file = timl#reader#open(a:filename)
     let strs = ["let s:d = {}"]
     let _ = {}
-    while !timl#reader#eofp(file)
-      let _.read = timl#reader#read(file)
+    let _.read = g:timl#nil
+    let eof = []
+    while _.read isnot# eof
+      let _.read = timl#reader#read(file, eof)
       let str = timl#compiler#build(_.read, g:timl#core#_STAR_ns_STAR_.name)
       call s:execute(_.read, str)
       call add(strs, "function! s:d.f() abort\nlet locals = [{}]\nlet temp ={}\n".str."endfunction\n")

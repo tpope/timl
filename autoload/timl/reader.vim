@@ -25,12 +25,14 @@ endfunction
 
 let g:timl#reader#eof = []
 
-function! timl#reader#read(port) abort
+function! timl#reader#read(port, ...) abort
   let error = 'timl#reader: EOF'
   try
     let val = s:read(a:port)
     if val isnot# g:timl#reader#eof
       return val
+    elseif a:0
+      return a:1
     endif
   catch /^timl.*/
     let error = v:exception
