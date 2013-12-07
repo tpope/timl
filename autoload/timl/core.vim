@@ -10,6 +10,10 @@ let s:false = g:timl#false
 
 let s:dict = {}
 
+if !exists('g:timl_functions')
+  let g:timl_functions = {}
+endif
+
 command! -bang -nargs=1 TLfunction
       \ let g:timl#core#{matchstr(<q-args>, '^[[:alnum:]_]\+')} = {
       \    '#tag': s:fn,
@@ -31,7 +35,8 @@ command! -bang -nargs=1 TLexpr
       \    '#tag': s:fn,
       \    'ns': 'timl.core',
       \    'name': timl#demunge(matchstr(<q-args>, '^\zs[[:alnum:]_]\+')),
-      \    'call': s:dict.call}
+      \    'call': s:dict.call} |
+      \ let g:timl_functions[join([s:dict.call])] = {'file': expand('<sfile>'), 'line': expand('<slnum>')}
 
 command! -bang -nargs=1 TLpredicate TLexpr <args> ? s:true : s:false
 
