@@ -185,9 +185,9 @@ function! s:process(port, token, pos, line) abort
       let token = 'timl#lang'.token
     endif
     if type(next) == type({})
-      return timl#lock(extend(next, {'#tag': timl#intern_type(token)}))
+      return timl#persistentb(extend(next, {'#tag': timl#intern_type(token)}))
     else
-      return timl#lock({'value': next, '#tag': timl#intern_type(token)})
+      return timl#persistentb({'value': next, '#tag': timl#intern_type(token)})
     endif
   elseif token =~# '^:.'
     return timl#keyword(token[1:-1])

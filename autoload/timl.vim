@@ -244,23 +244,11 @@ function! timl#dispatch(proto, fn, obj, ...)
   throw "timl:E117: ".t." doesn't implement ".a:proto
 endfunction
 
-function! timl#lock(val) abort
-  let val = a:val
-  lockvar val
-  return val
-endfunction
-
-function! timl#persistentp(val) abort
-  let val = a:val
-  return islocked('val')
-endfunction
-
-function! timl#persistent(val) abort
+function! timl#persistentb(val) abort
   let val = a:val
   if islocked('val')
-    return val
+    throw "timl: persistent! called on an already persistent value"
   else
-    let val = copy(a:val)
     lockvar val
     return val
   endif
@@ -271,7 +259,7 @@ function! timl#transient(val) abort
   if islocked('val')
     return copy(val)
   else
-    return val
+    throw "timl: transient called on an already transient value"
   endif
 endfunction
 
@@ -362,16 +350,9 @@ endfunction
 let s:hash_map = timl#intern_type('timl#lang#HashMap')
 function! timl#hash_map(...) abort
   let keyvals = a:0 == 1 ? a:1 : a:000
-  if len(keyvals) % 2 == 0
-    let dict = {'#tag': s:hash_map}
-    for i in range(0, len(keyvals) - 1, 2)
-      let key = timl#key(keyvals[i])
-      let dict[keyvals[i]] = keyvals[i+1]
-    endfor
-    lockvar dict
-    return dict
-  endif
-  throw 'timl: more keys than values'
+  let dict = timl#assocb({'#tag': s:hash_map}, keyvals)
+  lockvar dict
+  return dict
 endfunction
 
 let s:hash_set = timl#intern_type('timl#lang#HashSet')
@@ -379,7 +360,7 @@ function! timl#hash_set(...) abort
   return timl#set(a:000)
 endfunction
 
-function! timl#set(coll)
+function! timl#set(coll) abort
   let dict = {'#tag': s:hash_set}
   if type(a:coll) == type([])
     let _ = {}
@@ -389,6 +370,43 @@ function! timl#set(coll)
     lockvar dict
     return dict
   endif
+endfunction
+
+function! timl#assocb(coll, ...) abort
+  let keyvals = a:0 == 1 ? a:1 : a:000
+  if len(keyvals) % 2 == 0
+    let type = timl#type(a:coll)
+    for i in range(0, len(keyvals) - 1, 2)
+      let key = (type == 'timl#vim#Dictionary' ? timl#str(keyvals[i]) : timl#key(keyvals[i]))
+      let a:coll[key] = keyvals[i+1]
+    endfor
+    return a:coll
+  endif
+  throw 'timl: more keys than values'
+endfunction
+
+function! timl#assoc(coll, ...) abort
+  let keyvals = a:0 == 1 ? a:1 : a:000
+  let coll = timl#transient(a:coll)
+  call timl#assocb(coll, keyvals)
+  lockvar coll
+  return coll
+endfunction
+
+function! timl#dissocb(coll, ...) abort
+  let _ = {}
+  let t = timl#type(a:coll)
+  for _.key in a:000
+    let key = (t == 'timl#vim#Dictionary' ? timl#str(_.key) : timl#key(_.key))
+    if has_key(a:coll, key)
+      call remove(a:coll, key)
+    endif
+  endfor
+  return a:coll
+endfunction
+
+function! timl#dissoc(coll, ...) abort
+  return timl#persistentb(call('timl#dissocb', [timl#transient(a:coll)] + a:000))
 endfunction
 
 " }}}1
@@ -485,7 +503,7 @@ function! timl#vec(cons)
     call add(array, timl#car(_.cons))
     let _.cons = timl#cdr(_.cons)
   endwhile
-  return timl#persistent(extend(array, _.cons))
+  return timl#persistentb(extend(array, _.cons))
 endfunction
 
 function! timl#vectorp(obj) abort

@@ -46,6 +46,8 @@ TLpredicate nil_QMARK_(val) a:val is# g:timl#nil
 TLexpr type(val) timl#symbol(timl#type(a:val))
 TLalias meta timl#meta
 TLalias with_meta timl#with_meta
+TLalias persistent_BANG_ timl#persistentb
+TLalias transient timl#transient
 
 " }}}1
 " Section: Functions {{{1
@@ -378,7 +380,7 @@ TLfunction! append(...) abort
   for _.elem in a:000
     call extend(acc, timl#vec(_.elem))
   endfor
-  return timl#lock(acc)
+  return timl#persistentb(acc)
 endfunction
 
 " }}}1
@@ -390,11 +392,11 @@ TLalias vec timl#vec
 
 TLfunction! subvec(list, start, ...) abort
   if a:0 && a:1 == 0
-    return type(a:list) == type('') ? '' : timl#lock([])
+    return type(a:list) == type('') ? '' : timl#persistentb([])
   elseif a:0
-    return timl#lock(a:list[a:start : (a:1 < 0 ? a:1 : a:1-1)])
+    return timl#persistentb(a:list[a:start : (a:1 < 0 ? a:1 : a:1-1)])
   else
-    return timl#lock(a:list[a:start :])
+    return timl#persistentb(a:list[a:start :])
   endif
 endfunction
 
@@ -413,27 +415,19 @@ TLfunction! dict(...) abort
   for i in range(0, len(list)-1, 2)
     let dict[timl#str(list[i])] = list[i+1]
   endfor
-  return timl#lock(dict)
+  return timl#persistentb(dict)
 endfunction
 
 TLalias hash_map timl#hash_map
 TLalias hash_set timl#hash_set
 TLalias set timl#set
+TLalias assoc timl#assoc
+TLalias assoc_BANG_ timl#assocb
+TLalias dissoc timl#dissoc
+TLalias dissoc_BANG_ timl#dissocb
 
 TLfunction! dict_QMARK_(val) abort
   return type(a:val) == type({}) ? s:true : s:false
-endfunction
-
-TLfunction! dissoc(dict, ...) abort
-  let dict = copy(a:dict)
-  let _ = {}
-  for _.key in a:000
-    let key = timl#key(_.key)
-    if has_key(dict, key)
-      call remove(dict, key)
-    endif
-  endfor
-  return timl#lock(dict)
 endfunction
 
 " }}}1

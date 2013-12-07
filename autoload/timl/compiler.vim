@@ -165,6 +165,9 @@ function! s:emit(file, context, ns, locals, x) abort
         call s:emit(a:file, "let ".sym."[".timl#compiler#serialize(k)."] = %s", a:ns, a:locals, _.v)
       endif
     endfor
+    if islocked('x')
+      call s:println(a:file, "lockvar ".sym)
+    endif
     return s:printfln(a:file, a:context, sym)
 
   elseif !timl#consp(x)

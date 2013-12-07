@@ -101,10 +101,10 @@ let g:timl#lang#ChunkedCons = {
       \     "rest": s:function('s:chunk_rest')}}}
 
 function! g:timl#lang#ChunkedCons.create(list, ...) abort
-  return {'#tag': timl#intern_type('timl#lang#ChunkedCons'),
-        \ 'list': timl#persistent(a:list),
+  return timl#persistentb({'#tag': timl#intern_type('timl#lang#ChunkedCons'),
+        \ 'list': a:list,
         \ 'pos': a:0 > 1 ? a:2 : 0,
-        \ 'next': a:0 ? a:1 : g:timl#nil}
+        \ 'next': a:0 ? a:1 : g:timl#nil})
 endfunction
 
 " Section: Lazy Seqs
