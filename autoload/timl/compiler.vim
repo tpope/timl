@@ -123,8 +123,6 @@ function! s:printfln(file, ...)
   return s:println(a:file, line)
 endfunction
 
-let s:colon = timl#symbol(':')
-let s:dot = timl#symbol('.')
 function! s:emit(file, context, ns, locals, x) abort
   let _ = {}
   let x = a:x
@@ -178,9 +176,9 @@ function! s:emit(file, context, ns, locals, x) abort
   let rest = timl#cdr(x)
   let vec = timl#vec(rest)
 
-  if F is s:colon
+  if timl#symbolp(F, ':')
     return call('timl#compiler#emit__COLON_', [a:file, a:context, a:ns, a:locals] + vec)
-  elseif F is s:dot
+  elseif timl#symbolp(F, '.')
     return call('timl#compiler#emit__DOT_', [a:file, a:context, a:ns, a:locals] + vec)
   elseif timl#symbolp(F) && exists('*timl#compiler#emit_'.timl#munge(F))
     return call("timl#compiler#emit_".timl#munge(F), [a:file, a:context, a:ns, a:locals] + vec)
@@ -216,7 +214,7 @@ function! timl#compiler#emit_set_BANG_(file, context, ns, locals, var, value) ab
     return s:printfln(a:file, a:context, 'g:timl#nil')
   elseif timl#consp(a:var)
     let vec = timl#vec(a:var)
-    if len(vec) == 3 && vec[0] is timl#symbol('.')
+    if len(vec) == 3 && timl#symbolp(vec[0], '.')
       let tmp = s:tempsym('setq')
       call s:emit(a:file, 'let '.tmp.'_coll =  %s', a:ns, a:locals, vec[1])
       call s:emit(a:file, 'let '.tmp.'_coll['.string(substitute(timl#str(vec[2]), '^-', '', '')).'] =  %s', a:ns, a:locals, a:value)
@@ -286,13 +284,12 @@ function! timl#compiler#emit_fn_STAR_(file, context, ns, locals, params, ...) ab
   return s:println(a:file, "endtry")
 endfunction
 
-let s:ampersand = timl#symbol('&')
 function! s:emit_multifn(file, context, ns, locals, name, tmp, fns)
   let _ = {}
   let dispatch = {}
   for fn in a:fns
     let _.args = timl#car(fn)
-    let arity = get(_.args, -2) is# s:ampersand ? 1-len(_.args) : len(_.args)
+    let arity = timl#symbolp(get(_.args, -2), '&') ? 1-len(_.args) : len(_.args)
     let dispatch[arity < 0 ? 30-arity : 10 + arity] = arity
     call call('timl#compiler#emit_fn_STAR_', [a:file, "let ".a:tmp."[".string(arity)."] = %s", a:ns, a:locals, _.args] + timl#vec(timl#cdr(fn)))
   endfor
@@ -387,20 +384,18 @@ function! timl#compiler#emit_quote(file, context, ns, locals, form) abort
   return s:printfln(a:file, a:context, timl#compiler#serialize(a:form))
 endfunction
 
-let s:unquote          = timl#symbol('unquote')
-let s:unquote_splicing = timl#symbol('unquote-splicing')
 function! timl#compiler#emit_syntax_quote(file, context, ns, locals, form, ...) abort
   let gensyms = a:0 ? a:1 : {}
   let _ = {}
   if timl#consp(a:form)
-    if timl#car(a:form) is s:unquote
+    if timl#symbolp(timl#car(a:form), 'unquote')
       return s:emit(a:file, a:context, a:ns, a:locals, timl#car(timl#cdr(a:form)))
     endif
     let tmp = s:tempsym('quasiquote')
     call s:println(a:file, 'let '.tmp.' = []')
     let form = timl#vec(a:form)
     for _.v in form
-      if timl#consp(_.v) && timl#car(_.v) is# s:unquote_splicing
+      if timl#consp(_.v) && timl#symbolp(timl#car(_.v), 'unquote-splicing')
         call s:emit(a:file, 'call extend('.tmp.', timl#vec(%s))', a:ns, a:locals, timl#car(timl#cdr(_.v)))
       else
         call timl#compiler#emit_syntax_quote(a:file, 'call add('.tmp.', %s)', a:ns, a:locals, _.v, gensyms)

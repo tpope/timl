@@ -66,9 +66,10 @@ function! timl#symbol(str)
   return g:timl#symbols[str]
 endfunction
 
-function! timl#symbolp(symbol)
+function! timl#symbolp(symbol, ...)
   return type(a:symbol) == type({}) &&
-        \ get(a:symbol, '#tag') is# s:symbol
+        \ get(a:symbol, '#tag') is# s:symbol &&
+        \ (a:0 ? a:symbol[0] ==# a:1 : 1)
 endfunction
 
 function! timl#name(val) abort
