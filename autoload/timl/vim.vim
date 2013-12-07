@@ -24,7 +24,7 @@ endfunction
 
 let g:timl#vim#String = {
       \ "implements":
-      \ {"timl#lang#ILookup":
+      \ {"timl.lang/ILookup":
       \    {"get": s:function("s:str_get")}}}
 
 " Section: Funcref
@@ -35,7 +35,7 @@ endfunction
 
 let g:timl#vim#Funcref = {
       \ "implements":
-      \ {"timl#lang#IFn":
+      \ {"timl.lang/IFn":
       \   {"invoke": s:function('s:funcall')}}}
 
 " Section: List
@@ -49,11 +49,11 @@ endfunction
 
 let g:timl#vim#List = {
       \ "implements":
-      \ {"timl#lang#Seqable":
+      \ {"timl.lang/Seqable":
       \    {"seq": function("timl#list2")},
-      \  "timl#lang#ILookup":
+      \  "timl.lang/ILookup":
       \    {"get": s:function("s:list_get")},
-      \  "timl#lang#IFn":
+      \  "timl.lang/IFn":
       \    {"invoke": s:function("s:list_get")}}}
 
 " Section: Dictionary
@@ -68,11 +68,11 @@ endfunction
 
 let g:timl#vim#Dictionary = {
       \ "implements":
-      \ {"timl#lang#Seqable":
+      \ {"timl.lang/Seqable":
       \    {"seq": s:function("s:dict_seq")},
-      \  "timl#lang#ILookup":
+      \  "timl.lang/ILookup":
       \    {"get": s:function("s:dict_get")},
-      \  "timl#lang#IFn":
+      \  "timl.lang/IFn":
       \    {"invoke": s:function("s:dict_get")}}}
 
 " Section: Float

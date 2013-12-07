@@ -21,32 +21,32 @@ endfunction
 
 let g:timl#lang#Nil = {
       \ "implements":
-      \ {"timl#lang#Seqable":
+      \ {"timl.lang/Seqable":
       \    {"seq": s:function("s:identity")},
-      \  "timl#lang#ISeq":
+      \  "timl.lang/ISeq":
       \    {"first": s:function('s:identity'),
       \     "rest": s:function('s:identity')},
-      \ "timl#lang#ILookup":
+      \ "timl.lang/ILookup":
       \    {"get": s:function('s:nil_get')}}}
 
 " Section: Symbol
 
 function! s:this_get(this, coll, ...) abort
   if a:0
-    return timl#dispatch('timl#lang#ILookup', 'get', a:coll, a:this, a:1)
+    return timl#dispatch('timl.lang/ILookup', 'get', a:coll, a:this, a:1)
   else
-    return timl#dispatch('timl#lang#ILookup', 'get', a:coll, a:this)
+    return timl#dispatch('timl.lang/ILookup', 'get', a:coll, a:this)
   endif
 endfunction
 
 let g:timl#lang#Symbol = {
       \ "implements":
-      \ {"timl#lang#IFn":
+      \ {"timl.lang/IFn":
       \    {"invoke": s:function('s:this_get')}}}
 
 let g:timl#lang#Keyword = {
       \ "implements":
-      \ {"timl#lang#IFn":
+      \ {"timl.lang/IFn":
       \    {"invoke": s:function('s:this_get')}}}
 
 " Section: Function
@@ -57,7 +57,7 @@ endfunction
 
 let g:timl#lang#Function = {
       \ "implements":
-      \ {"timl#lang#IFn":
+      \ {"timl.lang/IFn":
       \    {"invoke": s:function('s:function_invoke')}}}
 
 " Section: Cons
@@ -72,9 +72,9 @@ endfunction
 
 let g:timl#lang#Cons = {
       \ "implements":
-      \ {"timl#lang#Seqable":
+      \ {"timl.lang/Seqable":
       \    {"seq": s:function("s:identity")},
-      \  "timl#lang#ISeq":
+      \  "timl.lang/ISeq":
       \    {"first": s:function('s:cons_car'),
       \     "rest": s:function('s:cons_cdr')}}}
 
@@ -94,9 +94,9 @@ endfunction
 
 let g:timl#lang#ChunkedCons = {
       \ "implements":
-      \ {"timl#lang#Seqable":
+      \ {"timl.lang/Seqable":
       \    {"seq": s:function('s:identity')},
-      \  "timl#lang#ISeq":
+      \  "timl.lang/ISeq":
       \    {"first": s:function('s:chunk_first'),
       \     "rest": s:function('s:chunk_rest')}}}
 
@@ -119,8 +119,8 @@ function! s:deref_lazy_seq(lseq) abort
   if !has_key(a:lseq, 'seq')
     unlockvar a:lseq
     let _ = {'seq': timl#call(a:lseq.fn, [])}
-    while !timl#satisfiesp('timl#lang#ISeq', _.seq)
-      let _.seq = timl#dispatch('timl#lang#Seqable', 'seq', _.seq)
+    while !timl#satisfiesp('timl.lang/ISeq', _.seq)
+      let _.seq = timl#dispatch('timl.lang/Seqable', 'seq', _.seq)
     endwhile
     let a:lseq.seq = _.seq
     lockvar a:lseq
@@ -130,7 +130,7 @@ endfunction
 
 let g:timl#lang#LazySeq = {
       \ "implements":
-      \ {"timl#lang#Seqable":
+      \ {"timl.lang/Seqable":
       \   {"seq": s:function('s:deref_lazy_seq')}}}
 
 " Section: Hashes
@@ -145,11 +145,11 @@ endfunction
 
 let g:timl#lang#HashMap = {
       \ "implements":
-      \ {"timl#lang#Seqable":
+      \ {"timl.lang/Seqable":
       \    {"seq": s:function('s:map_seq')},
-      \  "timl#lang#ILookup":
+      \  "timl.lang/ILookup":
       \    {"get": s:function('s:map_get')},
-      \  "timl#lang#IFn":
+      \  "timl.lang/IFn":
       \    {"invoke": s:function('s:map_get')}}}
 
 function! s:set_seq(hash)
@@ -162,11 +162,11 @@ endfunction
 
 let g:timl#lang#HashSet = {
       \ "implements":
-      \ {"timl#lang#Seqable":
+      \ {"timl.lang/Seqable":
       \    {"seq": s:function("s:set_seq")},
-      \  "timl#lang#ILookup":
+      \  "timl.lang/ILookup":
       \    {"get": s:function('s:set_get')},
-      \  "timl#lang#IFn":
+      \  "timl.lang/IFn":
       \    {"invoke": s:function('s:set_get')}}}
 
 " Section: Namespaces

@@ -3,7 +3,7 @@ if exists("g:autoloaded_timl_core") || &cp || v:version < 700
 endif
 let g:autoloaded_timl_core = 1
 
-let s:fn = timl#intern_type('timl#lang#Function')
+let s:fn = timl#intern_type('timl.lang/Function')
 
 let s:true = g:timl#true
 let s:false = g:timl#false
@@ -95,7 +95,7 @@ TLexpr identity(x) a:x
 
 TLfunction! apply(f, x, ...) abort
   let args = [a:x] + a:000
-  if timl#type(args[-1]) == 'timl#vim#Dictionary'
+  if timl#type(args[-1]) == 'timl.vim/Dictionary'
     let dict = remove(args, -1)
   else
     let dict = 0
@@ -482,7 +482,7 @@ TLfunction! map(f, coll) abort
   if empty(_.seq)
     return a:coll
   endif
-  let tag = timl#intern_type('timl#lang#Cons')
+  let tag = timl#intern_type('timl.lang/Cons')
   let head = {'#tag': tag,
         \ 'car': timl#call(a:f, [timl#core#first(_.seq)]),
         \ 'cdr': g:timl#nil}

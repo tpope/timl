@@ -56,7 +56,7 @@ function! timl#intern_type(type)
   return timl#keyword('#'.a:type)
 endfunction
 
-let s:symbol = timl#intern_type('timl#lang#Symbol')
+let s:symbol = timl#intern_type('timl.lang/Symbol')
 function! timl#symbol(str)
   let str = type(a:str) == type({}) ? a:str[0] : a:str
   if !has_key(g:timl#symbols, str)
@@ -162,12 +162,12 @@ endfunction
 " Section: Data types {{{1
 
 let s:types = {
-      \ 0: 'timl#vim#Number',
-      \ 1: 'timl#vim#String',
-      \ 2: 'timl#vim#Funcref',
-      \ 3: 'timl#vim#List',
-      \ 4: 'timl#vim#Dictionary',
-      \ 5: 'timl#vim#Float'}
+      \ 0: 'timl.vim/Number',
+      \ 1: 'timl.vim/String',
+      \ 2: 'timl.vim/Funcref',
+      \ 3: 'timl.vim/List',
+      \ 4: 'timl.vim/Dictionary',
+      \ 5: 'timl.vim/Float'}
 
 function! timl#meta(obj)
   if timl#objectp(a:obj)
@@ -197,29 +197,28 @@ function! timl#objectp(obj)
   return type(a:obj) == type({}) && timl#keywordp(get(a:obj, '#tag')) && a:obj['#tag'][0][0] ==# '#'
 endfunction
 
-let s:function = timl#intern_type('timl#lang#Function')
+let s:function = timl#intern_type('timl.lang/Function')
 function! timl#functionp(val) abort
   return type(a:val) == type({}) && get(a:val, '#tag') is# s:function
 endfunction
 
 function! timl#type(val) abort
-  let type = get(s:types, type(a:val), 'timl#vim#unknown')
-  if type == 'timl#vim#List' && a:val is# g:timl#nil
-    return 'timl#lang#Nil'
-  elseif type == 'timl#vim#Dictionary'
+  let type = get(s:types, type(a:val), 'timl.vim/Unknown')
+  if type == 'timl.vim/List' && a:val is# g:timl#nil
+    return 'timl.lang/Nil'
+  elseif type == 'timl.vim/Dictionary'
     if timl#objectp(a:val)
       return a:val['#tag'][0][1:-1]
     elseif timl#keywordp(a:val)
-      return 'timl#lang#Keyword'
+      return 'timl.lang/Keyword'
     endif
   endif
   return type
 endfunction
 
 function! timl#satisfiesp(proto, obj)
-  let t = timl#type(a:obj)
-  let obj = tr(t, '-', '_')
-  if type(get(g:, obj)) == type({})
+  let t = timl#munge(timl#type(a:obj))
+  if type(get(g:, t)) == type({})
     let proto = timl#str(a:proto)
     return has_key(get(g:{t}, "implements", {}), proto)
   else
@@ -230,9 +229,8 @@ endfunction
 runtime! autoload/timl/lang.vim
 runtime! autoload/timl/vim.vim
 function! timl#dispatch(proto, fn, obj, ...)
-  let t = timl#type(a:obj)
-  let obj = tr(t, '-', '_')
-  if type(get(g:, obj)) == type({})
+  let t = timl#munge(timl#type(a:obj))
+  if type(get(g:, t)) == type({})
     let impls = get(g:{t}, "implements", {})
     let proto = timl#str(a:proto)
     if has_key(impls, proto)
@@ -347,7 +345,7 @@ function! timl#dekey(key)
   endif
 endfunction
 
-let s:hash_map = timl#intern_type('timl#lang#HashMap')
+let s:hash_map = timl#intern_type('timl.lang/HashMap')
 function! timl#hash_map(...) abort
   let keyvals = a:0 == 1 ? a:1 : a:000
   let dict = timl#assocb({'#tag': s:hash_map}, keyvals)
@@ -355,7 +353,7 @@ function! timl#hash_map(...) abort
   return dict
 endfunction
 
-let s:hash_set = timl#intern_type('timl#lang#HashSet')
+let s:hash_set = timl#intern_type('timl.lang/HashSet')
 function! timl#hash_set(...) abort
   return timl#set(a:000)
 endfunction
@@ -377,7 +375,7 @@ function! timl#assocb(coll, ...) abort
   if len(keyvals) % 2 == 0
     let type = timl#type(a:coll)
     for i in range(0, len(keyvals) - 1, 2)
-      let key = (type == 'timl#vim#Dictionary' ? timl#str(keyvals[i]) : timl#key(keyvals[i]))
+      let key = (type == 'timl.vim/Dictionary' ? timl#str(keyvals[i]) : timl#key(keyvals[i]))
       let a:coll[key] = keyvals[i+1]
     endfor
     return a:coll
@@ -397,7 +395,7 @@ function! timl#dissocb(coll, ...) abort
   let _ = {}
   let t = timl#type(a:coll)
   for _.key in a:000
-    let key = (t == 'timl#vim#Dictionary' ? timl#str(_.key) : timl#key(_.key))
+    let key = (t == 'timl.vim/Dictionary' ? timl#str(_.key) : timl#key(_.key))
     if has_key(a:coll, key)
       call remove(a:coll, key)
     endif
@@ -412,22 +410,22 @@ endfunction
 " }}}1
 " Section: Lists {{{1
 
-let s:cons = timl#intern_type('timl#lang#Cons')
+let s:cons = timl#intern_type('timl.lang/Cons')
 
 let s:ary = type([])
 
 function! timl#seq(coll) abort
-  let seq = timl#dispatch("timl#lang#Seqable", "seq", a:coll)
+  let seq = timl#dispatch("timl.lang/Seqable", "seq", a:coll)
   return empty(seq) ? g:timl#nil : seq
 endfunction
 
 function! timl#first(coll) abort
   return type(a:coll) == s:ary ? get(a:coll, 0, g:timl#nil) :
-        \ timl#dispatch('timl#lang#ISeq', 'first', timl#seq(a:coll))
+        \ timl#dispatch('timl.lang/ISeq', 'first', timl#seq(a:coll))
 endfunction
 
 function! timl#rest(coll) abort
-  return timl#dispatch('timl#lang#ISeq', 'rest', timl#seq(a:coll))
+  return timl#dispatch('timl.lang/ISeq', 'rest', timl#seq(a:coll))
 endfunction
 
 function! timl#next(coll) abort
@@ -437,9 +435,9 @@ endfunction
 
 function! timl#get(coll, key, ...) abort
   if a:0
-    return timl#dispatch('timl#lang#ILookup', 'get', a:coll, a:key, a:1)
+    return timl#dispatch('timl.lang/ILookup', 'get', a:coll, a:key, a:1)
   else
-    return timl#dispatch('timl#lang#ILookup', 'get', a:coll, a:key)
+    return timl#dispatch('timl.lang/ILookup', 'get', a:coll, a:key)
   endif
 endfunction
 
@@ -452,7 +450,7 @@ function! timl#list(...) abort
 endfunction
 
 function! timl#cons(car, cdr) abort
-  if timl#satisfiesp('timl#lang#Seqable', a:cdr)
+  if timl#satisfiesp('timl.lang/Seqable', a:cdr)
     let cons = {'#tag': s:cons, 'car': a:car, 'cdr': a:cdr}
     lockvar cons
     return cons
@@ -513,14 +511,14 @@ endfunction
 " }}}1
 " Section: Namespaces {{{1
 
-let s:ns = timl#intern_type('timl#lang#Namespace')
+let s:ns = timl#intern_type('timl.lang/Namespace')
 
 function! timl#find_ns(name)
   return get(g:timl#namespaces, timl#name(a:name), g:timl#nil)
 endfunction
 
 function! timl#the_ns(name)
-  if timl#type(a:name) == 'timl#lang#Namespace'
+  if timl#type(a:name) == 'timl.lang/Namespace'
     return a:name
   endif
   let name = timl#name(a:name)
@@ -572,7 +570,7 @@ function! timl#call(Func, args, ...) abort
   elseif timl#functionp(a:Func)
     return call(a:Func.call, (a:0 ? [a:1] : []) + a:args, a:Func)
   else
-    return call('timl#dispatch', ['timl#lang#IFn', 'invoke', a:Func] + (a:0 ? [a:1] : []) + a:args)
+    return call('timl#dispatch', ['timl.lang/IFn', 'invoke', a:Func] + (a:0 ? [a:1] : []) + a:args)
   endif
 endfunction
 

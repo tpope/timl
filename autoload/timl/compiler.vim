@@ -190,7 +190,7 @@ function! s:emit(file, context, ns, locals, x) abort
   let tmp = s:tempsym('invoke')
   if timl#symbolp(F) && !has_key(a:locals, F[0]) && F[0] !~# '^:'
     let Fn = timl#compiler#lookup(F, a:ns)
-    if timl#type(Fn) == 'timl#lang#Function' && get(Fn, 'macro')
+    if timl#type(Fn) == 'timl.lang/Function' && get(Fn, 'macro')
       return s:emit(a:file, a:context, a:ns, a:locals, timl#call(Fn, [x, a:locals] + vec))
     endif
   endif
@@ -283,7 +283,7 @@ function! timl#compiler#emit_fn_STAR_(file, context, ns, form, locals, params, .
   let locals = copy(a:locals)
   call s:println(a:file, "call insert(locals, copy(locals[0]))")
   call s:println(a:file, "try")
-  call s:println(a:file, "let ".tmp." = {'#tag': timl#intern_type('timl#lang#Function'), 'locals': locals[0], 'ns': ".string(a:ns)."}")
+  call s:println(a:file, "let ".tmp." = {'#tag': timl#intern_type('timl.lang/Function'), 'locals': locals[0], 'ns': ".string(a:ns)."}")
   if timl#symbolp(a:params)
     call s:println(a:file, "let locals[0][".string(a:params[0])."] = ".tmp)
     let locals[a:params[0]] = 1

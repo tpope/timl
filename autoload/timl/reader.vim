@@ -68,7 +68,7 @@ function! s:add_meta(data, meta) abort
   if has_key(data, '#meta')
     unlockvar data['#meta']
   else
-    let data['#meta'] = {'#tag': timl#intern_type('timl#lang#HashMap')}
+    let data['#meta'] = {'#tag': timl#intern_type('timl.lang/HashMap')}
   endif
   call extend(data['#meta'], a:meta)
   lockvar data['#meta']
@@ -179,10 +179,9 @@ function! s:process(port, token, pos, line) abort
   elseif token =~# '^#\a'
     let next = s:read(port)
     unlockvar next
-    if token =~# '\.'
-      let token = tr(token, './', '##')[1:-1]
-    else
-      let token = 'timl#lang'.token
+    let token = token[1:-1]
+    if token !~# '[/.]'
+      let token = 'timl.lang/'.token
     endif
     if type(next) == type({})
       return timl#persistentb(extend(next, {'#tag': timl#intern_type(token)}))
@@ -284,7 +283,7 @@ TimLRAssert timl#reader#read_string('#"\(a\\\)"') ==# '\(a\\\)'
 TimLRAssert timl#reader#read_string('#"\""') ==# '"'
 TimLRAssert timl#reader#read_string('(first [1 2])') ==# timl#list(timl#symbol('first'), [1, 2])
 TimLRAssert timl#reader#read_string('#["a" 1 "b" 2]') ==# {"a": 1, "b": 2}
-TimLRAssert timl#reader#read_string('{"a" 1 :b 2 3 "c"}') ==# {' "a"': 1, "b": 2, "3": "c", '#tag': timl#intern_type('timl#lang#HashMap')}
+TimLRAssert timl#reader#read_string('{"a" 1 :b 2 3 "c"}') ==# {' "a"': 1, "b": 2, "3": "c", '#tag': timl#intern_type('timl.lang/HashMap')}
 TimLRAssert timl#reader#read_string("[1]\n; hi\n") ==# [1]
 TimLRAssert timl#reader#read_string("'[1 2 3]") ==# timl#list(timl#symbol('quote'), [1, 2, 3])
 TimLRAssert timl#reader#read_string("`foo") ==# timl#list(timl#symbol('syntax-quote'), timl#symbol('foo'))
@@ -292,8 +291,8 @@ TimLRAssert timl#reader#read_string("~foo") ==# timl#list(timl#symbol('unquote')
 TimLRAssert timl#reader#read_string("#*tr") ==# timl#list(timl#symbol('function'), timl#symbol('tr'))
 TimLRAssert timl#reader#read_string("(1 #_2 3)") ==# timl#list(1, 3)
 TimLRAssert timl#reader#read_string("^:foo {}") ==#
-      \ {'#tag': timl#intern_type('timl#lang#HashMap'),
-      \  '#meta': {'#tag': timl#intern_type('timl#lang#HashMap'), 'foo': g:timl#true}}
+      \ {'#tag': timl#intern_type('timl.lang/HashMap'),
+      \  '#meta': {'#tag': timl#intern_type('timl.lang/HashMap'), 'foo': g:timl#true}}
 
 
 delcommand TimLRAssert

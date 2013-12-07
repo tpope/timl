@@ -75,7 +75,7 @@ function! s:autoload(function) abort
       endfor
     endif
   endif
-  if has_key(g:, a:function) && timl#satisfiesp('timl#lang#IFn', g:{a:function})
+  if has_key(g:, a:function) && timl#satisfiesp('timl.lang/IFn', g:{a:function})
     let body = ["function ".a:function."(...)",
           \ "  return timl#call(g:".a:function.", a:000)",
           \ "endfunction"]

@@ -15,19 +15,19 @@ let s:escapes = {
 function! timl#printer#string(x)
   " TODO: guard against recursion
   let type = timl#type(a:x)
-  if type == 'timl#lang#Symbol'
+  if type == 'timl.lang/Symbol'
     return a:x[0]
 
-  elseif type == 'timl#lang#Keyword'
+  elseif type == 'timl.lang/Keyword'
     return ':'.timl#name(a:x)
 
   elseif a:x is# g:timl#nil
     return 'nil'
 
-  elseif type == 'timl#lang#Function'
+  elseif type == 'timl.lang/Function'
     return '#<'.get(a:x, 'ns', '').'/'.get(a:x, 'name', '...').' '.join([a:x.call]).'>'
 
-  elseif type == 'timl#lang#Namespace'
+  elseif type == 'timl.lang/Namespace'
     return '#<Namespace '.get(a:x, 'name', '').'>'
 
   elseif timl#consp(a:x)
@@ -45,7 +45,7 @@ function! timl#printer#string(x)
   elseif type(a:x) == type([])
     return '['.join(map(a:x[:], 'timl#printer#string(v:val)'), ' ') . ']'
 
-  elseif type == 'timl#vim#Dictionary'
+  elseif type == 'timl.vim/Dictionary'
     let acc = []
     for [k, V] in items(a:x)
       call add(acc, timl#printer#string(k) . ' ' . timl#printer#string(V))
@@ -53,7 +53,7 @@ function! timl#printer#string(x)
     endfor
     return '#[' . join(acc, ' ') . ']'
 
-  elseif type == 'timl#lang#HashSet'
+  elseif type == 'timl.lang/HashSet'
     let acc = []
     for [k, V] in items(a:x)
       if k !~# '^#'
@@ -63,7 +63,7 @@ function! timl#printer#string(x)
     endfor
     return '#{' . join(acc, ' ') . '}'
 
-  elseif type !=# 'timl#vim#Dictionary' && type !=# 'timl#lang#HashMap' && timl#satisfiesp('timl#lang#ISeq', a:x)
+  elseif type !=# 'timl.vim/Dictionary' && type !=# 'timl.lang/HashMap' && timl#satisfiesp('timl.lang/ISeq', a:x)
     let _ = {'seq': a:x}
     let output = []
     while !empty(_.seq)
@@ -72,8 +72,8 @@ function! timl#printer#string(x)
     endwhile
     return '('.join(output, ' ').')'
 
-  elseif type !=# 'timl#vim#Dictionary' && type !=# 'timl#lang#HashMap' && timl#satisfiesp('timl#lang#Seqable', a:x)
-    return timl#printer#string(timl#dispatch('timl#lang#Seqable', 'seq', a:x))
+  elseif type !=# 'timl.vim/Dictionary' && type !=# 'timl.lang/HashMap' && timl#satisfiesp('timl.lang/Seqable', a:x)
+    return timl#printer#string(timl#dispatch('timl.lang/Seqable', 'seq', a:x))
 
   elseif type(a:x) == type({})
     let acc = []
@@ -83,7 +83,7 @@ function! timl#printer#string(x)
       endif
       unlet! V
     endfor
-    let prefix = type ==# 'timl#lang#HashMap' ? '' : '#'.tr(type, '#', '.')
+    let prefix = type ==# 'timl.lang/HashMap' ? '' : '#'.type
     return prefix.'{' . join(acc, ' ') . '}'
 
   elseif type(a:x) == type('')
