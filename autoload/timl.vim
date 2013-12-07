@@ -176,6 +176,16 @@ function! timl#meta(obj)
   return g:timl#nil
 endfunction
 
+function! timl#with_meta(obj, meta)
+  if timl#objectp(a:obj)
+    let obj = copy(a:obj)
+    let obj['#meta'] = a:meta
+    lockvar obj
+    return obj
+  endif
+  throw 'timl: cannot attach metadata to a '.timl#type(data)
+endfunction
+
 function! timl#objectp(obj)
   return type(a:obj) == type({}) && timl#keywordp(get(a:obj, '#tag')) && a:obj['#tag'][0][0] ==# '#'
 endfunction
