@@ -147,6 +147,10 @@ function! s:emit(file, context, ns, locals, x) abort
     for _.e in x
       call s:emit(a:file, "call add(".sym.", %s)", a:ns, a:locals, _.e)
     endfor
+    if islocked('x')
+      call s:println(a:file, "lockvar ".sym)
+      call s:println(a:file, "unlockvar 1 ".sym)
+    endif
     return s:printfln(a:file, a:context, sym)
 
   elseif type(x) == type({}) && !timl#consp(x)
@@ -167,6 +171,7 @@ function! s:emit(file, context, ns, locals, x) abort
     endfor
     if islocked('x')
       call s:println(a:file, "lockvar ".sym)
+      call s:println(a:file, "unlockvar 1 ".sym)
     endif
     return s:printfln(a:file, a:context, sym)
 
