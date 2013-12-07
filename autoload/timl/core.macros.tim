@@ -75,3 +75,9 @@
        (: "silent call timl#call(l:TimLfn, [])")
        (finally (: "unlet! l:TimLfn") (: "redir END")))
      (#*substitute l:TimLcaptured "^\n" "" "g")))
+
+(defmacro time [& body]
+  `(let [reltime# (#*reltime)
+        result# (do ~@body)]
+     (printf "Elapsed time: %s secs\n" (#*reltimestr (#*reltime reltime#)))
+     result#))

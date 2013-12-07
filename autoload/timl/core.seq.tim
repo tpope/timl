@@ -11,6 +11,14 @@
       (recur (conj ret (first s)) (next s))
       ret)))
 
+(defn dorun
+  ([coll]
+   (when (seq coll)
+     (recur (next coll))))
+  ([n coll]
+   (when (and (seq coll) (pos? n))
+     (recur (dec n) (next coll)))))
+
 (defn reductions [f init xs]
   (cons init
         (lazy-seq
