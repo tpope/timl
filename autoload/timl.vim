@@ -609,7 +609,35 @@ function! timl#ns_for_file(file) abort
   endif
   let dir = sort(candidates, s:function('s:lencompare'))[-1]
   let path = file[len(dir)+1 : -1]
-  return substitute(tr(fnamemodify(path, ':r:r'), '\/_', '##-'), '^\%(autoload\|plugin\|test\)#', '', '')
+  return substitute(tr(fnamemodify(path, ':r:r'), '\/_', '..-'), '^\%(autoload\|plugin\|test\).', '', '')
+endfunction
+
+function! timl#ns_for_cursor(...) abort
+  let pattern = '\c(\%(in-\)\=ns\s\+''\=[[:alpha:]]\@='
+  let line = 0
+  if !a:0 || a:1
+    let line = search(pattern, 'bcnW')
+  endif
+  if !line
+    let i = 1
+    while i < line('$') && i < 100
+      if getline(i) =~# pattern
+        let line = i
+        break
+      endif
+      let i += 1
+    endwhile
+  endif
+  if line
+    let ns = matchstr(getline(line), pattern.'\zs[[:alnum:]._-]\+')
+  else
+    let ns = timl#ns_for_file(expand('%:p'))
+  endif
+  if has_key(g:timl#namespaces, ns)
+    return ns
+  else
+    return 'user'
+  endif
 endfunction
 
 function! timl#build_exception(exception, throwpoint)

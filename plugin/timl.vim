@@ -91,11 +91,8 @@ function! s:repl(...) abort
   let more = &more
   try
     set nomore
-    let guess = timl#ns_for_file(expand('%:p'))
-    if !has_key(g:timl#namespaces, guess)
-      let guess = 'user'
-    endif
-    let g:timl#core#_STAR_ns_STAR_ = g:timl#namespaces[a:0 ? a:1 : guess]
+    let ns = timl#ns_for_cursor()
+    let g:timl#core#_STAR_ns_STAR_ = g:timl#namespaces[a:0 ? a:1 : ns]
     if g:timl#core#_STAR_ns_STAR_.name == 'user'
       call timl#require('timl.repl')
       call timl#core#refer('timl.repl')
