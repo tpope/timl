@@ -185,8 +185,7 @@ function! timl#with_meta(obj, meta)
       else
         let obj['#meta'] = a:meta
       endif
-      lockvar obj
-      return obj
+      return timl#persistentb(obj)
     endif
     return a:obj
   endif
@@ -247,7 +246,7 @@ function! timl#persistentb(val) abort
   if islocked('val')
     throw "timl: persistent! called on an already persistent value"
   else
-    lockvar val
+    lockvar 1 val
     return val
   endif
 endfunction
@@ -349,8 +348,7 @@ let s:hash_map = timl#intern_type('timl.lang/HashMap')
 function! timl#hash_map(...) abort
   let keyvals = a:0 == 1 ? a:1 : a:000
   let dict = timl#assocb({'#tag': s:hash_map}, keyvals)
-  lockvar dict
-  return dict
+  return timl#persistentb(dict)
 endfunction
 
 let s:hash_set = timl#intern_type('timl.lang/HashSet')
@@ -365,8 +363,9 @@ function! timl#set(coll) abort
     for _.val in a:coll
       let dict[timl#key(_.val)] = _.val
     endfor
-    lockvar dict
-    return dict
+    return timl#persistentb(dict)
+  else
+    throw 'not implemented'
   endif
 endfunction
 
@@ -387,8 +386,7 @@ function! timl#assoc(coll, ...) abort
   let keyvals = a:0 == 1 ? a:1 : a:000
   let coll = timl#transient(a:coll)
   call timl#assocb(coll, keyvals)
-  lockvar coll
-  return coll
+  return timl#persistentb(coll)
 endfunction
 
 function! timl#dissocb(coll, ...) abort
@@ -476,9 +474,7 @@ endfunction
 function! timl#cons(car, cdr) abort
   if timl#satisfiesp('timl.lang/Seqable', a:cdr)
     let cons = {'#tag': s:cons, 'car': a:car, 'cdr': a:cdr}
-    lockvar cons
-    return cons
-  else
+    return timl#persistentb(cons)
   endif
   throw 'timl: not seqable'
 endfunction

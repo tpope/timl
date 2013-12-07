@@ -466,8 +466,7 @@ TLexpr empty_QMARK_(coll) empty(timl#core#seq(a:coll))
 TLfunction! map(f, coll) abort
   if type(a:coll) == type([]) && !empty(a:coll) && !timl#symbolp(a:coll)
     let result = map(copy(a:coll), 'timl#call(a:f, [v:val])')
-    lockvar result
-    return result
+    return timl#persistentb(result)
   endif
   let _ = {}
   let _.seq = timl#core#seq(a:coll)
@@ -484,12 +483,11 @@ TLfunction! map(f, coll) abort
     let ptr.cdr = {'#tag': tag,
           \ 'car': timl#call(a:f, [timl#core#first(_.seq)]),
           \ 'cdr': g:timl#nil}
-    lockvar ptr
-    unlockvar 1 ptr
+    let ptr = timl#persistentb(ptr)
     let ptr = ptr.cdr
     let _.seq = timl#core#next(_.seq)
   endwhile
-  lockvar ptr
+  lockvar 1 ptr
   return head
 endfunction
 

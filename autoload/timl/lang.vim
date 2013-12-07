@@ -120,19 +120,18 @@ endfunction
 
 function! timl#lang#create_lazy_seq(fn)
   let seq = {'#tag': timl#intern_type('timl#lang#LazySeq'), 'fn': a:fn}
-  lockvar seq
-  return seq
+  return timl#persistentb(seq)
 endfunction
 
 function! s:deref_lazy_seq(lseq) abort
   if !has_key(a:lseq, 'seq')
-    unlockvar a:lseq
+    unlockvar 1 a:lseq
     let _ = {'seq': timl#call(a:lseq.fn, [])}
     while !timl#satisfiesp('timl.lang/ISeq', _.seq)
       let _.seq = timl#dispatch('timl.lang/Seqable', 'seq', _.seq)
     endwhile
     let a:lseq.seq = _.seq
-    lockvar a:lseq
+    lockvar 1 a:lseq
   endif
   return a:lseq.seq
 endfunction

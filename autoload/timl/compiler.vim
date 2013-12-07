@@ -175,8 +175,7 @@ function! s:emit(file, context, ns, locals, x) abort
       call s:emit(a:file, "call add(".sym.", %s)", a:ns, a:locals, _.e)
     endfor
     if islocked('x')
-      call s:println(a:file, "lockvar ".sym)
-      call s:println(a:file, "unlockvar 1 ".sym)
+      call s:println(a:file, "let sym = timl#persistentb(".sym.")")
     endif
     return s:printfln(a:file, a:context, sym)
 
@@ -197,8 +196,7 @@ function! s:emit(file, context, ns, locals, x) abort
       endif
     endfor
     if islocked('x')
-      call s:println(a:file, "lockvar ".sym)
-      call s:println(a:file, "unlockvar 1 ".sym)
+      call s:println(a:file, "let sym = timl#persistentb(".sym.")")
     endif
     return s:printfln(a:file, a:context, sym)
 

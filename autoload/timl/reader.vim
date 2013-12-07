@@ -46,7 +46,7 @@ function! s:read_until(port, char)
     let [token, pos, line] = s:read_token(a:port)
   endwhile
   if token ==# a:char
-    lockvar list
+    lockvar 1 list
     return list
   endif
   throw 'timl#reader: unexpected EOF on line ' . a:port.line
@@ -63,16 +63,16 @@ function! s:add_meta(data, meta) abort
   if timl#symbolp(data)
     let data = copy(data)
   else
-    unlockvar data
+    unlockvar 1 data
   endif
   if has_key(data, '#meta')
-    unlockvar data['#meta']
+    unlockvar 1 data['#meta']
   else
     let data['#meta'] = {'#tag': timl#intern_type('timl.lang/HashMap')}
   endif
   call extend(data['#meta'], a:meta)
-  lockvar data['#meta']
-  lockvar data
+  lockvar 1 data['#meta']
+  lockvar 1 data
   return data
 endfunction
 
@@ -116,7 +116,7 @@ function! s:process(port, token, pos, line) abort
       endfor
     endif
     if !exists('error')
-      lockvar dict
+      lockvar 1 dict
       return dict
     endif
   elseif token == '#{'
@@ -178,7 +178,7 @@ function! s:process(port, token, pos, line) abort
     return port.argsyms[token]
   elseif token =~# '^#\a'
     let next = s:read(port)
-    unlockvar next
+    unlockvar 1 next
     let token = token[1:-1]
     if token !~# '[/.]'
       let token = 'timl.lang/'.token
