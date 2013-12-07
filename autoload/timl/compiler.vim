@@ -80,7 +80,13 @@ let s:escapes = {
       \ "\"": '\"',
       \ "\\": '\\'}
 
-function! timl#compiler#serialize(x)
+function! timl#compiler#serialize(x, ...)
+  if !a:0
+    let meta = timl#meta(a:x)
+    if !empty(meta)
+      return 'timl#with_meta('.timl#compiler#serialize(a:x, 'nometa').', '.timl#compiler#serialize(meta).')'
+    endif
+  endif
   let t = timl#type(a:x)
   " TODO: guard against recursion
   if t ==# 'timl.lang/Keyword'

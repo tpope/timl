@@ -198,7 +198,7 @@ function! s:process(port, token, pos, line) abort
     if timl#keywordp(_meta)
       let meta = {_meta[0]: g:timl#true}
     elseif timl#symbolp(_meta)
-      let meta = {timl#keyword('tag'): _meta}
+      let meta = {'tag': _meta}
     else
       let meta = _meta
     endif
