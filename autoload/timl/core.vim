@@ -43,7 +43,7 @@ command! -bang -nargs=1 TLpredicate TLexpr <args> ? s:true : s:false
 " Section: Misc {{{1
 
 TLpredicate nil_QMARK_(val) a:val is# g:timl#nil
-TLexpr type(val) timl#symbol(timl#type(a:val))
+TLexpr type(val) g:{timl#munge(timl#type(a:val))}
 TLalias meta timl#meta
 TLalias with_meta timl#with_meta
 TLalias persistent_BANG_ timl#persistentb
