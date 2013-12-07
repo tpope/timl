@@ -11,11 +11,12 @@ function! s:read_token(port) abort
   let pat = '^\%(#"\%(\\\@<!\%(\\\\\)*\\"\|[^"]\)*"\|#[[:punct:]]\|"\%(\\.\|[^"]\)*"\|[[:space:],]\|;.\{-\}\ze\%(\n\|$\)\|\~@\|'.s:iskeyword.'\+\|\\\%(space\|tab\|newline\|return\|.\)\|.\)'
   let match = ' '
   while match =~# '^[[:space:],]'
+    let [pos, line] = [a:port.pos, a:port.line]
     let match = matchstr(a:port.str, pat, a:port.pos)
     let a:port.pos += len(match)
     let a:port.line += len(substitute(match, "[^\n]", '', 'g'))
   endwhile
-  return match
+  return [match, pos, line]
 endfunction
 
 function! timl#reader#eofp(port)
@@ -39,10 +40,10 @@ endfunction
 
 function! s:read_until(port, char)
   let list = []
-  let token = s:read_token(a:port)
+  let [token, pos, line] = s:read_token(a:port)
   while token !=# a:char && token !=# ''
-    call add(list, s:read(a:port, token, a:port.pos, a:port.line))
-    let token = s:read_token(a:port)
+    call add(list, s:read(a:port, token, pos, line))
+    let [token, pos, line] = s:read_token(a:port)
   endwhile
   if token ==# a:char
     lockvar list
@@ -57,10 +58,38 @@ let s:constants = {
       \ '\newline': "\n",
       \ '\return': "\r"}
 
+function! s:add_meta(data, meta) abort
+  let data = a:data
+  if timl#symbolp(data)
+    let data = copy(data)
+  else
+    unlockvar data
+  endif
+  if has_key(data, '#meta')
+    unlockvar data['#meta']
+  else
+    let data['#meta'] = {'#tag': timl#intern_type('timl#lang#HashMap')}
+  endif
+  call extend(data['#meta'], a:meta)
+  lockvar data['#meta']
+  lockvar data
+  return data
+endfunction
+
 function! s:read(port, ...) abort
   let port = a:port
-  let pos = a:0 ? a:2 : port.pos
-  let token = a:0 ? a:1 : s:read_token(port)
+  let [token, pos, line] = a:0 ? a:000 : s:read_token(a:port)
+  let data = s:process(a:port, token, pos, line)
+  if has_key(a:port, 'filename') && timl#consp(data)
+    return s:add_meta(data, {'file': a:port.filename, 'line': line})
+  endif
+  return data
+endfunction
+
+function! s:process(port, token, pos, line) abort
+  let port = a:port
+  let pos = a:pos
+  let token = a:token
   if token ==# '('
     return timl#list2(s:read_until(port, ')'))
   elseif token == '['
@@ -178,32 +207,19 @@ function! s:read(port, ...) abort
   elseif token =~# '^'.s:iskeyword
     return timl#symbol(token)
   elseif token ==# '^'
-    let meta = s:read(port)
+    let _meta = s:read(port)
     let data = s:read(port)
-    if timl#objectp(data)
-      if timl#symbolp(data)
-        let data = copy(data)
-      else
-        unlockvar data
-      endif
-      if has_key(data, '#meta')
-        unlockvar data['#meta']
-      else
-        let data['#meta'] = {'#tag': timl#intern_type('timl#lang#HashMap')}
-      endif
-      if timl#keywordp(meta)
-        let data['#meta'][meta[0]] = g:timl#true
-      elseif timl#symbolp(meta)
-        let data['#meta'][timl#keyword('tag')] = meta
-      else
-        call extend(data['#meta'], meta)
-      endif
-      lockvar data['#meta']
-      lockvar data
+    if timl#keywordp(_meta)
+      let meta = {_meta[0]: g:timl#true}
+    elseif timl#symbolp(_meta)
+      let meta = {timl#keyword('tag'): _meta}
     else
-      throw 'timl#reader: cannot attach metadata to a '.timl#type(data)
+      let meta = _meta
     endif
-    return data
+    if timl#objectp(data)
+      return s:add_meta(data, meta)
+    endif
+    let error = 'timl#reader: cannot attach metadata to a '.timl#type(data)
   elseif token ==# '@'
     return timl#list(timl#symbol('timl.core/deref'), s:read_bang(port))
   elseif empty(token)
@@ -211,7 +227,7 @@ function! s:read(port, ...) abort
   else
     let error = 'timl#reader: unexpected token '.string(token)
   endif
-  throw error . ' on line ' . (a:0 > 2 ? a:3 : port.line)
+  throw error . ' on line ' . a:line
 endfunction
 
 function! s:read_bang(port) abort
