@@ -454,9 +454,16 @@ function! timl#compiler#emit_do(file, context, ns, form, locals, ...) abort
 endfunction
 
 function! timl#compiler#emit_def(file, context, ns, form, locals, sym, ...) abort
-  let var = "g:{timl#munge(g:timl#core#_STAR_ns_STAR_.name)}#".timl#munge(a:sym)
-  call s:println(a:file, "unlet! ".var)
-  call s:emit(a:file, 'let '.var.' = %s', a:ns, a:locals, a:0 ? a:1 : g:timl#nil)
+  let ns = 'timl#munge(g:timl#core#_STAR_ns_STAR_.name)'
+  let var = "g:{".ns."}#".timl#munge(a:sym)
+  if a:0
+    call s:println(a:file, "unlet! ".var)
+    call s:emit(a:file, 'let '.var.' = %s', a:ns, a:locals, a:1)
+  else
+    call s:println(a:file, "if !exists('g:'.".ns.".'#'.".string(timl#munge(a:sym)).")")
+    call s:println(a:file, 'let '.var.' = g:timl#nil')
+    call s:println(a:file, 'endif')
+  endif
   return s:printfln(a:file, a:context, var)
 endfunction
 
