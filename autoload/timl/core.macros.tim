@@ -2,12 +2,14 @@
 
 (defmacro let [& args] `(let* ~@args))
 
+(def map)
+(def concat)
 (defmacro declare [& names]
   `(do ~@(map (fn [n] (list 'def n)) names)))
 
 (defmacro loop [flat & body]
   (let [bindings (partition 2 flat)]
-    `((fn ~(map first bindings) ~@body) ~@(map (fn [x] (first (rest x))) bindings))))
+    `((fn ~(vec (map first bindings)) ~@body) ~@(vec (map (fn [x] (first (rest x))) bindings)))))
 
 (defmacro ns [name]
   `(do

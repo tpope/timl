@@ -453,34 +453,6 @@ TLalias count timl#count
 
 TLexpr empty_QMARK_(coll) empty(timl#core#seq(a:coll))
 
-TLfunction! map(f, coll) abort
-  if type(a:coll) == type([]) && !empty(a:coll) && !timl#symbolp(a:coll)
-    let result = map(copy(a:coll), 'timl#call(a:f, [v:val])')
-    return timl#persistentb(result)
-  endif
-  let _ = {}
-  let _.seq = timl#core#seq(a:coll)
-  if empty(_.seq)
-    return a:coll
-  endif
-  let tag = timl#intern_type('timl.lang/Cons')
-  let head = timl#bless(tag, {
-        \ 'car': timl#call(a:f, [timl#core#first(_.seq)]),
-        \ 'cdr': g:timl#nil})
-  let ptr = head
-  let _.seq = timl#core#next(_.seq)
-  while _.seq isnot# g:timl#nil
-    let ptr.cdr = timl#bless(tag, {
-          \ 'car': timl#call(a:f, [timl#core#first(_.seq)]),
-          \ 'cdr': g:timl#nil})
-    let ptr = timl#persistentb(ptr)
-    let ptr = ptr.cdr
-    let _.seq = timl#core#next(_.seq)
-  endwhile
-  lockvar 1 ptr
-  return head
-endfunction
-
 TLfunction! reduce(f, coll, ...) abort
   let _ = {}
   if a:0

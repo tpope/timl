@@ -2,6 +2,11 @@
 
 (defmacro lazy-seq [& body]
   `(#*timl#lang#create_lazy_seq (fn [] ~@body)))
+(defn map [f coll]
+  (lazy-seq
+    (when-let [s (seq coll)]
+      (cons (f (first s)) (map f (rest s))))))
+
 (defn not-empty [xs] (if (empty? xs) nil xs))
 (defn second [xs] (first (rest xs)))
 (defn last [xs] (if (next xs) (recur (next xs)) (first xs)))

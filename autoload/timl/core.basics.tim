@@ -1,12 +1,14 @@
 (in-ns 'timl.core)
 
-(declare *1 *2 *3 *e)
+(def *1)
+(def *2)
+(def *3)
+(def *e)
 
 (defn not [x] (if x false true))
 
 (defn eval [form] (#*timl#eval form))
 
-(declare concat)
 (defn constantly [x] (fn [& args] x))
 (defn partial
   ([f] f)

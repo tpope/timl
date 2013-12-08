@@ -453,7 +453,7 @@ endfunction
 
 function! timl#next(coll) abort
   let rest = timl#rest(a:coll)
-  return empty(rest) ? g:timl#nil : rest
+  return timl#seq(rest)
 endfunction
 
 function! timl#get(coll, key, ...) abort
