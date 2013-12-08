@@ -121,6 +121,9 @@ function! timl#compiler#serialize(x, ...)
     endwhile
     return 'timl#set('.timl#compiler#serialize(keyvals).')'
 
+  elseif t ==# 'timl.lang/Cons'
+    return 'timl#cons('.timl#compiler#serialize(a:x.car).','.timl#compiler#serialize(a:x.cdr).')'
+
   elseif type(a:x) == type({})
     let acc = []
     for [k, V] in items(a:x)
