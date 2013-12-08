@@ -690,7 +690,7 @@ if !exists('g:timl#requires')
 endif
 
 function! timl#require(ns) abort
-  let ns = timl#name(a:ns)
+  let ns = timl#str(a:ns)
   if !has_key(g:timl#requires, ns)
     call timl#load(ns)
     let g:timl#requires[ns] = 1
