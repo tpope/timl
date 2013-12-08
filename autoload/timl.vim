@@ -322,8 +322,12 @@ runtime! autoload/timl/vim.vim
 " }}}1
 " Section: Collections {{{1
 
+function! timl#collp(coll) abort
+  return timl#satisfiesp("timl.lang/IPersistentCollection", a:coll)
+endfunction
+
 function! timl#empty(coll) abort
-  if timl#satisfiesp('timl.lang/IPersistentCollection', a:coll)
+  if timl#collp(a:coll)
     return timl#dispatch('timl.lang/IPersistentCollection', 'empty', a:coll)
   else
     return g:timl#nil
@@ -486,6 +490,10 @@ let s:ary = type([])
 function! timl#seq(coll) abort
   let seq = timl#dispatch("timl.lang/Seqable", "seq", a:coll)
   return empty(seq) ? g:timl#nil : seq
+endfunction
+
+function! timl#seqp(coll) abort
+  return timl#satisfiesp("timl.lang/ISeq", a:coll)
 endfunction
 
 function! timl#first(coll) abort

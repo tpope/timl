@@ -400,6 +400,7 @@ TLpredicate dict_QMARK_(x) timl#dictp(a:x)
 " }}}1
 " Section: Collections {{{1
 
+TLpredicate coll_QMARK_(seq) timl#collp(a:seq)
 TLalias get timl#get
 TLalias empty timl#empty
 TLalias conj timl#conj
@@ -412,6 +413,7 @@ TLalias seq timl#seq
 TLalias first timl#first
 TLalias rest timl#rest
 TLalias next timl#next
+TLpredicate seq_QMARK_(seq) timl#seqp(a:seq)
 
 TLalias count timl#count
 
