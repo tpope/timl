@@ -87,7 +87,7 @@ function! timl#compiler#serialize(x, ...)
   let t = timl#type(a:x)
   " TODO: guard against recursion
   if t ==# 'timl.lang/Keyword'
-    return 'timl#keyword('.timl#compiler#serialize(timl#name(a:x)).')'
+    return 'timl#keyword('.timl#compiler#serialize(a:x[0]).')'
 
   elseif t ==# 'timl.lang/Symbol'
     return 'timl#symbol('.timl#compiler#serialize(a:x[0]).')'

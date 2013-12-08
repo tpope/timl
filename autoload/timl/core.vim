@@ -450,7 +450,7 @@ TLalias find_ns timl#find_ns
 TLalias the_ns timl#the_ns
 
 TLfunction! in_ns(ns) abort
-  let name = timl#name(a:ns)
+  let name = timl#str(a:ns)
   let g:timl#core#_STAR_ns_STAR_ = timl#create_ns(name)
   return g:timl#core#_STAR_ns_STAR_
 endfunction
@@ -468,7 +468,7 @@ endfunction
 
 TLfunction! alias(alias, ns) abort
   let me = g:timl#core#_STAR_ns_STAR_.name
-  call timl#create_ns(me, {'aliases': {timl#name(a:alias): a:ns}})
+  call timl#create_ns(me, {'aliases': {timl#str(a:alias): a:ns}})
   return g:timl#nil
 endfunction
 

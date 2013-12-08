@@ -567,14 +567,14 @@ endfunction
 let s:ns = timl#intern_type('timl.lang/Namespace')
 
 function! timl#find_ns(name)
-  return get(g:timl#namespaces, timl#name(a:name), g:timl#nil)
+  return get(g:timl#namespaces, timl#str(a:name), g:timl#nil)
 endfunction
 
 function! timl#the_ns(name)
   if timl#type(a:name) ==# 'timl.lang/Namespace'
     return a:name
   endif
-  let name = timl#name(a:name)
+  let name = timl#str(a:name)
   if has_key(g:timl#namespaces, name)
     return g:timl#namespaces[name]
   endif
@@ -582,7 +582,7 @@ function! timl#the_ns(name)
 endfunction
 
 function! timl#create_ns(name, ...)
-  let name = timl#name(a:name)
+  let name = timl#str(a:name)
   if !has_key(g:timl#namespaces, a:name)
     let g:timl#namespaces[a:name] = timl#bless(s:ns, {'name': name, 'referring': [], 'aliases': {}})
   endif

@@ -19,7 +19,7 @@ function! timl#printer#string(x)
     return a:x[0]
 
   elseif type == 'timl.lang/Keyword'
-    return ':'.timl#name(a:x)
+    return ':'.a:x[0]
 
   elseif a:x is# g:timl#nil
     return 'nil'
