@@ -427,15 +427,6 @@ TLalias first timl#first
 TLalias rest timl#rest
 TLalias next timl#next
 
-TLfunction! partition(n, seq) abort
-  let seq = timl#core#vec(a:seq)
-  let out = []
-  for i in range(0, len(seq)-1, a:n)
-    call add(out, seq[i : i+a:n-1])
-  endfor
-  return out
-endfunction
-
 TLalias count timl#count
 
 TLexpr empty_QMARK_(coll) empty(timl#core#seq(a:coll))

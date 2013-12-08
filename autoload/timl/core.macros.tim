@@ -4,6 +4,7 @@
 
 (def map)
 (def concat)
+(def partition)
 (defmacro declare [& names]
   `(do ~@(map (fn [n] (list 'def n)) names)))
 
