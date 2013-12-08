@@ -526,7 +526,7 @@ function! timl#find_ns(name)
 endfunction
 
 function! timl#the_ns(name)
-  if timl#type(a:name) == 'timl.lang/Namespace'
+  if timl#type(a:name) ==# 'timl.lang/Namespace'
     return a:name
   endif
   let name = timl#name(a:name)
