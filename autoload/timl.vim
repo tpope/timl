@@ -31,9 +31,9 @@ endfunction
 " }}}1
 " Section: Symbols {{{1
 
-if !exists('g:timl#symbols')
-  let g:timl#symbols = {}
-  let g:timl#keywords = {}
+if !exists('s:symbols')
+  let s:symbols = {}
+  let s:keywords = {}
 endif
 
 " From clojure/lang/Compiler.java
@@ -81,18 +81,18 @@ endfunction
 
 function! timl#keyword(str)
   let str = type(a:str) == type({}) ? a:str[0] : a:str
-  if !has_key(g:timl#keywords, str)
-    let g:timl#keywords[str] = {'0': str}
-    lockvar g:timl#keywords[str]
+  if !has_key(s:keywords, str)
+    let s:keywords[str] = {'0': str}
+    lockvar s:keywords[str]
   endif
-  return g:timl#keywords[str]
+  return s:keywords[str]
 endfunction
 
 function! timl#keywordp(keyword)
   return type(a:keyword) == type({}) &&
         \ has_key(a:keyword, 0) &&
         \ type(a:keyword[0]) == type('') &&
-        \ get(g:timl#keywords, a:keyword[0], 0) is a:keyword
+        \ get(s:keywords, a:keyword[0], 0) is a:keyword
 endfunction
 
 function! timl#intern_type(type)
@@ -110,11 +110,11 @@ endfunction
 let s:symbol = timl#intern_type('timl.lang/Symbol')
 function! timl#symbol(str)
   let str = type(a:str) == type({}) ? a:str[0] : a:str
-  if !has_key(g:timl#symbols, str)
-    let g:timl#symbols[str] = timl#bless(s:symbol, {'0': str})
-    lockvar g:timl#symbols[str]
+  if !has_key(s:symbols, str)
+    let s:symbols[str] = timl#bless(s:symbol, {'0': str})
+    lockvar s:symbols[str]
   endif
-  return g:timl#symbols[str]
+  return s:symbols[str]
 endfunction
 
 function! timl#symbolp(symbol, ...)
