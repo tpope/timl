@@ -228,8 +228,10 @@ function! s:emit(file, context, ns, locals, x) abort
   call s:emit(a:file, "let ".tmp."_function = %s", a:ns, a:locals, F)
   return s:printfln(a:file, a:context,
         \ 'timl#functionp('.tmp.'_function) ? '
-        \ . 'call('.tmp.'_function.call, '.tmp.'_args, '.tmp.'_function)'
-        \ . ' : timl#call('.tmp.'_function, '.tmp.'_args)')
+        \ . 'call('.tmp.'_function.call, '.tmp.'_args, '.tmp.'_function) : '
+        \ . 'type('.tmp.'_function) == '.type(function('tr')) . ' ? '
+        \ .      'call('.tmp.'_function, '.tmp.'_args)' . ' : '
+        \ . 'timl#call('.tmp.'_function, '.tmp.'_args)')
 endfunction
 
 function! timl#compiler#emit_set_BANG_(file, context, ns, form, locals, var, value) abort
