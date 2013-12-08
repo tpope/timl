@@ -236,7 +236,7 @@ endfunction
 runtime! autoload/timl/lang.vim
 runtime! autoload/timl/vim.vim
 function! timl#dispatch(proto, fn, obj, ...)
-  let t = timl#munge(timl#type(a:obj))
+  let t = tr(timl#type(a:obj), '/.-', '##_')
   if type(get(g:, t)) == type({})
     let impls = get(g:{t}, "implements", {})
     let proto = timl#str(a:proto)
