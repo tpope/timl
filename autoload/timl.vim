@@ -228,8 +228,6 @@ function! timl#satisfiesp(proto, obj)
   return has_key(get(t, 'implements', {}), a:proto)
 endfunction
 
-runtime! autoload/timl/lang.vim
-runtime! autoload/timl/vim.vim
 function! timl#dispatch(proto, fn, obj, ...)
   let t = g:[tr(timl#type(a:obj), '/.-', '##_')]
   try
@@ -318,8 +316,49 @@ function! timl#equalsp(x, ...) abort
   return 1
 endfunction
 
+runtime! autoload/timl/lang.vim
+runtime! autoload/timl/vim.vim
+
 " }}}1
 " Section: Collections {{{1
+
+function! timl#empty(coll) abort
+  if timl#satisfiesp('timl.lang/IPersistentCollection', a:coll)
+    return timl#dispatch('timl.lang/IPersistentCollection', 'empty', a:coll)
+  else
+    return g:timl#nil
+  endif
+endfunction
+
+function! timl#conj(coll, x, ...) abort
+  let t = timl#type(a:coll)
+  if a:coll is g:timl#nil
+    return timl#cons(a:coll, g:timl#nil)
+  elseif t ==# 'timl.vim/List'
+    return timl#persistentb(extend(timl#transient(a:coll), [a:x] + a:000))
+  elseif t ==# 'timl.lang/HashSet'
+    let coll = timl#transient(a:coll)
+    let coll[timl#key(a:x)] = a:x
+    let _ = {}
+    for _.v in a:000
+      let coll[timl#key(_.v)] = _.v
+    endfor
+    return timl#persistentb(coll)
+  elseif t ==# 'timl.lang/HashMap' || t ==# 'timl.vim/Dictionary'
+    let coll = timl#transient(a:coll)
+    let _ = {}
+    for _.v in a:000
+      call timl#assocb(a:coll, timl#vec(_.v))
+    endfor
+    return timl#persistentb(coll)
+  else
+    let _ = {'coll': a:coll}
+    for x in [a:x] + a:000
+      let _.coll = timl#dispatch('timl.lang/IPersistentCollection', 'cons', _.coll, a:x)
+    endfor
+    return _.coll
+  endif
+endfunction
 
 function! timl#mapp(coll)
   return timl#type(a:coll) == 'timl.lang/HashMap'
@@ -410,30 +449,6 @@ endfunction
 
 function! timl#dissoc(coll, ...) abort
   return timl#persistentb(call('timl#dissocb', [timl#transient(a:coll)] + a:000))
-endfunction
-
-function! timl#conj(coll, x, ...) abort
-  let t = timl#type(a:coll)
-  if t ==# 'timl.vim/List'
-    return timl#persistentb(extend(timl#transient(a:coll), [a:x] + a:000))
-  elseif t ==# 'timl.lang/HashSet'
-    let coll = timl#transient(a:coll)
-    let coll[timl#key(a:x)] = a:x
-    let _ = {}
-    for _.v in a:000
-      let coll[timl#key(_.v)] = _.v
-    endfor
-    return timl#persistentb(coll)
-  elseif t ==# 'timl.lang/HashMap' || t ==# 'timl.vim/Dictionary'
-    let coll = timl#transient(a:coll)
-    let _ = {}
-    for _.v in a:000
-      call timl#assocb(a:coll, timl#vec(_.v))
-    endfor
-    return timl#persistentb(coll)
-  else
-    return timl#cons(a:x, a:coll)
-  endif
 endfunction
 
 " }}}1

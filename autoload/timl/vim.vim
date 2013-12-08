@@ -49,6 +49,15 @@ function! s:list_get(this, idx, ...) abort
   return a:0 ? a:1 : g:timl#nil
 endfunction
 
+function! s:list_cons(this, other) abort
+  return timl#persistentb(a:this + [a:other])
+endfunction
+
+let s:empty_list = timl#persistentb([])
+function! s:list_empty(this) abort
+  return s:empty_list
+endfunction
+
 let g:timl#vim#List = timl#bless('timl.lang/Type', {
       \ "name": timl#symbol('timl.vim/List'),
       \ "implements":
@@ -56,6 +65,9 @@ let g:timl#vim#List = timl#bless('timl.lang/Type', {
       \    {"seq": g:timl#lang#ChunkedCons.create},
       \  "timl.lang/ILookup":
       \    {"get": s:function("s:list_get")},
+      \  "timl.lang/IPersistentCollection":
+      \    {"cons": s:function("s:list_cons"),
+      \     "empty": s:function("s:list_empty")},
       \  "timl.lang/IFn":
       \    {"invoke": s:function("s:list_get")}}})
 
@@ -69,6 +81,15 @@ function! s:dict_get(this, key, ...) abort
   return get(a:this, timl#str(a:key), a:0 ? a:1 : g:timl#nil)
 endfunction
 
+function! s:dict_cons(this, x) abort
+  return timl#persistentb(extend(timl#transient(a:this), {timl#str(timl#first(a:x)): timl#first(timl#rest(a:x))}))
+endfunction
+
+let s:empty_dict = timl#persistentb({})
+function! s:dict_empty(this) abort
+  return s:empty_dict
+endfunction
+
 let g:timl#vim#Dictionary = timl#bless('timl.lang/Type', {
       \ "name": timl#symbol('timl.vim/Dictionary'),
       \ "implements":
@@ -76,6 +97,9 @@ let g:timl#vim#Dictionary = timl#bless('timl.lang/Type', {
       \    {"seq": s:function("s:dict_seq")},
       \  "timl.lang/ILookup":
       \    {"get": s:function("s:dict_get")},
+      \  "timl.lang/IPersistentCollection":
+      \    {"cons": s:function("s:dict_cons"),
+      \     "empty": s:function("s:dict_empty")},
       \  "timl.lang/IFn":
       \    {"invoke": s:function("s:dict_get")}}})
 

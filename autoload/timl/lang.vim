@@ -77,11 +77,22 @@ function! s:cons_cdr(cons)
   return timl#seq(a:cons.cdr)
 endfunction
 
+function! s:cons_cons(cdr, car)
+  return timl#cons(a:car, a:cdr)
+endfunction
+
+function! s:cons_empty()
+  return g:timl#nil
+endfunction
+
 let g:timl#lang#Cons = timl#bless(s:type, {
       \ "name": timl#symbol('timl.lang/Cons'),
       \ "implements":
       \ {"timl.lang/Seqable":
       \    {"seq": s:function("s:identity")},
+      \  "timl.lang/IPersistentCollection":
+      \    {"cons": s:function("s:cons_cons"),
+      \     "empty": s:function("s:cons_empty")},
       \  "timl.lang/ISeq":
       \    {"first": s:function('s:cons_car'),
       \     "rest": s:function('s:cons_cdr')}}})
@@ -105,6 +116,9 @@ let g:timl#lang#ChunkedCons = timl#bless(s:type, {
       \ "implements":
       \ {"timl.lang/Seqable":
       \    {"seq": s:function('s:identity')},
+      \  "timl.lang/IPersistentCollection":
+      \    {"cons": s:function("s:cons_cons"),
+      \     "empty": s:function("s:cons_empty")},
       \  "timl.lang/ISeq":
       \    {"first": s:function('s:chunk_first'),
       \     "rest": s:function('s:chunk_rest')}}})
@@ -143,16 +157,28 @@ let g:timl#lang#LazySeq = timl#bless(s:type, {
       \ "name": timl#symbol('timl.lang/LazySeq'),
       \ "implements":
       \ {"timl.lang/Seqable":
-      \   {"seq": s:function('s:deref_lazy_seq')}}})
+      \   {"seq": s:function('s:deref_lazy_seq')},
+      \  "timl.lang/IPersistentCollection":
+      \    {"cons": s:function("s:cons_cons"),
+      \     "empty": s:function("s:cons_empty")}}})
 
 " Section: Hashes
 
-function! s:map_seq(hash)
+function! s:map_seq(hash) abort
   return timl#list2(map(filter(items(a:hash), 'v:val[0][0] !=# "#"'), '[timl#dekey(v:val[0]), v:val[1]]'))
 endfunction
 
-function! s:map_get(this, key, ...)
+function! s:map_get(this, key, ...) abort
   return get(a:this, timl#key(a:key), a:0 ? a:1 : g:timl#nil)
+endfunction
+
+function! s:map_cons(this, x) abort
+  return timl#persistentb(extend(timl#transient(a:this), {timl#key(timl#first(a:x)): timl#first(timl#rest(a:x))}))
+endfunction
+
+let s:empty_map = timl#persistentb(timl#bless('timl.lang/HashMap'))
+function! s:map_empty(this) abort
+  return s:empty_map
 endfunction
 
 let g:timl#lang#HashMap = timl#bless(s:type, {
@@ -162,15 +188,27 @@ let g:timl#lang#HashMap = timl#bless(s:type, {
       \    {"seq": s:function('s:map_seq')},
       \  "timl.lang/ILookup":
       \    {"get": s:function('s:map_get')},
+      \  "timl.lang/IPersistentCollection":
+      \    {"cons": s:function("s:map_cons"),
+      \     "empty": s:function("s:map_empty")},
       \  "timl.lang/IFn":
       \    {"invoke": s:function('s:map_get')}}})
 
-function! s:set_seq(hash)
+function! s:set_seq(hash) abort
   return timl#list2(map(filter(items(a:hash), 'v:val[0][0] !=# "#"'), 'v:val[1]'))
 endfunction
 
-function! s:set_get(this, key, ...)
+function! s:set_get(this, key, ...) abort
   return get(a:this, timl#key(a:key), a:0 ? a:1 : g:timl#nil)
+endfunction
+
+function! s:set_cons(this, x) abort
+  return timl#persistentb(extend(timl#transient(a:this), {timl#key(a:x): a:x}))
+endfunction
+
+let s:empty_set = timl#persistentb(timl#bless('timl.lang/HashSet'))
+function! s:set_empty(this) abort
+  return s:empty_set
 endfunction
 
 let g:timl#lang#HashSet = timl#bless(s:type, {
@@ -180,6 +218,9 @@ let g:timl#lang#HashSet = timl#bless(s:type, {
       \    {"seq": s:function("s:set_seq")},
       \  "timl.lang/ILookup":
       \    {"get": s:function('s:set_get')},
+      \  "timl.lang/IPersistentCollection":
+      \    {"cons": s:function("s:set_cons"),
+      \     "empty": s:function("s:set_empty")},
       \  "timl.lang/IFn":
       \    {"invoke": s:function('s:set_get')}}})
 

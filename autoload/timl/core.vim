@@ -416,21 +416,7 @@ endfunction
 " Section: Collections {{{1
 
 TLalias get timl#get
-
-TLfunction! empty(coll) abort
-  if timl#consp(a:coll)
-    " TODO: empty list
-    return g:timl#nil
-  endif
-  if type(a:coll) == type({}) && !timl#symbolp(a:coll)
-    return {}
-  elseif type(a:coll) == type('')
-    return ''
-  elseif type(a:coll) == type([])
-    return []
-  endif
-  return g:timl#nil
-endfunction
+TLalias empty timl#empty
 
 " }}}1
 " Section: Sequences {{{1
