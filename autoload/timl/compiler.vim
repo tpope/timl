@@ -553,21 +553,19 @@ endfunction
 " }}}1
 " Section: Execution {{{1
 
-function! timl#compiler#build(x, ns, ...) abort
+function! timl#compiler#build(x, context, ns, ...) abort
   let file = []
-  call s:emit(file, a:0 ? a:1 : "return %s", a:ns, {}, a:x)
+  call s:emit(file, a:context, a:ns, a:0 ? a:1 : {}, a:x)
   return join(file, "\n") . "\n"
 endfunction
 
 function! timl#compiler#eval(x, ...) abort
-  let _ns = timl#name(a:0 ? a:1 : g:timl#core#_STAR_ns_STAR_.name)
-  let str = timl#compiler#build(a:x, _ns, "return %s")
-  return s:execute(a:x, str)
+  let ns = timl#name(a:0 ? a:1 : g:timl#core#_STAR_ns_STAR_.name)
+  let str = timl#compiler#build(a:x, "return %s", ns, a:0 > 1 ? a:2 : {})
+  return s:execute(a:x, str, a:0 > 1 ? a:2 : {})
 endfunction
 
-function! s:execute(form, str)
-  let locals = [{}]
-  let temp = {}
+function! s:execute(form, str, ...)
   let _dict = {}
   let _str = "function _dict.func(locals) abort\n"
         \ . "let locals=[a:locals]\n"
@@ -581,7 +579,7 @@ function! s:execute(form, str)
   if !empty(meta)
     let g:timl_functions[join([_dict.func])] = meta
   endif
-  return _dict.func(a:0 > 1 ? a:2 : {})
+  return _dict.func(a:0 ? a:1 : {})
 endfunction
 
 let s:dir = (has('win32') ? '$APPCACHE/Vim' :
@@ -622,7 +620,7 @@ function! timl#compiler#source_file(filename)
     let eof = []
     while _.read isnot# eof
       let _.read = timl#reader#read(file, eof)
-      let str = timl#compiler#build(_.read, g:timl#core#_STAR_ns_STAR_.name)
+      let str = timl#compiler#build(_.read, 'return %s', g:timl#core#_STAR_ns_STAR_.name)
       call s:execute(_.read, str)
       call add(strs, "function! s:d.f() abort\nlet locals = [{}]\nlet temp ={}\n".str."endfunction\n")
       let meta = s:loc_meta(_.read)
