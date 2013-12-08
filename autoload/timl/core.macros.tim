@@ -1,5 +1,16 @@
 (in-ns 'timl.core)
 
+(defmacro if-not
+  ([cond then] `(if ~cond nil ~then))
+  ([cond then else] `(if ~cond ~else ~then)))
+
+(defmacro when-not [cond & body]
+  `(if ~cond nil (do ~@body)))
+
+(defmacro defonce [name expr]
+  `(when-not (#*exists (#*timl#munge (str "g:" (. *ns* -name) "#" '~name)))
+     (def ~name ~expr)))
+
 (defmacro cond [& clauses]
   (when (seq clauses)
     (list 'if (first clauses)
