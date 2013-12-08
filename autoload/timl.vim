@@ -224,29 +224,20 @@ function! timl#type(val) abort
 endfunction
 
 function! timl#satisfiesp(proto, obj)
-  let t = timl#munge(timl#type(a:obj))
-  if type(get(g:, t)) == type({})
-    let proto = timl#str(a:proto)
-    return has_key(get(g:{t}, "implements", {}), proto)
-  else
-    throw "timl: type " . t . " undefined"
-  else
+  let t = g:[tr(timl#type(a:obj), '/.-', '##_')]
+  return has_key(get(t, 'implements', {}), a:proto)
 endfunction
 
 runtime! autoload/timl/lang.vim
 runtime! autoload/timl/vim.vim
 function! timl#dispatch(proto, fn, obj, ...)
-  let t = tr(timl#type(a:obj), '/.-', '##_')
-  if type(get(g:, t)) == type({})
-    let impls = get(g:{t}, "implements", {})
-    let proto = timl#str(a:proto)
-    if has_key(impls, proto)
-      return timl#call(impls[proto][timl#str(a:fn)], [a:obj] + a:000)
-    endif
-  else
-    throw "timl: type " . t . " undefined"
-  endif
-  throw "timl:E117: ".t." doesn't implement ".a:proto
+  let t = g:[tr(timl#type(a:obj), '/.-', '##_')]
+  try
+    let F = t.implements[a:proto][a:fn]
+  catch /^Vim(let):E716:/
+    throw "timl:E117: ".timl#type(a:obj)." doesn't implement ".a:proto
+  endtry
+  return timl#call(F, [a:obj] + a:000)
 endfunction
 
 function! timl#persistentb(val) abort
