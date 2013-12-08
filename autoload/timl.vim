@@ -321,6 +321,14 @@ endfunction
 " }}}1
 " Section: Collections {{{1
 
+function! timl#mapp(coll)
+  return timl#type(a:coll) == 'timl.lang/HashMap'
+endfunction
+
+function! timl#setp(coll)
+  return timl#type(a:coll) == 'timl.lang/HashSet'
+endfunction
+
 function! timl#key(key)
   if type(a:key) == type(0)
     return string(a:key)
