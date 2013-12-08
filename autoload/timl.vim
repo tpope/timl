@@ -277,9 +277,9 @@ function! timl#str(val) abort
   elseif timl#consp(a:val)
     let _ = {'val': a:val}
     let acc = ''
-    while timl#consp(_.val)
-      let acc .= timl#str(timl#car(_.val)) . ','
-      let _.val = timl#cdr(_.val)
+    while !empty(_.val)
+      let acc .= timl#str(timl#first(_.val)) . ','
+      let _.val = timl#next(_.val)
     endwhile
     return acc
   elseif type(a:val) == type([])
@@ -442,12 +442,14 @@ function! timl#seq(coll) abort
 endfunction
 
 function! timl#first(coll) abort
-  return type(a:coll) == s:ary ? get(a:coll, 0, g:timl#nil) :
+  return timl#consp(a:coll) ? a:coll.car :
+        \ type(a:coll) == s:ary ? get(a:coll, 0, g:timl#nil) :
         \ timl#dispatch('timl.lang/ISeq', 'first', timl#seq(a:coll))
 endfunction
 
 function! timl#rest(coll) abort
-  return timl#dispatch('timl.lang/ISeq', 'rest', timl#seq(a:coll))
+  return timl#consp(a:coll) ? a:coll.cdr :
+        \ timl#dispatch('timl.lang/ISeq', 'rest', timl#seq(a:coll))
 endfunction
 
 function! timl#next(coll) abort
@@ -484,23 +486,9 @@ function! timl#count(seq) abort
   let _ = {'seq': a:seq}
   while timl#consp(_.seq)
     let i += 1
-    let _.seq = timl#cdr(_.seq)
+    let _.seq = timl#rest(_.seq)
   endwhile
   return i + len(_.seq)
-endfunction
-
-function! timl#car(cons) abort
-  if timl#consp(a:cons)
-    return a:cons.car
-  endif
-  throw 'timl: not a cons cell'
-endfunction
-
-function! timl#cdr(cons) abort
-  if timl#consp(a:cons)
-    return a:cons.cdr
-  endif
-  throw 'timl: not a cons cell'
 endfunction
 
 function! timl#list2(array)
@@ -511,21 +499,21 @@ function! timl#list2(array)
   return _.cdr
 endfunction
 
-function! timl#vec(cons)
-  if !timl#consp(a:cons)
-    return copy(a:cons)
+function! timl#vec(coll)
+  if type(a:coll) ==# s:ary
+    return a:coll is# g:timl#nil ? [] : a:coll
   endif
   let array = []
-  let _ = {'cons': a:cons}
-  while timl#consp(_.cons)
-    call add(array, timl#car(_.cons))
-    let _.cons = timl#cdr(_.cons)
+  let _ = {'seq': a:coll}
+  while !empty(_.seq)
+    call add(array, timl#first(_.seq))
+    let _.seq = timl#rest(_.seq)
   endwhile
-  return timl#persistentb(extend(array, _.cons))
+  return timl#persistentb(extend(array, _.seq))
 endfunction
 
 function! timl#vectorp(obj) abort
-  return type(a:obj) == type([]) && a:obj isnot# g:timl#nil && !timl#symbolp(a:obj)
+  return type(a:obj) == type([]) && a:obj isnot# g:timl#nil
 endfunction
 
 " }}}1

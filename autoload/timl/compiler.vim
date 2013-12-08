@@ -205,8 +205,8 @@ function! s:emit(file, context, ns, locals, x) abort
 
   endif
 
-  let F = timl#car(x)
-  let rest = timl#cdr(x)
+  let F = timl#first(x)
+  let rest = timl#rest(x)
   let vec = timl#vec(rest)
 
   if timl#symbolp(F, ':')
@@ -354,10 +354,10 @@ function! s:emit_multifn(file, context, ns, form, locals, name, tmp, fns)
   let _ = {}
   let dispatch = {}
   for fn in a:fns
-    let _.args = timl#car(fn)
+    let _.args = timl#first(fn)
     let arity = timl#symbolp(get(_.args, -2), '&') ? 1-len(_.args) : len(_.args)
     let dispatch[arity < 0 ? 30-arity : 10 + arity] = arity
-    call call('timl#compiler#emit_fn_STAR_', [a:file, "let ".a:tmp."[".string(arity)."] = %s", a:ns, a:form, a:locals, _.args] + timl#vec(timl#cdr(fn)))
+    call call('timl#compiler#emit_fn_STAR_', [a:file, "let ".a:tmp."[".string(arity)."] = %s", a:ns, a:form, a:locals, _.args] + timl#vec(timl#rest(fn)))
   endfor
   call s:println(a:file, "function! ".a:tmp.".call(...) abort")
   call s:println(a:file, "if 0")
@@ -454,15 +454,15 @@ function! timl#compiler#emit_syntax_quote(file, context, ns, origform, locals, f
   let gensyms = a:0 ? a:1 : {}
   let _ = {}
   if timl#consp(a:form)
-    if timl#symbolp(timl#car(a:form), 'unquote')
-      return s:emit(a:file, a:context, a:ns, a:locals, timl#car(timl#cdr(a:form)))
+    if timl#symbolp(timl#first(a:form), 'unquote')
+      return s:emit(a:file, a:context, a:ns, a:locals, timl#first(timl#rest(a:form)))
     endif
     let tmp = s:tempsym('quasiquote')
     call s:println(a:file, 'let '.tmp.' = []')
     let form = timl#vec(a:form)
     for _.v in form
-      if timl#consp(_.v) && timl#symbolp(timl#car(_.v), 'unquote-splicing')
-        call s:emit(a:file, 'call extend('.tmp.', timl#vec(%s))', a:ns, a:locals, timl#car(timl#cdr(_.v)))
+      if timl#consp(_.v) && timl#symbolp(timl#first(_.v), 'unquote-splicing')
+        call s:emit(a:file, 'call extend('.tmp.', timl#vec(%s))', a:ns, a:locals, timl#first(timl#rest(_.v)))
       else
         call timl#compiler#emit_syntax_quote(a:file, 'call add('.tmp.', %s)', a:ns, a:origform, a:locals, _.v, gensyms)
       endif
@@ -508,7 +508,7 @@ function! timl#compiler#emit_try(file, context, ns, form, locals, ...) abort
   let i = -1
   for i in range(a:0)
     let _.e = a:000[i]
-    if timl#consp(_.e) && (timl#car(_.e) is s:catch || timl#car(_.e) is s:finally)
+    if timl#consp(_.e) && (timl#first(_.e) is s:catch || timl#first(_.e) is s:finally)
       let i -= 1
       break
     endif
@@ -517,11 +517,11 @@ function! timl#compiler#emit_try(file, context, ns, form, locals, ...) abort
   call s:printfln(a:file, a:context, tmp)
   for i in range(i+1, a:0-1)
     let _.e = a:000[i]
-    if timl#consp(_.e) && timl#car(_.e) is s:finally
+    if timl#consp(_.e) && timl#first(_.e) is s:finally
       call s:println(a:file, 'finally')
-      call call('timl#compiler#emit_do', [a:file, 'let '.tmp.' = %s', a:ns, a:form, a:locals] + timl#vec(timl#cdr(_.e)))
-    elseif timl#consp(_.e) && timl#car(_.e) is s:catch
-      let rest = timl#vec(timl#cdr(_.e))
+      call call('timl#compiler#emit_do', [a:file, 'let '.tmp.' = %s', a:ns, a:form, a:locals] + timl#vec(timl#rest(_.e)))
+    elseif timl#consp(_.e) && timl#first(_.e) is s:catch
+      let rest = timl#vec(timl#rest(_.e))
       let _.pattern = rest[0]
       if type(_.pattern) == type(0)
         let _.pattern = '^Vim\%((\a\+)\)\=:E' . _.pattern
