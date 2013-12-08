@@ -144,11 +144,11 @@ function! s:process(port, token, pos, line) abort
   elseif token ==# "'"
     return timl#list(timl#symbol('quote'), s:read_bang(port))
   elseif token ==# '`'
-    return timl#list(timl#symbol('syntax-quote'), s:read_bang(port))
+    return timl#reader#syntax_quote(s:read_bang(port), {})
   elseif token ==# '~'
-    return timl#list(timl#symbol('unquote'), s:read_bang(port))
+    return timl#list(s:unquote, s:read_bang(port))
   elseif token ==# '~@'
-    return timl#list(timl#symbol('unquote-splicing'), s:read_bang(port))
+    return timl#list(s:unquote_splicing, s:read_bang(port))
   elseif token ==# '#*'
     return timl#list(timl#symbol('function'), s:read_bang(port))
   elseif token[0] ==# ';'
@@ -226,6 +226,78 @@ function! s:read_bang(port) abort
   throw 'timl#reader: unexpected EOF'
 endfunction
 
+let s:quote = timl#symbol('quote')
+let s:unquote = timl#symbol('unquote')
+let s:unquote_splicing = timl#symbol('unquote-splicing')
+let s:list = timl#symbol('timl.core/list')
+let s:concat = timl#symbol('timl.core/concat')
+let s:seq = timl#symbol('timl.core/seq')
+let s:vec = timl#symbol('timl.core/vec')
+let s:set = timl#symbol('timl.core/set')
+let s:hash_map = timl#symbol('timl.core/hash-map')
+function! timl#reader#syntax_quote(form, gensyms)
+  if timl#symbolp(a:form)
+    if a:form[0] =~# '^[^/]\+#$'
+      if !has_key(a:gensyms, a:form[0])
+        let a:gensyms[a:form[0]] = timl#symbol(timl#gensym(a:form[0][0:-2].'__')[0].'__auto__')
+      endif
+      let quote = s:quote
+      let x = timl#list(s:quote, a:gensyms[a:form[0]])
+      return timl#list(s:quote, a:gensyms[a:form[0]])
+    elseif a:form[0] !~# '/.'
+      return timl#list(s:quote, timl#symbol(timl#compiler#qualify(a:form[0], g:timl#core#_STAR_ns_STAR_.name, a:form[0])))
+    else
+      return timl#list(s:quote, a:form)
+    endif
+  elseif timl#vectorp(a:form)
+    return timl#list(s:vec, timl#cons(s:concat, s:sqexpandlist(a:form, a:gensyms)))
+  elseif timl#setp(a:form)
+    return timl#list(s:set, timl#cons(s:concat, s:sqexpandlist(a:form, a:gensyms)))
+  elseif timl#mapp(a:form)
+    let _ = {'seq': timl#seq(a:form)}
+    let keyvals = []
+    while _.seq isnot# g:timl#nil
+      call extend(keyvals, timl#vec(timl#first(_.seq)))
+      echo keyvals
+      let _.seq = timl#next(_.seq)
+    endwhile
+    return timl#list(s:hash_map, timl#cons(s:concat, s:sqexpandlist(keyvals, a:gensyms)))
+
+  elseif timl#collp(a:form)
+    let first = timl#first(a:form)
+    if first is# s:unquote
+      return timl#first(timl#rest(a:form))
+    elseif first is# s:unquote_splicing
+      throw 'timl#reader: unquote-splicing used outside of list'
+    else
+      return timl#list(s:seq, timl#cons(s:concat, s:sqexpandlist(a:form, a:gensyms)))
+    endif
+  else
+    return a:form
+  endif
+endfunction
+
+function! s:sqexpandlist(seq, gensyms) abort
+  let result = []
+  let _ = {'seq': a:seq}
+  while _.seq isnot# g:timl#nil
+    let _.this = timl#first(_.seq)
+    if timl#consp(_.this)
+      if timl#first(_.this) is# s:unquote
+        call add(result, timl#list(s:list, timl#first(timl#rest(_.this))))
+      elseif timl#first(_.this) is# s:unquote_splicing
+        call add(result, timl#first(timl#rest(_.this)))
+      else
+        call add(result, timl#list(s:list, timl#reader#syntax_quote(_.this, a:gensyms)))
+      endif
+    else
+      call add(result, timl#list(s:list, timl#reader#syntax_quote(_.this, a:gensyms)))
+    endif
+    let _.seq = timl#next(_.seq)
+  endwhile
+  return result
+endfunction
+
 function! timl#reader#open(filename) abort
   let str = join(readfile(a:filename), "\n")
   return {'str': str, 'filename': a:filename, 'pos': 0, 'line': 1}
@@ -288,12 +360,13 @@ TimLRAssert timl#reader#read_string('#["a" 1 "b" 2]') ==# {"a": 1, "b": 2}
 TimLRAssert timl#reader#read_string('{"a" 1 :b 2 3 "c"}') ==# timl#hash_map("a", 1, timl#keyword('b'), 2, 3, "c")
 TimLRAssert timl#reader#read_string("[1]\n; hi\n") ==# [1]
 TimLRAssert timl#reader#read_string("'[1 2 3]") ==# timl#list(timl#symbol('quote'), [1, 2, 3])
-TimLRAssert timl#reader#read_string("`foo") ==# timl#list(timl#symbol('syntax-quote'), timl#symbol('foo'))
-TimLRAssert timl#reader#read_string("~foo") ==# timl#list(timl#symbol('unquote'), timl#symbol('foo'))
 TimLRAssert timl#reader#read_string("#*tr") ==# timl#list(timl#symbol('function'), timl#symbol('tr'))
 TimLRAssert timl#reader#read_string("(1 #_2 3)") ==# timl#list(1, 3)
 TimLRAssert timl#reader#read_string("^:foo {}") ==#
       \ timl#with_meta(timl#hash_map(), timl#hash_map(timl#keyword('foo'), g:timl#true))
+
+TimLRAssert timl#reader#read_string("~foo") ==# timl#list(s:unquote, timl#symbol('foo'))
+TimLRAssert timl#first(timl#rest(timl#reader#read_string("`foo#")))[0] =~# '^foo__\d\+__auto__'
 
 delcommand TimLRAssert
 

@@ -16,9 +16,6 @@ let s:specials = {
       \ ':': 1,
       \ '.': 1,
       \ 'quote': 1,
-      \ 'syntax-quote': 1,
-      \ 'unquote': 1,
-      \ 'unquote-splicing': 1,
       \ 'function': 1,
       \ 'throw': 1,
       \ 'try': 1,
@@ -487,47 +484,6 @@ endfunction
 
 function! timl#compiler#emit_quote(file, context, ns, form, locals, elem) abort
   return s:printfln(a:file, a:context, timl#compiler#serialize(a:elem))
-endfunction
-
-function! timl#compiler#emit_syntax_quote(file, context, ns, origform, locals, form, ...) abort
-  let gensyms = a:0 ? a:1 : {}
-  let _ = {}
-  if timl#consp(a:form)
-    if timl#symbolp(timl#first(a:form), 'unquote')
-      return s:emit(a:file, a:context, a:ns, a:locals, timl#first(timl#rest(a:form)))
-    endif
-    let tmp = s:tempsym('quasiquote')
-    call s:println(a:file, 'let '.tmp.' = []')
-    let form = timl#vec(a:form)
-    for _.v in form
-      if timl#consp(_.v) && timl#symbolp(timl#first(_.v), 'unquote-splicing')
-        call s:emit(a:file, 'call extend('.tmp.', timl#vec(%s))', a:ns, a:locals, timl#first(timl#rest(_.v)))
-      else
-        call timl#compiler#emit_syntax_quote(a:file, 'call add('.tmp.', %s)', a:ns, a:origform, a:locals, _.v, gensyms)
-      endif
-    endfor
-    return s:printfln(a:file, a:context, 'timl#list2('.tmp.')')
-  elseif timl#symbolp(a:form)
-    if a:form[0] =~# '#$'
-      if !has_key(gensyms, a:form[0])
-        let gensyms[a:form[0]] = timl#symbol(timl#gensym(a:form[0][0:-2])[0])
-      endif
-      let sym = gensyms[a:form[0]]
-    else
-      let sym = a:form
-    endif
-    let var = timl#compiler#qualify(sym, a:ns, sym)
-    return s:printfln(a:file, a:context, timl#compiler#serialize(timl#symbol(var)))
-  elseif type(a:form) == type([]) && a:form isnot# g:timl#nil
-    let tmp = s:tempsym('quasiquote')
-    call s:println(a:file, 'let '.tmp.' = []')
-    for _.v in a:form
-      call timl#compiler#emit_syntax_quote(a:file, 'call add('.tmp.', %s)', a:ns, a:origform, a:locals, _.v, gensyms)
-    endfor
-    return s:printfln(a:file, a:context, tmp)
-  else
-    return s:emit(a:file, a:context, a:ns, a:locals, a:form)
-  endif
 endfunction
 
 let s:catch   = timl#symbol('catch')
