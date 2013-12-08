@@ -36,6 +36,49 @@ if !exists('g:timl#symbols')
   let g:timl#keywords = {}
 endif
 
+" From clojure/lang/Compiler.java
+let s:munge = {
+      \ '.': "#",
+      \ ',': "_COMMA_",
+      \ ':': "_COLON_",
+      \ '+': "_PLUS_",
+      \ '>': "_GT_",
+      \ '<': "_LT_",
+      \ '=': "_EQ_",
+      \ '~': "_TILDE_",
+      \ '!': "_BANG_",
+      \ '@': "_CIRCA_",
+      \ "'": "_SINGLEQUOTE_",
+      \ '"': "_DOUBLEQUOTE_",
+      \ '%': "_PERCENT_",
+      \ '^': "_CARET_",
+      \ '&': "_AMPERSAND_",
+      \ '*': "_STAR_",
+      \ '|': "_BAR_",
+      \ '{': "_LBRACE_",
+      \ '}': "_RBRACE_",
+      \ '[': "_LBRACK_",
+      \ ']': "_RBRACK_",
+      \ '/': "_SLASH_",
+      \ '\\': "_BSLASH_",
+      \ '?': "_QMARK_"}
+
+let s:demunge = {}
+for s:key in keys(s:munge)
+  let s:demunge[s:munge[s:key]] = s:key
+endfor
+unlet! s:key
+
+function! timl#munge(var) abort
+  let var = type(a:var) == type('') ? a:var : a:var[0]
+  return tr(substitute(substitute(var, '[^[:alnum:]:#_-]', '\=get(s:munge,submatch(0), submatch(0))', 'g'), '_SLASH_\ze.', '#', ''), '-', '_')
+endfunction
+
+function! timl#demunge(var) abort
+  let var = type(a:var) == type('') ? a:var : a:var[0]
+  return tr(substitute(var, '_\(\u\+\)_', '\=get(s:demunge, submatch(0), submatch(0))', 'g'), '_', '-')
+endfunction
+
 function! timl#keyword(str)
   let str = type(a:str) == type({}) ? a:str[0] : a:str
   if !has_key(g:timl#keywords, str)
@@ -84,49 +127,6 @@ function! timl#name(val) abort
   endif
 endfunction
 
-" From clojure/lange/Compiler.java
-let s:munge = {
-      \ '.': "#",
-      \ ',': "_COMMA_",
-      \ ':': "_COLON_",
-      \ '+': "_PLUS_",
-      \ '>': "_GT_",
-      \ '<': "_LT_",
-      \ '=': "_EQ_",
-      \ '~': "_TILDE_",
-      \ '!': "_BANG_",
-      \ '@': "_CIRCA_",
-      \ "'": "_SINGLEQUOTE_",
-      \ '"': "_DOUBLEQUOTE_",
-      \ '%': "_PERCENT_",
-      \ '^': "_CARET_",
-      \ '&': "_AMPERSAND_",
-      \ '*': "_STAR_",
-      \ '|': "_BAR_",
-      \ '{': "_LBRACE_",
-      \ '}': "_RBRACE_",
-      \ '[': "_LBRACK_",
-      \ ']': "_RBRACK_",
-      \ '/': "_SLASH_",
-      \ '\\': "_BSLASH_",
-      \ '?': "_QMARK_"}
-
-let s:demunge = {}
-for s:key in keys(s:munge)
-  let s:demunge[s:munge[s:key]] = s:key
-endfor
-unlet! s:key
-
-function! timl#munge(var) abort
-  let var = timl#name(a:var)
-  return tr(substitute(substitute(var, '[^[:alnum:]:#_-]', '\=get(s:munge,submatch(0), submatch(0))', 'g'), '_SLASH_\ze.', '#', ''), '-', '_')
-endfunction
-
-function! timl#demunge(var) abort
-  let var = timl#name(a:var)
-  return tr(substitute(var, '_\(\u\+\)_', '\=get(s:demunge, submatch(0), submatch(0))', 'g'), '_', '-')
-endfunction
-
 let s:amp = timl#symbol('&')
 function! timl#arg2env(arglist, args, env) abort
   let args = a:args
@@ -161,14 +161,6 @@ endfunction
 " }}}1
 " Section: Data types {{{1
 
-let s:types = {
-      \ 0: 'timl.vim/Number',
-      \ 1: 'timl.vim/String',
-      \ 2: 'timl.vim/Funcref',
-      \ 3: 'timl.vim/List',
-      \ 4: 'timl.vim/Dictionary',
-      \ 5: 'timl.vim/Float'}
-
 function! timl#meta(obj)
   if timl#objectp(a:obj)
     return get(a:obj, '#meta', g:timl#nil)
@@ -200,6 +192,14 @@ let s:function = timl#intern_type('timl.lang/Function')
 function! timl#functionp(val) abort
   return type(a:val) == type({}) && get(a:val, '#tag') is# s:function
 endfunction
+
+let s:types = {
+      \ 0: 'timl.vim/Number',
+      \ 1: 'timl.vim/String',
+      \ 2: 'timl.vim/Funcref',
+      \ 3: 'timl.vim/List',
+      \ 4: 'timl.vim/Dictionary',
+      \ 5: 'timl.vim/Float'}
 
 function! timl#type(val) abort
   let type = get(s:types, type(a:val), 'timl.vim/Unknown')
