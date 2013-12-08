@@ -1,9 +1,6 @@
 (in-ns 'timl.core)
 
-(def *1)
-(def *2)
-(def *3)
-(def *e)
+(declare *1 *2 *3 *e)
 
 (defn not [x] (if x false true))
 

@@ -1,58 +1,7 @@
 (in-ns 'timl.core)
 
-(defmacro lazy-seq [& body]
-  `(#*timl#lang#create_lazy_seq (fn [] ~@body)))
-(defn map [f coll]
-  (lazy-seq
-    (when-let [s (seq coll)]
-      (cons (f (first s)) (map f (rest s))))))
-
 (defn not-empty [xs] (if (empty? xs) nil xs))
 (defn second [xs] (first (rest xs)))
-
-(defn dorun
-  ([coll]
-   (when (seq coll)
-     (recur (next coll))))
-  ([n coll]
-   (when (and (seq coll) (pos? n))
-     (recur (dec n) (next coll)))))
-
-(defn doall
-  ([coll]
-   (dorun coll)
-   coll)
-  ([n coll]
-   (dorun n coll)
-   coll))
-
-(defn nthrest [coll n]
-  (if (and (pos? n) (seq coll))
-    (recur (rest coll) (dec n))
-    coll))
-
-(defn take [n coll]
-  (lazy-seq
-    (when (pos? n)
-      (when-let [s (seq coll)]
-        (cons (first s) (take (dec n) (rest s)))))))
-
-(defn partition
-  ([n coll]
-   (partition n n coll))
-  ([n step coll]
-   (lazy-seq
-     (when-let [s (seq coll)]
-       (let [p (doall (take n s))]
-         (when (= n (count p))
-           (cons p (partition n step (nthrest s step))))))))
-  ([n step pad coll]
-   (lazy-seq
-     (when-let [s (seq coll)]
-       (let [p (doall (take n s))]
-         (if (= n (count p))
-           (cons p (partition n step pad (nthrest s step)))
-           (list (take n (concat p pad)))))))))
 
 (defn filter [pred coll]
   (lazy-seq
@@ -62,16 +11,6 @@
           (if (pred f)
             (cons f (filter pred r))
             (recur (seq r))))))))
-
-(defn concat
-  ([] (lazy-seq nil))
-  ([x] (lazy-seq x))
-  ([x y]
-   (lazy-seq
-     (let [s (seq x)]
-       (if s
-         (cons (first s) (concat (rest s) y))
-         y)))))
 
 (defn iterate [f x]
   (cons x (lazy-seq (iterate f (f x)))))

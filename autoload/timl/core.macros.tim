@@ -1,50 +1,5 @@
 (in-ns 'timl.core)
 
-(defmacro let [& args] `(let* ~@args))
-
-(def map)
-(def concat)
-(def partition)
-(defmacro declare [& names]
-  `(do ~@(map (fn [n] (list 'def n)) names)))
-
-(defmacro loop [flat & body]
-  (let [bindings (partition 2 flat)]
-    `((fn ~(vec (map first bindings)) ~@body) ~@(vec (map (fn [x] (first (rest x))) bindings)))))
-
-(defmacro ns [name]
-  `(do
-     (in-ns '~name)
-     (refer 'timl.core)))
-
-(defmacro or
-  ([] nil)
-  ([x] x)
-  ([x & xs] `(let [or# ~x] (if or# or# (or ~@xs)))))
-
-(defmacro and
-  ([] true)
-  ([x] x)
-  ([x & xs] `(let [and# ~x] (if and# (and ~@xs) and#))))
-
-(defmacro when [test & body]
-  `(if ~test (do ~@body)))
-
-(defmacro if-let [bindings then & else]
-  (let [form (first bindings)
-        tst (first (rest bindings))]
-    `(let [temp# ~tst]
-      (if temp#
-        (let [~form temp#] ~then) ~@else))))
-
-(defmacro when-let [bindings & body]
-  (let [form (first bindings)
-        tst (first (rest bindings))]
-    `(let [temp# ~tst]
-      (if temp#
-        (let [~form temp#] ~@body)))))
-
-
 (defmacro cond [& clauses]
   (when (seq clauses)
     (list 'if (first clauses)

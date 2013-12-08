@@ -475,6 +475,7 @@ delcommand TLexpr
 delcommand TLpredicate
 unlet s:dict
 
+call timl#source_file(expand('<sfile>:r') . '.bootstrap.tim')
 call timl#source_file(expand('<sfile>:r') . '.macros.tim')
 call timl#source_file(expand('<sfile>:r') . '.basics.tim')
 call timl#source_file(expand('<sfile>:r') . '.seq.tim')
