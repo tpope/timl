@@ -19,12 +19,6 @@
    (when (and (seq coll) (pos? n))
      (recur (dec n) (next coll)))))
 
-(defn reductions [f init xs]
-  (cons init
-        (lazy-seq
-          (if xs
-            (reductions f (f init (first xs)) (rest xs))))))
-
 (defn filter [pred coll]
   (lazy-seq
     (loop [s (seq coll)]
@@ -52,3 +46,13 @@
 
 (defn iterate [f x]
   (cons x (lazy-seq (iterate f (f x)))))
+
+(defn repeat
+  ([x] (lazy-seq (cons x (repeat x))))
+  ([n x] (take n (repeat x))))
+
+(defn reductions [f init xs]
+  (cons init
+        (lazy-seq
+          (if xs
+            (reductions f (f init (first xs)) (rest xs))))))
