@@ -6,6 +6,18 @@
    (#*setqflist (get e "qflist"))
    (throw "timl#repl: exit copen")))
 
+(defn breakpoint-fn [env]
+  (let [str (#*input (format "%s=>> " (. *ns* -name)))]
+    (when (#*len str)
+      (newline)
+      (try
+        (prn (#*timl#compiler#eval (read-string str) (. *ns* -name) env))
+        (catch "" e (set! *e e) (println (:exception e))))
+      (recur env))))
+
+(defmacro breakpoint []
+  `(timl.repl/breakpoint-fn ~(list #*eval "locals[0]")))
+
 (def special-forms
   '[if do let fn def :
      quote syntax-quote unquote unquote-splicing function

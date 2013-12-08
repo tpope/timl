@@ -152,38 +152,38 @@ endfunction
 
 function! s:emit(file, context, ns, locals, x) abort
   let _ = {}
-  let x = a:x
-  if timl#symbolp(x)
-    if has_key(a:locals, x[0])
-      return s:printfln(a:file, a:context, "locals[0][".string(x[0])."]")
-    elseif x[0] =~# '^$\w\+$'
-      return s:printfln(a:file, a:context, "(exists('".x[0]."') ? ".x[0]." : g:timl#nil)")
+  let X = a:x
+  if timl#symbolp(X)
+    if has_key(a:locals, X[0])
+      return s:printfln(a:file, a:context, "locals[0][".string(X[0])."]")
+    elseif X[0] =~# '^$\w\+$'
+      return s:printfln(a:file, a:context, "(exists('".X[0]."') ? ".X[0]." : g:timl#nil)")
     else
-      return s:printfln(a:file, a:context, timl#compiler#resolve(x[0], a:ns))
+      return s:printfln(a:file, a:context, timl#compiler#resolve(X[0], a:ns))
     endif
 
-  elseif timl#keywordp(x)
-    return s:printfln(a:file, a:context, timl#compiler#serialize(x))
+  elseif timl#keywordp(X)
+    return s:printfln(a:file, a:context, timl#compiler#serialize(X))
 
-  elseif x is# g:timl#nil
+  elseif X is# g:timl#nil
     return s:printfln(a:file, a:context, 'g:timl#nil')
 
-  elseif type(x) == type([])
+  elseif type(X) == type([])
     let sym = s:tempsym('vec')
     call s:println(a:file, 'let '.sym." = []")
-    for _.e in x
+    for _.e in X
       call s:emit(a:file, "call add(".sym.", %s)", a:ns, a:locals, _.e)
     endfor
-    if islocked('x')
+    if islocked('X')
       call s:println(a:file, "let sym = timl#persistentb(".sym.")")
     endif
     return s:printfln(a:file, a:context, sym)
 
-  elseif type(x) == type({}) && !timl#consp(x)
+  elseif type(X) == type({}) && !timl#consp(X)
     let sym = s:tempsym('dict')
     call s:println(a:file, 'let '.sym." = {}")
-    for [k, _.v] in items(x)
-      if timl#objectp(x)
+    for [k, _.v] in items(X)
+      if timl#objectp(X)
         if k =~# '^#'
           call s:emit(a:file, "let ".sym."[".timl#compiler#serialize(k)."] = %s", a:ns, a:locals, _.v)
         else
@@ -195,33 +195,33 @@ function! s:emit(file, context, ns, locals, x) abort
         call s:emit(a:file, "let ".sym."[".timl#compiler#serialize(k)."] = %s", a:ns, a:locals, _.v)
       endif
     endfor
-    if islocked('x')
+    if islocked('X')
       call s:println(a:file, "let sym = timl#persistentb(".sym.")")
     endif
     return s:printfln(a:file, a:context, sym)
 
-  elseif !timl#consp(x)
-    return s:printfln(a:file, a:context, timl#compiler#serialize(x))
+  elseif !timl#consp(X)
+    return s:printfln(a:file, a:context, timl#compiler#serialize(X))
 
   endif
 
-  let F = timl#first(x)
-  let rest = timl#rest(x)
+  let F = timl#first(X)
+  let rest = timl#rest(X)
   let vec = timl#vec(rest)
 
   if timl#symbolp(F, ':')
-    return call('timl#compiler#emit__COLON_', [a:file, a:context, a:ns, x, a:locals] + vec)
+    return call('timl#compiler#emit__COLON_', [a:file, a:context, a:ns, X, a:locals] + vec)
   elseif timl#symbolp(F, '.')
-    return call('timl#compiler#emit__DOT_', [a:file, a:context, a:ns, x, a:locals] + vec)
+    return call('timl#compiler#emit__DOT_', [a:file, a:context, a:ns, X, a:locals] + vec)
   elseif timl#symbolp(F) && exists('*timl#compiler#emit_'.timl#munge(F))
-    return call("timl#compiler#emit_".timl#munge(F), [a:file, a:context, a:ns, x, a:locals] + vec)
+    return call("timl#compiler#emit_".timl#munge(F), [a:file, a:context, a:ns, X, a:locals] + vec)
   endif
 
   let tmp = s:tempsym('invoke')
   if timl#symbolp(F) && !has_key(a:locals, F[0]) && F[0] !~# '^:'
     let Fn = timl#compiler#lookup(F, a:ns)
     if timl#type(Fn) == 'timl.lang/Function' && get(Fn, 'macro')
-      return s:emit(a:file, a:context, a:ns, a:locals, timl#call(Fn, [x, a:locals] + vec))
+      return s:emit(a:file, a:context, a:ns, a:locals, timl#call(Fn, [X, a:locals] + vec))
     endif
   endif
   call s:emit(a:file, "let ".tmp."_args = %s", a:ns, a:locals, vec)
