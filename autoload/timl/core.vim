@@ -95,12 +95,7 @@ TLexpr identity(x) a:x
 
 TLfunction! apply(f, x, ...) abort
   let args = [a:x] + a:000
-  if timl#type(args[-1]) == 'timl.vim/Dictionary'
-    let dict = remove(args, -1)
-  else
-    let dict = 0
-  endif
-  let args = args[0:-2] + timl#core#vec(args[-1])
+  let args = args[0:-2] + timl#vec(args[-1])
   return timl#call(a:f, args)
 endfunction
 

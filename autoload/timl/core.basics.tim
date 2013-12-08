@@ -8,8 +8,17 @@
 
 (declare concat)
 (defn constantly [x] (fn [& args] x))
-(defn partial [f & args]
-  (fn [& more] (apply f (concat args more))))
+(defn partial
+  ([f] f)
+  ([f arg1]
+   (fn [& args] (apply f arg1 args)))
+  ([f arg1 arg2]
+   (fn [& args] (apply f arg1 arg2 args)))
+  ([f arg1 arg2 arg3]
+   (fn [& args] (apply f arg1 arg2 arg3 args)))
+  ([f arg1 arg2 arg3 & more]
+   (fn [& args] (apply f arg1 arg2 arg3 (concat more args)))))
+
 (defn comp [f & fns]
   (if fns
     (fn [& args] (f (apply (apply comp fns) args)))
