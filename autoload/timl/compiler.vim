@@ -315,7 +315,7 @@ function! timl#compiler#emit_fn_STAR_(file, context, ns, form, locals, params, .
   let locals = copy(a:locals)
   call s:println(a:file, "call insert(locals, copy(locals[0]))")
   call s:println(a:file, "try")
-  call s:println(a:file, "let ".tmp." = {'#tag': timl#intern_type('timl.lang/Function'), 'locals': locals[0], 'ns': ".string(a:ns)."}")
+  call s:println(a:file, "let ".tmp." = timl#bless('timl.lang/Function', {'locals': locals[0], 'ns': ".string(a:ns)."})")
   if timl#symbolp(a:params)
     call s:println(a:file, "let locals[0][".string(a:params[0])."] = ".tmp)
     let locals[a:params[0]] = 1

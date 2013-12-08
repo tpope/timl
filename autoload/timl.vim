@@ -96,14 +96,20 @@ function! timl#keywordp(keyword)
 endfunction
 
 function! timl#intern_type(type)
-  return timl#keyword('#'.a:type)
+  return type(a:type) ==# type('') ? timl#keyword('#'.a:type) : a:type
+endfunction
+
+function! timl#bless(class, ...) abort
+  let obj = a:0 ? a:1 : {}
+  let obj['#tag'] = timl#intern_type(a:class)
+  return obj
 endfunction
 
 let s:symbol = timl#intern_type('timl.lang/Symbol')
 function! timl#symbol(str)
   let str = type(a:str) == type({}) ? a:str[0] : a:str
   if !has_key(g:timl#symbols, str)
-    let g:timl#symbols[str] = {'0': str, '#tag': s:symbol}
+    let g:timl#symbols[str] = timl#bless(s:symbol, {'0': str})
     lockvar g:timl#symbols[str]
   endif
   return g:timl#symbols[str]
@@ -161,14 +167,14 @@ endfunction
 " }}}1
 " Section: Data types {{{1
 
-function! timl#meta(obj)
+function! timl#meta(obj) abort
   if timl#objectp(a:obj)
     return get(a:obj, '#meta', g:timl#nil)
   endif
   return g:timl#nil
 endfunction
 
-function! timl#with_meta(obj, meta)
+function! timl#with_meta(obj, meta) abort
   if timl#objectp(a:obj)
     if !timl#equalsp(get(a:obj, '#meta', g:timl#nil), a:meta)
       let obj = copy(a:obj)
@@ -184,7 +190,7 @@ function! timl#with_meta(obj, meta)
   throw 'timl: cannot attach metadata to a '.timl#type(a:obj)
 endfunction
 
-function! timl#objectp(obj)
+function! timl#objectp(obj) abort
   return type(a:obj) == type({}) && timl#keywordp(get(a:obj, '#tag')) && a:obj['#tag'][0][0] ==# '#'
 endfunction
 
@@ -347,7 +353,7 @@ endfunction
 let s:hash_map = timl#intern_type('timl.lang/HashMap')
 function! timl#hash_map(...) abort
   let keyvals = a:0 == 1 ? a:1 : a:000
-  let dict = timl#assocb({'#tag': s:hash_map}, keyvals)
+  let dict = timl#assocb(timl#bless(s:hash_map), keyvals)
   return timl#persistentb(dict)
 endfunction
 
@@ -357,7 +363,7 @@ function! timl#hash_set(...) abort
 endfunction
 
 function! timl#set(coll) abort
-  let dict = {'#tag': s:hash_set}
+  let dict = timl#bless(s:hash_set)
   if type(a:coll) == type([])
     let _ = {}
     for _.val in a:coll
@@ -475,7 +481,7 @@ endfunction
 
 function! timl#cons(car, cdr) abort
   if timl#satisfiesp('timl.lang/Seqable', a:cdr)
-    let cons = {'#tag': s:cons, 'car': a:car, 'cdr': a:cdr}
+    let cons = timl#bless(s:cons, {'car': a:car, 'cdr': a:cdr})
     return timl#persistentb(cons)
   endif
   throw 'timl: not seqable'
@@ -539,7 +545,7 @@ endfunction
 function! timl#create_ns(name, ...)
   let name = timl#name(a:name)
   if !has_key(g:timl#namespaces, a:name)
-    let g:timl#namespaces[a:name] = {'#tag': s:ns, 'name': name, 'referring': [], 'aliases': {}}
+    let g:timl#namespaces[a:name] = timl#bless(s:ns, {'name': name, 'referring': [], 'aliases': {}})
   endif
   let ns = g:timl#namespaces[a:name]
   if !a:0
@@ -561,8 +567,8 @@ endfunction
 
 if !exists('g:timl#namespaces')
   let g:timl#namespaces = {
-        \ 'timl.core': {'#tag': s:ns, 'name': 'timl.core', 'referring': [], 'aliases': {}},
-        \ 'user':      {'#tag': s:ns, 'name': 'user', 'referring': ['timl.core'], 'aliases': {}}}
+        \ 'timl.core': timl#bless(s:ns, {'name': 'timl.core', 'referring': [], 'aliases': {}}),
+        \ 'user':      timl#bless(s:ns, {'name': 'user', 'referring': ['timl.core'], 'aliases': {}})}
 endif
 
 if !exists('g:timl#core#_STAR_ns_STAR_')
