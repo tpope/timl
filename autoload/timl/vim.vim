@@ -53,7 +53,7 @@ let g:timl#vim#List = timl#bless('timl.lang/Type', {
       \ "name": timl#symbol('timl.vim/List'),
       \ "implements":
       \ {"timl.lang/Seqable":
-      \    {"seq": function("timl#list2")},
+      \    {"seq": g:timl#lang#ChunkedCons.create},
       \  "timl.lang/ILookup":
       \    {"get": s:function("s:list_get")},
       \  "timl.lang/IFn":
