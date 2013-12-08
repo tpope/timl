@@ -363,7 +363,6 @@ TLalias list timl#list
 TLalias list_STAR_ timl#list2
 TLpredicate list_QMARK_(val) timl#consp(a:val)
 TLalias cons timl#cons
-TLalias conj timl#conj
 
 " }}}1
 " Section: Vectors {{{1
@@ -417,6 +416,8 @@ endfunction
 
 TLalias get timl#get
 TLalias empty timl#empty
+TLalias conj timl#conj
+TLpredicate contains_QMARK_(coll, val) timl#containsp(a:coll, a:val)
 
 " }}}1
 " Section: Sequences {{{1

@@ -22,11 +22,17 @@ function! s:str_get(this, idx, ...) abort
   return a:0 ? a:1 : g:timl#nil
 endfunction
 
+function! s:string_count(this) abort
+  return exists('*strchars') ? strchars(a:this) : len(substitute(a:this, '.', '.', 'g'))
+endfunction
+
 let g:timl#vim#String = timl#bless('timl.lang/Type', {
       \ "name": timl#symbol('timl.vim/String'),
       \ "implements":
       \ {"timl.lang/ILookup":
-      \    {"get": s:function("s:str_get")}}})
+      \    {"get": s:function("s:str_get")},
+      \  "timl.lang/Counted":
+      \    {"count": s:function("s:string_count")}}})
 
 " Section: Funcref
 
@@ -65,6 +71,8 @@ let g:timl#vim#List = timl#bless('timl.lang/Type', {
       \    {"seq": g:timl#lang#ChunkedCons.create},
       \  "timl.lang/ILookup":
       \    {"get": s:function("s:list_get")},
+      \  "timl.lang/Counted":
+      \    {"count": function("len")},
       \  "timl.lang/IPersistentCollection":
       \    {"cons": s:function("s:list_cons"),
       \     "empty": s:function("s:list_empty")},
@@ -97,6 +105,8 @@ let g:timl#vim#Dictionary = timl#bless('timl.lang/Type', {
       \    {"seq": s:function("s:dict_seq")},
       \  "timl.lang/ILookup":
       \    {"get": s:function("s:dict_get")},
+      \  "timl.lang/Counted":
+      \    {"count": function("len")},
       \  "timl.lang/IPersistentCollection":
       \    {"cons": s:function("s:dict_cons"),
       \     "empty": s:function("s:dict_empty")},

@@ -111,11 +111,17 @@ function! s:chunk_rest(seq) abort
   endif
 endfunction
 
+function! s:chunk_count(this) abort
+  return len(a:this.list) - a:this.pos + timl#count(a:this.next)
+endfunction
+
 let g:timl#lang#ChunkedCons = timl#bless(s:type, {
       \ "name": timl#symbol('timl.lang/ChunkedCons'),
       \ "implements":
       \ {"timl.lang/Seqable":
       \    {"seq": s:function('s:identity')},
+      \  "timl.lang/Counted":
+      \    {"count": s:function("s:chunk_count")},
       \  "timl.lang/IPersistentCollection":
       \    {"cons": s:function("s:cons_cons"),
       \     "empty": s:function("s:cons_empty")},
@@ -165,7 +171,8 @@ let g:timl#lang#LazySeq = timl#bless(s:type, {
 " Section: Hashes
 
 function! s:map_seq(hash) abort
-  return timl#list2(map(filter(items(a:hash), 'v:val[0][0] !=# "#"'), '[timl#dekey(v:val[0]), v:val[1]]'))
+  let items = map(filter(items(a:hash), 'v:val[0][0] !=# "#"'), '[timl#dekey(v:val[0]), v:val[1]]')
+  return empty(items) ? g:timl#nil : g:timl#lang#ChunkedCons.create(items)
 endfunction
 
 function! s:map_get(this, key, ...) abort
@@ -195,7 +202,8 @@ let g:timl#lang#HashMap = timl#bless(s:type, {
       \    {"invoke": s:function('s:map_get')}}})
 
 function! s:set_seq(hash) abort
-  return timl#list2(map(filter(items(a:hash), 'v:val[0][0] !=# "#"'), 'v:val[1]'))
+  let items = map(filter(items(a:hash), 'v:val[0][0] !=# "#"'), 'v:val[1]')
+  return empty(items) ? g:timl#nil : g:timl#lang#ChunkedCons.create(items)
 endfunction
 
 function! s:set_get(this, key, ...) abort

@@ -360,6 +360,21 @@ function! timl#conj(coll, x, ...) abort
   endif
 endfunction
 
+function! timl#count(seq) abort
+  let l:count = 0
+  let _ = {'seq': a:seq}
+  while _.seq isnot# g:timl#nil && !timl#satisfiesp('timl.lang/Counted', _.seq)
+    let l:count += 1
+    let _.seq = timl#next(_.seq)
+  endwhile
+  return l:count + (_.seq is# g:timl#nil ? 0 : timl#dispatch('timl.lang/Counted', 'count', _.seq))
+endfunction
+
+function! timl#containsp(coll, val) abort
+  let sentinel = {}
+  return timl#get(a:coll, a:val, sentinel) isnot# sentinel
+endfunction
+
 function! timl#mapp(coll)
   return timl#type(a:coll) == 'timl.lang/HashMap'
 endfunction
@@ -501,16 +516,6 @@ function! timl#cons(car, cdr) abort
     return timl#persistentb(cons)
   endif
   throw 'timl: not seqable'
-endfunction
-
-function! timl#count(seq) abort
-  let i = 0
-  let _ = {'seq': a:seq}
-  while timl#consp(_.seq)
-    let i += 1
-    let _.seq = timl#rest(_.seq)
-  endwhile
-  return i + len(_.seq)
 endfunction
 
 function! timl#list2(array)
