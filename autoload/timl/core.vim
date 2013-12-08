@@ -353,8 +353,11 @@ TLexpr join(sep_or_coll, ...)
 TLexpr split(s, re) split(a:s, '\C'.a:re)
 TLexpr replace(s, re, repl)     substitute(a:s, '\C'.a:re, a:repl, 'g')
 TLexpr replace_one(s, re, repl) substitute(a:s, '\C'.a:re, a:repl, '')
-TLexpr re_quote_replacement(re) escape(a:re, '\~')
-TLexpr re_find(re, s)           matchstr(a:s, '\C'.a:re)
+TLexpr re_quote_replacement(re) escape(a:re, '\~&')
+TLfunction re_find(re, s)
+  let result = matchlist(a:s, '\C'.a:re)
+  return empty(result) ? g:timl#nil : timl#vec(result)
+endfunction
 
 " }}}1
 " Section: Lists {{{1
