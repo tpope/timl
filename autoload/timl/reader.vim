@@ -8,7 +8,7 @@ let g:autoloaded_timl_reader = 1
 let s:iskeyword = '[[:alnum:]_=?!#$%&*+|./<>:-]'
 
 function! s:read_token(port) abort
-  let pat = '^\%(#"\%(\\\@<!\%(\\\\\)*\\"\|[^"]\)*"\|#[[:punct:]]\|"\%(\\.\|[^"]\)*"\|[[:space:],]\|;.\{-\}\ze\%(\n\|$\)\|\~@\|'.s:iskeyword.'\+\|\\\%(space\|tab\|newline\|return\|.\)\|.\)'
+  let pat = '^\%(#"\%(\\\@<!\%(\\\\\)*\\"\|[^"]\)*"\|#[[:punct:]]\|"\%(\\.\|[^"]\)*"\|[[:space:],]\+\|;.\{-\}\ze\%(\n\|$\)\|\~@\|'.s:iskeyword.'\+\|\\\%(space\|tab\|newline\|return\|.\)\|.\)'
   let match = ' '
   while match =~# '^[[:space:],]'
     let [pos, line] = [a:port.pos, a:port.line]
