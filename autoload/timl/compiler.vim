@@ -581,6 +581,16 @@ endfunction
 " }}}1
 " Section: Execution {{{1
 
+if !exists('g:timl#namespaces')
+  let g:timl#namespaces = {
+        \ 'timl.core': timl#bless('timl.lang/Namespace', {'name': 'timl.core', 'referring': [], 'aliases': {}}),
+        \ 'user':      timl#bless('timl.lang/Namespace', {'name': 'user', 'referring': ['timl.core'], 'aliases': {}})}
+endif
+
+if !exists('g:timl#core#_STAR_ns_STAR_')
+  let g:timl#core#_STAR_ns_STAR_ = g:timl#namespaces['user']
+endif
+
 function! timl#compiler#build(x, context, ns, ...) abort
   let file = []
   call s:emit(file, a:context, a:ns, a:0 ? a:1 : {}, a:x)

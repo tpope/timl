@@ -566,16 +566,6 @@ function! timl#create_ns(name, ...)
   return ns
 endfunction
 
-if !exists('g:timl#namespaces')
-  let g:timl#namespaces = {
-        \ 'timl.core': timl#bless(s:ns, {'name': 'timl.core', 'referring': [], 'aliases': {}}),
-        \ 'user':      timl#bless(s:ns, {'name': 'user', 'referring': ['timl.core'], 'aliases': {}})}
-endif
-
-if !exists('g:timl#core#_STAR_ns_STAR_')
-  let g:timl#core#_STAR_ns_STAR_ = g:timl#namespaces['user']
-endif
-
 " }}}1
 " Section: Eval {{{1
 
