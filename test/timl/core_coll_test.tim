@@ -14,4 +14,3 @@
 (assert (= (list "a") (map first (dict "a" "b"))))
 
 (assert (= 6 (reduce + (list 1 2 3))))
-(assert (= (list "c" "a" "b") (reduce cons "c" (dict "a" "b"))))
