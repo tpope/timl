@@ -518,18 +518,11 @@ function! timl#compiler#emit_syntax_quote(file, context, ns, origform, locals, f
     endif
     let var = timl#compiler#qualify(sym, a:ns, sym)
     return s:printfln(a:file, a:context, timl#compiler#serialize(timl#symbol(var)))
-  elseif type(a:form) == type([])
+  elseif type(a:form) == type([]) && a:form isnot# g:timl#nil
     let tmp = s:tempsym('quasiquote')
     call s:println(a:file, 'let '.tmp.' = []')
     for _.v in a:form
       call timl#compiler#emit_syntax_quote(a:file, 'call add('.tmp.', %s)', a:ns, a:origform, a:locals, _.v, gensyms)
-    endfor
-    return s:printfln(a:file, a:context, tmp)
-  elseif type(a:form) == type([])
-    let tmp = s:tempsym('quasiquote')
-    call s:println(a:file, 'let '.tmp.' = {}')
-    for [k, _.v] in items(a:form)
-      call timl#compiler#emit_syntax_quote(a:file, 'let '.tmp.'['.timl#compiler#serialize(k).'] = %s', a:ns, a:origform, a:locals, _.v, gensyms)
     endfor
     return s:printfln(a:file, a:context, tmp)
   else
