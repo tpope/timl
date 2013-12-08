@@ -532,9 +532,9 @@ function! timl#vec(coll)
   endif
   let array = []
   let _ = {'seq': a:coll}
-  while !empty(_.seq)
+  while _.seq isnot# g:timl#nil
     call add(array, timl#first(_.seq))
-    let _.seq = timl#rest(_.seq)
+    let _.seq = timl#next(_.seq)
   endwhile
   return timl#persistentb(extend(array, _.seq))
 endfunction
