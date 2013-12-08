@@ -99,8 +99,10 @@ function! timl#intern_type(type)
   return type(a:type) ==# type('') ? timl#keyword('#'.a:type) : a:type
 endfunction
 
+let s:tag_sentinel = s:freeze('tagged')
 function! timl#bless(class, ...) abort
   let obj = a:0 ? a:1 : {}
+  let obj['#tagged'] = s:tag_sentinel
   let obj['#tag'] = timl#intern_type(a:class)
   return obj
 endfunction
@@ -191,7 +193,7 @@ function! timl#with_meta(obj, meta) abort
 endfunction
 
 function! timl#objectp(obj) abort
-  return type(a:obj) == type({}) && timl#keywordp(get(a:obj, '#tag')) && a:obj['#tag'][0][0] ==# '#'
+  return type(a:obj) == type({}) && get(a:obj, '#tagged') is s:tag_sentinel
 endfunction
 
 let s:function = timl#intern_type('timl.lang/Function')
