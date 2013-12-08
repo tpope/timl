@@ -383,6 +383,10 @@ function! timl#setp(coll)
   return timl#type(a:coll) == 'timl.lang/HashSet'
 endfunction
 
+function! timl#dictp(coll)
+  return timl#type(a:coll) == 'timl.vim/Dictionary'
+endfunction
+
 function! timl#key(key)
   if type(a:key) == type(0)
     return string(a:key)
@@ -403,6 +407,12 @@ function! timl#dekey(key)
   else
     return timl#keyword(a:key)
   endif
+endfunction
+
+function! timl#dict(...) abort
+  let keyvals = a:0 == 1 ? a:1 : a:000
+  let dict = timl#assocb({}, keyvals)
+  return timl#persistentb(dict)
 endfunction
 
 let s:hash_map = timl#intern_type('timl.lang/HashMap')

@@ -384,21 +384,8 @@ endfunction
 " }}}1
 " Section: Dictionaries {{{1
 
-TLfunction! dict(...) abort
-  let list = copy(a:000)
-  while len(a:000) % 2 !=# 0 && type(list[-1]) == type([])
-    call extend(list, timl#vec(remove(list, -1)))
-  endwhile
-  if len(list) % 2 !=# 0
-    throw 'timl: dict requires a even number of arguments'
-  endif
-  let dict = {}
-  for i in range(0, len(list)-1, 2)
-    let dict[timl#str(list[i])] = list[i+1]
-  endfor
-  return timl#persistentb(dict)
-endfunction
 
+TLalias dict timl#dict
 TLalias hash_map timl#hash_map
 TLalias hash_set timl#hash_set
 TLalias set timl#set
@@ -406,10 +393,9 @@ TLalias assoc timl#assoc
 TLalias assoc_BANG_ timl#assocb
 TLalias dissoc timl#dissoc
 TLalias dissoc_BANG_ timl#dissocb
-
-TLfunction! dict_QMARK_(val) abort
-  return type(a:val) == type({}) ? s:true : s:false
-endfunction
+TLpredicate map_QMARK_(x) timl#mapp(a:x)
+TLpredicate set_QMARK_(x) timl#setp(a:x)
+TLpredicate dict_QMARK_(x) timl#dictp(a:x)
 
 " }}}1
 " Section: Collections {{{1
