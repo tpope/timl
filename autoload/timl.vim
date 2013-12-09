@@ -25,7 +25,7 @@ function! timl#gensym(...)
 endfunction
 
 function! timl#truth(val) abort
-  return !(empty(a:val) || a:val is 0)
+  return a:val isnot# g:timl#nil && a:val isnot# g:timl#false
 endfunction
 
 " }}}1
