@@ -666,6 +666,8 @@ function! timl#compiler#source_file(filename)
   endtry
 endfunction
 
+call timl#require('timl.core')
+
 " }}}1
 " Section: Tests {{{1
 

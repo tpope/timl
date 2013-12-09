@@ -639,6 +639,9 @@ function! timl#ns_for_cursor(...) abort
   else
     let ns = timl#ns_for_file(expand('%:p'))
   endif
+  if !exists('g:autoloaded_timl_compiler')
+    runtime! autoload/timl/compiler.vim
+  endif
   if has_key(g:timl#namespaces, ns)
     return ns
   else
@@ -716,8 +719,6 @@ function! timl#load(ns) abort
   endfor
   throw 'timl: could not load '.a:ns
 endfunction
-
-call timl#require('timl.core')
 
 " }}}1
 
