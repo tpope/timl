@@ -24,13 +24,8 @@
   (breakadd)
   (+ 1 (* 2 3)))
 
-(def special-forms
-  '[if do let fn def :
-     quote syntax-quote unquote unquote-splicing function
-     throw try catch finally])
-
 (defmacro doc [sym]
-  (let [topic (if (<= 0 (#*index special-forms sym))
+  (let [topic (if (special-symbol? sym)
                 (str "timl-" sym))]
     `(do
        (throw (str "timl#repl: exit help " (or ~topic (#*substitute (str ~sym) #"^\w\+\zs$" "(" ""))))

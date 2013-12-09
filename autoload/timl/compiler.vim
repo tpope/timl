@@ -22,10 +22,14 @@ let s:specials = {
       \ 'catch': 1,
       \ 'finally': 1}
 
+function! timl#compiler#specialp(sym)
+  return has_key(s:specials, timl#str(a:sym))
+endfunction
+
 function! timl#compiler#qualify(sym, ns, ...)
   let sym = type(a:sym) == type('') ? a:sym : a:sym[0]
   let the_ns = timl#the_ns(a:ns)
-  if has_key(s:specials, sym)
+  if timl#compiler#specialp(sym)
     return sym
   elseif sym =~# '^\w:\|^\$'
     return sym

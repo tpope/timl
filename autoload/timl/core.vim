@@ -43,6 +43,7 @@ TLalias meta timl#meta
 TLalias with_meta timl#with_meta
 TLalias persistent_BANG_ timl#persistentb
 TLalias transient timl#transient
+TLpredicate special_symbol_QMARK_(sym) timl#compiler#specialp(a:sym)
 
 " }}}1
 " Section: Functions {{{1
