@@ -449,6 +449,8 @@ TLalias require timl#require
 TLalias find_ns timl#find_ns
 TLalias the_ns timl#the_ns
 TLexpr all_ns() timl#seq(values(g:timl#namespaces))
+TLexpr ns_resolve(ns, sym, ...) timl#compiler#resolve(a:0 ? a:1 : a:sym, a:ns)
+TLexpr resolve(sym, ...) timl#compiler#resolve(a:0 ? a:1 : a:sym, g:timl#core#_STAR_ns_STAR_)
 
 TLfunction! in_ns(name) abort
   let g:timl#core#_STAR_ns_STAR_ = timl#create_ns(a:name)

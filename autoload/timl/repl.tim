@@ -26,9 +26,10 @@
 
 (defmacro doc [sym]
   (let [topic (if (special-symbol? sym)
-                (str "timl-" sym))]
+                (str "timl-" sym)
+                (resolve sym))]
     `(do
-       (throw (str "timl#repl: exit help " (or ~topic (#*substitute (str ~sym) #"^\w\+\zs$" "(" ""))))
+       (throw (str "timl#repl: exit help " (or ~topic (str '~sym))))
        (throw "timl#repl: exit"))))
 
 (defn source [sym]
