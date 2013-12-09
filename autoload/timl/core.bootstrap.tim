@@ -24,6 +24,9 @@
                          (cat (first zs) (next zs)))))))]
        (cat (concat x y) zs))))
 
+(defmacro defn- [name & fdecl]
+  `(defn ^:private ~name ~@fdecl))
+
 (defmacro when [test & body]
   `(if ~test (do ~@body)))
 
