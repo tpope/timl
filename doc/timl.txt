@@ -50,8 +50,8 @@ Vim |Dictionaries| are printed as a flat list of keys and values surrounded by
 |timl#core#dict()|.
 
 Quoting ~
-"'", "`", ",", and ",@" map to "quote", "syntax-quote", "unquote", and
-"unquote-splicing".
+"'" quotes a form.  "`" syntax quotes the next formm with "~" unquoting and
+"~@" unquote splicing.
 
 Comments ~
 Linewise comments with a ";". "#_" also comments out a single form.
