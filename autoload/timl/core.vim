@@ -363,7 +363,6 @@ endfunction
 " Section: Lists {{{1
 
 TLalias list timl#list
-TLalias list_STAR_ timl#list2
 TLpredicate list_QMARK_(val) timl#consp(a:val)
 TLalias cons timl#cons
 

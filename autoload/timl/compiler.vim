@@ -95,6 +95,9 @@ function! timl#compiler#serialize(x, ...)
   elseif a:x is# g:timl#nil
     return 'g:timl#nil'
 
+  elseif a:x is# g:timl#empty_list
+    return 'g:timl#empty_list'
+
   elseif type(a:x) == type([])
     return '['.join(map(copy(a:x), 'timl#compiler#serialize(v:val)'), ', ').']'
 
@@ -162,11 +165,8 @@ function! s:emit(file, context, ns, locals, x) abort
       return s:printfln(a:file, a:context, timl#compiler#resolve(X[0], a:ns))
     endif
 
-  elseif timl#keywordp(X)
+  elseif timl#keywordp(X) || X is# g:timl#nil || X is# g:timl#empty_list
     return s:printfln(a:file, a:context, timl#compiler#serialize(X))
-
-  elseif X is# g:timl#nil
-    return s:printfln(a:file, a:context, 'g:timl#nil')
 
   elseif type(X) == type([])
     let sym = s:tempsym('vec')

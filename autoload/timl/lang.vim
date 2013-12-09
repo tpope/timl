@@ -12,11 +12,23 @@ endfunction
 let s:type = timl#intern_type('timl.lang/Type')
 let g:timl#lang#Type = timl#bless(s:type, {'name': timl#symbol('timl.lang/Type')})
 
-" Section: Nil
-
 function! s:identity(x)
   return a:x
 endfunction
+
+function! s:nil(...)
+  return g:timl#nil
+endfunction
+
+function! s:empty_list(...)
+  return g:timl#empty_list
+endfunction
+
+function! s:zero(...)
+  return 0
+endfunction
+
+" Section: Nil
 
 function! s:nil_get(this, key, ...)
   return a:0 ? a:1 : g:timl#nil
@@ -26,14 +38,14 @@ let g:timl#lang#Nil = timl#bless(s:type, {
       \ "name": timl#symbol('timl.lang/Nil'),
       \ "implements":
       \ {"timl.lang/Seqable":
-      \    {"seq": s:function("s:identity")},
+      \    {"seq": s:function("s:nil")},
       \  "timl.lang/ISeq":
-      \    {"first": s:function('s:identity'),
-      \     "rest": s:function('s:identity')},
+      \    {"first": s:function('s:nil'),
+      \     "rest": s:function('s:empty_list')},
       \ "timl.lang/ILookup":
       \    {"get": s:function('s:nil_get')}}})
 
-" Section: Symbol
+" Section: Symbols/Keywords
 
 function! s:this_get(this, coll, ...) abort
   if a:0
@@ -81,10 +93,6 @@ function! s:cons_cons(cdr, car)
   return timl#cons(a:car, a:cdr)
 endfunction
 
-function! s:cons_empty()
-  return g:timl#nil
-endfunction
-
 let g:timl#lang#Cons = timl#bless(s:type, {
       \ "name": timl#symbol('timl.lang/Cons'),
       \ "implements":
@@ -92,10 +100,28 @@ let g:timl#lang#Cons = timl#bless(s:type, {
       \    {"seq": s:function("s:identity")},
       \  "timl.lang/IPersistentCollection":
       \    {"cons": s:function("s:cons_cons"),
-      \     "empty": s:function("s:cons_empty")},
+      \     "empty": s:function("s:empty_list")},
       \  "timl.lang/ISeq":
       \    {"first": s:function('s:cons_car'),
       \     "rest": s:function('s:cons_cdr')}}})
+
+" Section: Empty list
+
+let g:timl#lang#EmptyList = timl#bless(s:type, {
+      \ "name": timl#symbol('timl.lang/EmptyList'),
+      \ "implements":
+      \ {"timl.lang/Seqable":
+      \    {"seq": s:function("s:nil")},
+      \  "timl.lang/Counted":
+      \    {"count": s:function("s:zero")},
+      \  "timl.lang/IPersistentCollection":
+      \    {"cons": s:function("s:cons_cons"),
+      \     "empty": s:function("s:identity")},
+      \  "timl.lang/ISeq":
+      \    {"first": s:function('s:nil'),
+      \     "rest": s:function('s:identity')}}})
+
+let g:timl#empty_list = timl#persistentb(timl#bless('timl.lang/EmptyList', {'count': 0}))
 
 " Section: Chunked Cons
 
@@ -124,7 +150,7 @@ let g:timl#lang#ChunkedCons = timl#bless(s:type, {
       \    {"count": s:function("s:chunk_count")},
       \  "timl.lang/IPersistentCollection":
       \    {"cons": s:function("s:cons_cons"),
-      \     "empty": s:function("s:cons_empty")},
+      \     "empty": s:function("s:empty_list")},
       \  "timl.lang/ISeq":
       \    {"first": s:function('s:chunk_first'),
       \     "rest": s:function('s:chunk_rest')}}})
@@ -166,7 +192,7 @@ let g:timl#lang#LazySeq = timl#bless(s:type, {
       \   {"seq": s:function('s:deref_lazy_seq')},
       \  "timl.lang/IPersistentCollection":
       \    {"cons": s:function("s:cons_cons"),
-      \     "empty": s:function("s:cons_empty")}}})
+      \     "empty": s:function("s:empty_list")}}})
 
 " Section: Hashes
 

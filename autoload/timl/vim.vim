@@ -48,10 +48,8 @@ let g:timl#vim#Funcref = timl#bless('timl.lang/Type', {
 
 " Section: List
 
-let s:empty_list = g:timl#nil
-
 function! s:list_seq(this) abort
-  return empty(a:this) ? s:empty_list : g:timl#lang#ChunkedCons.create(a:this)
+  return empty(a:this) ? g:timl#nil : g:timl#lang#ChunkedCons.create(a:this)
 endfunction
 
 function! s:list_first(this) abort
@@ -59,7 +57,7 @@ function! s:list_first(this) abort
 endfunction
 
 function! s:list_rest(this) abort
-  return len(a:this) <= 1 ? s:empty_list : g:timl#lang#ChunkedCons.create(a:this, g:timl#nil, 1)
+  return len(a:this) <= 1 ? g:timl#empty_list : g:timl#lang#ChunkedCons.create(a:this, g:timl#empty_list, 1)
 endfunction
 
 function! s:list_get(this, idx, ...) abort

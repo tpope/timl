@@ -491,7 +491,7 @@ let s:ary = type([])
 
 function! timl#seq(coll) abort
   let seq = timl#dispatch("timl.lang/Seqable", "seq", a:coll)
-  return empty(seq) ? g:timl#nil : seq
+  return seq is# g:timl#empty_list ? g:timl#nil : seq
 endfunction
 
 function! timl#seqp(coll) abort
@@ -499,14 +499,26 @@ function! timl#seqp(coll) abort
 endfunction
 
 function! timl#first(coll) abort
-  return timl#consp(a:coll) ? a:coll.car :
-        \ type(a:coll) == s:ary ? get(a:coll, 0, g:timl#nil) :
-        \ timl#dispatch('timl.lang/ISeq', 'first', timl#seq(a:coll))
+  if timl#consp(a:coll)
+    return a:coll.car
+  elseif type(a:coll) == s:ary
+    return get(a:coll, 0, g:timl#nil)
+  elseif timl#seqp(a:coll)
+    return timl#dispatch('timl.lang/ISeq', 'first', a:coll)
+  else
+    return timl#dispatch('timl.lang/ISeq', 'first', timl#seq(a:coll))
+  endif
 endfunction
 
 function! timl#rest(coll) abort
-  return timl#consp(a:coll) ? a:coll.cdr :
-        \ timl#dispatch('timl.lang/ISeq', 'rest', timl#seq(a:coll))
+  if timl#consp(a:coll)
+    return a:coll.cdr
+  elseif timl#seqp(a:coll)
+    return timl#dispatch('timl.lang/ISeq', 'rest', a:coll)
+  else
+    let seq = timl#seq(a:coll)
+    return seq is# g:timl#nil ? g:timl#empty_list : timl#dispatch('timl.lang/ISeq', 'rest', seq)
+  endif
 endfunction
 
 function! timl#next(coll) abort
@@ -539,7 +551,7 @@ function! timl#cons(car, cdr) abort
 endfunction
 
 function! timl#list2(array)
-  let _ = {'cdr': g:timl#nil}
+  let _ = {'cdr': g:timl#empty_list}
   for i in range(len(a:array)-1, 0, -1)
     let _.cdr = timl#cons(a:array[i], _.cdr)
   endfor
@@ -551,7 +563,7 @@ function! timl#vec(coll)
     return a:coll is# g:timl#nil ? [] : a:coll
   endif
   let array = []
-  let _ = {'seq': a:coll}
+  let _ = {'seq': timl#seq(a:coll)}
   while _.seq isnot# g:timl#nil
     call add(array, timl#first(_.seq))
     let _.seq = timl#next(_.seq)

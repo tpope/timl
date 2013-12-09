@@ -24,6 +24,9 @@ function! timl#printer#string(x)
   elseif a:x is# g:timl#nil
     return 'nil'
 
+  elseif a:x is# g:timl#empty_list
+    return '()'
+
   elseif type == 'timl.lang/Function'
     return '#<'.get(a:x, 'ns', '').'/'.get(a:x, 'name', '...').' '.join([a:x.call]).'>'
 
@@ -66,7 +69,7 @@ function! timl#printer#string(x)
     endfor
     return '#{' . join(acc, ' ') . '}'
 
-  elseif type !=# 'timl.vim/Dictionary' && type !=# 'timl.lang/HashMap' && timl#satisfiesp('timl.lang/ISeq', a:x)
+  elseif type !=# 'timl.vim/Dictionary' && type !=# 'timl.lang/HashMap' && timl#seqp(a:x)
     let _ = {'seq': a:x}
     let output = []
     while !empty(_.seq)
@@ -76,7 +79,7 @@ function! timl#printer#string(x)
     return '('.join(output, ' ').')'
 
   elseif type !=# 'timl.vim/Dictionary' && type !=# 'timl.lang/HashMap' && timl#satisfiesp('timl.lang/Seqable', a:x)
-    return timl#printer#string(timl#dispatch('timl.lang/Seqable', 'seq', a:x))
+    return timl#printer#string(timl#seq(a:x))
 
   elseif type(a:x) == type({})
     let acc = []
