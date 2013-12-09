@@ -302,7 +302,7 @@ function! timl#compiler#emit_recur(file, context, ns, form, locals, ...) abort
   if a:context ==# "return %s"
     let sym = s:tempsym('recur')
     call s:println(a:file, "let newlocals = copy(self.locals)")
-    call s:emit(a:file, "call timl#arg2env(self.arglist, %s, newlocals)", a:ns, a:locals, a:000)
+    call s:emit(a:file, "call timl#compiler#arg2env(self.arglist, %s, newlocals)", a:ns, a:locals, a:000)
     call s:println(a:file, "let locals[-1] = newlocals")
     return s:println(a:file, "continue")
   endif
@@ -359,7 +359,7 @@ function! timl#compiler#emit_fn_STAR_(file, context, ns, form, locals, params, .
   call s:println(a:file, "let ".tmp.".arglist = ".timl#compiler#serialize(params))
   call s:println(a:file, "function! ".tmp.".call(...) abort")
   call s:println(a:file, "let temp = {}")
-  call s:println(a:file, "let locals = [timl#arg2env(self.arglist, a:000, copy(self.locals))]")
+  call s:println(a:file, "let locals = [timl#compiler#arg2env(self.arglist, a:000, copy(self.locals))]")
   call s:println(a:file, "while 1")
   let _ = {}
   for _.param in params
@@ -406,6 +406,37 @@ function! s:emit_multifn(file, context, ns, form, locals, name, tmp, fns)
   call s:println(a:file, "finally")
   call s:println(a:file, "call remove(locals, 0)")
   return s:println(a:file, "endtry")
+endfunction
+
+let s:amp = timl#symbol('&')
+function! timl#compiler#arg2env(arglist, args, env) abort
+  let args = a:args
+  let env = a:env
+  let _ = {}
+  let i = 0
+  for _.param in timl#vec(a:arglist)
+    if _.param is s:amp
+      let env[get(a:arglist, i+1, ['...'])[0]] = args[i : -1]
+      break
+    elseif i >= len(args)
+      throw 'timl: arity error: need '.timl#printer#string(a:arglist).' but got '.timl#printer#string(a:args)
+    elseif timl#symbolp(_.param)
+      let env[_.param[0]] = args[i]
+    elseif type(_.param) == type([])
+      for j in range(len(_.param))
+        let key = timl#str(_.param[j])
+        if type(args[i]) == type([])
+          let env[key] = get(args[i], j, g:timl#nil)
+        elseif type(args[i]) == type({})
+          let env[key] = get(args[i], key, g:timl#nil)
+        endif
+      endfor
+    else
+      throw 'timl: unsupported param '.string(param)
+    endif
+    let i += 1
+  endfor
+  return env
 endfunction
 
 function! timl#compiler#emit_let_STAR_(file, context, ns, form, locals, bindings, ...) abort

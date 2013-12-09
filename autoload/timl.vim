@@ -137,37 +137,6 @@ function! timl#name(val) abort
   endif
 endfunction
 
-let s:amp = timl#symbol('&')
-function! timl#arg2env(arglist, args, env) abort
-  let args = a:args
-  let env = a:env
-  let _ = {}
-  let i = 0
-  for _.param in timl#vec(a:arglist)
-    if _.param is s:amp
-      let env[get(a:arglist, i+1, ['...'])[0]] = args[i : -1]
-      break
-    elseif i >= len(args)
-      throw 'timl: arity error: need '.timl#printer#string(a:arglist).' but got '.timl#printer#string(a:args)
-    elseif timl#symbolp(_.param)
-      let env[_.param[0]] = args[i]
-    elseif type(_.param) == type([])
-      for j in range(len(_.param))
-        let key = timl#str(_.param[j])
-        if type(args[i]) == type([])
-          let env[key] = get(args[i], j, g:timl#nil)
-        elseif type(args[i]) == type({})
-          let env[key] = get(args[i], key, g:timl#nil)
-        endif
-      endfor
-    else
-      throw 'timl: unsupported param '.string(param)
-    endif
-    let i += 1
-  endfor
-  return env
-endfunction
-
 " }}}1
 " Section: Data types {{{1
 
