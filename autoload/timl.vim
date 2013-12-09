@@ -140,6 +140,13 @@ endfunction
 " }}}1
 " Section: Data types {{{1
 
+if !exists('g:timl#nil')
+  let g:timl#nil = s:freeze()
+  let g:timl#false = timl#bless('timl.lang/Boolean', {'value': 0})
+  let g:timl#true = timl#bless('timl.lang/Boolean', {'value': 1})
+  lockvar g:timl#nil g:timl#false g:timl#true
+endif
+
 function! timl#meta(obj) abort
   if timl#objectp(a:obj)
     return get(a:obj, '#meta', g:timl#nil)
@@ -227,13 +234,6 @@ function! timl#transient(val) abort
     throw "timl: transient called on an already transient value"
   endif
 endfunction
-
-if !exists('g:timl#nil')
-  let g:timl#nil = s:freeze()
-  let g:timl#false = g:timl#nil
-  let g:timl#true = 1
-  lockvar g:timl#nil g:timl#false g:timl#true
-endif
 
 function! timl#str(val) abort
   if type(a:val) == type('')

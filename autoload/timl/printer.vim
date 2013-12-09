@@ -24,6 +24,12 @@ function! timl#printer#string(x)
   elseif a:x is# g:timl#nil
     return 'nil'
 
+  elseif a:x is# g:timl#false
+    return 'false'
+
+  elseif a:x is# g:timl#true
+    return 'true'
+
   elseif a:x is# g:timl#empty_list
     return '()'
 

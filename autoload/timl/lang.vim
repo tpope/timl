@@ -45,6 +45,11 @@ let g:timl#lang#Nil = timl#bless(s:type, {
       \ "timl.lang/ILookup":
       \    {"get": s:function('s:nil_get')}}})
 
+" Section: Boolean
+
+let g:timl#lang#Boolean = timl#bless(s:type, {
+      \ "name": timl#symbol('timl.lang/Nil')})
+
 " Section: Symbols/Keywords
 
 function! s:this_get(this, coll, ...) abort

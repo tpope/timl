@@ -95,6 +95,12 @@ function! timl#compiler#serialize(x, ...)
   elseif a:x is# g:timl#nil
     return 'g:timl#nil'
 
+  elseif a:x is# g:timl#false
+    return 'g:timl#false'
+
+  elseif a:x is# g:timl#true
+    return 'g:timl#true'
+
   elseif a:x is# g:timl#empty_list
     return 'g:timl#empty_list'
 
@@ -165,10 +171,7 @@ function! s:emit(file, context, ns, locals, x) abort
       return s:printfln(a:file, a:context, timl#compiler#resolve(X[0], a:ns))
     endif
 
-  elseif timl#keywordp(X) || X is# g:timl#nil || X is# g:timl#empty_list
-    return s:printfln(a:file, a:context, timl#compiler#serialize(X))
-
-  elseif type(X) == type([])
+  elseif type(X) == type([]) && X isnot# g:timl#nil
     let sym = s:tempsym('vec')
     call s:println(a:file, 'let '.sym." = []")
     for _.e in X
@@ -204,27 +207,6 @@ function! s:emit(file, context, ns, locals, x) abort
     call s:println(a:file, "let ".sym." = timl#set(".sym."_ary)")
     return s:printfln(a:file, a:context, sym)
 
-  elseif type(X) == type({}) && !timl#consp(X)
-    let sym = s:tempsym('dict')
-    call s:println(a:file, 'let '.sym." = {}")
-    for [k, _.v] in items(X)
-      if timl#objectp(X)
-        if k =~# '^#'
-          call s:emit(a:file, "let ".sym."[".timl#compiler#serialize(k)."] = %s", a:ns, a:locals, _.v)
-        else
-          let _.k = timl#dekey(k)
-          call s:emit(a:file, "let ".sym."_key = %s", a:ns, a:locals, _.k)
-          call s:emit(a:file, "let ".sym."[timl#key(".sym."_key)] = %s", a:ns, a:locals, _.v)
-        endif
-      else
-        call s:emit(a:file, "let ".sym."[".timl#compiler#serialize(k)."] = %s", a:ns, a:locals, _.v)
-      endif
-    endfor
-    if islocked('X')
-      call s:println(a:file, "let sym = timl#persistentb(".sym.")")
-    endif
-    return s:printfln(a:file, a:context, sym)
-
   elseif !timl#consp(X)
     return s:printfln(a:file, a:context, timl#compiler#serialize(X))
 
@@ -245,7 +227,7 @@ function! s:emit(file, context, ns, locals, x) abort
   let tmp = s:tempsym('invoke')
   if timl#symbolp(F) && !has_key(a:locals, F[0]) && F[0] !~# '^:'
     let Fn = timl#compiler#lookup(F, a:ns)
-    if timl#type(Fn) == 'timl.lang/Function' && get(Fn, 'macro')
+    if timl#type(Fn) == 'timl.lang/Function' && timl#truth(get(Fn, 'macro', g:timl#nil))
       return s:emit(a:file, a:context, a:ns, a:locals, timl#call(Fn, [X, a:locals] + vec))
     endif
   endif
