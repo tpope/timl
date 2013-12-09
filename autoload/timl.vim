@@ -19,11 +19,6 @@ function! s:freeze(...) abort
   return a:000
 endfunction
 
-function! timl#gensym(...)
-  let s:id = get(s:, 'id', 0) + 1
-  return timl#symbol((a:0 ? a:1 : 'G__').s:id)
-endfunction
-
 function! timl#truth(val) abort
   return a:val isnot# g:timl#nil && a:val isnot# g:timl#false
 endfunction
@@ -123,6 +118,11 @@ function! timl#symbolp(symbol, ...)
   return type(a:symbol) == type({}) &&
         \ get(a:symbol, '#tag') is# s:symbol &&
         \ (a:0 ? a:symbol[0] ==# a:1 : 1)
+endfunction
+
+function! timl#gensym(...)
+  let s:id = get(s:, 'id', 0) + 1
+  return timl#symbol((a:0 ? a:1 : 'G__').s:id)
 endfunction
 
 function! timl#name(val) abort
