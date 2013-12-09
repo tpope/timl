@@ -8,7 +8,7 @@ let g:autoloaded_timl_reader = 1
 let s:iskeyword = '[[:alnum:]_=?!#$%&*+|./<>:-]'
 
 function! s:read_token(port) abort
-  let pat = '^\%(#"\%(\\\@<!\%(\\\\\)*\\"\|[^"]\)*"\|#[[:punct:]]\|"\%(\\.\|[^"]\)*"\|[[:space:],]\+\|;.\{-\}\ze\%(\n\|$\)\|\~@\|'.s:iskeyword.'\+\|\\\%(space\|tab\|newline\|return\|.\)\|.\)'
+  let pat = '^\%(#"\%(\\\@<!\%(\\\\\)*\\"\|[^"]\)*"\|#[[:punct:]]\|"\%(\\.\|[^"]\)*"\|[[:space:],]\+\|;[^'."\n".']*\|\~@\|'.s:iskeyword.'\+\|\\\%(space\|tab\|newline\|return\|.\)\|.\)'
   let match = ' '
   while match =~# '^[[:space:],]'
     let [pos, line] = [a:port.pos, a:port.line]
@@ -40,18 +40,17 @@ function! timl#reader#read(port, ...) abort
   throw error
 endfunction
 
+let s:found = {}
 function! s:read_until(port, char)
   let list = []
-  let [token, pos, line] = s:read_token(a:port)
-  while token !=# a:char && token !=# ''
-    call add(list, s:read(a:port, token, pos, line))
-    let [token, pos, line] = s:read_token(a:port)
+  let _ = {}
+  let _.read = s:read(a:port, a:char)
+  while _.read isnot# s:found
+    call add(list, _.read)
+    let _.read = s:read(a:port, a:char)
   endwhile
-  if token ==# a:char
-    lockvar 1 list
-    return list
-  endif
-  throw 'timl#reader: unexpected EOF on line ' . a:port.line
+  lockvar 1 list
+  return list
 endfunction
 
 let s:constants = {
@@ -67,11 +66,10 @@ function! s:add_meta(data, meta) abort
   else
     unlockvar 1 data
   endif
-  if has_key(data, '#meta')
-    unlockvar 1 data['#meta']
-  else
-    let data['#meta'] = timl#bless('timl.lang/HashMap')
+  if !has_key(data, '#meta')
+    let data['#meta'] = timl#hash_map()
   endif
+  unlockvar 1 data['#meta']
   call extend(data['#meta'], a:meta)
   lockvar 1 data['#meta']
   lockvar 1 data
@@ -80,18 +78,16 @@ endfunction
 
 function! s:read(port, ...) abort
   let port = a:port
-  let [token, pos, line] = a:0 ? a:000 : s:read_token(a:port)
-  let data = s:process(a:port, token, pos, line)
+  let data = s:read_raw(a:port, a:0 ? a:1 : ' ')
   if has_key(a:port, 'filename') && timl#consp(data)
     return s:add_meta(data, {'file': a:port.filename, 'line': line})
   endif
   return data
 endfunction
 
-function! s:process(port, token, pos, line) abort
+function! s:read_raw(port, wanted) abort
   let port = a:port
-  let pos = a:pos
-  let token = a:token
+  let [token, pos, line] = a:0 ? a:000 : s:read_token(a:port)
   if token ==# '('
     return timl#list2(s:read_until(port, ')'))
   elseif token == '['
@@ -152,10 +148,10 @@ function! s:process(port, token, pos, line) abort
   elseif token ==# '#*'
     return timl#list(timl#symbol('function'), s:read_bang(port))
   elseif token[0] ==# ';'
-    return s:read(port)
+    return s:read(port, a:wanted)
   elseif token ==# '#_'
     call s:read(port)
-    return s:read(port)
+    return s:read(port, a:wanted)
   elseif token ==# '#('
     if has_key(port, 'argsyms')
       throw "timl#reader: can't nest #()"
@@ -201,20 +197,26 @@ function! s:process(port, token, pos, line) abort
     let data = s:read(port)
     if timl#keywordp(_meta)
       let meta = {_meta[0]: g:timl#true}
-    elseif timl#symbolp(_meta)
+    elseif timl#symbolp(_meta) || type(_meta) == type('')
       let meta = {'tag': _meta}
-    else
+    elseif timl#mapp(_meta)
       let meta = _meta
+    else
+      throw 'timl#reader: metadata must be symbol, string, keyword, or map'
     endif
     if timl#objectp(data)
       return s:add_meta(data, meta)
     endif
+    return data
     let error = 'timl#reader: cannot attach metadata to a '.timl#type(data)
   elseif token ==# '@'
     return timl#list(timl#symbol('timl.core/deref'), s:read_bang(port))
   elseif empty(token)
     return g:timl#reader#eof
+  elseif token ==# a:wanted
+    return s:found
   else
+    throw "WHAT THE FUCK ".a:wanted
     let error = 'timl#reader: unexpected token '.string(token)
   endif
   throw error . ' on line ' . a:line
@@ -237,7 +239,7 @@ let s:seq = timl#symbol('timl.core/seq')
 let s:vec = timl#symbol('timl.core/vec')
 let s:set = timl#symbol('timl.core/set')
 let s:hash_map = timl#symbol('timl.core/hash-map')
-function! timl#reader#syntax_quote(form, gensyms)
+function! timl#reader#syntax_quote(form, gensyms) abort
   if timl#symbolp(a:form)
     if a:form[0] =~# '^[^/]\+#$'
       if !has_key(a:gensyms, a:form[0])
@@ -260,7 +262,6 @@ function! timl#reader#syntax_quote(form, gensyms)
     let keyvals = []
     while _.seq isnot# g:timl#nil
       call extend(keyvals, timl#vec(timl#first(_.seq)))
-      echo keyvals
       let _.seq = timl#next(_.seq)
     endwhile
     return timl#list(s:hash_map, timl#cons(s:concat, s:sqexpandlist(keyvals, a:gensyms)))
