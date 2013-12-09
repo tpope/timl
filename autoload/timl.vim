@@ -714,7 +714,7 @@ endfunction
 
 function! timl#load(ns) abort
   let base = tr(a:ns,'.-','/_')
-  if !empty(findfile('autoload/'.base.'.vim'))
+  if !empty(findfile('autoload/'.base.'.vim', &rtp))
     execute 'runtime! autoload/'.base.'.vim'
     return g:timl#nil
   endif

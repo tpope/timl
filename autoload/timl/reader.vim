@@ -78,6 +78,7 @@ endfunction
 
 function! s:read(port, ...) abort
   let port = a:port
+  let line = a:port.line
   let data = s:read_raw(a:port, a:0 ? a:1 : ' ')
   if has_key(a:port, 'filename') && timl#consp(data)
     return s:add_meta(data, {'file': a:port.filename, 'line': line})
