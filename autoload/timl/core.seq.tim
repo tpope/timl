@@ -19,6 +19,23 @@
   ([x] (lazy-seq (cons x (repeat x))))
   ([n x] (take n (repeat x))))
 
+(defn every?
+  [pred coll]
+  (cond
+   (nil? (seq coll)) true
+   (pred (first coll)) (recur pred (next coll))
+   :else false))
+
+(defn range
+  ([] (range 0 (/ 1 0) 1))
+  ([end] (range 0 end 1))
+  ([start end] (range start end 1))
+  ([start end step]
+   (let [comp (if pos? step < >)]
+     (if (comp start end)
+       (cons start (lazy-seq (range (+ start step) end step)))
+       ()))))
+
 (defn reductions [f init xs]
   (cons init
         (lazy-seq
