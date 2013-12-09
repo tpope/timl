@@ -41,7 +41,7 @@ function! timl#compiler#qualify(sym, ns, ...)
   if sym =~# '/.' && exists('g:'.timl#munge(sym))
     return sym
   endif
-  for ns in [a:ns] + the_ns.referring
+  for ns in [the_ns.name] + the_ns.referring
     let target = timl#str(ns).'/'.sym
     if exists('g:'.timl#munge(target))
       return target
@@ -571,7 +571,7 @@ function! timl#compiler#build(x, context, ns, ...) abort
 endfunction
 
 function! timl#compiler#eval(x, ...) abort
-  let ns = timl#name(a:0 ? a:1 : g:timl#core#_STAR_ns_STAR_.name)
+  let ns = a:0 ? a:1 : g:timl#core#_STAR_ns_STAR_
   let str = timl#compiler#build(a:x, "return %s", ns, a:0 > 1 ? a:2 : {})
   return s:execute(a:x, str, a:0 > 1 ? a:2 : {})
 endfunction
@@ -631,7 +631,7 @@ function! timl#compiler#source_file(filename)
     let eof = []
     while _.read isnot# eof
       let _.read = timl#reader#read(file, eof)
-      let str = timl#compiler#build(_.read, 'return %s', g:timl#core#_STAR_ns_STAR_.name)
+      let str = timl#compiler#build(_.read, 'return %s', g:timl#core#_STAR_ns_STAR_)
       call s:execute(_.read, str)
       call add(strs, "function! s:d.f() abort\nlet locals = [{}]\nlet temp ={}\n".str."endfunction\n")
       let meta = s:loc_meta(_.read)

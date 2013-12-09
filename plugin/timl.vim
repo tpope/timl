@@ -117,7 +117,7 @@ function! s:repl(...) abort
             echo "\n"
           endtry
         endwhile
-        let _.val = timl#eval(timl#cons(timl#symbol('do'), read), g:timl#core#_STAR_ns_STAR_.name)
+        let _.val = timl#eval(timl#cons(timl#symbol('do'), read))
         if type(_.val) != type(function('tr'))
           unlet! g:timl#core#_STAR_3
           let g:timl#core#_STAR_3 = g:timl#core#_STAR_2
