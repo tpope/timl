@@ -99,7 +99,9 @@ function! timl#intern_type(type)
   return type(a:type) ==# type('') ? timl#keyword('#'.a:type) : a:type
 endfunction
 
-let s:tag_sentinel = s:freeze('tagged')
+if !exists('s:tag_sentinel')
+  let s:tag_sentinel = s:freeze('tagged')
+endif
 function! timl#bless(class, ...) abort
   let obj = a:0 ? a:1 : {}
   let obj['#tagged'] = s:tag_sentinel
