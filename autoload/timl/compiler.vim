@@ -272,7 +272,7 @@ endfunction
 function! timl#compiler#emit_if(file, context, ns, form, locals, cond, then, ...) abort
   let tmp = s:tempsym('if')
   return s:emit(a:file, "let ".tmp." = %s", a:ns, a:locals, a:cond)
-        \ . s:println(a:file, "if timl#truth(".tmp.")")
+        \ . s:println(a:file, "if ".tmp." isnot# g:timl#nil && ".tmp." isnot# g:timl#false")
         \ . s:emit(a:file, a:context, a:ns, a:locals, a:then)
         \ . s:println(a:file, "else")
         \ . s:emit(a:file, a:context, a:ns, a:locals, a:0 ? a:1 : g:timl#nil)
