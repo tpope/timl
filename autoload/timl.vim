@@ -75,12 +75,11 @@ function! timl#demunge(var) abort
 endfunction
 
 function! timl#keyword(str)
-  let str = type(a:str) == type({}) ? a:str[0] : a:str
-  if !has_key(s:keywords, str)
-    let s:keywords[str] = {'0': str}
-    lockvar s:keywords[str]
+  if !has_key(s:keywords, a:str)
+    let s:keywords[a:str] = {'0': a:str}
+    lockvar s:keywords[a:str]
   endif
-  return s:keywords[str]
+  return s:keywords[a:str]
 endfunction
 
 function! timl#keywordp(keyword)
@@ -106,12 +105,11 @@ endfunction
 
 let s:symbol = timl#intern_type('timl.lang/Symbol')
 function! timl#symbol(str)
-  let str = type(a:str) == type({}) ? a:str[0] : a:str
-  if !has_key(s:symbols, str)
-    let s:symbols[str] = timl#bless(s:symbol, {'0': str})
-    lockvar s:symbols[str]
+  if !has_key(s:symbols, a:str)
+    let s:symbols[a:str] = timl#bless(s:symbol, {'0': a:str})
+    lockvar s:symbols[a:str]
   endif
-  return s:symbols[str]
+  return s:symbols[a:str]
 endfunction
 
 function! timl#symbolp(symbol, ...)
