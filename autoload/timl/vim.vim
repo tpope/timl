@@ -48,12 +48,18 @@ let g:timl#vim#Funcref = timl#bless('timl.lang/Type', {
 
 " Section: List
 
+let s:empty_list = g:timl#nil
+
+function! s:list_seq(this) abort
+  return empty(a:this) ? s:empty_list : g:timl#lang#ChunkedCons.create(a:this)
+endfunction
+
 function! s:list_first(this) abort
   return get(a:this, 0, g:timl#nil)
 endfunction
 
 function! s:list_rest(this) abort
-  return g:timl#lang#ChunkedCons.create(a:this, 1)
+  return len(a:this) <= 1 ? s:empty_list : g:timl#lang#ChunkedCons.create(a:this, g:timl#nil, 1)
 endfunction
 
 function! s:list_get(this, idx, ...) abort
@@ -76,10 +82,10 @@ let g:timl#vim#List = timl#bless('timl.lang/Type', {
       \ "name": timl#symbol('timl.vim/List'),
       \ "implements":
       \ {"timl.lang/Seqable":
-      \    {"seq": g:timl#lang#ChunkedCons.create},
+      \    {"seq": s:function("s:list_seq")},
       \  "timl.lang/ISeq":
       \    {"first": s:function("s:list_first"),
-      \     "rest": s:function("s:list_first")},
+      \     "rest": s:function("s:list_rest")},
       \  "timl.lang/ILookup":
       \    {"get": s:function("s:list_get")},
       \  "timl.lang/Counted":
