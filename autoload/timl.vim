@@ -180,7 +180,7 @@ endfunction
 
 function! timl#with_meta(obj, meta) abort
   if timl#objectp(a:obj)
-    if !timl#equalsp(get(a:obj, '#meta', g:timl#nil), a:meta)
+    if !timl#equalp(get(a:obj, '#meta', g:timl#nil), a:meta)
       let obj = copy(a:obj)
       if a:meta is# g:timl#nil
         call remove(obj, '#meta')
@@ -309,7 +309,7 @@ function! timl#float(obj) abort
   throw "timl: not a float"
 endfunction
 
-function! timl#equalsp(x, ...) abort
+function! timl#equalp(x, ...) abort
   for y in a:000
     if type(a:x) != type(y) || a:x !=# y
       return 0

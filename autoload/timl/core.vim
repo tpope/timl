@@ -156,8 +156,8 @@ TLalias read_string timl#reader#read_string
 " }}}1
 " Section: Equality {{{1
 
-TLpredicate _EQ_(...)     call('timl#equalsp', a:000)
-TLpredicate not_EQ_(...) !call('timl#equalsp', a:000)
+TLpredicate _EQ_(...)     call('timl#equalp', a:000)
+TLpredicate not_EQ_(...) !call('timl#equalp', a:000)
 
 TLfunction! identical_QMARK_(x, ...) abort
   for y in a:000
