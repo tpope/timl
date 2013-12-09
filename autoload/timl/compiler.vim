@@ -84,12 +84,11 @@ function! timl#compiler#serialize(x, ...)
       return 'timl#with_meta('.timl#compiler#serialize(a:x, 'nometa').', '.timl#compiler#serialize(meta).')'
     endif
   endif
-  let t = timl#type(a:x)
   " TODO: guard against recursion
-  if t ==# 'timl.lang/Keyword'
+  if timl#keywordp(a:x)
     return 'timl#keyword('.timl#compiler#serialize(a:x[0]).')'
 
-  elseif t ==# 'timl.lang/Symbol'
+  elseif timl#symbolp(a:x)
     return 'timl#symbol('.timl#compiler#serialize(a:x[0]).')'
 
   elseif a:x is# g:timl#nil
@@ -107,7 +106,7 @@ function! timl#compiler#serialize(x, ...)
   elseif type(a:x) == type([])
     return '['.join(map(copy(a:x), 'timl#compiler#serialize(v:val)'), ', ').']'
 
-  elseif t ==# 'timl.lang/HashMap'
+  elseif timl#mapp(a:x)
     let _ = {}
     let keyvals = []
     let _.seq = timl#seq(a:x)
@@ -117,7 +116,7 @@ function! timl#compiler#serialize(x, ...)
     endwhile
     return 'timl#hash_map('.timl#compiler#serialize(keyvals).')'
 
-  elseif t ==# 'timl.lang/HashSet'
+  elseif timl#setp(a:x)
     let _ = {}
     let keyvals = []
     let _.seq = timl#seq(a:x)
@@ -127,7 +126,7 @@ function! timl#compiler#serialize(x, ...)
     endwhile
     return 'timl#set('.timl#compiler#serialize(keyvals).')'
 
-  elseif t ==# 'timl.lang/Cons'
+  elseif timl#consp(a:x)
     return 'timl#cons('.timl#compiler#serialize(a:x.car).','.timl#compiler#serialize(a:x.cdr).')'
 
   elseif type(a:x) == type({})
