@@ -190,6 +190,8 @@ function! s:process(port, token, pos, line) abort
     else
       return timl#persistentb(timl#bless(token, {'value': next})
     endif
+  elseif token =~# '^::.'
+    return timl#keyword(g:timl#core#_STAR_ns_STAR_.name.'/'.token[2:-1])
   elseif token =~# '^:.'
     return timl#keyword(token[1:-1])
   elseif token =~# '^'.s:iskeyword
