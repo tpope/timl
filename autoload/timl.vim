@@ -118,6 +118,13 @@ function! timl#symbolp(symbol, ...)
         \ (a:0 ? a:symbol[0] ==# a:1 : 1)
 endfunction
 
+function! timl#sym(sym)
+  if !timl#symbolp(a:sym)
+    throw 'timl: symbol expected but received '.timl#type(a:sym)
+  endif
+  return a:sym
+endfunction
+
 function! timl#gensym(...)
   let s:id = get(s:, 'id', 0) + 1
   return timl#symbol((a:0 ? a:1 : 'G__').s:id)
@@ -563,24 +570,24 @@ function! timl#the_ns(name)
 endfunction
 
 function! timl#create_ns(name, ...)
-  let name = timl#str(a:name)
-  if !has_key(g:timl#namespaces, a:name)
-    let g:timl#namespaces[a:name] = timl#bless(s:ns, {'name': name, 'referring': [], 'aliases': {}})
+  let name = timl#sym(a:name)
+  if !has_key(g:timl#namespaces, name[0])
+    let g:timl#namespaces[name[0]] = timl#bless(s:ns, {'name': name, 'referring': [], 'aliases': {}})
   endif
-  let ns = g:timl#namespaces[a:name]
+  let ns = g:timl#namespaces[name[0]]
   if !a:0
     return ns
   endif
   let opts = a:1
   let _ = {}
   for _.refer in get(opts, 'referring', [])
-    let str = timl#str(_.refer)
-    if name !=# str && index(ns.referring, str) < 0
-      call insert(ns.referring, str)
+    let sym = timl#sym(_.refer)
+    if name !=# sym && index(ns.referring, sym) < 0
+      call insert(ns.referring, sym)
     endif
   endfor
   for [_.name, _.target] in items(get(opts, 'aliases', {}))
-    let ns.aliases[_.name] = timl#str(_.target)
+    let ns.aliases[_.name] = timl#sym(_.target)
   endfor
   return ns
 endfunction

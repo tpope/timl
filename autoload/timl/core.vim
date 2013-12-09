@@ -448,10 +448,10 @@ endfunction
 TLalias require timl#require
 TLalias find_ns timl#find_ns
 TLalias the_ns timl#the_ns
+TLexpr all_ns() timl#seq(values(g:timl#namespaces))
 
-TLfunction! in_ns(ns) abort
-  let name = timl#str(a:ns)
-  let g:timl#core#_STAR_ns_STAR_ = timl#create_ns(name)
+TLfunction! in_ns(name) abort
+  let g:timl#core#_STAR_ns_STAR_ = timl#create_ns(a:name)
   return g:timl#core#_STAR_ns_STAR_
 endfunction
 

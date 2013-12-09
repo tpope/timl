@@ -93,11 +93,11 @@ function! s:repl(...) abort
     set nomore
     let ns = timl#ns_for_cursor()
     let g:timl#core#_STAR_ns_STAR_ = g:timl#namespaces[a:0 ? a:1 : ns]
-    if g:timl#core#_STAR_ns_STAR_.name == 'user'
-      call timl#require('timl.repl')
-      call timl#core#refer('timl.repl')
+    if g:timl#core#_STAR_ns_STAR_.name[0] ==# 'user'
+      call timl#require(timl#symbol('timl.repl'))
+      call timl#core#refer(timl#symbol('timl.repl'))
     endif
-    let input = input(g:timl#core#_STAR_ns_STAR_.name.'=> ', '', cmpl)
+    let input = input(g:timl#core#_STAR_ns_STAR_.name[0].'=> ', '', cmpl)
     if input =~# '^:q\%[uit]'
       return ''
     elseif input =~# '^:'
@@ -112,7 +112,7 @@ function! s:repl(...) abort
             let read = timl#reader#read_string_all(input)
             break
           catch /^timl#reader: unexpected EOF/
-            let space = repeat(' ', len(g:timl#core#_STAR_ns_STAR_.name)-2)
+            let space = repeat(' ', len(g:timl#core#_STAR_ns_STAR_.name[0])-2)
             let input .= "\n" . input(space.'#_=> ', '', cmpl)
             echo "\n"
           endtry
@@ -139,7 +139,7 @@ function! s:repl(...) abort
         echo v:exception
         echohl NONE
       endtry
-      let input = input(g:timl#core#_STAR_ns_STAR_.name.'=> ', '', cmpl)
+      let input = input(g:timl#core#_STAR_ns_STAR_.name[0].'=> ', '', cmpl)
     endwhile
     return input
   finally

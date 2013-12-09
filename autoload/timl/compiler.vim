@@ -36,7 +36,7 @@ function! timl#compiler#qualify(sym, ns, ...)
   elseif sym =~# '^&\w' && exists(sym)
     return sym
   elseif sym =~# '/.' && has_key(the_ns.aliases, matchstr(sym, '.\{-\}\ze/.'))
-    let sym = the_ns.aliases[matchstr(sym, '.\{-\}\ze/.')] . '/' . matchstr(sym, '.\{-\}/\zs.\+')
+    let sym = the_ns.aliases[matchstr(sym, '.\{-\}\ze/.')][0] . '/' . matchstr(sym, '.\{-\}/\zs.\+')
   endif
   if sym =~# '/.' && exists('g:'.timl#munge(sym))
     return sym
@@ -556,8 +556,8 @@ endfunction
 
 if !exists('g:timl#namespaces')
   let g:timl#namespaces = {
-        \ 'timl.core': timl#bless('timl.lang/Namespace', {'name': 'timl.core', 'referring': [], 'aliases': {}}),
-        \ 'user':      timl#bless('timl.lang/Namespace', {'name': 'user', 'referring': ['timl.core'], 'aliases': {}})}
+        \ 'timl.core': timl#bless('timl.lang/Namespace', {'name': timl#symbol('timl.core'), 'referring': [], 'aliases': {}}),
+        \ 'user':      timl#bless('timl.lang/Namespace', {'name': timl#symbol('user'), 'referring': [timl#symbol('timl.core')], 'aliases': {}})}
 endif
 
 if !exists('g:timl#core#_STAR_ns_STAR_')
