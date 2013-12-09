@@ -392,10 +392,9 @@ function! s:emit_multifn(file, context, ns, form, locals, name, tmp, fns)
   call s:println(a:file, "if 0")
   for arity in map(sort(keys(dispatch)), 'dispatch[v:val]')
     if arity < 0
-      call s:println(a:file, "elseif len(a:000) >= ".(-1 - arity))
-      call s:println(a:file, "return call(self[".arity."].call, a:000, self[".arity."])")
+      call s:println(a:file, "elseif a:0 >= ".(-1 - arity))
     else
-      call s:println(a:file, "elseif len(a:000) == ".arity)
+      call s:println(a:file, "elseif a:0 == ".arity)
     endif
     call s:println(a:file, "return call(self[".arity."].call, a:000, self[".arity."])")
   endfor
