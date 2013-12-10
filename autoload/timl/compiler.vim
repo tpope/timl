@@ -53,9 +53,14 @@ function! timl#compiler#qualify(sym, ns, ...)
   throw 'timl#compiler: could not resolve '.timl#str(a:sym)
 endfunction
 
-function! timl#compiler#resolve(sym, ns)
-  let sym = timl#compiler#qualify(a:sym, a:ns)
-  if sym =~# '^[&$]'
+function! timl#compiler#ns_resolve(ns, sym, ...) abort
+  if has_key(a:0 ? a:1 : {}, timl#str(a:sym))
+    return g:timl#nil
+  endif
+  let sym = timl#compiler#qualify(a:sym, a:ns, g:timl#nil)
+  if sym is# g:timl#nil
+    return sym
+  elseif sym =~# '^[&$]'
     return sym
   elseif sym =~# '^\w:'
     return timl#munge(sym)
@@ -64,8 +69,12 @@ function! timl#compiler#resolve(sym, ns)
   endif
 endfunction
 
-function! timl#compiler#lookup(sym, ns) abort
-  return eval(timl#compiler#resolve(a:sym, a:ns))
+function! timl#compiler#resolve_or_throw(sym)
+  let var = timl#compiler#ns_resolve(g:timl#core#_STAR_ns_STAR_, a:sym)
+  if var isnot# g:timl#nil
+    return var
+  endif
+  throw "timl#compiler: could not resolve ".timl#str(a:sym)
 endfunction
 
 " Section: Serialization
@@ -437,7 +446,7 @@ function! s:expr_sf_set_BANG_(file, env, form) abort
   let target = timl#first(timl#rest(a:form))
   let rest = timl#next(timl#next(a:form))
   if timl#symbolp(target)
-    let var = timl#compiler#resolve(target, g:timl#core#_STAR_ns_STAR_)
+    let var = timl#compiler#resolve_or_throw(target)
     if rest isnot# g:timl#nil
       let val = s:expr(a:file, a:env, timl#first(rest))
       if var !~# '^[&$]'
@@ -456,7 +465,7 @@ function! s:expr_sf_set_BANG_(file, env, form) abort
     if has_key(a:env.locals, target2[0])
       let var = a:env.locals[target2[0]]
     else
-      let var = timl#compiler#resolve(target2, g:timl#core#_STAR_ns_STAR_)
+      let var = timl#compiler#resolve_or_throw(target2)
     endif
     let val = s:expr(a:file, a:env, timl#first(rest))
     call s:emitln(a:file, 'let '.var.'['.timl#compiler#serialize(key).'] = '.val)
@@ -520,7 +529,7 @@ function! s:emit(file, env, form) abort
         if has_key(a:env.locals, First[0])
           let resolved = a:env.locals[First[0]]
         else
-          let resolved = timl#compiler#resolve(First, g:timl#core#_STAR_ns_STAR_)
+          let resolved = timl#compiler#resolve_or_throw(First)
           let Fn = eval(resolved)
           if timl#type(Fn) == 'timl.lang/Function' && timl#truth(get(Fn, 'macro', g:timl#nil))
             let E = timl#call(Fn, [a:form, a:env] + timl#ary(timl#next(a:form)))
@@ -540,7 +549,7 @@ function! s:emit(file, env, form) abort
     if has_key(a:env.locals, a:form[0])
       let expr = a:env.locals[a:form[0]]
     else
-      let expr = timl#compiler#resolve(a:form, g:timl#core#_STAR_ns_STAR_)
+      let expr = timl#compiler#resolve_or_throw(a:form)
     endif
   elseif type(a:form) == type([]) && a:form isnot# g:timl#nil
     let expr = '['.join(map(copy(a:form), 's:emit(a:file, s:with_context(a:env, "expr"), v:val)'), ', ').']'
