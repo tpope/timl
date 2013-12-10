@@ -162,6 +162,21 @@ function! s:printfln(file, ...)
   return s:println(a:file, line)
 endfunction
 
+function! s:emit_map(file, context, ns, locals, map) abort
+  let _ = {}
+  let sym = s:tempsym('map')
+  call s:println(a:file, 'let '.sym."_ary = []")
+  let _.seq = timl#seq(a:map)
+  while _.seq isnot# g:timl#nil
+    let _.first = timl#first(_.seq)
+    call s:emit(a:file, "call add(".sym."_ary, %s)", a:ns, a:locals, _.first[0])
+    call s:emit(a:file, "call add(".sym."_ary, %s)", a:ns, a:locals, _.first[1])
+    let _.seq = timl#next(_.seq)
+  endwhile
+  call s:println(a:file, "let ".sym." = timl#hash_map(".sym."_ary)")
+  return s:printfln(a:file, a:context, sym)
+endfunction
+
 function! s:emit(file, context, ns, locals, x) abort
   let _ = {}
   let X = a:x
@@ -186,17 +201,7 @@ function! s:emit(file, context, ns, locals, x) abort
     return s:printfln(a:file, a:context, sym)
 
   elseif timl#mapp(X)
-    let sym = s:tempsym('map')
-    call s:println(a:file, 'let '.sym."_ary = []")
-    let _.seq = timl#seq(X)
-    while _.seq isnot# g:timl#nil
-      let _.first = timl#first(_.seq)
-      call s:emit(a:file, "call add(".sym."_ary, %s)", a:ns, a:locals, _.first[0])
-      call s:emit(a:file, "call add(".sym."_ary, %s)", a:ns, a:locals, _.first[1])
-      let _.seq = timl#next(_.seq)
-    endwhile
-    call s:println(a:file, "let ".sym." = timl#hash_map(".sym."_ary)")
-    return s:printfln(a:file, a:context, sym)
+    return s:emit_map(a:file, a:context, a:ns, a:locals, X)
 
   elseif timl#setp(X)
     let sym = s:tempsym('set')
