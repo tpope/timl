@@ -283,7 +283,7 @@ endfunction
 
 function! s:sqexpandlist(seq, gensyms) abort
   let result = []
-  let _ = {'seq': a:seq}
+  let _ = {'seq': timl#seq(a:seq)}
   while _.seq isnot# g:timl#nil
     let _.this = timl#first(_.seq)
     if timl#consp(_.this)
