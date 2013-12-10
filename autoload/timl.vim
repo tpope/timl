@@ -310,34 +310,37 @@ function! timl#empty(coll) abort
   endif
 endfunction
 
-function! timl#conj(coll, x, ...) abort
+function! timl#into(coll, seq) abort
   let t = timl#type(a:coll)
   if a:coll is g:timl#nil
-    return timl#cons(a:coll, g:timl#nil)
+    return timl#seq(a:seq)
   elseif t ==# 'timl.vim/List'
-    return timl#persistentb(extend(timl#transient(a:coll), [a:x] + a:000))
+    return timl#persistentb(extend(timl#transient(a:coll), timl#ary(a:seq)))
   elseif t ==# 'timl.lang/HashSet'
     let coll = timl#transient(a:coll)
-    let coll[timl#key(a:x)] = a:x
     let _ = {}
-    for _.v in a:000
+    for _.v in timl#ary(a:seq)
       let coll[timl#key(_.v)] = _.v
     endfor
     return timl#persistentb(coll)
   elseif t ==# 'timl.lang/HashMap' || t ==# 'timl.vim/Dictionary'
     let coll = timl#transient(a:coll)
     let _ = {}
-    for _.v in a:000
+    for _.v in timl#ary(a:seq)
       call timl#assocb(a:coll, timl#ary(_.v))
     endfor
     return timl#persistentb(coll)
   else
-    let _ = {'coll': a:coll}
-    for x in [a:x] + a:000
-      let _.coll = timl#dispatch('timl.lang/IPersistentCollection', 'cons', _.coll, a:x)
-    endfor
-    return _.coll
+    return call('timl#conj', [a:coll] + timl#ary(a:seq))
   endif
+endfunction
+
+function! timl#conj(coll, x, ...) abort
+  let _ = {'coll': a:coll}
+  for x in [a:x] + a:000
+    let _.coll = timl#dispatch('timl.lang/IPersistentCollection', 'cons', _.coll, x)
+  endfor
+  return _.coll
 endfunction
 
 function! timl#count(seq) abort

@@ -407,6 +407,7 @@ TLpredicate coll_QMARK_(seq) timl#collp(a:seq)
 TLalias get timl#get
 TLalias empty timl#empty
 TLalias conj timl#conj
+TLalias into timl#into
 TLpredicate contains_QMARK_(coll, val) timl#containsp(a:coll, a:val)
 
 " }}}1
