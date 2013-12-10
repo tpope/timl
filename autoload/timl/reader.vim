@@ -78,18 +78,18 @@ endfunction
 
 function! s:read(port, ...) abort
   let port = a:port
-  let line = a:port.line
-  let data = s:read_raw(a:port, a:0 ? a:1 : ' ')
+  let [token, pos, line] = s:read_token(a:port)
+  let data = s:process(a:port, token, line, a:0 ? a:1 : ' ')
   if has_key(a:port, 'filename') && timl#consp(data)
     return s:add_meta(data, {'file': a:port.filename, 'line': line})
   endif
   return data
 endfunction
 
-function! s:read_raw(port, wanted) abort
+function! s:process(port, token, line, wanted) abort
   let port = a:port
-  let line = a:port.line
-  let [token, pos, line] = a:0 ? a:000 : s:read_token(a:port)
+  let token = a:token
+  let line = a:line
   if token ==# '('
     return timl#list2(s:read_until(port, ')'))
   elseif token == '['
