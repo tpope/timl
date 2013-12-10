@@ -163,7 +163,7 @@ function! s:printfln(file, ...)
   return s:println(a:file, line)
 endfunction
 
-function! s:emit_map(file, context, ns, locals, map) abort
+function! s:build_map(file, ns, locals, map) abort
   let _ = {}
   let sym = s:tempsym('map')
   call s:println(a:file, 'let '.sym."_ary = []")
@@ -175,7 +175,17 @@ function! s:emit_map(file, context, ns, locals, map) abort
     let _.seq = timl#next(_.seq)
   endwhile
   call s:println(a:file, "let ".sym." = timl#hash_map(".sym."_ary)")
-  return s:printfln(a:file, a:context, sym)
+  return sym
+endfunction
+
+function! s:wrap_meta(file, ns, locals, sym, obj) abort
+  let meta = timl#meta(a:obj)
+  if meta is# g:timl#nil
+    return a:sym
+  else
+    let sym = s:build_map(a:file, a:ns, a:locals, meta)
+    return 'timl#with_meta('.a:sym.', '.sym.')'
+  endif
 endfunction
 
 function! s:emit(file, context, ns, locals, x) abort
@@ -202,7 +212,8 @@ function! s:emit(file, context, ns, locals, x) abort
     return s:printfln(a:file, a:context, sym)
 
   elseif timl#mapp(X)
-    return s:emit_map(a:file, a:context, a:ns, a:locals, X)
+    return s:printfln(a:file, a:context,
+          \ s:wrap_meta(a:file, a:ns, a:locals, s:build_map(a:file, a:ns, a:locals, X), X))
 
   elseif timl#setp(X)
     let sym = s:tempsym('set')
@@ -214,7 +225,8 @@ function! s:emit(file, context, ns, locals, x) abort
       let _.seq = timl#next(_.seq)
     endwhile
     call s:println(a:file, "let ".sym." = timl#set(".sym."_ary)")
-    return s:printfln(a:file, a:context, sym)
+    return s:printfln(a:file, a:context,
+          \ s:wrap_meta(a:file, a:ns, a:locals, sym, X))
 
   elseif !timl#consp(X)
     return s:printfln(a:file, a:context, timl#compiler#serialize(X))
