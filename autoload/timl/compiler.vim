@@ -530,7 +530,11 @@ function! s:emit(file, env, form) abort
         let expr = 'timl#call('.resolved.', '.s:expr(a:file, a:env, timl#ary(timl#next(a:form))).')'
       endif
     else
-      let expr = 'timl#call('.s:expr(a:file, a:env, First).', '.s:expr(a:file, a:env, timl#ary(timl#next(a:form))).')'
+      if timl#consp(First) && timl#symbolp(timl#first(First), 'function')
+        let expr = timl#munge(timl#first(timl#next(First))).'('.s:expr(a:file, a:env, timl#ary(timl#next(a:form)))[1:-2].')'
+      else
+        let expr = 'timl#call('.s:expr(a:file, a:env, First).', '.s:expr(a:file, a:env, timl#ary(timl#next(a:form))).')'
+      endif
     endif
   elseif timl#symbolp(a:form)
     if has_key(a:env.locals, a:form[0])
