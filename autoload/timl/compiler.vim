@@ -656,20 +656,20 @@ function! timl#compiler#eval(x, ...) abort
 endfunction
 
 function! s:execute(form, str, ...)
-  let _dict = {}
-  let _str = "function _dict.func(locals) abort\n"
+  let s:dict = {}
+  let str = "function s:dict.func(locals) abort\n"
         \ . "let locals = a:locals\n"
         \ . "let temp={}\n"
         \ . "while 1\n"
         \ . a:str
         \ . "endwhile\n"
         \ . "endfunction"
-  execute _str
+  execute str
   let meta = s:loc_meta(a:form)
   if !empty(meta)
-    let g:timl_functions[join([_dict.func])] = meta
+    let g:timl_functions[join([s:dict.func])] = meta
   endif
-  return _dict.func(a:0 ? a:1 : {})
+  return s:dict.func(a:0 ? a:1 : {})
 endfunction
 
 let s:dir = (has('win32') ? '$APPCACHE/Vim' :
