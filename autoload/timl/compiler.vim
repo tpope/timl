@@ -221,6 +221,10 @@ function! s:emit_sf_let_STAR_(file, env, form) abort
   endif
 endfunction
 
+function! s:expr_sf_do(file, env, form) abort
+  return s:wrap_as_expr(a:file, a:env, a:form)
+endfunction
+
 function! s:emit_sf_do(file, env, form) abort
   let ary = timl#ary(timl#next(a:form))
   if empty(ary)
@@ -229,7 +233,7 @@ function! s:emit_sf_do(file, env, form) abort
   for i in range(len(ary) - 1)
     call s:emit(a:file, s:with_context(a:env, 'statement'), ary[i])
   endfor
-    call s:emit(a:file, a:env, ary[-1])
+  call s:emit(a:file, a:env, ary[-1])
 endfunction
 
 function! s:expr_sf_if(file, env, form)
