@@ -297,7 +297,7 @@ function! s:one_fn(file, env, form, name, temp) abort
   let c = 0
   for _.arg in args
     if timl#symbolp(_.arg, '&')
-      call s:emitln(a:file, 'let locals['.string(args[-1][0]).'] = timl#list2(a:000)')
+      call s:emitln(a:file, 'let locals['.string(args[-1][0]).'] = a:000')
       let c = 21 + c
       break
     else
