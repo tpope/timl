@@ -34,7 +34,7 @@ function! timl#printer#string(x)
     return '()'
 
   elseif type == 'timl.lang/Function'
-    return '#<'.get(a:x, 'ns', '').'/'.get(a:x, 'name', '...').' '.join([a:x.call]).'>'
+    return '#<'.get(a:x, 'ns', {'name': ['...']}).name[0].'/'.get(a:x, 'name', '...').' #*'.join([a:x.call]).'>'
 
   elseif type == 'timl.lang/Namespace'
     return '#<Namespace '.get(a:x, 'name', '')[0].'>'
