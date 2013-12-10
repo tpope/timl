@@ -149,7 +149,8 @@ function! timl#compiler#serialize(x, ...)
 endfunction
 
 function! s:tempsym(...)
-  return 'temp.'.timl#gensym(a:0 ? a:1 : 'emit')[0]
+  let s:id = get(s:, 'id', 0) + 1
+  return 'temp.'.(a:0 ? a:1 : '_').s:id
 endfunction
 
 function! s:println(file, line)
