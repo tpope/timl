@@ -16,7 +16,7 @@
       (recur env))))
 
 (defmacro breakpoint []
-  `(timl.repl/breakpoint-fn ~(list #*eval "locals[0]")))
+  `(timl.repl/breakpoint-fn ~(list #*eval "locals")))
 
 (defmacro breakadd []
   `(: "execute 'breakadd func '.(1+expand('<slnum>')).' '.matchstr(expand('<sfile>'), '.*\\.\\zs.*')"))

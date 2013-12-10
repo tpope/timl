@@ -23,6 +23,10 @@ function! timl#truth(val) abort
   return a:val isnot# g:timl#nil && a:val isnot# g:timl#false
 endfunction
 
+function! timl#identity(x) abort
+  return a:x
+endfunction
+
 " }}}1
 " Section: Symbols {{{1
 

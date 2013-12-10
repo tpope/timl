@@ -12,24 +12,26 @@ if !exists('g:timl_functions')
   let g:timl_functions = {}
 endif
 
+let s:ns = timl#the_ns(timl#symbol('timl.core'))
+
 command! -bang -nargs=1 TLfunction
       \ let g:timl#core#{matchstr(<q-args>, '^[[:alnum:]_]\+')} = timl#bless('timl.lang/Function', {
-      \    'ns': 'timl.core',
-      \    'name': timl#demunge(matchstr(<q-args>, '^\zs[[:alnum:]_]\+')),
+      \    'ns': s:ns,
+      \    'name': timl#symbol(timl#demunge(matchstr(<q-args>, '^\zs[[:alnum:]_]\+'))),
       \    'call': function('timl#core#'.matchstr(<q-args>, '^[[:alnum:]_#]\+'))}) |
       \ function! timl#core#<args> abort
 
 command! -bang -nargs=+ TLalias
       \ let g:timl#core#{[<f-args>][0]} = timl#bless('timl.lang/Function', {
-      \    'ns': 'timl.core',
-      \    'name': timl#demunge(([<f-args>][0])),
+      \    'ns': s:ns,
+      \    'name': timl#symbol(timl#demunge(([<f-args>][0]))),
       \    'call': function([<f-args>][1])})
 
 command! -bang -nargs=1 TLexpr
       \ exe "function! s:dict.call".matchstr(<q-args>, '([^)]*)')." abort\nreturn".matchstr(<q-args>, ')\zs.*')."\nendfunction" |
       \ let g:timl#core#{matchstr(<q-args>, '^[[:alnum:]_]\+')} = timl#bless('timl.lang/Function', {
-      \    'ns': 'timl.core',
-      \    'name': timl#demunge(matchstr(<q-args>, '^\zs[[:alnum:]_]\+')),
+      \    'ns': s:ns,
+      \    'name': timl#symbol(timl#demunge(matchstr(<q-args>, '^\zs[[:alnum:]_]\+'))),
       \    'call': s:dict.call}) |
       \ let g:timl_functions[join([s:dict.call])] = {'file': expand('<sfile>'), 'line': expand('<slnum>')}
 
