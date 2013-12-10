@@ -328,7 +328,7 @@ function! timl#conj(coll, x, ...) abort
     let coll = timl#transient(a:coll)
     let _ = {}
     for _.v in a:000
-      call timl#assocb(a:coll, timl#vec(_.v))
+      call timl#assocb(a:coll, timl#ary(_.v))
     endfor
     return timl#persistentb(coll)
   else
@@ -421,7 +421,7 @@ function! timl#set(coll) abort
 endfunction
 
 function! timl#assocb(coll, ...) abort
-  let keyvals = a:0 == 1 ? timl#vec(a:1) : a:000
+  let keyvals = a:0 == 1 ? timl#ary(a:1) : a:000
   if len(keyvals) % 2 == 0
     let type = timl#type(a:coll)
     for i in range(0, len(keyvals) - 1, 2)
@@ -532,7 +532,7 @@ function! timl#list2(array)
   return _.cdr
 endfunction
 
-function! timl#vec(coll)
+function! timl#vec(coll) abort
   if type(a:coll) ==# s:ary
     return a:coll is# g:timl#nil ? [] : a:coll
   endif
@@ -543,6 +543,10 @@ function! timl#vec(coll)
     let _.seq = timl#next(_.seq)
   endwhile
   return timl#persistentb(extend(array, _.seq))
+endfunction
+
+function! timl#ary(coll) abort
+  return timl#vec(a:coll)
 endfunction
 
 function! timl#vectorp(obj) abort

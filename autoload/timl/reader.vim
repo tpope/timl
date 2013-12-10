@@ -262,7 +262,7 @@ function! timl#reader#syntax_quote(form, gensyms) abort
     let _ = {'seq': timl#seq(a:form)}
     let keyvals = []
     while _.seq isnot# g:timl#nil
-      call extend(keyvals, timl#vec(timl#first(_.seq)))
+      call extend(keyvals, timl#ary(timl#first(_.seq)))
       let _.seq = timl#next(_.seq)
     endwhile
     return timl#list(s:hash_map, timl#cons(s:concat, s:sqexpandlist(keyvals, a:gensyms)))

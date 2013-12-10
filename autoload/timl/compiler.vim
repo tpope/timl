@@ -115,7 +115,7 @@ function! timl#compiler#serialize(x, ...)
     let keyvals = []
     let _.seq = timl#seq(a:x)
     while _.seq isnot# g:timl#nil
-      call extend(keyvals, timl#vec(timl#first(_.seq)))
+      call extend(keyvals, timl#ary(timl#first(_.seq)))
       let _.seq = timl#next(_.seq)
     endwhile
     return 'timl#hash_map('.timl#compiler#serialize(keyvals).')'
@@ -235,24 +235,24 @@ function! s:emit(file, context, ns, locals, x) abort
 
   let F = timl#first(X)
   let rest = timl#rest(X)
-  let vec = timl#vec(rest)
+  let args = timl#ary(rest)
 
   if timl#symbolp(F, ':')
-    return call('timl#compiler#emit__COLON_', [a:file, a:context, a:ns, X, a:locals] + vec)
+    return call('timl#compiler#emit__COLON_', [a:file, a:context, a:ns, X, a:locals] + args)
   elseif timl#symbolp(F, '.')
-    return call('timl#compiler#emit__DOT_', [a:file, a:context, a:ns, X, a:locals] + vec)
+    return call('timl#compiler#emit__DOT_', [a:file, a:context, a:ns, X, a:locals] + args)
   elseif timl#symbolp(F) && exists('*timl#compiler#emit_'.timl#munge(F))
-    return call("timl#compiler#emit_".timl#munge(F), [a:file, a:context, a:ns, X, a:locals] + vec)
+    return call("timl#compiler#emit_".timl#munge(F), [a:file, a:context, a:ns, X, a:locals] + args)
   endif
 
   let tmp = s:tempsym('invoke')
   if timl#symbolp(F) && !has_key(a:locals, F[0]) && F[0] !~# '^:'
     let Fn = timl#compiler#lookup(F, a:ns)
     if timl#type(Fn) == 'timl.lang/Function' && timl#truth(get(Fn, 'macro', g:timl#nil))
-      return s:emit(a:file, a:context, a:ns, a:locals, timl#call(Fn, [X, a:locals] + vec))
+      return s:emit(a:file, a:context, a:ns, a:locals, timl#call(Fn, [X, a:locals] + args))
     endif
   endif
-  call s:emit(a:file, "let ".tmp."_args = %s", a:ns, a:locals, vec)
+  call s:emit(a:file, "let ".tmp."_args = %s", a:ns, a:locals, args)
   call s:emit(a:file, "let ".tmp."_function = %s", a:ns, a:locals, F)
   return s:printfln(a:file, a:context,
         \ 'timl#functionp('.tmp.'_function) ? '
@@ -276,11 +276,11 @@ function! timl#compiler#emit_set_BANG_(file, context, ns, form, locals, var, val
     call s:emit(a:file, 'let '.var.' =  %s', a:ns, a:locals, a:value)
     return s:printfln(a:file, a:context, 'g:timl#nil')
   elseif timl#consp(a:var)
-    let vec = timl#vec(a:var)
-    if len(vec) == 3 && timl#symbolp(vec[0], '.')
+    let args = timl#ary(a:var)
+    if len(args) == 3 && timl#symbolp(args[0], '.')
       let tmp = s:tempsym('setq')
-      call s:emit(a:file, 'let '.tmp.'_coll =  %s', a:ns, a:locals, vec[1])
-      call s:emit(a:file, 'let '.tmp.'_coll['.string(substitute(timl#str(vec[2]), '^-', '', '')).'] =  %s', a:ns, a:locals, a:value)
+      call s:emit(a:file, 'let '.tmp.'_coll =  %s', a:ns, a:locals, args[1])
+      call s:emit(a:file, 'let '.tmp.'_coll['.string(substitute(timl#str(args[2]), '^-', '', '')).'] =  %s', a:ns, a:locals, a:value)
       return s:printfln(a:file, a:context, 'g:timl#nil')
     endif
   endif
@@ -389,7 +389,7 @@ function! s:emit_multifn(file, context, ns, form, locals, name, tmp, fns)
     let _.args = timl#first(fn)
     let arity = timl#symbolp(get(_.args, -2), '&') ? 1-len(_.args) : len(_.args)
     let dispatch[arity < 0 ? 30-arity : 10 + arity] = arity
-    call call('timl#compiler#emit_fn_STAR_', [a:file, "let ".a:tmp."[".string(arity)."] = %s", a:ns, a:form, a:locals, _.args] + timl#vec(timl#rest(fn)))
+    call call('timl#compiler#emit_fn_STAR_', [a:file, "let ".a:tmp."[".string(arity)."] = %s", a:ns, a:form, a:locals, _.args] + timl#ary(timl#rest(fn)))
   endfor
   call s:println(a:file, "function! ".a:tmp.".call(...) abort")
   call s:println(a:file, "if 0")
@@ -417,7 +417,7 @@ function! timl#compiler#arg2env(arglist, args, env) abort
   let env = a:env
   let _ = {}
   let i = 0
-  for _.param in timl#vec(a:arglist)
+  for _.param in timl#ary(a:arglist)
     if _.param is s:amp
       let env[get(a:arglist, i+1, ['...'])[0]] = args[i : -1]
       break
@@ -449,23 +449,19 @@ function! timl#compiler#emit_let_STAR_(file, context, ns, form, locals, bindings
   call s:println(a:file, "let ".tmp." = copy(locals[0])")
   call s:println(a:file, "try")
   call s:println(a:file, "call insert(locals, ".tmp.")")
-  if type(a:bindings) == type([])
-    if len(a:bindings) % 2 !=# 0
-      throw "timl(let): even number of forms required" . len(a:bindings)
+  if timl#vectorp(a:bindings)
+    let bindings = timl#ary(a:bindings)
+    if len(bindings) % 2 !=# 0
+      throw "timl(let): even number of forms required" . len(bindings)
     endif
-    for i in range(0, len(a:bindings)-1, 2)
+    for i in range(0, len(bindings)-1, 2)
       call s:emit(a:file,
-            \ "let ".tmp."[".string(timl#str(a:bindings[i]))."] = %s",
-            \ a:ns, locals, a:bindings[i+1])
-      let locals[timl#str(a:bindings[i])] = 1
+            \ "let ".tmp."[".string(timl#str(bindings[i]))."] = %s",
+            \ a:ns, locals, bindings[i+1])
+      let locals[timl#str(bindings[i])] = 1
     endfor
   else
-    let list = timl#vec(a:bindings)
-    for binding in timl#vec(a:bindings)
-      let [_.var, _.val] = timl#vec(binding)
-      call s:emit(a:file, "let ".tmp."[".string(timl#str(_.var))."] = %s", a:ns, locals, _.val)
-      let locals[timl#str(_.var)] = 1
-    endfor
+    throw 'timl#compiler: bindings must be vectors'
   endif
   call call('timl#compiler#emit_do', [a:file, a:context, a:ns, a:form, locals] + a:000)
   call s:println(a:file, "finally")
@@ -540,9 +536,9 @@ function! timl#compiler#emit_try(file, context, ns, form, locals, ...) abort
     let _.e = a:000[i]
     if timl#consp(_.e) && timl#first(_.e) is s:finally
       call s:println(a:file, 'finally')
-      call call('timl#compiler#emit_do', [a:file, 'let '.tmp.' = %s', a:ns, a:form, a:locals] + timl#vec(timl#rest(_.e)))
+      call call('timl#compiler#emit_do', [a:file, 'let '.tmp.' = %s', a:ns, a:form, a:locals] + timl#ary(timl#rest(_.e)))
     elseif timl#consp(_.e) && timl#first(_.e) is s:catch
-      let rest = timl#vec(timl#rest(_.e))
+      let rest = timl#ary(timl#rest(_.e))
       let _.pattern = rest[0]
       if type(_.pattern) == type(0)
         let _.pattern = '^Vim\%((\a\+)\)\=:E' . _.pattern
