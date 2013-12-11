@@ -1,8 +1,10 @@
 (in-ns 'timl.core)
 
+(defn to-array [x] (#*copy (vec x)))
 (defn key [x] (first x))
 (defn val [x] (second x))
-(defn sorter [>]
+
+(defn comparator [>]
   (fn [x y]
     (if (> x y)
       1
@@ -10,9 +12,11 @@
         -1
         0))))
 
-(defn sort [xs & args]
-  (if args
-    (#*sort (#*copy (first args)) (sorter xs) {})
-    (#*sort (#*copy xs))))
+(defn sort
+  ([xs] (#*sort (to-array xs)))
+  ([op xs]
+   (let [cmp (comparator op)
+         fref (. cmp -call)]
+     (#*sort (to-array xs) fref cmp))))
 
 (defn get-in [m ks] (reduce get m ks))
