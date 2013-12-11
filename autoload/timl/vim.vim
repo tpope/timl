@@ -119,7 +119,7 @@ let g:timl#vim#Dictionary = timl#bless('timl.lang/Type', {
       \ {"timl.lang/ISeqable":
       \    {"seq": s:function("s:dict_seq")},
       \  "timl.lang/ILookup":
-      \    {"get": s:function("s:dict_lookup")},
+      \    {"lookup": s:function("s:dict_lookup")},
       \  "timl.lang/ICounted":
       \    {"count": function("len")},
       \  "timl.lang/ICollection":
