@@ -438,8 +438,11 @@ function! s:emit_sf_try(file, env, form) abort
 endfunction
 
 function! s:expr_sf_throw(file, env, form) abort
+  return s:wrap_as_expr(a:file, a:env, a:form)
+endfunction
+
+function! s:emit_sf_throw(file, env, form) abort
   call s:emitln(a:file, 'throw '.s:expr(a:file, a:env, timl#first(timl#next(a:form))))
-  return 'g:timl#nil'
 endfunction
 
 function! s:expr_sf_set_BANG_(file, env, form) abort
