@@ -245,6 +245,16 @@ function! s:set_cons(this, x) abort
   return timl#persistentb(extend(timl#transient(a:this), {timl#key(a:x): a:x}))
 endfunction
 
+function! s:set_disj(this, x) abort
+  let x = timl#key(a:x)
+  if has_key(a:this, x)
+    let set = copy(a:this)
+    call remove(set, x)
+    return timl#persistentb(set)
+  endif
+  return a:this
+endfunction
+
 let s:empty_set = timl#persistentb(timl#bless('timl.lang/HashSet'))
 function! s:set_empty(this) abort
   return s:empty_set
@@ -260,6 +270,8 @@ let g:timl#lang#HashSet = timl#bless(s:type, {
       \  "timl.lang/ICollection":
       \    {"cons": s:function("s:set_cons"),
       \     "empty": s:function("s:set_empty")},
+      \  "timl.lang/ISet":
+      \    {"disj": s:function("s:set_disj")},
       \  "timl.lang/IFn":
       \    {"invoke": s:function('s:set_lookup')}}})
 

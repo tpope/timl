@@ -384,7 +384,7 @@ function! timl#mapp(coll)
 endfunction
 
 function! timl#setp(coll)
-  return timl#type(a:coll) == 'timl.lang/HashSet'
+  return timl#satisfiesp('timl.lang/ISet', a:coll)
 endfunction
 
 function! timl#dictp(coll)
@@ -492,6 +492,15 @@ endfunction
 
 function! timl#dissoc(coll, ...) abort
   return timl#persistentb(call('timl#dissocb', [timl#transient(a:coll)] + a:000))
+endfunction
+
+function! timl#disj(set, ...) abort
+  let _ = {}
+  let set = a:set
+  for _.x in a:000
+    let set = timl#dispatch('timl.lang/ISet', 'disj', set, _.x)
+  endfor
+  return set
 endfunction
 
 " }}}1
