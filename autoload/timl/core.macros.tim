@@ -20,7 +20,7 @@
 (defmacro -> [x & forms]
   (if (seq forms)
     (let [form (first forms)
-          more (rest forms)] (if more `(-> (-> ~x ~form) ~@more) (if (list? form)
+          more (next forms)] (if more `(-> (-> ~x ~form) ~@more) (if (list? form)
           `(~(first form) ~x ~@(rest form))
           (list form x))))
     x))
