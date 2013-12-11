@@ -555,11 +555,7 @@ function! timl#nnext(seq) abort
 endfunction
 
 function! timl#get(coll, key, ...) abort
-  if a:0
-    return timl#dispatch('timl.lang/ILookup', 'get', a:coll, a:key, a:1)
-  else
-    return timl#dispatch('timl.lang/ILookup', 'get', a:coll, a:key)
-  endif
+  return timl#dispatch('timl.lang/ILookup', 'lookup', a:coll, a:key, a:0 ? a:1 : g:timl#nil)
 endfunction
 
 function! timl#consp(obj) abort

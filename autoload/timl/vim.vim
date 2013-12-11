@@ -14,12 +14,12 @@ let g:timl#vim#Number = timl#bless('timl.lang/Type', {"name": timl#symbol('timl.
 " Section: String
 
 " Characters, not bytes
-function! s:str_get(this, idx, ...) abort
+function! s:str_lookup(this, idx, default) abort
   if type(a:idx) == type(0)
     let ch = matchstr(a:this, repeat('.', a:idx).'\zs.')
     return empty(ch) ? (a:0 ? a:1 : g:timl#nil) : ch
   endif
-  return a:0 ? a:1 : g:timl#nil
+  return a:default
 endfunction
 
 function! s:string_count(this) abort
@@ -30,7 +30,7 @@ let g:timl#vim#String = timl#bless('timl.lang/Type', {
       \ "name": timl#symbol('timl.vim/String'),
       \ "implements":
       \ {"timl.lang/ILookup":
-      \    {"get": s:function("s:str_get")},
+      \    {"lookup": s:function("s:str_lookup")},
       \  "timl.lang/ICounted":
       \    {"count": s:function("s:string_count")}}})
 
@@ -60,9 +60,9 @@ function! s:list_rest(this) abort
   return len(a:this) <= 1 ? g:timl#empty_list : g:timl#lang#ChunkedCons.create(a:this, g:timl#empty_list, 1)
 endfunction
 
-function! s:list_get(this, idx, ...) abort
+function! s:list_lookup(this, idx, ...) abort
   if type(a:idx) == type(0)
-    return get(a:this, a:idx, a:0 ? a:1 : g:timl#nil)
+    return get(a:this, a:idx, a:0 ? a:1 g:timl#nil)
   endif
   return a:0 ? a:1 : g:timl#nil
 endfunction
@@ -85,14 +85,14 @@ let g:timl#vim#List = timl#bless('timl.lang/Type', {
       \    {"first": s:function("s:list_first"),
       \     "rest": s:function("s:list_rest")},
       \  "timl.lang/ILookup":
-      \    {"get": s:function("s:list_get")},
+      \    {"lookup": s:function("s:list_lookup")},
       \  "timl.lang/ICounted":
       \    {"count": function("len")},
       \  "timl.lang/ICollection":
       \    {"cons": s:function("s:list_cons"),
       \     "empty": s:function("s:list_empty")},
       \  "timl.lang/IFn":
-      \    {"invoke": s:function("s:list_get")}}})
+      \    {"invoke": s:function("s:list_lookup")}}})
 
 " Section: Dictionary
 
@@ -100,7 +100,7 @@ function! s:dict_seq(dict) abort
   return timl#list2(items(a:dict))
 endfunction
 
-function! s:dict_get(this, key, ...) abort
+function! s:dict_lookup(this, key, ...) abort
   return get(a:this, timl#str(a:key), a:0 ? a:1 : g:timl#nil)
 endfunction
 
@@ -119,14 +119,14 @@ let g:timl#vim#Dictionary = timl#bless('timl.lang/Type', {
       \ {"timl.lang/ISeqable":
       \    {"seq": s:function("s:dict_seq")},
       \  "timl.lang/ILookup":
-      \    {"get": s:function("s:dict_get")},
+      \    {"get": s:function("s:dict_lookup")},
       \  "timl.lang/ICounted":
       \    {"count": function("len")},
       \  "timl.lang/ICollection":
       \    {"cons": s:function("s:dict_cons"),
       \     "empty": s:function("s:dict_empty")},
       \  "timl.lang/IFn":
-      \    {"invoke": s:function("s:dict_get")}}})
+      \    {"invoke": s:function("s:dict_lookup")}}})
 
 " Section: Float
 

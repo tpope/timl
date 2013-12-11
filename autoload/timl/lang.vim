@@ -30,8 +30,8 @@ endfunction
 
 " Section: Nil
 
-function! s:nil_get(this, key, ...)
-  return a:0 ? a:1 : g:timl#nil
+function! s:nil_lookup(this, key, default)
+  return a:default
 endfunction
 
 let g:timl#lang#Nil = timl#bless(s:type, {
@@ -43,7 +43,7 @@ let g:timl#lang#Nil = timl#bless(s:type, {
       \    {"first": s:function('s:nil'),
       \     "rest": s:function('s:empty_list')},
       \ "timl.lang/ILookup":
-      \    {"get": s:function('s:nil_get')}}})
+      \    {"lookup": s:function('s:nil_lookup')}}})
 
 " Section: Boolean
 
@@ -54,9 +54,9 @@ let g:timl#lang#Boolean = timl#bless(s:type, {
 
 function! s:this_get(this, coll, ...) abort
   if a:0
-    return timl#dispatch('timl.lang/ILookup', 'get', a:coll, a:this, a:1)
+    return timl#get(a:coll, a:this, a:1)
   else
-    return timl#dispatch('timl.lang/ILookup', 'get', a:coll, a:this)
+    return timl#get(a:coll, a:this)
   endif
 endfunction
 
@@ -206,7 +206,7 @@ function! s:map_seq(hash) abort
   return empty(items) ? g:timl#nil : g:timl#lang#ChunkedCons.create(items)
 endfunction
 
-function! s:map_get(this, key, ...) abort
+function! s:map_lookup(this, key, ...) abort
   return get(a:this, timl#key(a:key), a:0 ? a:1 : g:timl#nil)
 endfunction
 
@@ -225,19 +225,19 @@ let g:timl#lang#HashMap = timl#bless(s:type, {
       \ {"timl.lang/ISeqable":
       \    {"seq": s:function('s:map_seq')},
       \  "timl.lang/ILookup":
-      \    {"get": s:function('s:map_get')},
+      \    {"lookup": s:function('s:map_lookup')},
       \  "timl.lang/ICollection":
       \    {"cons": s:function("s:map_cons"),
       \     "empty": s:function("s:map_empty")},
       \  "timl.lang/IFn":
-      \    {"invoke": s:function('s:map_get')}}})
+      \    {"invoke": s:function('s:map_lookup')}}})
 
 function! s:set_seq(hash) abort
   let items = map(filter(items(a:hash), 'v:val[0][0] !=# "#"'), 'v:val[1]')
   return empty(items) ? g:timl#nil : g:timl#lang#ChunkedCons.create(items)
 endfunction
 
-function! s:set_get(this, key, ...) abort
+function! s:set_lookup(this, key, ...) abort
   return get(a:this, timl#key(a:key), a:0 ? a:1 : g:timl#nil)
 endfunction
 
@@ -256,12 +256,12 @@ let g:timl#lang#HashSet = timl#bless(s:type, {
       \ {"timl.lang/ISeqable":
       \    {"seq": s:function("s:set_seq")},
       \  "timl.lang/ILookup":
-      \    {"get": s:function('s:set_get')},
+      \    {"lookup": s:function('s:set_lookup')},
       \  "timl.lang/ICollection":
       \    {"cons": s:function("s:set_cons"),
       \     "empty": s:function("s:set_empty")},
       \  "timl.lang/IFn":
-      \    {"invoke": s:function('s:set_get')}}})
+      \    {"invoke": s:function('s:set_lookup')}}})
 
 " Section: Namespaces
 
