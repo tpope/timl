@@ -524,6 +524,22 @@ function! timl#next(coll) abort
   return timl#seq(rest)
 endfunction
 
+function! timl#ffirst(seq) abort
+  return timl#first(timl#first(a:seq))
+endfunction
+
+function! timl#fnext(seq) abort
+  return timl#first(timl#next(a:seq))
+endfunction
+
+function! timl#nfirst(seq) abort
+  return timl#next(timl#first(a:seq))
+endfunction
+
+function! timl#nnext(seq) abort
+  return timl#next(timl#next(a:seq))
+endfunction
+
 function! timl#get(coll, key, ...) abort
   if a:0
     return timl#dispatch('timl.lang/ILookup', 'get', a:coll, a:key, a:1)

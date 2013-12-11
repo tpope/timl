@@ -214,7 +214,7 @@ function! s:emit_sf_let_STAR_(file, env, form) abort
   if a:env.context ==# 'statement'
     return s:emitln('call '.s:wrap_as_expr(a:file, a:env, a:form))
   endif
-  let ary = timl#ary(timl#first(timl#rest(a:form)))
+  let ary = timl#ary(timl#fnext(a:form))
   let env = s:copy_locals(a:env)
   for i in range(0, len(ary)-1, 2)
     let expr = s:emit(a:file, s:with_context(env, 'expr'), ary[i+1])
@@ -222,7 +222,7 @@ function! s:emit_sf_let_STAR_(file, env, form) abort
     call s:emitln(a:file, '')
     let env.locals[ary[i][0]] = 'locals['.string(timl#sym(ary[i])[0]).']'
   endfor
-  let body = timl#next(timl#rest(a:form))
+  let body = timl#nnext(a:form)
   if timl#count(body) == 1
     return s:emit(a:file, env, timl#first(body))
   else
@@ -266,11 +266,11 @@ function! s:expr(file, env, form) abort
 endfunction
 
 function! s:expr_sf_quote(file, env, form) abort
-  return timl#compiler#serialize(timl#first(timl#rest(a:form)))
+  return timl#compiler#serialize(timl#fnext(a:form))
 endfunction
 
 function! s:expr_sf_function(file, env, form) abort
-  return "function(".timl#compiler#serialize(timl#str(timl#first(timl#rest(a:form)))).")"
+  return "function(".timl#compiler#serialize(timl#str(timl#fnext(a:form))).")"
 endfunction
 
 function! s:add_local(env, sym)
@@ -379,12 +379,12 @@ function! s:emit_sf_recur(file, env, form) abort
     throw 'timl#compiler: recur outside of tail position'
   endif
   let bindings = map(copy(a:env.params), 'a:env.locals[v:val[0]]')
-  call s:emitln(a:file, 'let ['.join(bindings, ', ').'] = '.s:expr(a:file, a:env, timl#ary(timl#rest(a:form))))
+  call s:emitln(a:file, 'let ['.join(bindings, ', ').'] = '.s:expr(a:file, a:env, timl#ary(timl#next(a:form))))
   call s:emitln(a:file, 'continue')
 endfunction
 
 function! s:colon(file, env, form) abort
-  let expr = map(copy(timl#ary(timl#rest(a:form))), 's:expr(a:file, a:env, v:val)')
+  let expr = map(copy(timl#ary(timl#next(a:form))), 's:expr(a:file, a:env, v:val)')
   call s:emitln(a:file, 'execute '.join(expr, ' '))
 endfunction
 
@@ -402,7 +402,7 @@ function! s:emit_sf_try(file, env, form) abort
   let body = []
   while _.seq isnot# g:timl#nil
     if timl#consp(timl#first(_.seq))
-      let _.sym = timl#first(timl#first(_.seq))
+      let _.sym = timl#ffirst(_.seq)
       if timl#symbolp(_.sym, 'catch') || timl#symbolp(_.sym, 'finally')
         break
       endif
@@ -418,14 +418,14 @@ function! s:emit_sf_try(file, env, form) abort
   while _.seq isnot# g:timl#nil
     let _.first = timl#first(_.seq)
     if timl#consp(_.first) && timl#symbolp(timl#first(_.first), 'catch')
-      call s:emitln(a:file, 'catch /'.escape(timl#first(timl#next(_.first)), '/').'/')
-      let var = timl#first(timl#next(timl#next(_.first)))
+      call s:emitln(a:file, 'catch /'.escape(timl#fnext(_.first), '/').'/')
+      let var = timl#first(timl#nnext(_.first))
       let env = s:copy_locals(a:env)
       if timl#symbolp(var) && var[0] !=# '_'
         let env.locals[var[0]] = 'locals['.string(var[0]).']'
         call s:emitln(a:file, 'let '.env.locals[var[0]].' = timl#build_exception(v:exception, v:throwpoint)')
       endif
-      call s:emit_sf_do(a:file, env, timl#cons(timl#symbol('do'), timl#next(timl#next(timl#next(_.first)))))
+      call s:emit_sf_do(a:file, env, timl#cons(timl#symbol('do'), timl#next(timl#nnext(_.first))))
     elseif timl#consp(_.first) && timl#symbolp(timl#first(_.first), 'finally')
       call s:emitln(a:file, 'finally')
       call s:emit_sf_do(a:file, s:with_context(a:env, 'statement'), timl#cons(timl#symbol('do'), timl#next(_.first)))
@@ -442,12 +442,12 @@ function! s:expr_sf_throw(file, env, form) abort
 endfunction
 
 function! s:emit_sf_throw(file, env, form) abort
-  call s:emitln(a:file, 'throw '.s:expr(a:file, a:env, timl#first(timl#next(a:form))))
+  call s:emitln(a:file, 'throw '.s:expr(a:file, a:env, timl#fnext(a:form)))
 endfunction
 
 function! s:expr_sf_set_BANG_(file, env, form) abort
-  let target = timl#first(timl#rest(a:form))
-  let rest = timl#next(timl#next(a:form))
+  let target = timl#fnext(a:form)
+  let rest = timl#nnext(a:form)
   if timl#symbolp(target)
     let var = timl#compiler#resolve_or_throw(target)
     if rest isnot# g:timl#nil
@@ -463,8 +463,8 @@ function! s:expr_sf_set_BANG_(file, env, form) abort
     endif
     return var
   elseif timl#consp(target) && timl#symbolp(timl#first(target), '.')
-    let key = substitute(timl#str(timl#first(timl#next(timl#next(target)))), '^-', '', '')
-    let target2 = timl#sym(timl#first(timl#rest(target)))
+    let key = substitute(timl#str(timl#first(timl#nnext(target))), '^-', '', '')
+    let target2 = timl#sym(timl#fnext(target))
     if has_key(a:env.locals, target2[0])
       let var = a:env.locals[target2[0]]
     else
@@ -479,11 +479,11 @@ function! s:expr_sf_set_BANG_(file, env, form) abort
 endfunction
 
 function! s:expr_sf_def(file, env, form) abort
-  let rest = timl#rest(a:form)
+  let rest = timl#next(a:form)
   let var = timl#sym(timl#first(rest))
   let assign = 'timl#munge(g:timl#core#_STAR_ns_STAR_.name).'.string('#'.timl#munge(var))
   if timl#next(rest) isnot# g:timl#nil
-    let val = s:expr(a:file, a:env, timl#first(timl#next(rest)))
+    let val = s:expr(a:file, a:env, timl#fnext(rest))
     call s:emitln(a:file, 'unlet! g:{'.assign.'}')
     call s:emitln(a:file, 'let g:{'.assign.'} = '.val)
   else
@@ -495,8 +495,8 @@ function! s:expr_sf_def(file, env, form) abort
 endfunction
 
 function! s:expr_dot(file, env, form) abort
-  let val = s:expr(a:file, a:env, timl#first(timl#next(a:form)))
-  let key = timl#str(timl#first(timl#next(timl#next(a:form))))
+  let val = s:expr(a:file, a:env, timl#fnext(a:form))
+  let key = timl#str(timl#first(timl#nnext(a:form)))
   return val.'['.timl#compiler#serialize(substitute(key, '^-', '', '')).']'
 endfunction
 
@@ -543,7 +543,7 @@ function! s:emit(file, env, form) abort
       endif
     else
       if timl#consp(First) && timl#symbolp(timl#first(First), 'function')
-        let expr = timl#munge(timl#first(timl#next(First))).'('.s:expr(a:file, a:env, timl#ary(timl#next(a:form)))[1:-2].')'
+        let expr = timl#munge(timl#fnext(First)).'('.s:expr(a:file, a:env, timl#ary(timl#next(a:form)))[1:-2].')'
       else
         let expr = 'timl#call('.s:expr(a:file, a:env, First).', '.s:expr(a:file, a:env, timl#ary(timl#next(a:form))).')'
       endif
