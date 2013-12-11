@@ -139,8 +139,8 @@ Pass the given {string} to |:throw|.
 Run the given string as an ex command.
 
                                                 *timl-.* *timl-dot*
-(. {dict} {key} {args}*) ~
-Call the given key of the given dict as a |Dictionary-function|.
+(. {dict} -{key}) ~
+Retrieve the given key of the given dict.
 
 NAMESPACES                                      *timl-namespaces*
 
