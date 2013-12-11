@@ -358,6 +358,7 @@ TLpredicate keyword_QMARK_(obj) timl#keywordp(a:obj)
 TLalias name    timl#name
 TLalias symbol  timl#symbol
 TLalias keyword timl#keyword
+TLalias gensym  timl#gensym
 
 TLexpr pr_str(...) join(map(copy(a:000), 'timl#printer#string(v:val)'), ' ')
 TLexpr prn_str(...) join(map(copy(a:000), 'timl#printer#string(v:val)'), ' ')."\n"

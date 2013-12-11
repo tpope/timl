@@ -1,5 +1,7 @@
 (in-ns 'timl.core)
 
+(defn key [x] (first x))
+(defn val [x] (second x))
 (defn sorter [>]
   (fn [x y]
     (if (> x y)

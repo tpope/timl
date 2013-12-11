@@ -114,3 +114,8 @@
   `(do
      (in-ns '~name)
      (refer 'timl.core)))
+
+(defn ffirst [x] (first (first x)))
+(defn fnext [x] (first (next x)))
+(defn nfirst [x] (next (first x)))
+(defn nnext [x] (next (next x)))
