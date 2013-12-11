@@ -28,12 +28,7 @@ function! timl#identity(x) abort
 endfunction
 
 " }}}1
-" Section: Symbols {{{1
-
-if !exists('s:symbols')
-  let s:symbols = {}
-  let s:keywords = {}
-endif
+" Section: Munging {{{1
 
 " From clojure/lang/Compiler.java
 let s:munge = {
@@ -78,6 +73,13 @@ function! timl#demunge(var) abort
   return tr(substitute(var, '_\(\u\+\)_', '\=get(s:demunge, submatch(0), submatch(0))', 'g'), '_', '-')
 endfunction
 
+" }}}1
+" Section: Keywords {{{1
+
+if !exists('s:keywords')
+  let s:keywords = {}
+endif
+
 function! timl#keyword(str)
   if !has_key(s:keywords, a:str)
     let s:keywords[a:str] = {'0': a:str}
@@ -93,6 +95,9 @@ function! timl#keywordp(keyword)
         \ get(s:keywords, a:keyword[0], 0) is a:keyword
 endfunction
 
+" }}}1
+" Section: Type System {{{1
+
 function! timl#intern_type(type)
   return type(a:type) ==# type('') ? timl#keyword('#'.a:type) : a:type
 endfunction
@@ -100,6 +105,7 @@ endfunction
 if !exists('s:tag_sentinel')
   let s:tag_sentinel = s:freeze('tagged')
 endif
+
 function! timl#bless(class, ...) abort
   let obj = a:0 ? a:1 : {}
   let obj['#tagged'] = s:tag_sentinel
@@ -107,77 +113,12 @@ function! timl#bless(class, ...) abort
   return obj
 endfunction
 
-let s:symbol = timl#intern_type('timl.lang/Symbol')
-function! timl#symbol(str)
-  if !has_key(s:symbols, a:str)
-    let s:symbols[a:str] = timl#bless(s:symbol, {'0': a:str})
-    lockvar s:symbols[a:str]
-  endif
-  return s:symbols[a:str]
-endfunction
-
-function! timl#symbolp(symbol, ...)
-  return type(a:symbol) == type({}) &&
-        \ get(a:symbol, '#tag') is# s:symbol &&
-        \ (a:0 ? a:symbol[0] ==# a:1 : 1)
-endfunction
-
-function! timl#sym(sym)
-  if !timl#symbolp(a:sym)
-    throw 'timl: symbol expected but received '.timl#type(a:sym)
-  endif
-  return a:sym
-endfunction
-
-function! timl#gensym(...)
-  let s:id = get(s:, 'id', 0) + 1
-  return timl#symbol((a:0 ? a:1 : 'G__').s:id)
-endfunction
-
-function! timl#name(val) abort
-  if type(a:val) == type('')
-    return a:val
-  elseif timl#symbolp(a:val)
-    return a:val[0]
-  elseif timl#keywordp(a:val)
-    return a:val[0]
-  else
-    throw "timl: no name for ".timl#type(a:val)
-  endif
-endfunction
-
-" }}}1
-" Section: Data types {{{1
-
 if !exists('g:timl#nil')
   let g:timl#nil = s:freeze()
   let g:timl#false = timl#bless('timl.lang/Boolean', {'value': 0})
   let g:timl#true = timl#bless('timl.lang/Boolean', {'value': 1})
   lockvar g:timl#nil g:timl#false g:timl#true
 endif
-
-function! timl#meta(obj) abort
-  if timl#objectp(a:obj)
-    return get(a:obj, '#meta', g:timl#nil)
-  endif
-  return g:timl#nil
-endfunction
-
-function! timl#with_meta(obj, meta) abort
-  if timl#objectp(a:obj)
-    if !timl#equalp(get(a:obj, '#meta', g:timl#nil), a:meta)
-      let obj = copy(a:obj)
-      if a:meta is# g:timl#nil
-        call remove(obj, '#meta')
-      else
-        let obj['#meta'] = a:meta
-      endif
-      return timl#persistentb(obj)
-    endif
-    return a:obj
-  endif
-  throw 'timl: cannot attach metadata to a '.timl#type(a:obj)
-endfunction
 
 function! timl#objectp(obj) abort
   return type(a:obj) == type({}) && get(a:obj, '#tagged') is s:tag_sentinel
@@ -244,6 +185,29 @@ function! timl#transient(val) abort
   endif
 endfunction
 
+function! timl#meta(obj) abort
+  if timl#objectp(a:obj)
+    return get(a:obj, '#meta', g:timl#nil)
+  endif
+  return g:timl#nil
+endfunction
+
+function! timl#with_meta(obj, meta) abort
+  if timl#objectp(a:obj)
+    if !timl#equalp(get(a:obj, '#meta', g:timl#nil), a:meta)
+      let obj = copy(a:obj)
+      if a:meta is# g:timl#nil
+        call remove(obj, '#meta')
+      else
+        let obj['#meta'] = a:meta
+      endif
+      return timl#persistentb(obj)
+    endif
+    return a:obj
+  endif
+  throw 'timl: cannot attach metadata to a '.timl#type(a:obj)
+endfunction
+
 function! timl#str(val) abort
   if type(a:val) == type('')
     return a:val
@@ -294,6 +258,52 @@ function! timl#equalp(x, ...) abort
     endif
   endfor
   return 1
+endfunction
+
+" }}}1
+" Section: Symbols {{{1
+
+if !exists('s:symbols')
+  let s:symbols = {}
+endif
+
+let s:symbol = timl#intern_type('timl.lang/Symbol')
+function! timl#symbol(str)
+  if !has_key(s:symbols, a:str)
+    let s:symbols[a:str] = timl#bless(s:symbol, {'0': a:str})
+    lockvar s:symbols[a:str]
+  endif
+  return s:symbols[a:str]
+endfunction
+
+function! timl#symbolp(symbol, ...)
+  return type(a:symbol) == type({}) &&
+        \ get(a:symbol, '#tag') is# s:symbol &&
+        \ (a:0 ? a:symbol[0] ==# a:1 : 1)
+endfunction
+
+function! timl#sym(sym)
+  if !timl#symbolp(a:sym)
+    throw 'timl: symbol expected but received '.timl#type(a:sym)
+  endif
+  return a:sym
+endfunction
+
+function! timl#gensym(...)
+  let s:id = get(s:, 'id', 0) + 1
+  return timl#symbol((a:0 ? a:1 : 'G__').s:id)
+endfunction
+
+function! timl#name(val) abort
+  if type(a:val) == type('')
+    return a:val
+  elseif timl#symbolp(a:val)
+    return a:val[0]
+  elseif timl#keywordp(a:val)
+    return a:val[0]
+  else
+    throw "timl: no name for ".timl#type(a:val)
+  endif
 endfunction
 
 runtime! autoload/timl/lang.vim
