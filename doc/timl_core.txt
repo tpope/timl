@@ -1,0 +1,6 @@
+                                                *g:timl#core#dict*
+(timl.core/dict map)            Convert a map to a |Dictionary|
+(timl.core/dict keyvals)        Create a |Dictionary| from keyvals.
+(timl.core/dict & keyvals)      Create a |Dictionary| from keyvals.
+
+ vim:tw=78:sw=8:et:ft=help:norl:

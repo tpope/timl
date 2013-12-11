@@ -348,7 +348,7 @@ function! timl#into(coll, seq) abort
     let coll = timl#transient(a:coll)
     let _ = {}
     for _.v in timl#ary(a:seq)
-      call timl#assocb(a:coll, timl#ary(_.v))
+      call timl#assocb(coll, timl#ary(_.v))
     endfor
     return timl#persistentb(coll)
   else
@@ -415,15 +415,29 @@ endfunction
 
 function! timl#dict(...) abort
   let keyvals = a:0 == 1 ? a:1 : a:000
+  if timl#mapp(keyvals)
+    let _ = {'seq': timl#seq(keyvals)}
+    let dict = {}
+    while _.seq isnot# g:timl#nil
+      let _.first = timl#first(_.seq)
+      let dict[timl#str(_.first[0])] = _.first[1]
+      let _.seq = timl#next(_.seq)
+    endwhile
+    return dict
+  endif
   let dict = timl#assocb({}, keyvals)
-  return timl#persistentb(dict)
+  return dict
 endfunction
 
 let s:hash_map = timl#intern_type('timl.lang/HashMap')
 function! timl#hash_map(...) abort
   let keyvals = a:0 == 1 ? a:1 : a:000
-  let dict = timl#assocb(timl#bless(s:hash_map), keyvals)
-  return timl#persistentb(dict)
+  let map = timl#bless(s:hash_map)
+  if timl#dictp(keyvals)
+    return timl#into(timl#persistentb(map), keyvals)
+  endif
+  call timl#assocb(map, keyvals)
+  return timl#persistentb(map)
 endfunction
 
 let s:hash_set = timl#intern_type('timl.lang/HashSet')
