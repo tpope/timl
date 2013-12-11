@@ -31,7 +31,7 @@ let g:timl#vim#String = timl#bless('timl.lang/Type', {
       \ "implements":
       \ {"timl.lang/ILookup":
       \    {"get": s:function("s:str_get")},
-      \  "timl.lang/Counted":
+      \  "timl.lang/ICounted":
       \    {"count": s:function("s:string_count")}}})
 
 " Section: Funcref
@@ -79,16 +79,16 @@ endfunction
 let g:timl#vim#List = timl#bless('timl.lang/Type', {
       \ "name": timl#symbol('timl.vim/List'),
       \ "implements":
-      \ {"timl.lang/Seqable":
+      \ {"timl.lang/ISeqable":
       \    {"seq": s:function("s:list_seq")},
       \  "timl.lang/ISeq":
       \    {"first": s:function("s:list_first"),
       \     "rest": s:function("s:list_rest")},
       \  "timl.lang/ILookup":
       \    {"get": s:function("s:list_get")},
-      \  "timl.lang/Counted":
+      \  "timl.lang/ICounted":
       \    {"count": function("len")},
-      \  "timl.lang/IPersistentCollection":
+      \  "timl.lang/ICollection":
       \    {"cons": s:function("s:list_cons"),
       \     "empty": s:function("s:list_empty")},
       \  "timl.lang/IFn":
@@ -116,13 +116,13 @@ endfunction
 let g:timl#vim#Dictionary = timl#bless('timl.lang/Type', {
       \ "name": timl#symbol('timl.vim/Dictionary'),
       \ "implements":
-      \ {"timl.lang/Seqable":
+      \ {"timl.lang/ISeqable":
       \    {"seq": s:function("s:dict_seq")},
       \  "timl.lang/ILookup":
       \    {"get": s:function("s:dict_get")},
-      \  "timl.lang/Counted":
+      \  "timl.lang/ICounted":
       \    {"count": function("len")},
-      \  "timl.lang/IPersistentCollection":
+      \  "timl.lang/ICollection":
       \    {"cons": s:function("s:dict_cons"),
       \     "empty": s:function("s:dict_empty")},
       \  "timl.lang/IFn":

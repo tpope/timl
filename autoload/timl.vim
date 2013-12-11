@@ -303,12 +303,12 @@ runtime! autoload/timl/vim.vim
 " Section: Collections {{{1
 
 function! timl#collp(coll) abort
-  return timl#satisfiesp("timl.lang/IPersistentCollection", a:coll)
+  return timl#satisfiesp("timl.lang/ICollection", a:coll)
 endfunction
 
 function! timl#empty(coll) abort
   if timl#collp(a:coll)
-    return timl#dispatch('timl.lang/IPersistentCollection', 'empty', a:coll)
+    return timl#dispatch('timl.lang/ICollection', 'empty', a:coll)
   else
     return g:timl#nil
   endif
@@ -342,7 +342,7 @@ endfunction
 function! timl#conj(coll, x, ...) abort
   let _ = {'coll': a:coll}
   for x in [a:x] + a:000
-    let _.coll = timl#dispatch('timl.lang/IPersistentCollection', 'cons', _.coll, x)
+    let _.coll = timl#dispatch('timl.lang/ICollection', 'cons', _.coll, x)
   endfor
   return _.coll
 endfunction
@@ -350,11 +350,11 @@ endfunction
 function! timl#count(seq) abort
   let l:count = 0
   let _ = {'seq': a:seq}
-  while _.seq isnot# g:timl#nil && !timl#satisfiesp('timl.lang/Counted', _.seq)
+  while _.seq isnot# g:timl#nil && !timl#satisfiesp('timl.lang/ICounted', _.seq)
     let l:count += 1
     let _.seq = timl#next(_.seq)
   endwhile
-  return l:count + (_.seq is# g:timl#nil ? 0 : timl#dispatch('timl.lang/Counted', 'count', _.seq))
+  return l:count + (_.seq is# g:timl#nil ? 0 : timl#dispatch('timl.lang/ICounted', 'count', _.seq))
 endfunction
 
 function! timl#containsp(coll, val) abort
@@ -471,7 +471,7 @@ let s:cons = timl#intern_type('timl.lang/Cons')
 let s:ary = type([])
 
 function! timl#seq(coll) abort
-  let seq = timl#dispatch("timl.lang/Seqable", "seq", a:coll)
+  let seq = timl#dispatch("timl.lang/ISeqable", "seq", a:coll)
   return seq is# g:timl#empty_list ? g:timl#nil : seq
 endfunction
 
@@ -524,7 +524,7 @@ function! timl#list(...) abort
 endfunction
 
 function! timl#cons(car, cdr) abort
-  if timl#satisfiesp('timl.lang/Seqable', a:cdr)
+  if timl#satisfiesp('timl.lang/ISeqable', a:cdr)
     let cons = timl#bless(s:cons, {'car': a:car, 'cdr': a:cdr})
     return timl#persistentb(cons)
   endif

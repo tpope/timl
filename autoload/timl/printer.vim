@@ -84,7 +84,7 @@ function! timl#printer#string(x)
     endwhile
     return '('.join(output, ' ').')'
 
-  elseif type !=# 'timl.vim/Dictionary' && type !=# 'timl.lang/HashMap' && timl#satisfiesp('timl.lang/Seqable', a:x)
+  elseif type !=# 'timl.vim/Dictionary' && type !=# 'timl.lang/HashMap' && timl#satisfiesp('timl.lang/ISeqable', a:x)
     return timl#printer#string(timl#seq(a:x))
 
   elseif type(a:x) == type({})

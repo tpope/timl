@@ -37,7 +37,7 @@ endfunction
 let g:timl#lang#Nil = timl#bless(s:type, {
       \ "name": timl#symbol('timl.lang/Nil'),
       \ "implements":
-      \ {"timl.lang/Seqable":
+      \ {"timl.lang/ISeqable":
       \    {"seq": s:function("s:nil")},
       \  "timl.lang/ISeq":
       \    {"first": s:function('s:nil'),
@@ -101,9 +101,9 @@ endfunction
 let g:timl#lang#Cons = timl#bless(s:type, {
       \ "name": timl#symbol('timl.lang/Cons'),
       \ "implements":
-      \ {"timl.lang/Seqable":
+      \ {"timl.lang/ISeqable":
       \    {"seq": s:function("s:identity")},
-      \  "timl.lang/IPersistentCollection":
+      \  "timl.lang/ICollection":
       \    {"cons": s:function("s:cons_cons"),
       \     "empty": s:function("s:empty_list")},
       \  "timl.lang/ISeq":
@@ -115,11 +115,11 @@ let g:timl#lang#Cons = timl#bless(s:type, {
 let g:timl#lang#EmptyList = timl#bless(s:type, {
       \ "name": timl#symbol('timl.lang/EmptyList'),
       \ "implements":
-      \ {"timl.lang/Seqable":
+      \ {"timl.lang/ISeqable":
       \    {"seq": s:function("s:nil")},
-      \  "timl.lang/Counted":
+      \  "timl.lang/ICounted":
       \    {"count": s:function("s:zero")},
-      \  "timl.lang/IPersistentCollection":
+      \  "timl.lang/ICollection":
       \    {"cons": s:function("s:cons_cons"),
       \     "empty": s:function("s:identity")},
       \  "timl.lang/ISeq":
@@ -149,11 +149,11 @@ endfunction
 let g:timl#lang#ChunkedCons = timl#bless(s:type, {
       \ "name": timl#symbol('timl.lang/ChunkedCons'),
       \ "implements":
-      \ {"timl.lang/Seqable":
+      \ {"timl.lang/ISeqable":
       \    {"seq": s:function('s:identity')},
-      \  "timl.lang/Counted":
+      \  "timl.lang/ICounted":
       \    {"count": s:function("s:chunk_count")},
-      \  "timl.lang/IPersistentCollection":
+      \  "timl.lang/ICollection":
       \    {"cons": s:function("s:cons_cons"),
       \     "empty": s:function("s:empty_list")},
       \  "timl.lang/ISeq":
@@ -180,7 +180,7 @@ function! s:deref_lazy_seq(lseq) abort
       unlockvar 1 a:lseq
       let _ = {'seq': timl#call(a:lseq.fn, [])}
       while !timl#satisfiesp('timl.lang/ISeq', _.seq)
-        let _.seq = timl#dispatch('timl.lang/Seqable', 'seq', _.seq)
+        let _.seq = timl#dispatch('timl.lang/ISeqable', 'seq', _.seq)
       endwhile
       let a:lseq.seq = _.seq
     finally
@@ -193,9 +193,9 @@ endfunction
 let g:timl#lang#LazySeq = timl#bless(s:type, {
       \ "name": timl#symbol('timl.lang/LazySeq'),
       \ "implements":
-      \ {"timl.lang/Seqable":
+      \ {"timl.lang/ISeqable":
       \   {"seq": s:function('s:deref_lazy_seq')},
-      \  "timl.lang/IPersistentCollection":
+      \  "timl.lang/ICollection":
       \    {"cons": s:function("s:cons_cons"),
       \     "empty": s:function("s:empty_list")}}})
 
@@ -222,11 +222,11 @@ endfunction
 let g:timl#lang#HashMap = timl#bless(s:type, {
       \ "name": timl#symbol('timl.lang/HashMap'),
       \ "implements":
-      \ {"timl.lang/Seqable":
+      \ {"timl.lang/ISeqable":
       \    {"seq": s:function('s:map_seq')},
       \  "timl.lang/ILookup":
       \    {"get": s:function('s:map_get')},
-      \  "timl.lang/IPersistentCollection":
+      \  "timl.lang/ICollection":
       \    {"cons": s:function("s:map_cons"),
       \     "empty": s:function("s:map_empty")},
       \  "timl.lang/IFn":
@@ -253,11 +253,11 @@ endfunction
 let g:timl#lang#HashSet = timl#bless(s:type, {
       \ "name": timl#symbol('timl.lang/HashSet'),
       \ "implements":
-      \ {"timl.lang/Seqable":
+      \ {"timl.lang/ISeqable":
       \    {"seq": s:function("s:set_seq")},
       \  "timl.lang/ILookup":
       \    {"get": s:function('s:set_get')},
-      \  "timl.lang/IPersistentCollection":
+      \  "timl.lang/ICollection":
       \    {"cons": s:function("s:set_cons"),
       \     "empty": s:function("s:set_empty")},
       \  "timl.lang/IFn":
