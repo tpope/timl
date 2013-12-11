@@ -189,7 +189,7 @@ function! s:process(port, token, line, wanted) abort
       return timl#persistentb(timl#bless(token, {'value': next})
     endif
   elseif token =~# '^::.\+/.'
-    let alias = matchstr(token[2:-2], '.*\ze/.')
+    let alias = matchstr(token[2:-1], '.*\ze/.')
     let ns = get(g:timl#core#_STAR_ns_STAR_.aliases, alias, {})
     if empty(ns)
       let error = 'timl#reader: unknown ns alias '.alias.' in keyword'
@@ -197,7 +197,7 @@ function! s:process(port, token, line, wanted) abort
       return timl#keyword(timl#the_ns(ns).name[0].matchstr(token, '.*\zs/.\+'))
     endif
   elseif token =~# '^::.'
-    return timl#keyword(g:timl#core#_STAR_ns_STAR_.name.'/'.token[2:-1])
+    return timl#keyword(g:timl#core#_STAR_ns_STAR_.name[0].'/'.token[2:-1])
   elseif token =~# '^:.'
     return timl#keyword(token[1:-1])
   elseif token =~# '^'.s:iskeyword
