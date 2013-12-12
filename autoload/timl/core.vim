@@ -425,7 +425,6 @@ TLalias assoc timl#assoc
 TLalias assoc_BANG_ timl#assocb
 TLalias dissoc timl#dissoc
 TLalias dissoc_BANG_ timl#dissocb
-TLalias disj timl#disj
 TLpredicate map_QMARK_(x) timl#mapp(a:x)
 TLpredicate set_QMARK_(x) timl#setp(a:x)
 TLpredicate dict_QMARK_(x) timl#dictp(a:x)

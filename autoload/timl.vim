@@ -347,7 +347,7 @@ function! timl#mapp(coll)
 endfunction
 
 function! timl#setp(coll)
-  return timl#type#canp(a:coll, g:timl#core#_disj)
+  return timl#type#canp(a:coll, g:timl#core#disj)
 endfunction
 
 function! timl#dictp(coll)
@@ -433,15 +433,6 @@ endfunction
 
 function! timl#dissoc(coll, ...) abort
   return timl#persistentb(call('timl#dissocb', [timl#transient(a:coll)] + a:000))
-endfunction
-
-function! timl#disj(set, ...) abort
-  let _ = {}
-  let set = a:set
-  for _.x in a:000
-    let set = timl#type#dispatch(g:timl#core#_disj, set, _.x)
-  endfor
-  return set
 endfunction
 
 " }}}1

@@ -239,14 +239,17 @@ function! s:set_cons(this, x) abort
   return timl#persistentb(extend(timl#transient(a:this), {timl#key(a:x): a:x}))
 endfunction
 
-function! s:set_disj(this, x) abort
-  let x = timl#key(a:x)
-  if has_key(a:this, x)
-    let set = copy(a:this)
-    call remove(set, x)
-    return timl#persistentb(set)
-  endif
-  return a:this
+
+function! s:set_disj(this, ...) abort
+  let _ = {}
+  let set = copy(a:this)
+  for _.x in a:000
+    let key = timl#key(_.x)
+    if has_key(set, key)
+      call remove(set, key)
+    endif
+  endfor
+  return timl#persistentb(set)
 endfunction
 
 let s:empty_set = timl#persistentb(timl#bless('timl.lang/HashSet'))
@@ -259,7 +262,7 @@ call s:implement('timl.lang/HashSet',
       \ 'lookup', s:function('s:set_lookup'),
       \ '_conj', s:function('s:set_cons'),
       \ 'empty', s:function('s:set_empty'),
-      \ '_disj', s:function('s:set_disj'),
+      \ 'disj', s:function('s:set_disj'),
       \ '_invoke', s:function('s:set_lookup'))
 
 " Section: Defaults
