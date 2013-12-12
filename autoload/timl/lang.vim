@@ -57,7 +57,7 @@ endfunction
 call s:implement('timl.lang/Nil',
       \ 'seq', s:function('s:nil'),
       \ 'first', s:function('s:nil'),
-      \ 'rest', s:function('s:empty_list'),
+      \ 'more', s:function('s:empty_list'),
       \ 'lookup', s:function('s:nil_lookup'))
 
 " Section: Boolean
@@ -113,7 +113,7 @@ endfunction
 call s:implement('timl.lang/Cons',
       \ 'seq', s:function('s:identity'),
       \ 'first', s:function('s:cons_car'),
-      \ 'rest', s:function('s:cons_cdr'),
+      \ 'more', s:function('s:cons_cdr'),
       \ '_conj', s:function('s:cons_cons'),
       \ 'empty', s:function('s:empty_list'))
 
@@ -124,7 +124,7 @@ let g:timl#empty_list = timl#persistentb(timl#bless('timl.lang/EmptyList', {'cou
 call s:implement('timl.lang/EmptyList',
       \ 'seq', s:function('s:nil'),
       \ 'first', s:function('s:nil'),
-      \ 'rest', s:function('s:identity'),
+      \ 'more', s:function('s:identity'),
       \ '_count', s:function('s:zero'),
       \ '_conj', s:function('s:cons_cons'),
       \ 'empty', s:function('s:identity'))
@@ -157,7 +157,7 @@ endfunction
 call s:implement('timl.lang/ChunkedCons',
       \ 'seq', s:function('s:identity'),
       \ 'first', s:function('s:chunk_first'),
-      \ 'rest', s:function('s:chunk_rest'),
+      \ 'more', s:function('s:chunk_rest'),
       \ '_count', s:function('s:chunk_count'),
       \ '_conj', s:function('s:cons_cons'),
       \ 'empty', s:function('s:empty_list'))
@@ -174,7 +174,7 @@ function! s:deref_lazy_seq(lseq) abort
     try
       unlockvar 1 a:lseq
       let _ = {'seq': timl#call(a:lseq.fn, [])}
-      while !timl#type#canp(_.seq, g:timl#core#rest)
+      while !timl#type#canp(_.seq, g:timl#core#more)
         let _.seq = timl#type#dispatch(g:timl#core#seq, _.seq)
       endwhile
       let a:lseq.seq = _.seq
@@ -264,10 +264,5 @@ function! s:default_first(x)
   return timl#type#dispatch(g:timl#core#first, timl#type#dispatch(g:timl#core#seq, a:x))
 endfunction
 call timl#type#define_method('timl.core', 'first', g:timl#nil, s:function('s:default_first'))
-
-function! s:default_rest(x)
-  return timl#type#dispatch(g:timl#core#rest, timl#type#dispatch(g:timl#core#seq, a:x))
-endfunction
-call timl#type#define_method('timl.core', 'rest', g:timl#nil, s:function('s:default_rest'))
 
 " vim:set et sw=2:

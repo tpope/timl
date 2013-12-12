@@ -478,8 +478,10 @@ endfunction
 function! timl#rest(coll) abort
   if timl#consp(a:coll)
     return a:coll.cdr
+  elseif timl#type#canp(a:coll, g:timl#core#more)
+    return timl#type#dispatch(g:timl#core#more, a:coll)
   else
-    return timl#type#dispatch(g:timl#core#rest, a:coll)
+    return timl#type#dispatch(g:timl#core#more, timl#seq(a:coll))
   endif
 endfunction
 

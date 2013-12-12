@@ -443,6 +443,7 @@ TLpredicate contains_QMARK_(coll, val) timl#containsp(a:coll, a:val)
 " Section: Sequences {{{1
 
 TLalias next timl#next
+TLalias rest timl#rest
 TLpredicate seq_QMARK_(seq) timl#seqp(a:seq)
 
 TLalias count timl#count

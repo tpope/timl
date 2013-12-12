@@ -78,7 +78,7 @@ function! timl#printer#string(x)
     endfor
     return '#{' . join(acc, ' ') . '}'
 
-  elseif type !=# 'timl.lang/HashMap' && timl#seqp(a:x)
+  elseif type !=# 'timl.lang/HashMap' && timl#type#canp(a:x, g:timl#core#more)
     let _ = {'seq': a:x}
     let output = []
     while !empty(_.seq)
