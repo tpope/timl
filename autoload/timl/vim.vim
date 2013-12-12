@@ -75,8 +75,8 @@ endfunction
 
 call s:implement('timl.vim/List',
       \ 'seq', s:function('s:list_seq'),
-      \ '_first', s:function("s:list_first"),
-      \ '_rest', s:function("s:list_rest"),
+      \ 'first', s:function("s:list_first"),
+      \ 'rest', s:function("s:list_rest"),
       \ '_lookup', s:function('s:list_lookup'),
       \ '_count', s:function('len'),
       \ '_conj', s:function('s:list_cons'),

@@ -442,14 +442,12 @@ TLpredicate contains_QMARK_(coll, val) timl#containsp(a:coll, a:val)
 " }}}1
 " Section: Sequences {{{1
 
-TLalias first timl#first
-TLalias rest timl#rest
 TLalias next timl#next
 TLpredicate seq_QMARK_(seq) timl#seqp(a:seq)
 
 TLalias count timl#count
 
-TLexpr empty_QMARK_(coll) empty(timl#core#seq(a:coll))
+TLpredicate empty_QMARK_(coll) timl#core#seq(a:coll) is# g:timl#nil
 
 TLfunction! reduce(f, coll, ...) abort
   let _ = {}

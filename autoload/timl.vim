@@ -470,21 +470,16 @@ function! timl#first(coll) abort
     return a:coll.car
   elseif type(a:coll) == s:ary
     return get(a:coll, 0, g:timl#nil)
-  elseif timl#type#canp(a:coll, g:timl#core#_first)
-    return timl#type#dispatch(g:timl#core#_first, a:coll)
   else
-    return timl#type#dispatch(g:timl#core#_first, timl#seq(a:coll))
+    return timl#type#dispatch(g:timl#core#first, a:coll)
   endif
 endfunction
 
 function! timl#rest(coll) abort
   if timl#consp(a:coll)
     return a:coll.cdr
-  elseif timl#type#canp(a:coll, g:timl#core#_rest)
-    return timl#type#dispatch(g:timl#core#_rest, a:coll)
   else
-    let seq = timl#seq(a:coll)
-    return seq is# g:timl#nil ? g:timl#empty_list : timl#type#dispatch(g:timl#core#_rest, seq)
+    return timl#type#dispatch(g:timl#core#rest, a:coll)
   endif
 endfunction
 
