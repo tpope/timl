@@ -98,27 +98,21 @@ http://clojure.org/special_forms#recur .
 
                                                 *timl-def*
 (def {var} {value}) ~
-(def {function} ({param} ...) {body} ...) ~
 Define a variable or function.
 
                                                 *timl-set!*
 (set! {var} {value}) ~
 Set a Vim variable, in a manner similar to |:let|.  |g:var|, |b:var|, |w:var|,
-|t:var|, |v:var|, |expr-option|, and |expr-register| are supported. >
+|t:var|, |v:var|, |expr-option|, and variables in the current namespace are
+supported. >
         (set! b:did_ftplugin 1)
         (set! &shiftwidth 2)
-        (set! @@ "this is the unnamed register")
+        (set! *ns* (the-ns 'user))
 <
                                                 *timl-quote*
 (quote {form}) ~
 '{form} ~
 Return {form} unevaluated.
-
-                    *timl-syntax-quote* *timl-unquote* *timl-unquote-splicing*
-(syntax-quote {form}) ~
-`{form} ~
-Lisp quasiquoting with Clojure semantics.  Can contain unquote ("~") and
-unquote-splicing ("~@").
 
                                                 *timl-function*
 (function {form}) ~
