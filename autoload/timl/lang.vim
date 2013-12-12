@@ -58,7 +58,7 @@ call s:implement('timl.lang/Nil',
       \ 'seq', s:function('s:nil'),
       \ 'first', s:function('s:nil'),
       \ 'rest', s:function('s:empty_list'),
-      \ '_lookup', s:function('s:nil_lookup'))
+      \ 'lookup', s:function('s:nil_lookup'))
 
 " Section: Boolean
 
@@ -212,7 +212,7 @@ endfunction
 
 call s:implement('timl.lang/HashMap',
       \ 'seq', s:function('s:map_seq'),
-      \ '_lookup', s:function('s:map_lookup'),
+      \ 'lookup', s:function('s:map_lookup'),
       \ '_conj', s:function('s:map_cons'),
       \ 'empty', s:function('s:map_empty'),
       \ '_invoke', s:function('s:map_lookup'))
@@ -249,7 +249,7 @@ endfunction
 
 call s:implement('timl.lang/HashSet',
       \ 'seq', s:function('s:set_seq'),
-      \ '_lookup', s:function('s:set_lookup'),
+      \ 'lookup', s:function('s:set_lookup'),
       \ '_conj', s:function('s:set_cons'),
       \ 'empty', s:function('s:set_empty'),
       \ '_disj', s:function('s:set_disj'),

@@ -505,7 +505,7 @@ function! timl#nnext(seq) abort
 endfunction
 
 function! timl#get(coll, key, ...) abort
-  return timl#type#dispatch(g:timl#core#_lookup, a:coll, a:key, a:0 ? a:1 : g:timl#nil)
+  return timl#type#dispatch(g:timl#core#lookup, a:coll, a:key, a:0 ? a:1 : g:timl#nil)
 endfunction
 
 function! timl#consp(obj) abort
