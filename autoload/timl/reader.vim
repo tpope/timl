@@ -93,7 +93,7 @@ function! s:process(port, token, line, wanted) abort
   if token ==# '('
     return timl#list2(s:read_until(port, ')'))
   elseif token == '['
-    return s:read_until(port, ']')
+    return timl#vec(s:read_until(port, ']'))
   elseif token == '{'
     let list = s:read_until(port, '}')
     if len(list) % 2 != 0
@@ -367,11 +367,11 @@ TimLRAssert timl#reader#read_string('foo') ==# timl#symbol('foo')
 TimLRAssert timl#reader#read_string('":)"') ==# ':)'
 TimLRAssert timl#reader#read_string('#"\(a\\\)"') ==# '\(a\\\)'
 TimLRAssert timl#reader#read_string('#"\""') ==# '"'
-TimLRAssert timl#reader#read_string('(first [1 2])') ==# timl#list(timl#symbol('first'), [1, 2])
+TimLRAssert timl#reader#read_string('(first [1 2])') ==# timl#list(timl#symbol('first'), timl#vector(1, 2))
 TimLRAssert timl#reader#read_string('#["a" 1 "b" 2]') ==# {"a": 1, "b": 2}
 TimLRAssert timl#reader#read_string('{"a" 1 :b 2 3 "c"}') ==# timl#hash_map("a", 1, timl#keyword('b'), 2, 3, "c")
-TimLRAssert timl#reader#read_string("[1]\n; hi\n") ==# [1]
-TimLRAssert timl#reader#read_string("'[1 2 3]") ==# timl#list(timl#symbol('quote'), [1, 2, 3])
+TimLRAssert timl#reader#read_string("[1]\n; hi\n") ==# timl#vector(1)
+TimLRAssert timl#reader#read_string("'[1 2 3]") ==# timl#list(timl#symbol('quote'), timl#vector(1, 2, 3))
 TimLRAssert timl#reader#read_string("#*tr") ==# timl#list(timl#symbol('function'), timl#symbol('tr'))
 TimLRAssert timl#reader#read_string("(1 #_2 3)") ==# timl#list(1, 3)
 TimLRAssert timl#reader#read_string("^:foo {}") ==#

@@ -522,6 +522,10 @@ function! timl#ary(coll) abort
   return timl#vec(a:coll)
 endfunction
 
+function! timl#vector(...) abort
+  return timl#vec(a:000)
+endfunction
+
 function! timl#vectorp(obj) abort
   return type(a:obj) == type([]) && a:obj isnot# g:timl#nil
 endfunction

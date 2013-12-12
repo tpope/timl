@@ -398,7 +398,7 @@ TLalias cons timl#cons
 " Section: Vectors {{{1
 
 TLpredicate vector_QMARK_(val) timl#vectorp(a:val)
-TLalias vector timl#persist
+TLalias vector timl#vector
 TLalias vec timl#vec
 
 TLfunction! subvec(list, start, ...) abort
