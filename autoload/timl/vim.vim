@@ -64,6 +64,15 @@ function! s:list_lookup(this, idx, ...) abort
   return a:0 ? a:1 : g:timl#nil
 endfunction
 
+function! s:list_nth(this, idx, ...) abort
+  let idx = timl#int(a:idx)
+  if a:0
+    return get(a:this, idx, a:1)
+  else
+    return a:this[idx]
+  endif
+endfunction
+
 function! s:list_cons(this, ...) abort
   return timl#persistentb(a:this + a:000)
 endfunction
@@ -78,6 +87,7 @@ call s:implement('timl.vim/List',
       \ 'first', s:function("s:list_first"),
       \ 'more', s:function("s:list_rest"),
       \ 'lookup', s:function('s:list_lookup'),
+      \ 'nth', s:function('s:list_nth'),
       \ 'count', s:function('len'),
       \ 'conj', s:function('s:list_cons'),
       \ 'empty', s:function('s:list_empty'),
