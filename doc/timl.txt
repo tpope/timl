@@ -41,13 +41,16 @@ Identifier characters include alphanumeris and the special characters
 refer to Vim variables (|b:var,| |w:var|, |t:var|, |g:var|, |v:var|).
 
 Lists ~
-Zero or more forms enclosed in parentheses.  Lists are just Vim |Lists|, not
-actual linked lists.
+Zero or more forms enclosed in parentheses ().
 
-Dictionaries ~
-Vim |Dictionaries| are printed as a flat list of keys and values surrounded by
-#[ and ].  Keys must be strings.  To create a dictionary, use
-|timl#core#dict()|.
+Vectors ~
+Zero or more forms enclosed in brackets [].
+
+Hash Maps ~
+Zero or more pairs of forms enclosed in curly braces {}.
+
+Hash Sets ~
+Zero or more forms enclosed in curly braces preceded by pound #{}.
 
 Quoting ~
 "'" quotes a form.  "`" syntax quotes the next formm with "~" unquoting and
