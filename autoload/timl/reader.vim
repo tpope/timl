@@ -214,11 +214,11 @@ function! s:process(port, token, line, wanted) abort
     else
       throw 'timl#reader: metadata must be symbol, string, keyword, or map'
     endif
-    if timl#objectp(data)
+    if timl#type#objectp(data)
       return s:add_meta(data, meta)
     endif
     return data
-    let error = 'timl#reader: cannot attach metadata to a '.timl#type(data)
+    let error = 'timl#reader: cannot attach metadata to a '.timl#type#string(data)
   elseif token ==# '@'
     return timl#list(timl#symbol('timl.core/deref'), s:read_bang(port))
   elseif empty(token)

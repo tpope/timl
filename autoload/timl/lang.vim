@@ -9,8 +9,15 @@ function! s:function(name) abort
   return function(substitute(a:name,'^s:',matchstr(expand('<sfile>'), '.*\zs<SNR>\d\+_'),''))
 endfunction
 
-let s:type = timl#intern_type('timl.lang/Type')
-let g:timl#lang#Type = timl#bless(s:type, {'name': timl#symbol('timl.lang/Type')})
+if !exists('g:timl#namespaces')
+  let g:timl#namespaces = {
+        \ 'timl.core': timl#bless('timl.lang/Namespace', {'name': timl#symbol('timl.core'), 'referring': [], 'aliases': {}}),
+        \ 'user':      timl#bless('timl.lang/Namespace', {'name': timl#symbol('user'), 'referring': [timl#symbol('timl.core')], 'aliases': {}})}
+endif
+
+if !exists('g:timl#core#_STAR_ns_STAR_')
+  let g:timl#core#_STAR_ns_STAR_ = g:timl#namespaces['user']
+endif
 
 function! s:identity(x)
   return a:x
@@ -28,27 +35,38 @@ function! s:zero(...)
   return 0
 endfunction
 
+function! s:methods(type, ...)
+  for i in range(0, a:0-1, 2)
+    call timl#type#method(a:000[i], timl#keyword(a:type), a:000[i+1])
+  endfor
+endfunction
+
+function! s:implement(type, ...)
+  let type = timl#keyword(a:type)
+  for i in range(0, a:0-1, 2)
+    call timl#type#define_method('timl.core', a:000[i], type, a:000[i+1])
+  endfor
+endfunction
+
 " Section: Nil
 
 function! s:nil_lookup(this, key, default)
   return a:default
 endfunction
 
-let g:timl#lang#Nil = timl#bless(s:type, {
-      \ "name": timl#symbol('timl.lang/Nil'),
-      \ "implements":
-      \ {"timl.lang/ISeqable":
-      \    {"seq": s:function("s:nil")},
-      \  "timl.lang/ISeq":
-      \    {"first": s:function('s:nil'),
-      \     "rest": s:function('s:empty_list')},
-      \ "timl.lang/ILookup":
-      \    {"lookup": s:function('s:nil_lookup')}}})
+call s:implement('timl.lang/Nil',
+      \ '_seq', s:function('s:nil'),
+      \ '_first', s:function('s:nil'),
+      \ '_rest', s:function('s:empty_list'),
+      \ '_lookup', s:function('s:nil_lookup'))
 
 " Section: Boolean
 
-let g:timl#lang#Boolean = timl#bless(s:type, {
-      \ "name": timl#symbol('timl.lang/Nil')})
+if !exists('g:timl#false')
+  let g:timl#false = timl#bless('timl.lang/Boolean', {'value': 0})
+  let g:timl#true = timl#bless('timl.lang/Boolean', {'value': 1})
+  lockvar g:timl#false g:timl#true
+endif
 
 " Section: Symbols/Keywords
 
@@ -60,17 +78,11 @@ function! s:this_get(this, coll, ...) abort
   endif
 endfunction
 
-let g:timl#lang#Symbol = timl#bless(s:type, {
-      \ "name": timl#symbol('timl.lang/Symbol'),
-      \ "implements":
-      \ {"timl.lang/IFn":
-      \    {"invoke": s:function('s:this_get')}}})
+call s:implement('timl.lang/Symbol',
+      \ '_invoke', s:function('s:this_get'))
 
-let g:timl#lang#Keyword = timl#bless(s:type, {
-      \ "name": timl#symbol('timl.lang/Keyword'),
-      \ "implements":
-      \ {"timl.lang/IFn":
-      \    {"invoke": s:function('s:this_get')}}})
+call s:implement('timl.lang/Keyword',
+      \ '_invoke', s:function('s:this_get'))
 
 " Section: Function
 
@@ -78,11 +90,11 @@ function! s:function_invoke(this, ...) abort
   return call(a:this.call, a:000, a:this)
 endfunction
 
-let g:timl#lang#Function = timl#bless(s:type, {
-      \ "name": timl#symbol('timl.lang/Function'),
-      \ "implements":
-      \ {"timl.lang/IFn":
-      \    {"invoke": s:function('s:function_invoke')}}})
+call s:implement('timl.lang/Function',
+      \ '_invoke', s:function('s:function_invoke'))
+
+call s:implement('timl.lang/MultiFn',
+      \ '_invoke', s:function('timl#type#dispatch'))
 
 " Section: Cons
 
@@ -98,35 +110,24 @@ function! s:cons_cons(cdr, car)
   return timl#cons(a:car, a:cdr)
 endfunction
 
-let g:timl#lang#Cons = timl#bless(s:type, {
-      \ "name": timl#symbol('timl.lang/Cons'),
-      \ "implements":
-      \ {"timl.lang/ISeqable":
-      \    {"seq": s:function("s:identity")},
-      \  "timl.lang/ICollection":
-      \    {"cons": s:function("s:cons_cons"),
-      \     "empty": s:function("s:empty_list")},
-      \  "timl.lang/ISeq":
-      \    {"first": s:function('s:cons_car'),
-      \     "rest": s:function('s:cons_cdr')}}})
+call s:implement('timl.lang/Cons',
+      \ '_seq', s:function('s:identity'),
+      \ '_first', s:function('s:cons_car'),
+      \ '_rest', s:function('s:cons_cdr'),
+      \ '_conj', s:function('s:cons_cons'),
+      \ 'empty', s:function('s:empty_list'))
 
 " Section: Empty list
 
-let g:timl#lang#EmptyList = timl#bless(s:type, {
-      \ "name": timl#symbol('timl.lang/EmptyList'),
-      \ "implements":
-      \ {"timl.lang/ISeqable":
-      \    {"seq": s:function("s:nil")},
-      \  "timl.lang/ICounted":
-      \    {"count": s:function("s:zero")},
-      \  "timl.lang/ICollection":
-      \    {"cons": s:function("s:cons_cons"),
-      \     "empty": s:function("s:identity")},
-      \  "timl.lang/ISeq":
-      \    {"first": s:function('s:nil'),
-      \     "rest": s:function('s:identity')}}})
-
 let g:timl#empty_list = timl#persistentb(timl#bless('timl.lang/EmptyList', {'count': 0}))
+
+call s:implement('timl.lang/EmptyList',
+      \ '_seq', s:function('s:nil'),
+      \ '_first', s:function('s:nil'),
+      \ '_rest', s:function('s:identity'),
+      \ '_count', s:function('s:zero'),
+      \ '_conj', s:function('s:cons_cons'),
+      \ 'empty', s:function('s:identity'))
 
 " Section: Chunked Cons
 
@@ -138,7 +139,7 @@ function! s:chunk_rest(seq) abort
   if len(a:seq.list) - a:seq.pos <= 1
     return a:seq.next
   else
-    return g:timl#lang#ChunkedCons.create(a:seq.list, a:seq.next, a:seq.pos+1)
+    return timl#lang#create_chunked_cons(a:seq.list, a:seq.next, a:seq.pos+1)
   endif
 endfunction
 
@@ -146,26 +147,20 @@ function! s:chunk_count(this) abort
   return len(a:this.list) - a:this.pos + timl#count(a:this.next)
 endfunction
 
-let g:timl#lang#ChunkedCons = timl#bless(s:type, {
-      \ "name": timl#symbol('timl.lang/ChunkedCons'),
-      \ "implements":
-      \ {"timl.lang/ISeqable":
-      \    {"seq": s:function('s:identity')},
-      \  "timl.lang/ICounted":
-      \    {"count": s:function("s:chunk_count")},
-      \  "timl.lang/ICollection":
-      \    {"cons": s:function("s:cons_cons"),
-      \     "empty": s:function("s:empty_list")},
-      \  "timl.lang/ISeq":
-      \    {"first": s:function('s:chunk_first'),
-      \     "rest": s:function('s:chunk_rest')}}})
-
-function! g:timl#lang#ChunkedCons.create(list, ...) abort
+function! timl#lang#create_chunked_cons(list, ...) abort
   return timl#persistentb(timl#bless('timl.lang/ChunkedCons', {
         \ 'list': a:list,
         \ 'pos': a:0 > 1 ? a:2 : 0,
         \ 'next': a:0 ? a:1 : g:timl#nil}))
 endfunction
+
+call s:implement('timl.lang/ChunkedCons',
+      \ '_seq', s:function('s:identity'),
+      \ '_first', s:function('s:chunk_first'),
+      \ '_rest', s:function('s:chunk_rest'),
+      \ '_count', s:function('s:chunk_count'),
+      \ '_conj', s:function('s:cons_cons'),
+      \ 'empty', s:function('s:empty_list'))
 
 " Section: Lazy Seqs
 
@@ -179,8 +174,8 @@ function! s:deref_lazy_seq(lseq) abort
     try
       unlockvar 1 a:lseq
       let _ = {'seq': timl#call(a:lseq.fn, [])}
-      while !timl#satisfiesp('timl.lang/ISeq', _.seq)
-        let _.seq = timl#dispatch('timl.lang/ISeqable', 'seq', _.seq)
+      while !timl#type#canp(_.seq, g:timl#core#_rest)
+        let _.seq = timl#type#dispatch(g:timl#core#_seq, _.seq)
       endwhile
       let a:lseq.seq = _.seq
     finally
@@ -190,20 +185,16 @@ function! s:deref_lazy_seq(lseq) abort
   return a:lseq.seq
 endfunction
 
-let g:timl#lang#LazySeq = timl#bless(s:type, {
-      \ "name": timl#symbol('timl.lang/LazySeq'),
-      \ "implements":
-      \ {"timl.lang/ISeqable":
-      \   {"seq": s:function('s:deref_lazy_seq')},
-      \  "timl.lang/ICollection":
-      \    {"cons": s:function("s:cons_cons"),
-      \     "empty": s:function("s:empty_list")}}})
+call s:implement('timl.lang/LazySeq',
+      \ '_seq', s:function('s:deref_lazy_seq'),
+      \ '_conj', s:function('s:cons_cons'),
+      \ 'empty', s:function('s:empty_list'))
 
-" Section: Hashes
+" Section: Hash Map
 
 function! s:map_seq(hash) abort
   let items = map(filter(items(a:hash), 'v:val[0][0] !=# "#"'), '[timl#dekey(v:val[0]), v:val[1]]')
-  return empty(items) ? g:timl#nil : g:timl#lang#ChunkedCons.create(items)
+  return empty(items) ? g:timl#nil : timl#lang#create_chunked_cons(items)
 endfunction
 
 function! s:map_lookup(this, key, ...) abort
@@ -219,22 +210,18 @@ function! s:map_empty(this) abort
   return s:empty_map
 endfunction
 
-let g:timl#lang#HashMap = timl#bless(s:type, {
-      \ "name": timl#symbol('timl.lang/HashMap'),
-      \ "implements":
-      \ {"timl.lang/ISeqable":
-      \    {"seq": s:function('s:map_seq')},
-      \  "timl.lang/ILookup":
-      \    {"lookup": s:function('s:map_lookup')},
-      \  "timl.lang/ICollection":
-      \    {"cons": s:function("s:map_cons"),
-      \     "empty": s:function("s:map_empty")},
-      \  "timl.lang/IFn":
-      \    {"invoke": s:function('s:map_lookup')}}})
+call s:implement('timl.lang/HashMap',
+      \ '_seq', s:function('s:map_seq'),
+      \ '_lookup', s:function('s:map_lookup'),
+      \ '_conj', s:function('s:map_cons'),
+      \ 'empty', s:function('s:map_empty'),
+      \ '_invoke', s:function('s:map_lookup'))
+
+" Section: Hash Set
 
 function! s:set_seq(hash) abort
   let items = map(filter(items(a:hash), 'v:val[0][0] !=# "#"'), 'v:val[1]')
-  return empty(items) ? g:timl#nil : g:timl#lang#ChunkedCons.create(items)
+  return empty(items) ? g:timl#nil : timl#lang#create_chunked_cons(items)
 endfunction
 
 function! s:set_lookup(this, key, ...) abort
@@ -260,23 +247,17 @@ function! s:set_empty(this) abort
   return s:empty_set
 endfunction
 
-let g:timl#lang#HashSet = timl#bless(s:type, {
-      \ "name": timl#symbol('timl.lang/HashSet'),
-      \ "implements":
-      \ {"timl.lang/ISeqable":
-      \    {"seq": s:function("s:set_seq")},
-      \  "timl.lang/ILookup":
-      \    {"lookup": s:function('s:set_lookup')},
-      \  "timl.lang/ICollection":
-      \    {"cons": s:function("s:set_cons"),
-      \     "empty": s:function("s:set_empty")},
-      \  "timl.lang/ISet":
-      \    {"disj": s:function("s:set_disj")},
-      \  "timl.lang/IFn":
-      \    {"invoke": s:function('s:set_lookup')}}})
+call s:implement('timl.lang/HashSet',
+      \ '_seq', s:function('s:set_seq'),
+      \ '_lookup', s:function('s:set_lookup'),
+      \ '_conj', s:function('s:set_cons'),
+      \ 'empty', s:function('s:set_empty'),
+      \ '_disj', s:function('s:set_disj'),
+      \ '_invoke', s:function('s:set_lookup'))
 
-" Section: Namespaces
+" Section: Defaults
 
-let g:timl#lang#Namespace = timl#bless(s:type, {})
+runtime! autoload/timl/vim.vim
+call timl#type#define_method('timl.core', 'empty', g:timl#nil, s:function('s:nil'))
 
 " vim:set et sw=2:

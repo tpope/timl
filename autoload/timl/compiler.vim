@@ -534,7 +534,7 @@ function! s:emit(file, env, form) abort
         else
           let resolved = timl#compiler#resolve_or_throw(First)
           let Fn = eval(resolved)
-          if timl#type(Fn) == 'timl.lang/Function' && timl#truth(get(Fn, 'macro', g:timl#nil))
+          if timl#type#string(Fn) == 'timl.lang/Function' && timl#truth(get(Fn, 'macro', g:timl#nil))
             let E = timl#call(Fn, [a:form, a:env] + timl#ary(timl#next(a:form)))
             return s:emit(a:file, a:env, E)
           endif
@@ -636,16 +636,6 @@ augroup timl#compiler#fn
 augroup END
 
 " Section: Execution
-
-if !exists('g:timl#namespaces')
-  let g:timl#namespaces = {
-        \ 'timl.core': timl#bless('timl.lang/Namespace', {'name': timl#symbol('timl.core'), 'referring': [], 'aliases': {}}),
-        \ 'user':      timl#bless('timl.lang/Namespace', {'name': timl#symbol('user'), 'referring': [timl#symbol('timl.core')], 'aliases': {}})}
-endif
-
-if !exists('g:timl#core#_STAR_ns_STAR_')
-  let g:timl#core#_STAR_ns_STAR_ = g:timl#namespaces['user']
-endif
 
 function! timl#compiler#build(x, context, ...) abort
   let file = ['']

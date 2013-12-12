@@ -14,7 +14,7 @@ let s:escapes = {
 
 function! timl#printer#string(x)
   " TODO: guard against recursion
-  let type = timl#type(a:x)
+  let type = timl#type#string(a:x)
   if type == 'timl.lang/Symbol'
     return a:x[0]
 
@@ -35,6 +35,9 @@ function! timl#printer#string(x)
 
   elseif type == 'timl.lang/Function'
     return '#<'.get(a:x, 'ns', {'name': ['...']}).name[0].'/'.get(a:x, 'name', ['...'])[0].' #*'.join([a:x.call]).'>'
+
+  elseif type == 'timl.lang/MultiFn'
+    return '#<'.get(a:x, 'ns', {'name': ['...']}).name[0].'/'.get(a:x, 'name', ['...'])[0].' multi>'
 
   elseif type == 'timl.lang/Namespace'
     return '#<Namespace '.get(a:x, 'name', '')[0].'>'
@@ -75,7 +78,7 @@ function! timl#printer#string(x)
     endfor
     return '#{' . join(acc, ' ') . '}'
 
-  elseif type !=# 'timl.vim/Dictionary' && type !=# 'timl.lang/HashMap' && timl#seqp(a:x)
+  elseif type !=# 'timl.lang/HashMap' && timl#seqp(a:x)
     let _ = {'seq': a:x}
     let output = []
     while !empty(_.seq)
@@ -84,7 +87,7 @@ function! timl#printer#string(x)
     endwhile
     return '('.join(output, ' ').')'
 
-  elseif type !=# 'timl.vim/Dictionary' && type !=# 'timl.lang/HashMap' && timl#satisfiesp('timl.lang/ISeqable', a:x)
+  elseif type !=# 'timl.lang/HashMap' && timl#type#canp(a:x, g:timl#core#_seq)
     return timl#printer#string(timl#seq(a:x))
 
   elseif type(a:x) == type({})

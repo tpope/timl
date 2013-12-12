@@ -7,14 +7,19 @@ function! s:function(name) abort
   return function(substitute(a:name,'^s:',matchstr(expand('<sfile>'), '.*\zs<SNR>\d\+_'),''))
 endfunction
 
-" Section: Number
+function! s:implement(type, ...)
+  let type = timl#keyword(a:type)
+  for i in range(0, a:0-1, 2)
+    call timl#type#define_method('timl.core', a:000[i], type, a:000[i+1])
+  endfor
+endfunction
 
-let g:timl#vim#Number = timl#bless('timl.lang/Type', {"name": timl#symbol('timl.vim/Number')})
+" Section: Number
 
 " Section: String
 
 " Characters, not bytes
-function! s:str_lookup(this, idx, default) abort
+function! s:string_lookup(this, idx, default) abort
   if type(a:idx) == type(0)
     let ch = matchstr(a:this, repeat('.', a:idx).'\zs.')
     return empty(ch) ? (a:0 ? a:1 : g:timl#nil) : ch
@@ -26,13 +31,9 @@ function! s:string_count(this) abort
   return exists('*strchars') ? strchars(a:this) : len(substitute(a:this, '.', '.', 'g'))
 endfunction
 
-let g:timl#vim#String = timl#bless('timl.lang/Type', {
-      \ "name": timl#symbol('timl.vim/String'),
-      \ "implements":
-      \ {"timl.lang/ILookup":
-      \    {"lookup": s:function("s:str_lookup")},
-      \  "timl.lang/ICounted":
-      \    {"count": s:function("s:string_count")}}})
+call s:implement('timl.vim/String',
+      \ '_lookup', s:function('s:string_lookup'),
+      \ '_count', s:function('s:string_count'))
 
 " Section: Funcref
 
@@ -40,16 +41,12 @@ function! s:funcall(this, args)
   return call(a:this, a:args, {'__fn__': a:this})
 endfunction
 
-let g:timl#vim#Funcref = timl#bless('timl.lang/Type', {
-      \ "name": timl#symbol('timl.vim/Funcref'),
-      \ "implements":
-      \ {"timl.lang/IFn":
-      \   {"invoke": s:function('s:funcall')}}})
+call s:implement('timl.vim/Funcref', '_invoke', s:function('s:funcall'))
 
 " Section: List
 
 function! s:list_seq(this) abort
-  return empty(a:this) ? g:timl#nil : g:timl#lang#ChunkedCons.create(a:this)
+  return empty(a:this) ? g:timl#nil : timl#lang#create_chunked_cons(a:this)
 endfunction
 
 function! s:list_first(this) abort
@@ -57,7 +54,7 @@ function! s:list_first(this) abort
 endfunction
 
 function! s:list_rest(this) abort
-  return len(a:this) <= 1 ? g:timl#empty_list : g:timl#lang#ChunkedCons.create(a:this, g:timl#empty_list, 1)
+  return len(a:this) <= 1 ? g:timl#empty_list : timl#lang#create_chunked_cons(a:this, g:timl#empty_list, 1)
 endfunction
 
 function! s:list_lookup(this, idx, ...) abort
@@ -76,23 +73,15 @@ function! s:list_empty(this) abort
   return s:empty_list
 endfunction
 
-let g:timl#vim#List = timl#bless('timl.lang/Type', {
-      \ "name": timl#symbol('timl.vim/List'),
-      \ "implements":
-      \ {"timl.lang/ISeqable":
-      \    {"seq": s:function("s:list_seq")},
-      \  "timl.lang/ISeq":
-      \    {"first": s:function("s:list_first"),
-      \     "rest": s:function("s:list_rest")},
-      \  "timl.lang/ILookup":
-      \    {"lookup": s:function("s:list_lookup")},
-      \  "timl.lang/ICounted":
-      \    {"count": function("len")},
-      \  "timl.lang/ICollection":
-      \    {"cons": s:function("s:list_cons"),
-      \     "empty": s:function("s:list_empty")},
-      \  "timl.lang/IFn":
-      \    {"invoke": s:function("s:list_lookup")}}})
+call s:implement('timl.vim/List',
+      \ '_seq', s:function('s:list_seq'),
+      \ '_first', s:function("s:list_first"),
+      \ '_rest', s:function("s:list_rest"),
+      \ '_lookup', s:function('s:list_lookup'),
+      \ '_count', s:function('len'),
+      \ '_conj', s:function('s:list_cons'),
+      \ 'empty', s:function('s:list_empty'),
+      \ '_invoke', s:function('s:list_lookup'))
 
 " Section: Dictionary
 
@@ -113,25 +102,14 @@ function! s:dict_empty(this) abort
   return s:empty_dict
 endfunction
 
-let g:timl#vim#Dictionary = timl#bless('timl.lang/Type', {
-      \ "name": timl#symbol('timl.vim/Dictionary'),
-      \ "implements":
-      \ {"timl.lang/ISeqable":
-      \    {"seq": s:function("s:dict_seq")},
-      \  "timl.lang/ILookup":
-      \    {"lookup": s:function("s:dict_lookup")},
-      \  "timl.lang/ICounted":
-      \    {"count": function("len")},
-      \  "timl.lang/ICollection":
-      \    {"cons": s:function("s:dict_cons"),
-      \     "empty": s:function("s:dict_empty")},
-      \  "timl.lang/IFn":
-      \    {"invoke": s:function("s:dict_lookup")}}})
+call s:implement('timl.vim/Dictionary',
+      \ '_seq', s:function('s:dict_seq'),
+      \ '_lookup', s:function('s:dict_lookup'),
+      \ '_count', s:function('len'),
+      \ '_conj', s:function('s:dict_cons'),
+      \ 'empty', s:function('s:dict_empty'),
+      \ '_invoke', s:function('s:dict_lookup'))
 
 " Section: Float
-
-if has('float')
-  let g:timl#vim#Float = timl#bless('timl.lang/Type', {"name": timl#symbol('timl.vim/Float')})
-endif
 
 " vim:set et sw=2:

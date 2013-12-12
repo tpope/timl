@@ -15,7 +15,7 @@ function! s:function(name) abort
   return function(s:funcname(a:name))
 endfunction
 
-function! s:freeze(...) abort
+function! timl#freeze(...) abort
   return a:000
 endfunction
 
@@ -25,6 +25,32 @@ endfunction
 
 function! timl#identity(x) abort
   return a:x
+endfunction
+
+function! timl#key(key)
+  if type(a:key) == type(0)
+    return string(a:key)
+  elseif timl#keywordp(a:key)
+    return a:key[0]
+  elseif a:key is# g:timl#nil
+    return ' '
+  else
+    return ' '.timl#printer#string(a:key)
+  endif
+endfunction
+
+function! timl#dekey(key)
+  if a:key =~# '^#'
+    throw 'timl: invalid key '.a:key
+  elseif a:key ==# ' '
+    return g:timl#nil
+  elseif a:key =~# '^ '
+    return timl#reader#read_string(a:key[1:-1])
+  elseif a:key =~# '^[-+]\=\d'
+    return timl#reader#read_string(a:key)
+  else
+    return timl#keyword(a:key)
+  endif
 endfunction
 
 " }}}1
@@ -95,75 +121,27 @@ function! timl#keywordp(keyword)
         \ get(s:keywords, a:keyword[0], 0) is a:keyword
 endfunction
 
+function! timl#kw(kw)
+  if !timl#keywordp(a:kw)
+    throw 'timl: keyword expected but received '.timl#type#string(a:kw)
+  endif
+  return a:kw
+endfunction
+
 " }}}1
 " Section: Type System {{{1
 
-function! timl#intern_type(type)
-  return type(a:type) ==# type('') ? timl#keyword('#'.a:type) : a:type
-endfunction
-
-if !exists('s:tag_sentinel')
-  let s:tag_sentinel = s:freeze('tagged')
-endif
-
 function! timl#bless(class, ...) abort
-  let obj = a:0 ? a:1 : {}
-  let obj['#tagged'] = s:tag_sentinel
-  let obj['#tag'] = timl#intern_type(a:class)
-  return obj
+  return timl#type#bless(a:class, a:0 ? a:1 : {})
 endfunction
 
 if !exists('g:timl#nil')
-  let g:timl#nil = s:freeze()
-  let g:timl#false = timl#bless('timl.lang/Boolean', {'value': 0})
-  let g:timl#true = timl#bless('timl.lang/Boolean', {'value': 1})
-  lockvar g:timl#nil g:timl#false g:timl#true
+  let g:timl#nil = timl#freeze()
+  lockvar g:timl#nil
 endif
 
-function! timl#objectp(obj) abort
-  return type(a:obj) == type({}) && get(a:obj, '#tagged') is s:tag_sentinel
-endfunction
-
-let s:function = timl#intern_type('timl.lang/Function')
-function! timl#functionp(val) abort
-  return type(a:val) == type({}) && get(a:val, '#tag') is# s:function
-endfunction
-
-let s:types = {
-      \ 0: 'timl.vim/Number',
-      \ 1: 'timl.vim/String',
-      \ 2: 'timl.vim/Funcref',
-      \ 3: 'timl.vim/List',
-      \ 4: 'timl.vim/Dictionary',
-      \ 5: 'timl.vim/Float'}
-
 function! timl#type(val) abort
-  let type = get(s:types, type(a:val), 'timl.vim/Unknown')
-  if type == 'timl.vim/List' && a:val is# g:timl#nil
-    return 'timl.lang/Nil'
-  elseif type == 'timl.vim/Dictionary'
-    if timl#objectp(a:val)
-      return a:val['#tag'][0][1:-1]
-    elseif timl#keywordp(a:val)
-      return 'timl.lang/Keyword'
-    endif
-  endif
-  return type
-endfunction
-
-function! timl#satisfiesp(proto, obj)
-  let t = g:[tr(timl#type(a:obj), '/.-', '##_')]
-  return has_key(get(t, 'implements', {}), a:proto)
-endfunction
-
-function! timl#dispatch(proto, fn, obj, ...)
-  let t = g:[tr(timl#type(a:obj), '/.-', '##_')]
-  try
-    let F = t.implements[a:proto][a:fn]
-  catch /^Vim(let):E716:/
-    throw "timl:E117: ".timl#type(a:obj)." doesn't implement ".a:proto
-  endtry
-  return timl#call(F, [a:obj] + a:000)
+  return timl#type#string(a:val)
 endfunction
 
 function! timl#persistentb(val) abort
@@ -186,14 +164,14 @@ function! timl#transient(val) abort
 endfunction
 
 function! timl#meta(obj) abort
-  if timl#objectp(a:obj)
+  if timl#type#objectp(a:obj)
     return get(a:obj, '#meta', g:timl#nil)
   endif
   return g:timl#nil
 endfunction
 
 function! timl#with_meta(obj, meta) abort
-  if timl#objectp(a:obj)
+  if timl#type#objectp(a:obj)
     if !timl#equalp(get(a:obj, '#meta', g:timl#nil), a:meta)
       let obj = copy(a:obj)
       if a:meta is# g:timl#nil
@@ -205,7 +183,7 @@ function! timl#with_meta(obj, meta) abort
     endif
     return a:obj
   endif
-  throw 'timl: cannot attach metadata to a '.timl#type(a:obj)
+  throw 'timl: cannot attach metadata to a '.timl#type#string(a:obj)
 endfunction
 
 function! timl#str(val) abort
@@ -274,7 +252,7 @@ if !exists('s:symbols')
   let s:symbols = {}
 endif
 
-let s:symbol = timl#intern_type('timl.lang/Symbol')
+let s:symbol = timl#keyword('#timl.lang/Symbol')
 function! timl#symbol(str)
   if !has_key(s:symbols, a:str)
     let s:symbols[a:str] = timl#bless(s:symbol, {'0': a:str})
@@ -291,7 +269,7 @@ endfunction
 
 function! timl#sym(sym)
   if !timl#symbolp(a:sym)
-    throw 'timl: symbol expected but received '.timl#type(a:sym)
+    throw 'timl: symbol expected but received '.timl#type#string(a:sym)
   endif
   return a:sym
 endfunction
@@ -309,30 +287,21 @@ function! timl#name(val) abort
   elseif timl#keywordp(a:val)
     return a:val[0]
   else
-    throw "timl: no name for ".timl#type(a:val)
+    throw "timl: no name for ".timl#type#string(a:val)
   endif
 endfunction
 
 runtime! autoload/timl/lang.vim
-runtime! autoload/timl/vim.vim
 
 " }}}1
 " Section: Collections {{{1
 
 function! timl#collp(coll) abort
-  return timl#satisfiesp("timl.lang/ICollection", a:coll)
-endfunction
-
-function! timl#empty(coll) abort
-  if timl#collp(a:coll)
-    return timl#dispatch('timl.lang/ICollection', 'empty', a:coll)
-  else
-    return g:timl#nil
-  endif
+  return timl#type#canp(a:coll, g:timl#core#_conj)
 endfunction
 
 function! timl#into(coll, seq) abort
-  let t = timl#type(a:coll)
+  let t = timl#type#string(a:coll)
   if a:coll is g:timl#nil
     return timl#seq(a:seq)
   elseif t ==# 'timl.vim/List'
@@ -359,7 +328,7 @@ endfunction
 function! timl#conj(coll, x, ...) abort
   let _ = {'coll': a:coll}
   for x in [a:x] + a:000
-    let _.coll = timl#dispatch('timl.lang/ICollection', 'cons', _.coll, x)
+    let _.coll = timl#type#dispatch(g:timl#core#_conj, _.coll, x)
   endfor
   return _.coll
 endfunction
@@ -367,11 +336,11 @@ endfunction
 function! timl#count(seq) abort
   let l:count = 0
   let _ = {'seq': a:seq}
-  while _.seq isnot# g:timl#nil && !timl#satisfiesp('timl.lang/ICounted', _.seq)
+  while _.seq isnot# g:timl#nil && !timl#type#canp(_.seq, g:timl#core#_count)
     let l:count += 1
     let _.seq = timl#next(_.seq)
   endwhile
-  return l:count + (_.seq is# g:timl#nil ? 0 : timl#dispatch('timl.lang/ICounted', 'count', _.seq))
+  return l:count + (_.seq is# g:timl#nil ? 0 : timl#type#dispatch(g:timl#core#_count, _.seq))
 endfunction
 
 function! timl#containsp(coll, val) abort
@@ -380,37 +349,15 @@ function! timl#containsp(coll, val) abort
 endfunction
 
 function! timl#mapp(coll)
-  return timl#type(a:coll) == 'timl.lang/HashMap'
+  return timl#type#string(a:coll) == 'timl.lang/HashMap'
 endfunction
 
 function! timl#setp(coll)
-  return timl#satisfiesp('timl.lang/ISet', a:coll)
+  return timl#type#canp(a:coll, g:timl#core#_disj)
 endfunction
 
 function! timl#dictp(coll)
-  return timl#type(a:coll) == 'timl.vim/Dictionary'
-endfunction
-
-function! timl#key(key)
-  if type(a:key) == type(0)
-    return string(a:key)
-  elseif timl#keywordp(a:key)
-    return a:key[0]
-  else
-    return ' '.timl#printer#string(a:key)
-  endif
-endfunction
-
-function! timl#dekey(key)
-  if a:key =~# '^#'
-    throw 'timl: invalid key '.a:key
-  elseif a:key =~# '^ '
-    return timl#reader#read_string(a:key[1:-1])
-  elseif a:key =~# '^[-+]\=\d'
-    return timl#reader#read_string(a:key)
-  else
-    return timl#keyword(a:key)
-  endif
+  return timl#type#string(a:coll) == 'timl.vim/Dictionary'
 endfunction
 
 function! timl#dict(...) abort
@@ -429,7 +376,7 @@ function! timl#dict(...) abort
   return dict
 endfunction
 
-let s:hash_map = timl#intern_type('timl.lang/HashMap')
+let s:hash_map = timl#type#intern('timl.lang/HashMap')
 function! timl#hash_map(...) abort
   let keyvals = a:0 == 1 ? a:1 : a:000
   let map = timl#bless(s:hash_map)
@@ -440,7 +387,7 @@ function! timl#hash_map(...) abort
   return timl#persistentb(map)
 endfunction
 
-let s:hash_set = timl#intern_type('timl.lang/HashSet')
+let s:hash_set = timl#type#intern('timl.lang/HashSet')
 function! timl#hash_set(...) abort
   return timl#set(a:000)
 endfunction
@@ -461,7 +408,7 @@ endfunction
 function! timl#assocb(coll, ...) abort
   let keyvals = a:0 == 1 ? timl#ary(a:1) : a:000
   if len(keyvals) % 2 == 0
-    let type = timl#type(a:coll)
+    let type = timl#type#string(a:coll)
     for i in range(0, len(keyvals) - 1, 2)
       let key = (type == 'timl.vim/Dictionary' ? timl#str(keyvals[i]) : timl#key(keyvals[i]))
       let a:coll[key] = keyvals[i+1]
@@ -480,7 +427,7 @@ endfunction
 
 function! timl#dissocb(coll, ...) abort
   let _ = {}
-  let t = timl#type(a:coll)
+  let t = timl#type#string(a:coll)
   for _.key in a:000
     let key = (t == 'timl.vim/Dictionary' ? timl#str(_.key) : timl#key(_.key))
     if has_key(a:coll, key)
@@ -498,7 +445,7 @@ function! timl#disj(set, ...) abort
   let _ = {}
   let set = a:set
   for _.x in a:000
-    let set = timl#dispatch('timl.lang/ISet', 'disj', set, _.x)
+    let set = timl#type#dispatch(g:timl#core#_disj, set, _.x)
   endfor
   return set
 endfunction
@@ -506,17 +453,17 @@ endfunction
 " }}}1
 " Section: Lists {{{1
 
-let s:cons = timl#intern_type('timl.lang/Cons')
+let s:cons = timl#type#intern('timl.lang/Cons')
 
 let s:ary = type([])
 
 function! timl#seq(coll) abort
-  let seq = timl#dispatch("timl.lang/ISeqable", "seq", a:coll)
+  let seq = timl#type#dispatch(g:timl#core#_seq, a:coll)
   return seq is# g:timl#empty_list ? g:timl#nil : seq
 endfunction
 
 function! timl#seqp(coll) abort
-  return timl#satisfiesp("timl.lang/ISeq", a:coll)
+  return timl#type#canp(a:coll, g:timl#core#_seq)
 endfunction
 
 function! timl#first(coll) abort
@@ -524,21 +471,21 @@ function! timl#first(coll) abort
     return a:coll.car
   elseif type(a:coll) == s:ary
     return get(a:coll, 0, g:timl#nil)
-  elseif timl#seqp(a:coll)
-    return timl#dispatch('timl.lang/ISeq', 'first', a:coll)
+  elseif timl#type#canp(a:coll, g:timl#core#_first)
+    return timl#type#dispatch(g:timl#core#_first, a:coll)
   else
-    return timl#dispatch('timl.lang/ISeq', 'first', timl#seq(a:coll))
+    return timl#type#dispatch(g:timl#core#_first, timl#seq(a:coll))
   endif
 endfunction
 
 function! timl#rest(coll) abort
   if timl#consp(a:coll)
     return a:coll.cdr
-  elseif timl#seqp(a:coll)
-    return timl#dispatch('timl.lang/ISeq', 'rest', a:coll)
+  elseif timl#type#canp(a:coll, g:timl#core#_rest)
+    return timl#type#dispatch(g:timl#core#_rest, a:coll)
   else
     let seq = timl#seq(a:coll)
-    return seq is# g:timl#nil ? g:timl#empty_list : timl#dispatch('timl.lang/ISeq', 'rest', seq)
+    return seq is# g:timl#nil ? g:timl#empty_list : timl#type#dispatch(g:timl#core#_rest, seq)
   endif
 endfunction
 
@@ -564,7 +511,7 @@ function! timl#nnext(seq) abort
 endfunction
 
 function! timl#get(coll, key, ...) abort
-  return timl#dispatch('timl.lang/ILookup', 'lookup', a:coll, a:key, a:0 ? a:1 : g:timl#nil)
+  return timl#type#dispatch(g:timl#core#_lookup, a:coll, a:key, a:0 ? a:1 : g:timl#nil)
 endfunction
 
 function! timl#consp(obj) abort
@@ -576,7 +523,7 @@ function! timl#list(...) abort
 endfunction
 
 function! timl#cons(car, cdr) abort
-  if timl#satisfiesp('timl.lang/ISeqable', a:cdr)
+  if timl#type#canp(a:cdr, g:timl#core#_seq)
     let cons = timl#bless(s:cons, {'car': a:car, 'cdr': a:cdr})
     return timl#persistentb(cons)
   endif
@@ -615,14 +562,14 @@ endfunction
 " }}}1
 " Section: Namespaces {{{1
 
-let s:ns = timl#intern_type('timl.lang/Namespace')
+let s:ns = timl#type#intern('timl.lang/Namespace')
 
 function! timl#find_ns(name)
   return get(g:timl#namespaces, timl#str(a:name), g:timl#nil)
 endfunction
 
 function! timl#the_ns(name)
-  if timl#type(a:name) ==# 'timl.lang/Namespace'
+  if timl#type#string(a:name) ==# 'timl.lang/Namespace'
     return a:name
   endif
   let name = timl#str(a:name)
@@ -658,13 +605,17 @@ endfunction
 " }}}1
 " Section: Eval {{{1
 
+let s:function_tag = timl#keyword('#timl.lang/Function')
+let s:multifn_tag = timl#keyword('#timl.lang/MultiFn')
 function! timl#call(Func, args, ...) abort
   if type(a:Func) == type(function('tr'))
     return call(a:Func, a:args, a:0 ? a:1 : {})
-  elseif timl#functionp(a:Func)
+  elseif type(a:Func) == type({}) && get(a:Func, '#tag') is# s:function_tag
     return call(a:Func.call, (a:0 ? [a:1] : []) + a:args, a:Func)
+  elseif type(a:Func) == type({}) && get(a:Func, '#tag') is# s:multifn_tag
+    return call('timl#type#dispatch', [a:Func] + a:args)
   else
-    return call('timl#dispatch', ['timl.lang/IFn', 'invoke', a:Func] + (a:0 ? [a:1] : []) + a:args)
+    return call('timl#type#dispatch', [g:timl#core#_invoke, a:Func] + (a:0 ? [a:1] : []) + a:args)
   endif
 endfunction
 
@@ -722,7 +673,7 @@ function! timl#build_exception(exception, throwpoint)
   let dict.line = +matchstr(a:throwpoint, '\d\+$')
   let dict.qflist = []
   if a:throwpoint !~# '^function '
-    let dict.qflist[0] = {"filename": matchstr(a:throwpoint, '^.\{-\}\ze\.\.')}
+    call add(dict.qflist, {"filename": matchstr(a:throwpoint, '^.\{-\}\ze\.\.')})
   endif
   for fn in split(matchstr(a:throwpoint, '\%( \|\.\.\)\zs.*\ze,'), '\.\.')
     call insert(dict.qflist, {'text': fn})
