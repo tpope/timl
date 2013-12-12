@@ -1,8 +1,13 @@
 (in-ns 'timl.core)
 
 (defn to-array [x] (#*copy (vec x)))
+
+(defn find [m k] (when (contains? m k) [k (get m k)]))
 (defn key [x] (first x))
 (defn val [x] (second x))
+(defn keys [m] (map key m))
+(defn vals [m] (map val m))
+(defn get-in [m ks] (reduce get m ks))
 
 (defn comparator [>]
   (fn [x y]
@@ -18,5 +23,3 @@
    (let [cmp (comparator op)
          fref (. cmp -call)]
      (#*sort (to-array xs) fref cmp))))
-
-(defn get-in [m ks] (reduce get m ks))
