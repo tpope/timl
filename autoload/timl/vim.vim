@@ -77,9 +77,13 @@ function! s:list_cons(this, ...) abort
   return timl#persistentb(a:this + a:000)
 endfunction
 
-let s:empty_list = timl#persistentb([])
 function! s:list_empty(this) abort
-  return s:empty_list
+  let this = a:this
+  let empty = []
+  if islocked('this')
+    lockvar 1 empty
+  endif
+  return this
 endfunction
 
 call s:implement('timl.vim/List',
@@ -134,9 +138,13 @@ function! s:dict_dissoc(this, ...) abort
   return this
 endfunction
 
-let s:empty_dict = timl#persistentb({})
 function! s:dict_empty(this) abort
-  return s:empty_dict
+  let this = a:this
+  let empty = {}
+  if islocked('this')
+    lockvar 1 empty
+  endif
+  return this
 endfunction
 
 call s:implement('timl.vim/Dictionary',

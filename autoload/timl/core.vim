@@ -43,8 +43,6 @@ TLpredicate nil_QMARK_(val) a:val is# g:timl#nil
 TLexpr blessing(val) timl#keyword(timl#type#string(a:val))
 TLalias meta timl#meta
 TLalias with_meta timl#with_meta
-TLalias persistent_BANG_ timl#persistentb
-TLalias transient timl#transient
 
 " }}}1
 " Section: Introspection {{{1

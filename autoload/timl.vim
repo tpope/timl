@@ -137,7 +137,7 @@ endfunction
 
 if !exists('g:timl#nil')
   let g:timl#nil = timl#freeze()
-  lockvar g:timl#nil
+  lockvar 1 g:timl#nil
 endif
 
 function! timl#type(val) abort
@@ -491,7 +491,8 @@ endfunction
 function! timl#cons(car, cdr) abort
   if timl#type#canp(a:cdr, g:timl#core#seq)
     let cons = timl#bless(s:cons, {'car': a:car, 'cdr': a:cdr is# g:timl#nil ? g:timl#empty_list : a:cdr})
-    return timl#persistentb(cons)
+    lockvar 1 cons
+    return cons
   endif
   throw 'timl: not seqable'
 endfunction

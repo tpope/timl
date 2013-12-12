@@ -184,9 +184,9 @@ function! s:process(port, token, line, wanted) abort
       let token = 'timl.lang/'.token
     endif
     if type(next) == type({})
-      return timl#persistentb(extend(next, timl#bless(token)))
+      return timl#bless(token, next)
     else
-      return timl#persistentb(timl#bless(token, {'value': next})
+      return timl#bless(token, {'value': next})
     endif
   elseif token =~# '^::.\+/.'
     let alias = matchstr(token[2:-1], '.*\ze/.')

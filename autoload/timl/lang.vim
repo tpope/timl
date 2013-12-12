@@ -76,7 +76,7 @@ call s:implement('timl.lang/Nil',
 if !exists('g:timl#false')
   let g:timl#false = timl#bless('timl.lang/Boolean', {'value': 0})
   let g:timl#true = timl#bless('timl.lang/Boolean', {'value': 1})
-  lockvar g:timl#false g:timl#true
+  lockvar 1 g:timl#false g:timl#true
 endif
 
 " Section: Symbols/Keywords
@@ -135,7 +135,10 @@ call s:implement('timl.lang/Cons',
 
 " Section: Empty list
 
-let g:timl#empty_list = timl#persistentb(timl#bless('timl.lang/EmptyList', {'count': 0}))
+if !exists('g:timl#empty_list')
+  let g:timl#empty_list = timl#bless('timl.lang/EmptyList', {'count': 0})
+  lockvar 1 g:timl#empty_list
+endif
 
 call s:implement('timl.lang/EmptyList',
       \ 'seq', s:function('s:nil'),
@@ -165,10 +168,12 @@ function! s:chunk_count(this) abort
 endfunction
 
 function! timl#lang#create_chunked_cons(list, ...) abort
-  return timl#persistentb(timl#bless('timl.lang/ChunkedCons', {
+  let cc = timl#bless('timl.lang/ChunkedCons', {
         \ 'list': a:list,
         \ 'pos': a:0 > 1 ? a:2 : 0,
-        \ 'next': a:0 ? a:1 : g:timl#empty_list}))
+        \ 'next': a:0 ? a:1 : g:timl#empty_list})
+  lockvar 1 cc
+  return cc
 endfunction
 
 call s:implement('timl.lang/ChunkedCons',
@@ -182,22 +187,16 @@ call s:implement('timl.lang/ChunkedCons',
 " Section: Lazy Seq
 
 function! timl#lang#create_lazy_seq(fn)
-  let seq = timl#bless('timl.lang/LazySeq', {'fn': a:fn})
-  return timl#persistentb(seq)
+  return timl#bless('timl.lang/LazySeq', {'fn': a:fn})
 endfunction
 
 function! s:deref_lazy_seq(lseq) abort
   if !has_key(a:lseq, 'seq')
-    try
-      unlockvar 1 a:lseq
-      let _ = {'seq': timl#call(a:lseq.fn, [])}
-      while !timl#type#canp(_.seq, g:timl#core#more)
-        let _.seq = timl#type#dispatch(g:timl#core#seq, _.seq)
-      endwhile
-      let a:lseq.seq = _.seq
-    finally
-      lockvar 1 a:lseq
-    endtry
+    let _ = {'seq': timl#call(a:lseq.fn, [])}
+    while !timl#type#canp(_.seq, g:timl#core#more)
+      let _.seq = timl#type#dispatch(g:timl#core#seq, _.seq)
+    endwhile
+    let a:lseq.seq = _.seq
   endif
   return a:lseq.seq
 endfunction
