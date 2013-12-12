@@ -99,7 +99,18 @@ function! s:dict_cons(this, ...) abort
   for _.e in a:000
     let this[timl#str(timl#first(_.e))] = timl#fnext(_.e)
   endfor
-  lockvar 1 this
+  return this
+endfunction
+
+function! s:dict_dissoc(this, ...) abort
+  let _ = {}
+  let this = copy(a:this)
+  for _.x in a:000
+    let key = timl#str(_.x)
+    if has_key(this, key)
+      call remove(this, key)
+    endif
+  endfor
   return this
 endfunction
 
@@ -112,8 +123,9 @@ call s:implement('timl.vim/Dictionary',
       \ 'seq', s:function('s:dict_seq'),
       \ 'lookup', s:function('s:dict_lookup'),
       \ 'count', s:function('len'),
-      \ 'conj', s:function('s:dict_cons'),
       \ 'empty', s:function('s:dict_empty'),
+      \ 'conj', s:function('s:dict_cons'),
+      \ 'dissoc', s:function('s:dict_dissoc'),
       \ '_invoke', s:function('s:dict_lookup'))
 
 " Section: Float

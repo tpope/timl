@@ -339,7 +339,7 @@ function! timl#containsp(coll, val) abort
 endfunction
 
 function! timl#mapp(coll)
-  return timl#type#string(a:coll) == 'timl.lang/HashMap'
+  return timl#type#canp(a:coll, g:timl#core#dissoc)
 endfunction
 
 function! timl#setp(coll)
@@ -425,10 +425,6 @@ function! timl#dissocb(coll, ...) abort
     endif
   endfor
   return a:coll
-endfunction
-
-function! timl#dissoc(coll, ...) abort
-  return timl#persistentb(call('timl#dissocb', [timl#transient(a:coll)] + a:000))
 endfunction
 
 " }}}1

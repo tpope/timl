@@ -228,6 +228,19 @@ function! s:map_cons(this, ...) abort
   return this
 endfunction
 
+function! s:map_dissoc(this, ...) abort
+  let _ = {}
+  let this = copy(a:this)
+  for _.x in a:000
+    let key = timl#key(_.x)
+    if has_key(this, key)
+      call remove(this, key)
+    endif
+  endfor
+  lockvar 1 this
+  return this
+endfunction
+
 let s:empty_map = timl#persistentb(timl#bless('timl.lang/HashMap'))
 function! s:map_empty(this) abort
   return s:empty_map
@@ -236,8 +249,9 @@ endfunction
 call s:implement('timl.lang/HashMap',
       \ 'seq', s:function('s:map_seq'),
       \ 'lookup', s:function('s:map_lookup'),
-      \ 'conj', s:function('s:map_cons'),
       \ 'empty', s:function('s:map_empty'),
+      \ 'conj', s:function('s:map_cons'),
+      \ 'dissoc', s:function('s:map_dissoc'),
       \ 'invoke', s:function('s:map_lookup'))
 
 " Section: Hash Set
@@ -283,8 +297,8 @@ endfunction
 call s:implement('timl.lang/HashSet',
       \ 'seq', s:function('s:set_seq'),
       \ 'lookup', s:function('s:set_lookup'),
-      \ 'conj', s:function('s:set_cons'),
       \ 'empty', s:function('s:set_empty'),
+      \ 'conj', s:function('s:set_cons'),
       \ 'disj', s:function('s:set_disj'),
       \ '_invoke', s:function('s:set_lookup'))
 

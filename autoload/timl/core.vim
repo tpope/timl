@@ -423,7 +423,6 @@ TLalias hash_set timl#hash_set
 TLalias set timl#set
 TLalias assoc timl#assoc
 TLalias assoc_BANG_ timl#assocb
-TLalias dissoc timl#dissoc
 TLalias dissoc_BANG_ timl#dissocb
 TLpredicate map_QMARK_(x) timl#mapp(a:x)
 TLpredicate set_QMARK_(x) timl#setp(a:x)
