@@ -458,12 +458,11 @@ let s:cons = timl#type#intern('timl.lang/Cons')
 let s:ary = type([])
 
 function! timl#seq(coll) abort
-  let seq = timl#type#dispatch(g:timl#core#_seq, a:coll)
-  return seq is# g:timl#empty_list ? g:timl#nil : seq
+  return timl#type#dispatch(g:timl#core#seq, a:coll)
 endfunction
 
 function! timl#seqp(coll) abort
-  return timl#type#canp(a:coll, g:timl#core#_seq)
+  return timl#type#canp(a:coll, g:timl#core#seq)
 endfunction
 
 function! timl#first(coll) abort
@@ -523,7 +522,7 @@ function! timl#list(...) abort
 endfunction
 
 function! timl#cons(car, cdr) abort
-  if timl#type#canp(a:cdr, g:timl#core#_seq)
+  if timl#type#canp(a:cdr, g:timl#core#seq)
     let cons = timl#bless(s:cons, {'car': a:car, 'cdr': a:cdr})
     return timl#persistentb(cons)
   endif

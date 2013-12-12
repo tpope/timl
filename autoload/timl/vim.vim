@@ -74,7 +74,7 @@ function! s:list_empty(this) abort
 endfunction
 
 call s:implement('timl.vim/List',
-      \ '_seq', s:function('s:list_seq'),
+      \ 'seq', s:function('s:list_seq'),
       \ '_first', s:function("s:list_first"),
       \ '_rest', s:function("s:list_rest"),
       \ '_lookup', s:function('s:list_lookup'),
@@ -103,7 +103,7 @@ function! s:dict_empty(this) abort
 endfunction
 
 call s:implement('timl.vim/Dictionary',
-      \ '_seq', s:function('s:dict_seq'),
+      \ 'seq', s:function('s:dict_seq'),
       \ '_lookup', s:function('s:dict_lookup'),
       \ '_count', s:function('len'),
       \ '_conj', s:function('s:dict_cons'),

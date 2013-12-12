@@ -87,7 +87,7 @@ function! timl#printer#string(x)
     endwhile
     return '('.join(output, ' ').')'
 
-  elseif type !=# 'timl.lang/HashMap' && timl#type#canp(a:x, g:timl#core#_seq)
+  elseif type !=# 'timl.lang/HashMap' && timl#type#canp(a:x, g:timl#core#seq)
     return timl#printer#string(timl#seq(a:x))
 
   elseif type(a:x) == type({})

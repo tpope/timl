@@ -55,7 +55,7 @@ function! s:nil_lookup(this, key, default)
 endfunction
 
 call s:implement('timl.lang/Nil',
-      \ '_seq', s:function('s:nil'),
+      \ 'seq', s:function('s:nil'),
       \ '_first', s:function('s:nil'),
       \ '_rest', s:function('s:empty_list'),
       \ '_lookup', s:function('s:nil_lookup'))
@@ -111,7 +111,7 @@ function! s:cons_cons(cdr, car)
 endfunction
 
 call s:implement('timl.lang/Cons',
-      \ '_seq', s:function('s:identity'),
+      \ 'seq', s:function('s:identity'),
       \ '_first', s:function('s:cons_car'),
       \ '_rest', s:function('s:cons_cdr'),
       \ '_conj', s:function('s:cons_cons'),
@@ -122,7 +122,7 @@ call s:implement('timl.lang/Cons',
 let g:timl#empty_list = timl#persistentb(timl#bless('timl.lang/EmptyList', {'count': 0}))
 
 call s:implement('timl.lang/EmptyList',
-      \ '_seq', s:function('s:nil'),
+      \ 'seq', s:function('s:nil'),
       \ '_first', s:function('s:nil'),
       \ '_rest', s:function('s:identity'),
       \ '_count', s:function('s:zero'),
@@ -155,7 +155,7 @@ function! timl#lang#create_chunked_cons(list, ...) abort
 endfunction
 
 call s:implement('timl.lang/ChunkedCons',
-      \ '_seq', s:function('s:identity'),
+      \ 'seq', s:function('s:identity'),
       \ '_first', s:function('s:chunk_first'),
       \ '_rest', s:function('s:chunk_rest'),
       \ '_count', s:function('s:chunk_count'),
@@ -175,7 +175,7 @@ function! s:deref_lazy_seq(lseq) abort
       unlockvar 1 a:lseq
       let _ = {'seq': timl#call(a:lseq.fn, [])}
       while !timl#type#canp(_.seq, g:timl#core#_rest)
-        let _.seq = timl#type#dispatch(g:timl#core#_seq, _.seq)
+        let _.seq = timl#type#dispatch(g:timl#core#seq, _.seq)
       endwhile
       let a:lseq.seq = _.seq
     finally
@@ -186,7 +186,7 @@ function! s:deref_lazy_seq(lseq) abort
 endfunction
 
 call s:implement('timl.lang/LazySeq',
-      \ '_seq', s:function('s:deref_lazy_seq'),
+      \ 'seq', s:function('s:deref_lazy_seq'),
       \ '_conj', s:function('s:cons_cons'),
       \ 'empty', s:function('s:empty_list'))
 
@@ -211,7 +211,7 @@ function! s:map_empty(this) abort
 endfunction
 
 call s:implement('timl.lang/HashMap',
-      \ '_seq', s:function('s:map_seq'),
+      \ 'seq', s:function('s:map_seq'),
       \ '_lookup', s:function('s:map_lookup'),
       \ '_conj', s:function('s:map_cons'),
       \ 'empty', s:function('s:map_empty'),
@@ -248,7 +248,7 @@ function! s:set_empty(this) abort
 endfunction
 
 call s:implement('timl.lang/HashSet',
-      \ '_seq', s:function('s:set_seq'),
+      \ 'seq', s:function('s:set_seq'),
       \ '_lookup', s:function('s:set_lookup'),
       \ '_conj', s:function('s:set_cons'),
       \ 'empty', s:function('s:set_empty'),

@@ -442,7 +442,6 @@ TLpredicate contains_QMARK_(coll, val) timl#containsp(a:coll, a:val)
 " }}}1
 " Section: Sequences {{{1
 
-TLalias seq timl#seq
 TLalias first timl#first
 TLalias rest timl#rest
 TLalias next timl#next
