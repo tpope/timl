@@ -333,14 +333,8 @@ function! timl#conj(coll, x, ...) abort
   return _.coll
 endfunction
 
-function! timl#count(seq) abort
-  let l:count = 0
-  let _ = {'seq': a:seq}
-  while _.seq isnot# g:timl#nil && !timl#type#canp(_.seq, g:timl#core#_count)
-    let l:count += 1
-    let _.seq = timl#next(_.seq)
-  endwhile
-  return l:count + (_.seq is# g:timl#nil ? 0 : timl#type#dispatch(g:timl#core#_count, _.seq))
+function! timl#count(counted) abort
+  return timl#type#dispatch(g:timl#core#count, a:counted)
 endfunction
 
 function! timl#containsp(coll, val) abort

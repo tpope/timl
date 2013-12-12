@@ -446,8 +446,6 @@ TLalias next timl#next
 TLalias rest timl#rest
 TLpredicate seq_QMARK_(seq) timl#seqp(a:seq)
 
-TLalias count timl#count
-
 TLpredicate empty_QMARK_(coll) timl#core#seq(a:coll) is# g:timl#nil
 
 TLfunction! reduce(f, coll, ...) abort

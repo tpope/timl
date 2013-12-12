@@ -58,6 +58,7 @@ call s:implement('timl.lang/Nil',
       \ 'seq', s:function('s:nil'),
       \ 'first', s:function('s:nil'),
       \ 'more', s:function('s:empty_list'),
+      \ 'count', s:function('s:zero'),
       \ 'lookup', s:function('s:nil_lookup'))
 
 " Section: Boolean
@@ -125,7 +126,7 @@ call s:implement('timl.lang/EmptyList',
       \ 'seq', s:function('s:nil'),
       \ 'first', s:function('s:nil'),
       \ 'more', s:function('s:identity'),
-      \ '_count', s:function('s:zero'),
+      \ 'count', s:function('s:zero'),
       \ '_conj', s:function('s:cons_cons'),
       \ 'empty', s:function('s:identity'))
 
@@ -144,25 +145,26 @@ function! s:chunk_rest(seq) abort
 endfunction
 
 function! s:chunk_count(this) abort
-  return len(a:this.list) - a:this.pos + timl#count(a:this.next)
+  let x = len(a:this.list) - a:this.pos + timl#count(a:this.next)
+  return x
 endfunction
 
 function! timl#lang#create_chunked_cons(list, ...) abort
   return timl#persistentb(timl#bless('timl.lang/ChunkedCons', {
         \ 'list': a:list,
         \ 'pos': a:0 > 1 ? a:2 : 0,
-        \ 'next': a:0 ? a:1 : g:timl#nil}))
+        \ 'next': a:0 ? a:1 : g:timl#empty_list}))
 endfunction
 
 call s:implement('timl.lang/ChunkedCons',
       \ 'seq', s:function('s:identity'),
       \ 'first', s:function('s:chunk_first'),
       \ 'more', s:function('s:chunk_rest'),
-      \ '_count', s:function('s:chunk_count'),
+      \ 'count', s:function('s:chunk_count'),
       \ '_conj', s:function('s:cons_cons'),
       \ 'empty', s:function('s:empty_list'))
 
-" Section: Lazy Seqs
+" Section: Lazy Seq
 
 function! timl#lang#create_lazy_seq(fn)
   let seq = timl#bless('timl.lang/LazySeq', {'fn': a:fn})
@@ -185,8 +187,13 @@ function! s:deref_lazy_seq(lseq) abort
   return a:lseq.seq
 endfunction
 
+function! s:count_lazy_seq(lseq) abort
+  return timl#type#dispatch(g:timl#core#count, s:deref_lazy_seq(a:lseq))
+endfunction
+
 call s:implement('timl.lang/LazySeq',
       \ 'seq', s:function('s:deref_lazy_seq'),
+      \ 'count', s:function('s:count_lazy_seq'),
       \ '_conj', s:function('s:cons_cons'),
       \ 'empty', s:function('s:empty_list'))
 
@@ -264,5 +271,10 @@ function! s:default_first(x)
   return timl#type#dispatch(g:timl#core#first, timl#type#dispatch(g:timl#core#seq, a:x))
 endfunction
 call timl#type#define_method('timl.core', 'first', g:timl#nil, s:function('s:default_first'))
+
+function! s:default_count(x)
+  return 1 + timl#type#dispatch(g:timl#core#count, timl#type#dispatch(g:timl#core#more, a:x))
+endfunction
+call timl#type#define_method('timl.core', 'count', g:timl#nil, s:function('s:default_count'))
 
 " vim:set et sw=2:

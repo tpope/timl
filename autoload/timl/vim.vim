@@ -33,7 +33,7 @@ endfunction
 
 call s:implement('timl.vim/String',
       \ 'lookup', s:function('s:string_lookup'),
-      \ '_count', s:function('s:string_count'))
+      \ 'count', s:function('s:string_count'))
 
 " Section: Funcref
 
@@ -78,7 +78,7 @@ call s:implement('timl.vim/List',
       \ 'first', s:function("s:list_first"),
       \ 'more', s:function("s:list_rest"),
       \ 'lookup', s:function('s:list_lookup'),
-      \ '_count', s:function('len'),
+      \ 'count', s:function('len'),
       \ '_conj', s:function('s:list_cons'),
       \ 'empty', s:function('s:list_empty'),
       \ '_invoke', s:function('s:list_lookup'))
@@ -105,7 +105,7 @@ endfunction
 call s:implement('timl.vim/Dictionary',
       \ 'seq', s:function('s:dict_seq'),
       \ 'lookup', s:function('s:dict_lookup'),
-      \ '_count', s:function('len'),
+      \ 'count', s:function('len'),
       \ '_conj', s:function('s:dict_cons'),
       \ 'empty', s:function('s:dict_empty'),
       \ '_invoke', s:function('s:dict_lookup'))
