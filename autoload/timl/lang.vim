@@ -58,11 +58,16 @@ function! s:nil_cons(this, ...)
   return call('s:cons_cons', [g:timl#empty_list] + a:000)
 endfunction
 
+function! s:nil_assoc(this, ...)
+  return call('s:map_assoc', [timl#hash_map()] + a:000)
+endfunction
+
 call s:implement('timl.lang/Nil',
       \ 'seq', s:function('s:nil'),
       \ 'first', s:function('s:nil'),
       \ 'more', s:function('s:empty_list'),
       \ 'conj', s:function('s:nil_cons'),
+      \ 'assoc', s:function('s:nil_assoc'),
       \ 'count', s:function('s:zero'),
       \ 'lookup', s:function('s:nil_lookup'))
 
@@ -228,6 +233,16 @@ function! s:map_cons(this, ...) abort
   return this
 endfunction
 
+function! s:map_assoc(this, ...) abort
+  let this = copy(a:this)
+  let _ = {}
+  for i in range(0, len(a:000)-2, 2)
+    let this[timl#key(a:000[i])] = a:000[i+1]
+  endfor
+  lockvar 1 this
+  return this
+endfunction
+
 function! s:map_dissoc(this, ...) abort
   let _ = {}
   let this = copy(a:this)
@@ -251,6 +266,7 @@ call s:implement('timl.lang/HashMap',
       \ 'lookup', s:function('s:map_lookup'),
       \ 'empty', s:function('s:map_empty'),
       \ 'conj', s:function('s:map_cons'),
+      \ 'assoc', s:function('s:map_assoc'),
       \ 'dissoc', s:function('s:map_dissoc'),
       \ 'invoke', s:function('s:map_lookup'))
 

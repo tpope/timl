@@ -416,12 +416,10 @@ endfunction
 " }}}1
 " Section: Dictionaries {{{1
 
-
 TLalias dict timl#dict
 TLalias hash_map timl#hash_map
 TLalias hash_set timl#hash_set
 TLalias set timl#set
-TLalias assoc timl#assoc
 TLalias assoc_BANG_ timl#assocb
 TLalias dissoc_BANG_ timl#dissocb
 TLpredicate map_QMARK_(x) timl#mapp(a:x)

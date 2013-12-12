@@ -408,13 +408,6 @@ function! timl#assocb(coll, ...) abort
   throw 'timl: more keys than values'
 endfunction
 
-function! timl#assoc(coll, ...) abort
-  let keyvals = a:0 == 1 ? a:1 : a:000
-  let coll = timl#transient(a:coll)
-  call timl#assocb(coll, keyvals)
-  return timl#persistentb(coll)
-endfunction
-
 function! timl#dissocb(coll, ...) abort
   let _ = {}
   let t = timl#type#string(a:coll)

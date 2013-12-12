@@ -102,6 +102,16 @@ function! s:dict_cons(this, ...) abort
   return this
 endfunction
 
+function! s:dict_assoc(this, ...) abort
+  let this = copy(a:this)
+  let _ = {}
+  for i in range(0, len(a:000)-2, 2)
+    let this[timl#str(a:000[i])] = a:000[i+1]
+  endfor
+  lockvar 1 this
+  return this
+endfunction
+
 function! s:dict_dissoc(this, ...) abort
   let _ = {}
   let this = copy(a:this)
@@ -125,6 +135,7 @@ call s:implement('timl.vim/Dictionary',
       \ 'count', s:function('len'),
       \ 'empty', s:function('s:dict_empty'),
       \ 'conj', s:function('s:dict_cons'),
+      \ 'assoc', s:function('s:dict_assoc'),
       \ 'dissoc', s:function('s:dict_dissoc'),
       \ '_invoke', s:function('s:dict_lookup'))
 
