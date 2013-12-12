@@ -297,7 +297,7 @@ runtime! autoload/timl/lang.vim
 " Section: Collections {{{1
 
 function! timl#collp(coll) abort
-  return timl#type#canp(a:coll, g:timl#core#_conj)
+  return timl#type#canp(a:coll, g:timl#core#conj)
 endfunction
 
 function! timl#into(coll, seq) abort
@@ -321,16 +321,12 @@ function! timl#into(coll, seq) abort
     endfor
     return timl#persistentb(coll)
   else
-    return call('timl#conj', [a:coll] + timl#ary(a:seq))
+    let _ = {'coll': a:coll}
+    for _.v in timl#ary(a:seq)
+      let _.coll = timl#type#dispatch(g:timl#core#conj, _.coll, _.v)
+    endfor
+    return _.coll
   endif
-endfunction
-
-function! timl#conj(coll, x, ...) abort
-  let _ = {'coll': a:coll}
-  for x in [a:x] + a:000
-    let _.coll = timl#type#dispatch(g:timl#core#_conj, _.coll, x)
-  endfor
-  return _.coll
 endfunction
 
 function! timl#count(counted) abort
@@ -505,7 +501,7 @@ endfunction
 
 function! timl#cons(car, cdr) abort
   if timl#type#canp(a:cdr, g:timl#core#seq)
-    let cons = timl#bless(s:cons, {'car': a:car, 'cdr': a:cdr})
+    let cons = timl#bless(s:cons, {'car': a:car, 'cdr': a:cdr is# g:timl#nil ? g:timl#empty_list : a:cdr})
     return timl#persistentb(cons)
   endif
   throw 'timl: not seqable'

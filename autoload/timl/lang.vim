@@ -54,10 +54,15 @@ function! s:nil_lookup(this, key, default)
   return a:default
 endfunction
 
+function! s:nil_cons(this, ...)
+  return call('s:cons_cons', [g:timl#empty_list] + a:000)
+endfunction
+
 call s:implement('timl.lang/Nil',
       \ 'seq', s:function('s:nil'),
       \ 'first', s:function('s:nil'),
       \ 'more', s:function('s:empty_list'),
+      \ 'conj', s:function('s:nil_cons'),
       \ 'count', s:function('s:zero'),
       \ 'lookup', s:function('s:nil_lookup'))
 
@@ -107,15 +112,20 @@ function! s:cons_cdr(cons)
   return timl#seq(a:cons.cdr)
 endfunction
 
-function! s:cons_cons(cdr, car)
-  return timl#cons(a:car, a:cdr)
+function! s:cons_cons(this, ...)
+  let head = a:this
+  let _ = {}
+  for _.e in a:000
+    let head = timl#cons(_.e, head)
+  endfor
+  return head
 endfunction
 
 call s:implement('timl.lang/Cons',
       \ 'seq', s:function('s:identity'),
       \ 'first', s:function('s:cons_car'),
       \ 'more', s:function('s:cons_cdr'),
-      \ '_conj', s:function('s:cons_cons'),
+      \ 'conj', s:function('s:cons_cons'),
       \ 'empty', s:function('s:empty_list'))
 
 " Section: Empty list
@@ -127,7 +137,7 @@ call s:implement('timl.lang/EmptyList',
       \ 'first', s:function('s:nil'),
       \ 'more', s:function('s:identity'),
       \ 'count', s:function('s:zero'),
-      \ '_conj', s:function('s:cons_cons'),
+      \ 'conj', s:function('s:cons_cons'),
       \ 'empty', s:function('s:identity'))
 
 " Section: Chunked Cons
@@ -161,7 +171,7 @@ call s:implement('timl.lang/ChunkedCons',
       \ 'first', s:function('s:chunk_first'),
       \ 'more', s:function('s:chunk_rest'),
       \ 'count', s:function('s:chunk_count'),
-      \ '_conj', s:function('s:cons_cons'),
+      \ 'conj', s:function('s:cons_cons'),
       \ 'empty', s:function('s:empty_list'))
 
 " Section: Lazy Seq
@@ -194,7 +204,7 @@ endfunction
 call s:implement('timl.lang/LazySeq',
       \ 'seq', s:function('s:deref_lazy_seq'),
       \ 'count', s:function('s:count_lazy_seq'),
-      \ '_conj', s:function('s:cons_cons'),
+      \ 'conj', s:function('s:cons_cons'),
       \ 'empty', s:function('s:empty_list'))
 
 " Section: Hash Map
@@ -208,8 +218,14 @@ function! s:map_lookup(this, key, ...) abort
   return get(a:this, timl#key(a:key), a:0 ? a:1 : g:timl#nil)
 endfunction
 
-function! s:map_cons(this, x) abort
-  return timl#persistentb(extend(timl#transient(a:this), {timl#key(timl#first(a:x)): timl#first(timl#rest(a:x))}))
+function! s:map_cons(this, ...) abort
+  let this = copy(a:this)
+  let _ = {}
+  for _.e in a:000
+    let this[timl#key(timl#first(_.e))] = timl#fnext(_.e)
+  endfor
+  lockvar 1 this
+  return this
 endfunction
 
 let s:empty_map = timl#persistentb(timl#bless('timl.lang/HashMap'))
@@ -220,9 +236,9 @@ endfunction
 call s:implement('timl.lang/HashMap',
       \ 'seq', s:function('s:map_seq'),
       \ 'lookup', s:function('s:map_lookup'),
-      \ '_conj', s:function('s:map_cons'),
+      \ 'conj', s:function('s:map_cons'),
       \ 'empty', s:function('s:map_empty'),
-      \ '_invoke', s:function('s:map_lookup'))
+      \ 'invoke', s:function('s:map_lookup'))
 
 " Section: Hash Set
 
@@ -235,21 +251,28 @@ function! s:set_lookup(this, key, ...) abort
   return get(a:this, timl#key(a:key), a:0 ? a:1 : g:timl#nil)
 endfunction
 
-function! s:set_cons(this, x) abort
-  return timl#persistentb(extend(timl#transient(a:this), {timl#key(a:x): a:x}))
+function! s:set_cons(this, ...) abort
+  let this = copy(a:this)
+  let _ = {}
+  for _.e in a:000
+    let this[timl#key(_.e)] = _.e
+  endfor
+  lockvar 1 this
+  return this
 endfunction
 
 
 function! s:set_disj(this, ...) abort
   let _ = {}
-  let set = copy(a:this)
+  let this = copy(a:this)
   for _.x in a:000
     let key = timl#key(_.x)
-    if has_key(set, key)
-      call remove(set, key)
+    if has_key(this, key)
+      call remove(this, key)
     endif
   endfor
-  return timl#persistentb(set)
+  lockvar 1 this
+  return this
 endfunction
 
 let s:empty_set = timl#persistentb(timl#bless('timl.lang/HashSet'))
@@ -260,7 +283,7 @@ endfunction
 call s:implement('timl.lang/HashSet',
       \ 'seq', s:function('s:set_seq'),
       \ 'lookup', s:function('s:set_lookup'),
-      \ '_conj', s:function('s:set_cons'),
+      \ 'conj', s:function('s:set_cons'),
       \ 'empty', s:function('s:set_empty'),
       \ 'disj', s:function('s:set_disj'),
       \ '_invoke', s:function('s:set_lookup'))

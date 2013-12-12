@@ -64,8 +64,8 @@ function! s:list_lookup(this, idx, ...) abort
   return a:0 ? a:1 : g:timl#nil
 endfunction
 
-function! s:list_cons(this, other) abort
-  return timl#persistentb(a:this + [a:other])
+function! s:list_cons(this, ...) abort
+  return timl#persistentb(a:this + a:000)
 endfunction
 
 let s:empty_list = timl#persistentb([])
@@ -79,7 +79,7 @@ call s:implement('timl.vim/List',
       \ 'more', s:function("s:list_rest"),
       \ 'lookup', s:function('s:list_lookup'),
       \ 'count', s:function('len'),
-      \ '_conj', s:function('s:list_cons'),
+      \ 'conj', s:function('s:list_cons'),
       \ 'empty', s:function('s:list_empty'),
       \ '_invoke', s:function('s:list_lookup'))
 
@@ -93,8 +93,14 @@ function! s:dict_lookup(this, key, ...) abort
   return get(a:this, timl#str(a:key), a:0 ? a:1 : g:timl#nil)
 endfunction
 
-function! s:dict_cons(this, x) abort
-  return timl#persistentb(extend(timl#transient(a:this), {timl#str(timl#first(a:x)): timl#first(timl#rest(a:x))}))
+function! s:dict_cons(this, ...) abort
+  let this = copy(a:this)
+  let _ = {}
+  for _.e in a:000
+    let this[timl#str(timl#first(_.e))] = timl#fnext(_.e)
+  endfor
+  lockvar 1 this
+  return this
 endfunction
 
 let s:empty_dict = timl#persistentb({})
@@ -106,7 +112,7 @@ call s:implement('timl.vim/Dictionary',
       \ 'seq', s:function('s:dict_seq'),
       \ 'lookup', s:function('s:dict_lookup'),
       \ 'count', s:function('len'),
-      \ '_conj', s:function('s:dict_cons'),
+      \ 'conj', s:function('s:dict_cons'),
       \ 'empty', s:function('s:dict_empty'),
       \ '_invoke', s:function('s:dict_lookup'))
 
