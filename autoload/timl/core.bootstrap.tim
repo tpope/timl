@@ -1,7 +1,7 @@
 (in-ns 'timl.core)
 
 (defmacro lazy-seq [& body]
-  (list '#*timl#lang#create_lazy_seq (cons 'fn* (cons [] body))))
+  (list '#*timl#lazy_seq#create (cons 'fn* (cons [] body))))
 
 (defmacro let [& args] (cons 'let* args))
 

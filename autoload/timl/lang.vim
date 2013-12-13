@@ -186,28 +186,10 @@ call s:implement('timl.lang/ChunkedCons',
 
 " Section: Lazy Seq
 
-function! timl#lang#create_lazy_seq(fn)
-  return timl#bless('timl.lang/LazySeq', {'fn': a:fn})
-endfunction
-
-function! s:deref_lazy_seq(lseq) abort
-  if !has_key(a:lseq, 'seq')
-    let _ = {'seq': timl#call(a:lseq.fn, [])}
-    while !timl#type#canp(_.seq, g:timl#core#more)
-      let _.seq = timl#type#dispatch(g:timl#core#seq, _.seq)
-    endwhile
-    let a:lseq.seq = _.seq
-  endif
-  return a:lseq.seq
-endfunction
-
-function! s:count_lazy_seq(lseq) abort
-  return timl#type#dispatch(g:timl#core#count, s:deref_lazy_seq(a:lseq))
-endfunction
-
 call s:implement('timl.lang/LazySeq',
-      \ 'seq', s:function('s:deref_lazy_seq'),
-      \ 'count', s:function('s:count_lazy_seq'),
+      \ 'seq', s:function('timl#lazy_seq#seq'),
+      \ 'realized?', s:function('timl#lazy_seq#realized'),
+      \ 'count', s:function('timl#lazy_seq#count'),
       \ 'conj', s:function('s:cons_cons'),
       \ 'empty', s:function('s:empty_list'))
 
