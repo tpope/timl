@@ -139,7 +139,7 @@ function! timl#compiler#serialize(x, ...)
     return 'timl#set('.timl#compiler#serialize(keyvals).')'
 
   elseif timl#consp(a:x)
-    return 'timl#cons('.timl#compiler#serialize(a:x.car).','.timl#compiler#serialize(a:x.cdr).')'
+    return 'timl#cons#create('.timl#compiler#serialize(a:x.car).','.timl#compiler#serialize(a:x.cdr).')'
 
   elseif type(a:x) == type({})
     let acc = []
@@ -226,7 +226,7 @@ function! s:emit_sf_let_STAR_(file, env, form) abort
   if timl#count(body) == 1
     return s:emit(a:file, env, timl#first(body))
   else
-    return s:emit_sf_do(a:file, env, timl#cons(timl#symbol('do'), body))
+    return s:emit_sf_do(a:file, env, timl#cons#create(timl#symbol('do'), body))
   endif
 endfunction
 
@@ -318,7 +318,7 @@ function! s:one_fn(file, env, form, name, temp) abort
   if timl#count(body) == 1
     call s:emit(a:file, s:with_context(env, 'return'), timl#first(body))
   else
-    call s:emit_sf_do(a:file, s:with_context(env, 'return'), timl#cons(timl#symbol('do'), body))
+    call s:emit_sf_do(a:file, s:with_context(env, 'return'), timl#cons#create(timl#symbol('do'), body))
   endif
   call s:emitln(a:file, "break")
   call s:emitln(a:file, "endwhile")
@@ -413,7 +413,7 @@ function! s:emit_sf_try(file, env, form) abort
   if timl#count(body) == 1
     call s:emit(a:file, a:env, timl#first(body))
   else
-    call s:emit_sf_do(a:file, a:env, timl#cons(timl#symbol('do'), body))
+    call s:emit_sf_do(a:file, a:env, timl#cons#create(timl#symbol('do'), body))
   endif
   while _.seq isnot# g:timl#nil
     let _.first = timl#first(_.seq)
@@ -425,10 +425,10 @@ function! s:emit_sf_try(file, env, form) abort
         let env.locals[var[0]] = 'locals['.string(var[0]).']'
         call s:emitln(a:file, 'let '.env.locals[var[0]].' = timl#build_exception(v:exception, v:throwpoint)')
       endif
-      call s:emit_sf_do(a:file, env, timl#cons(timl#symbol('do'), timl#next(timl#nnext(_.first))))
+      call s:emit_sf_do(a:file, env, timl#cons#create(timl#symbol('do'), timl#next(timl#nnext(_.first))))
     elseif timl#consp(_.first) && timl#symbol#is(timl#first(_.first), 'finally')
       call s:emitln(a:file, 'finally')
-      call s:emit_sf_do(a:file, s:with_context(a:env, 'statement'), timl#cons(timl#symbol('do'), timl#next(_.first)))
+      call s:emit_sf_do(a:file, s:with_context(a:env, 'statement'), timl#cons#create(timl#symbol('do'), timl#next(_.first)))
     else
       throw 'timl#compiler: invalid form after catch or finally try'
     endif

@@ -55,7 +55,7 @@ function! s:nil_lookup(this, key, default)
 endfunction
 
 function! s:nil_cons(this, ...)
-  return call('s:cons_cons', [g:timl#empty_list] + a:000)
+  return call('timl#cons#conj', [g:timl#empty_list] + a:000)
 endfunction
 
 function! s:nil_assoc(this, ...)
@@ -109,28 +109,11 @@ call s:implement('timl.lang/MultiFn',
 
 " Section: Cons
 
-function! s:cons_car(cons)
-  return a:cons.car
-endfunction
-
-function! s:cons_cdr(cons)
-  return timl#seq(a:cons.cdr)
-endfunction
-
-function! s:cons_cons(this, ...)
-  let head = a:this
-  let _ = {}
-  for _.e in a:000
-    let head = timl#cons(_.e, head)
-  endfor
-  return head
-endfunction
-
 call s:implement('timl.lang/Cons',
       \ 'seq', s:function('s:identity'),
-      \ 'first', s:function('s:cons_car'),
-      \ 'more', s:function('s:cons_cdr'),
-      \ 'conj', s:function('s:cons_cons'),
+      \ 'first', s:function('timl#cons#first'),
+      \ 'more', s:function('timl#cons#more'),
+      \ 'conj', s:function('timl#cons#conj'),
       \ 'empty', s:function('s:empty_list'))
 
 " Section: Empty list
@@ -145,7 +128,7 @@ call s:implement('timl.lang/EmptyList',
       \ 'first', s:function('s:nil'),
       \ 'more', s:function('s:identity'),
       \ 'count', s:function('s:zero'),
-      \ 'conj', s:function('s:cons_cons'),
+      \ 'conj', s:function('timl#cons#conj'),
       \ 'empty', s:function('s:identity'))
 
 " Section: Array Seq
@@ -155,7 +138,7 @@ call s:implement('timl.lang/ArraySeq',
       \ 'first', s:function('timl#array_seq#first'),
       \ 'more', s:function('timl#array_seq#more'),
       \ 'count', s:function('timl#array_seq#count'),
-      \ 'conj', s:function('s:cons_cons'),
+      \ 'conj', s:function('timl#cons#conj'),
       \ 'empty', s:function('s:empty_list'))
 
 " Section: Lazy Seq
@@ -164,7 +147,7 @@ call s:implement('timl.lang/LazySeq',
       \ 'seq', s:function('timl#lazy_seq#seq'),
       \ 'realized?', s:function('timl#lazy_seq#realized'),
       \ 'count', s:function('timl#lazy_seq#count'),
-      \ 'conj', s:function('s:cons_cons'),
+      \ 'conj', s:function('timl#cons#conj'),
       \ 'empty', s:function('s:empty_list'))
 
 " Section: Hash Map

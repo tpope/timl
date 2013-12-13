@@ -433,19 +433,10 @@ function! timl#list(...) abort
   return timl#list2(a:000)
 endfunction
 
-function! timl#cons(car, cdr) abort
-  if timl#type#canp(a:cdr, g:timl#core#seq)
-    let cons = timl#bless(s:cons, {'car': a:car, 'cdr': a:cdr is# g:timl#nil ? g:timl#empty_list : a:cdr})
-    lockvar 1 cons
-    return cons
-  endif
-  throw 'timl: not seqable'
-endfunction
-
 function! timl#list2(array)
   let _ = {'cdr': g:timl#empty_list}
   for i in range(len(a:array)-1, 0, -1)
-    let _.cdr = timl#cons(a:array[i], _.cdr)
+    let _.cdr = timl#cons#create(a:array[i], _.cdr)
   endfor
   return _.cdr
 endfunction

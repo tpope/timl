@@ -266,9 +266,9 @@ function! timl#reader#syntax_quote(form, gensyms) abort
       return timl#list(s:quote, a:form)
     endif
   elseif timl#vectorp(a:form)
-    return timl#list(s:vec, timl#cons(s:concat, s:sqexpandlist(a:form, a:gensyms)))
+    return timl#list(s:vec, timl#cons#create(s:concat, s:sqexpandlist(a:form, a:gensyms)))
   elseif timl#setp(a:form)
-    return timl#list(s:set, timl#cons(s:concat, s:sqexpandlist(a:form, a:gensyms)))
+    return timl#list(s:set, timl#cons#create(s:concat, s:sqexpandlist(a:form, a:gensyms)))
   elseif timl#mapp(a:form)
     let _ = {'seq': timl#seq(a:form)}
     let keyvals = []
@@ -276,7 +276,7 @@ function! timl#reader#syntax_quote(form, gensyms) abort
       call extend(keyvals, timl#ary(timl#first(_.seq)))
       let _.seq = timl#next(_.seq)
     endwhile
-    return timl#list(s:hash_map, timl#cons(s:concat, s:sqexpandlist(keyvals, a:gensyms)))
+    return timl#list(s:hash_map, timl#cons#create(s:concat, s:sqexpandlist(keyvals, a:gensyms)))
 
   elseif timl#collp(a:form)
     let first = timl#first(a:form)
@@ -285,7 +285,7 @@ function! timl#reader#syntax_quote(form, gensyms) abort
     elseif first is# s:unquote_splicing
       throw 'timl#reader: unquote-splicing used outside of list'
     else
-      return timl#list(s:seq, timl#cons(s:concat, s:sqexpandlist(a:form, a:gensyms)))
+      return timl#list(s:seq, timl#cons#create(s:concat, s:sqexpandlist(a:form, a:gensyms)))
     endif
   else
     return a:form

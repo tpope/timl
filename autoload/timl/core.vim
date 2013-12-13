@@ -102,7 +102,7 @@ TLfunction defmacro(form, env, name, params, ...)
     let _ = {}
     let body = []
     for _.list in [a:params] + a:000
-      call add(body, timl#cons(extra + timl#first(_.list), timl#next(_.list)))
+      call add(body, timl#cons#create(extra + timl#first(_.list), timl#next(_.list)))
     endfor
   endif
   let fn = timl#gensym('fn')
@@ -391,7 +391,7 @@ endfunction
 
 TLalias list timl#list
 TLpredicate list_QMARK_(val) timl#consp(a:val)
-TLalias cons timl#cons
+TLalias cons timl#cons#create
 
 " }}}1
 " Section: Vectors {{{1
