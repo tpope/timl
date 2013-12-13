@@ -118,7 +118,7 @@ function! timl#compiler#serialize(x, ...)
   elseif type(a:x) == type([])
     return '['.join(map(copy(a:x), 'timl#compiler#serialize(v:val)'), ', ').']'
 
-  elseif timl#mapp(a:x)
+  elseif timl#mapp(a:x) && timl#type(a:x) !=# 'vim/Dictionary'
     let _ = {}
     let keyvals = []
     let _.seq = timl#seq(a:x)
