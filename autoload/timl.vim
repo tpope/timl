@@ -322,22 +322,12 @@ function! timl#hash_map(...) abort
   return timl#persistentb(map)
 endfunction
 
-let s:hash_set = timl#type#intern('timl.lang/HashSet')
 function! timl#hash_set(...) abort
-  return timl#set(a:000)
+  return timl#set#coerce(a:000)
 endfunction
 
-function! timl#set(coll) abort
-  let dict = timl#bless(s:hash_set)
-  if type(a:coll) == type([])
-    let _ = {}
-    for _.val in a:coll
-      let dict[timl#key(_.val)] = _.val
-    endfor
-    return timl#persistentb(dict)
-  else
-    throw 'not implemented'
-  endif
+function! timl#set(seq) abort
+  return timl#set#coerce(a:seq)
 endfunction
 
 function! timl#assocb(coll, ...) abort

@@ -200,51 +200,19 @@ call s:implement('timl.lang/HashMap',
 
 " Section: Hash Set
 
-function! s:set_seq(hash) abort
-  let items = map(filter(items(a:hash), 'v:val[0][0] !=# "#"'), 'v:val[1]')
-  return empty(items) ? g:timl#nil : timl#array_seq#create(items)
-endfunction
-
-function! s:set_lookup(this, key, ...) abort
-  return get(a:this, timl#key(a:key), a:0 ? a:1 : g:timl#nil)
-endfunction
-
-function! s:set_cons(this, ...) abort
-  let this = copy(a:this)
-  let _ = {}
-  for _.e in a:000
-    let this[timl#key(_.e)] = _.e
-  endfor
-  lockvar 1 this
-  return this
-endfunction
-
-
-function! s:set_disj(this, ...) abort
-  let _ = {}
-  let this = copy(a:this)
-  for _.x in a:000
-    let key = timl#key(_.x)
-    if has_key(this, key)
-      call remove(this, key)
-    endif
-  endfor
-  lockvar 1 this
-  return this
-endfunction
-
-let s:empty_set = timl#persistentb(timl#bless('timl.lang/HashSet'))
-function! s:set_empty(this) abort
-  return s:empty_set
-endfunction
+call s:implement('timl.lang/HashSet',
+      \ 'seq', s:function('timl#set#seq'),
+      \ 'lookup', s:function('timl#set#lookup'),
+      \ 'empty', s:function('timl#set#empty'),
+      \ 'conj', s:function('timl#set#conj'),
+      \ 'disj', s:function('timl#set#disj'),
+      \ 'transient', s:function('timl#set#transient'),
+      \ '_invoke', s:function('timl#set#lookup'))
 
 call s:implement('timl.lang/HashSet',
-      \ 'seq', s:function('s:set_seq'),
-      \ 'lookup', s:function('s:set_lookup'),
-      \ 'empty', s:function('s:set_empty'),
-      \ 'conj', s:function('s:set_cons'),
-      \ 'disj', s:function('s:set_disj'),
-      \ '_invoke', s:function('s:set_lookup'))
+      \ 'conj!', s:function('timl#set#conjb'),
+      \ 'disj!', s:function('timl#set#disjb'),
+      \ 'persistent!', s:function('timl#set#persistentb'))
 
 " Section: Defaults
 
