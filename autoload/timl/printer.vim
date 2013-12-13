@@ -27,9 +27,6 @@ function! timl#printer#string(x)
   elseif type ==# 'timl.lang/Boolean'
     return a:x.value ? 'true' : 'false'
 
-  elseif type ==# 'timl.lang/EmptyList'
-    return '()'
-
   elseif type == 'timl.lang/Function'
     return '#<'.get(a:x, 'ns', {'name': ['...']}).name[0].'/'.get(a:x, 'name', ['...'])[0].' #*'.join([a:x.call]).'>'
 
@@ -84,9 +81,9 @@ function! timl#printer#string(x)
     return '#{' . join(acc, ' ') . '}'
 
   elseif timl#type#canp(a:x, g:timl#core#more)
-    let _ = {'seq': a:x}
+    let _ = {'seq': timl#seq(a:x)}
     let output = []
-    while !empty(_.seq)
+    while _.seq isnot# g:timl#nil
       call add(output, timl#printer#string(timl#first(_.seq)))
       let _.seq = timl#next(_.seq)
     endwhile
