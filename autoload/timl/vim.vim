@@ -46,7 +46,7 @@ call s:implement('vim/Funcref', '_invoke', s:function('s:funcall'))
 " Section: List
 
 function! s:list_seq(this) abort
-  return empty(a:this) ? g:timl#nil : timl#lang#create_chunked_cons(a:this)
+  return empty(a:this) ? g:timl#nil : timl#array_seq#create(a:this)
 endfunction
 
 function! s:list_first(this) abort
@@ -54,7 +54,7 @@ function! s:list_first(this) abort
 endfunction
 
 function! s:list_rest(this) abort
-  return len(a:this) <= 1 ? g:timl#empty_list : timl#lang#create_chunked_cons(a:this, g:timl#empty_list, 1)
+  return len(a:this) <= 1 ? g:timl#empty_list : timl#array_seq#create(a:this, 1)
 endfunction
 
 function! s:list_lookup(this, idx, ...) abort

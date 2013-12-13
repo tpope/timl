@@ -148,39 +148,13 @@ call s:implement('timl.lang/EmptyList',
       \ 'conj', s:function('s:cons_cons'),
       \ 'empty', s:function('s:identity'))
 
-" Section: Chunked Cons
+" Section: Array Seq
 
-function! s:chunk_first(seq) abort
-  return get(a:seq.list, a:seq.pos, g:timl#nil)
-endfunction
-
-function! s:chunk_rest(seq) abort
-  if len(a:seq.list) - a:seq.pos <= 1
-    return a:seq.next
-  else
-    return timl#lang#create_chunked_cons(a:seq.list, a:seq.next, a:seq.pos+1)
-  endif
-endfunction
-
-function! s:chunk_count(this) abort
-  let x = len(a:this.list) - a:this.pos + timl#count(a:this.next)
-  return x
-endfunction
-
-function! timl#lang#create_chunked_cons(list, ...) abort
-  let cc = timl#bless('timl.lang/ChunkedCons', {
-        \ 'list': a:list,
-        \ 'pos': a:0 > 1 ? a:2 : 0,
-        \ 'next': a:0 ? a:1 : g:timl#empty_list})
-  lockvar 1 cc
-  return cc
-endfunction
-
-call s:implement('timl.lang/ChunkedCons',
+call s:implement('timl.lang/ArraySeq',
       \ 'seq', s:function('s:identity'),
-      \ 'first', s:function('s:chunk_first'),
-      \ 'more', s:function('s:chunk_rest'),
-      \ 'count', s:function('s:chunk_count'),
+      \ 'first', s:function('timl#array_seq#first'),
+      \ 'more', s:function('timl#array_seq#more'),
+      \ 'count', s:function('timl#array_seq#count'),
       \ 'conj', s:function('s:cons_cons'),
       \ 'empty', s:function('s:empty_list'))
 
@@ -197,7 +171,7 @@ call s:implement('timl.lang/LazySeq',
 
 function! s:map_seq(hash) abort
   let items = map(filter(items(a:hash), 'v:val[0][0] !=# "#"'), '[timl#dekey(v:val[0]), v:val[1]]')
-  return empty(items) ? g:timl#nil : timl#lang#create_chunked_cons(items)
+  return empty(items) ? g:timl#nil : timl#array_seq#create(items)
 endfunction
 
 function! s:map_lookup(this, key, ...) abort
@@ -255,7 +229,7 @@ call s:implement('timl.lang/HashMap',
 
 function! s:set_seq(hash) abort
   let items = map(filter(items(a:hash), 'v:val[0][0] !=# "#"'), 'v:val[1]')
-  return empty(items) ? g:timl#nil : timl#lang#create_chunked_cons(items)
+  return empty(items) ? g:timl#nil : timl#array_seq#create(items)
 endfunction
 
 function! s:set_lookup(this, key, ...) abort
