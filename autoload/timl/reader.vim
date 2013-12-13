@@ -45,12 +45,15 @@ function! s:read_until(port, char)
   let list = []
   let _ = {}
   let _.read = s:read(a:port, a:char)
-  while _.read isnot# s:found
+  while _.read isnot# s:found && _.read isnot# g:timl#reader#eof
     call add(list, _.read)
     let _.read = s:read(a:port, a:char)
   endwhile
-  lockvar 1 list
-  return list
+  if _.read is# s:found
+    lockvar 1 list
+    return list
+  endif
+  throw 'timl#reader: EOF'
 endfunction
 
 let s:constants = {
