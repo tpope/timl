@@ -475,7 +475,11 @@ function! timl#call(Func, args, ...) abort
   if type(a:Func) == type(function('tr'))
     return call(a:Func, a:args, a:0 ? a:1 : {})
   elseif type(a:Func) == type({}) && get(a:Func, '#tag') is# s:function_tag
-    return call(a:Func.call, (a:0 ? [a:1] : []) + a:args, a:Func)
+    if !has_key(a:Func, 'apply')
+      let g:FFF = a:Func
+      TLinspect a:Func
+    endif
+    return a:Func.apply(a:args)
   elseif type(a:Func) == type({}) && get(a:Func, '#tag') is# s:multifn_tag
     return call('timl#type#dispatch', [a:Func] + a:args)
   else

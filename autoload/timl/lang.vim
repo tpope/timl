@@ -88,7 +88,7 @@ call s:implement('timl.lang/Keyword',
 " Section: Function
 
 function! s:function_invoke(this, ...) abort
-  return call(a:this.call, a:000, a:this)
+  return a:this.apply(a:000)
 endfunction
 
 call s:implement('timl.lang/Function',

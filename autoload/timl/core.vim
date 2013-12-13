@@ -30,8 +30,7 @@ command! -bang -nargs=1 TLargfunction
       \ let g:timl#core#{matchstr(<q-args>, '^[[:alnum:]_]\+')} = timl#bless('timl.lang/Function', {
       \    'ns': s:ns,
       \    'name': timl#symbol(timl#demunge(matchstr(<q-args>, '^\zs[[:alnum:]_]\+'))),
-      \    'call': s:function('s:call'),
-      \    'apply': function('timl#core#'.matchstr(<q-args>, '^[[:alnum:]_#]\+'))}) |
+      \    'call': s:function('s:call')}) |
       \ function! g:timl#core#{matchstr(<q-args>, '^[[:alnum:]_]\+')}.apply(_) abort
 
 command! -bang -nargs=1 TLfunction
@@ -54,6 +53,7 @@ command! -bang -nargs=1 TLexpr
       \ let g:timl#core#{matchstr(<q-args>, '^[[:alnum:]_]\+')} = timl#bless('timl.lang/Function', {
       \    'ns': s:ns,
       \    'name': timl#symbol(timl#demunge(matchstr(<q-args>, '^\zs[[:alnum:]_]\+'))),
+      \    'apply': s:function('s:apply'),
       \    'call': s:dict.call}) |
       \ let g:timl_functions[join([s:dict.call])] = {'file': expand('<sfile>'), 'line': expand('<slnum>')}
 
@@ -137,10 +137,13 @@ let g:timl#core#defmacro.macro = g:timl#true
 
 TLexpr identity(x) a:x
 
-TLfunction! apply(f, x, ...) abort
-  let args = [a:x] + a:000
+TLargfunction apply
+  if len(a:_) < 2
+    throw 'timl: arity error'
+  endif
+  let [F; args] = a:_
   let args = args[0:-2] + timl#ary(args[-1])
-  return timl#call(a:f, args)
+  return timl#call(F, args)
 endfunction
 
 " }}}1
@@ -151,22 +154,22 @@ TLargfunction echon
   return g:timl#nil
 endfunction
 
-TLfunction echo(...)
+TLargfunction echo
   echo join(map(copy(a:_), 'timl#str(v:val)'), ' ')
   return g:timl#nil
 endfunction
 
-TLfunction echomsg(...)
+TLargfunction echomsg
   echomsg join(map(copy(a:_), 'timl#str(v:val)'), ' ')
   return g:timl#nil
 endfunction
 
-TLfunction print(...)
+TLargfunction print
   echon join(map(copy(a:_), 'timl#str(v:val)'), ' ')
   return g:timl#nil
 endfunction
 
-TLfunction println(...)
+TLargfunction println
   echon join(map(copy(a:_), 'timl#str(v:val)'), ' ')."\n"
   return g:timl#nil
 endfunction

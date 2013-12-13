@@ -282,42 +282,46 @@ function! s:expr_sf_function(file, env, form) abort
   return "function(".timl#compiler#serialize(timl#str(timl#fnext(a:form))).")"
 endfunction
 
-function! s:one_fn(file, env, form, name, temp) abort
+function! s:one_fn(file, env, form, name, temp, catch_errors) abort
   let env = s:copy_locals(a:env)
   let args = timl#ary(timl#first(a:form))
   let env.params = args
   let body = timl#next(a:form)
-  let c = char2nr('a')
   let _ = {}
-  let params = []
+  let positional = []
+  let arity = 0
   for _.arg in args
     if timl#symbol#is(_.arg, '&')
-      call add(params, '...')
       call s:add_local(env, args[-1])
+      let rest = env.locals[args[-1][0]]
+      let arity += 1000
       break
     else
       call s:add_local(env, _.arg)
-      call add(params, nr2char(c))
+      call add(positional, env.locals[_.arg[0]])
+      let arity += 1
     endif
-    let c += 1
   endfor
-  call s:emitln(a:file, "function ".a:temp."(".join(params, ', ').") abort")
+  call s:emitln(a:file, "function ".a:temp."(_) abort")
   call s:emitln(a:file, "let temp = {}")
   call s:emitln(a:file, "let locals = copy(self.locals)")
   if len(a:name)
       call s:emitln(a:file, 'let '.s:localfy(a:name).' = self')
   endif
+  if a:catch_errors && !empty(positional)
+    call s:emitln(a:file, 'try')
+  endif
+  if !empty(positional)
+    call s:emitln(a:file, "let [".join(positional, ', ').(exists('rest') ? '; '.rest : '')."] = a:_")
+  elseif exists('rest')
+    call s:emitln(a:file, "let ".rest." = a:_")
+  endif
+  if a:catch_errors && !empty(positional)
+    call s:emitln(a:file, 'catch /^Vim(let):E68[78]:/')
+    call s:emitln(a:file, "throw 'timl: arity error'")
+    call s:emitln(a:file, 'endtry')
+  endif
   let c = 0
-  for _.arg in args
-    if timl#symbol#is(_.arg, '&')
-      call s:emitln(a:file, 'let '.s:localfy(args[-1][0]).' = a:000')
-      let c = 21 + c
-      break
-    else
-      call s:emitln(a:file, 'let '.s:localfy(_.arg[0]).' = a:'.nr2char(char2nr('a') + c))
-    endif
-    let c += 1
-  endfor
   call s:emitln(a:file, "while 1")
   if timl#count(body) == 1
     call s:emit(a:file, s:with_context(env, 'return'), timl#first(body))
@@ -328,7 +332,7 @@ function! s:one_fn(file, env, form, name, temp) abort
   call s:emitln(a:file, "endwhile")
   call s:emitln(a:file, "throw 'timl: how did i get here'")
   call s:emitln(a:file, "endfunction")
-  return c
+  return arity
 endfunction
 
 function! s:expr_sf_fn_STAR_(file, env, form) abort
@@ -347,24 +351,24 @@ function! s:expr_sf_fn_STAR_(file, env, form) abort
     call s:emitln(a:file, 'let '.temp.'.name = timl#symbol('.string(name).')')
   endif
   if timl#vectorp(timl#first(_.next))
-    call s:one_fn(a:file, env, _.next, name, temp.'.call')
+    call s:one_fn(a:file, env, _.next, name, temp.'.apply', 1)
   elseif timl#consp(timl#first(_.next))
     let c = char2nr('a')
     let fns = {}
     while _.next isnot# g:timl#nil
-      let fns[s:one_fn(a:file, env, timl#first(_.next), name, temp.'.'.nr2char(c))] = nr2char(c)
+      let fns[s:one_fn(a:file, env, timl#first(_.next), name, temp.'.'.nr2char(c), 0)] = nr2char(c)
       let _.next = timl#next(_.next)
       let c += 1
     endwhile
-    call s:emitln(a:file, "function ".temp.".call(...) abort")
+    call s:emitln(a:file, "function ".temp.".apply(_) abort")
     call s:emitln(a:file, "if 0")
-    for arity in sort(map(keys(fns), '+v:val'))
-      if arity > 20
-        call s:emitln(a:file, "elseif a:0 >= ".(21-arity))
+    for arity in sort(map(keys(fns), 'printf("%04d", v:val)'))
+      if arity >= 1000
+        call s:emitln(a:file, "elseif len(a:_) >= ".(arity-1000))
       else
-        call s:emitln(a:file, "elseif a:0 == ".arity)
+        call s:emitln(a:file, "elseif len(a:_) == ".arity)
       endif
-      call s:emitln(a:file, 'return call(self.'.fns[arity]. ', a:000, self)')
+      call s:emitln(a:file, 'return self.'.fns[str2nr(arity)]. '(a:_)')
     endfor
     call s:emitln(a:file, "else")
     call s:emitln(a:file, "throw 'timl: arity error'")
@@ -373,7 +377,7 @@ function! s:expr_sf_fn_STAR_(file, env, form) abort
   endif
   let meta = s:loc_meta(a:form)
   if !empty(meta)
-    call s:emitln(a:file, 'let g:timl_functions[join(['.temp.'.call])] = '.timl#compiler#serialize(meta))
+    call s:emitln(a:file, 'let g:timl_functions[join(['.temp.'.apply])] = '.timl#compiler#serialize(meta))
   endif
   return temp
 endfunction
