@@ -60,7 +60,7 @@ function! timl#printer#string(x)
   elseif type(a:x) == type([])
     return '['.join(map(a:x[:], 'timl#printer#string(v:val)'), ' ') . ']'
 
-  elseif type == 'timl.vim/Dictionary'
+  elseif type == 'vim/Dictionary'
     let acc = []
     for [k, V] in items(a:x)
       call add(acc, timl#printer#string(k) . ' ' . timl#printer#string(V))

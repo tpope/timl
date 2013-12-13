@@ -304,7 +304,7 @@ function! timl#into(coll, seq) abort
   let t = timl#type#string(a:coll)
   if a:coll is g:timl#nil
     return timl#seq(a:seq)
-  elseif t ==# 'timl.vim/List'
+  elseif t ==# 'vim/List'
     return timl#persistentb(extend(timl#transient(a:coll), timl#ary(a:seq)))
   elseif t ==# 'timl.lang/HashSet'
     let coll = timl#transient(a:coll)
@@ -313,7 +313,7 @@ function! timl#into(coll, seq) abort
       let coll[timl#key(_.v)] = _.v
     endfor
     return timl#persistentb(coll)
-  elseif t ==# 'timl.lang/HashMap' || t ==# 'timl.vim/Dictionary'
+  elseif t ==# 'timl.lang/HashMap' || t ==# 'vim/Dictionary'
     let coll = timl#transient(a:coll)
     let _ = {}
     for _.v in timl#ary(a:seq)
@@ -347,7 +347,7 @@ function! timl#setp(coll)
 endfunction
 
 function! timl#dictp(coll)
-  return timl#type#string(a:coll) == 'timl.vim/Dictionary'
+  return timl#type#string(a:coll) == 'vim/Dictionary'
 endfunction
 
 function! timl#dict(...) abort
@@ -400,7 +400,7 @@ function! timl#assocb(coll, ...) abort
   if len(keyvals) % 2 == 0
     let type = timl#type#string(a:coll)
     for i in range(0, len(keyvals) - 1, 2)
-      let key = (type == 'timl.vim/Dictionary' ? timl#str(keyvals[i]) : timl#key(keyvals[i]))
+      let key = (type == 'vim/Dictionary' ? timl#str(keyvals[i]) : timl#key(keyvals[i]))
       let a:coll[key] = keyvals[i+1]
     endfor
     return a:coll
@@ -412,7 +412,7 @@ function! timl#dissocb(coll, ...) abort
   let _ = {}
   let t = timl#type#string(a:coll)
   for _.key in a:000
-    let key = (t == 'timl.vim/Dictionary' ? timl#str(_.key) : timl#key(_.key))
+    let key = (t == 'vim/Dictionary' ? timl#str(_.key) : timl#key(_.key))
     if has_key(a:coll, key)
       call remove(a:coll, key)
     endif

@@ -16,22 +16,22 @@ function! timl#type#intern(type)
 endfunction
 
 let s:types = {
-      \ 0: 'timl.vim/Number',
-      \ 1: 'timl.vim/String',
-      \ 2: 'timl.vim/Funcref',
-      \ 3: 'timl.vim/List',
-      \ 4: 'timl.vim/Dictionary',
-      \ 5: 'timl.vim/Float'}
+      \ 0: 'vim/Number',
+      \ 1: 'vim/String',
+      \ 2: 'vim/Funcref',
+      \ 3: 'vim/List',
+      \ 4: 'vim/Dictionary',
+      \ 5: 'vim/Float'}
 
 function! timl#type#objectp(obj) abort
   return type(a:obj) == type({}) && get(a:obj, '#tagged') is g:timl_tag_sentinel
 endfunction
 
 function! timl#type#string(val) abort
-  let type = get(s:types, type(a:val), 'timl.vim/Unknown')
-  if type ==# 'timl.vim/List' && a:val is# g:timl#nil
+  let type = get(s:types, type(a:val), 'vim/Unknown')
+  if type ==# 'vim/List' && a:val is# g:timl#nil
     return 'timl.lang/Nil'
-  elseif type == 'timl.vim/Dictionary'
+  elseif type == 'vim/Dictionary'
     if get(a:val, '#tagged') is g:timl_tag_sentinel
       return a:val['#tag'][0][1:-1]
     elseif timl#keywordp(a:val)
@@ -178,8 +178,8 @@ endfunction
 
 if !exists('g:timl_hierarchy')
   let g:timl_hierarchy = {'parents': timl#bless('timl.lang/HashMap'), 'descendants': timl#bless('timl.lang/HashMap'), 'ancestors': timl#bless('timl.lang/HashMap')}
-  call timl#type#derive(timl#keyword('timl.vim/Number'), timl#keyword('timl.vim/Numeric'))
-  call timl#type#derive(timl#keyword('timl.vim/Float'), timl#keyword('timl.vim/Numeric'))
+  call timl#type#derive(timl#keyword('vim/Number'), timl#keyword('vim/Numeric'))
+  call timl#type#derive(timl#keyword('vim/Float'), timl#keyword('vim/Numeric'))
 endif
 
 " vim:set et sw=2:

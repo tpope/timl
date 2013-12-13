@@ -31,7 +31,7 @@ function! s:string_count(this) abort
   return exists('*strchars') ? strchars(a:this) : len(substitute(a:this, '.', '.', 'g'))
 endfunction
 
-call s:implement('timl.vim/String',
+call s:implement('vim/String',
       \ 'lookup', s:function('s:string_lookup'),
       \ 'count', s:function('s:string_count'))
 
@@ -41,7 +41,7 @@ function! s:funcall(this, args)
   return call(a:this, a:args, {'__fn__': a:this})
 endfunction
 
-call s:implement('timl.vim/Funcref', '_invoke', s:function('s:funcall'))
+call s:implement('vim/Funcref', '_invoke', s:function('s:funcall'))
 
 " Section: List
 
@@ -86,7 +86,7 @@ function! s:list_empty(this) abort
   return this
 endfunction
 
-call s:implement('timl.vim/List',
+call s:implement('vim/List',
       \ 'seq', s:function('s:list_seq'),
       \ 'first', s:function("s:list_first"),
       \ 'more', s:function("s:list_rest"),
@@ -147,7 +147,7 @@ function! s:dict_empty(this) abort
   return this
 endfunction
 
-call s:implement('timl.vim/Dictionary',
+call s:implement('vim/Dictionary',
       \ 'seq', s:function('s:dict_seq'),
       \ 'lookup', s:function('s:dict_lookup'),
       \ 'count', s:function('len'),
