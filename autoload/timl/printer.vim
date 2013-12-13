@@ -15,22 +15,19 @@ let s:escapes = {
 function! timl#printer#string(x)
   " TODO: guard against recursion
   let type = timl#type#string(a:x)
-  if type == 'timl.lang/Symbol'
+  if type ==# 'timl.lang/Symbol'
     return a:x[0]
 
-  elseif type == 'timl.lang/Keyword'
+  elseif type ==# 'timl.lang/Keyword'
     return ':'.a:x[0]
 
-  elseif a:x is# g:timl#nil
+  elseif type ==# 'timl.lang/Nil'
     return 'nil'
 
-  elseif a:x is# g:timl#false
-    return 'false'
+  elseif type ==# 'timl.lang/Boolean'
+    return a:x.value ? 'true' : 'false'
 
-  elseif a:x is# g:timl#true
-    return 'true'
-
-  elseif a:x is# g:timl#empty_list
+  elseif type ==# 'timl.lang/EmptyList'
     return '()'
 
   elseif type == 'timl.lang/Function'
@@ -68,17 +65,25 @@ function! timl#printer#string(x)
     endfor
     return '#<{' . join(acc, ' ') . '}>'
 
-  elseif type == 'timl.lang/HashSet'
+  elseif timl#mapp(a:x)
     let acc = []
-    for [k, V] in items(a:x)
-      if k !~# '^#'
-        call add(acc, timl#printer#string(V))
-      endif
-      unlet! V
-    endfor
+    let _ = {'seq': timl#seq(a:x)}
+    while _.seq isnot# g:timl#nil
+      call add(acc, timl#printer#string(timl#first(_.seq))[1:-2])
+      let _.seq = timl#next(_.seq)
+    endwhile
+    return '{' . join(acc, ', ') . '}'
+
+  elseif timl#setp(a:x)
+    let acc = []
+    let _ = {'seq': timl#seq(a:x)}
+    while _.seq isnot# g:timl#nil
+      call add(acc, timl#printer#string(timl#first(_.seq)))
+      let _.seq = timl#next(_.seq)
+    endwhile
     return '#{' . join(acc, ' ') . '}'
 
-  elseif type !=# 'timl.lang/HashMap' && timl#type#canp(a:x, g:timl#core#more)
+  elseif timl#type#canp(a:x, g:timl#core#more)
     let _ = {'seq': a:x}
     let output = []
     while !empty(_.seq)
@@ -87,10 +92,19 @@ function! timl#printer#string(x)
     endwhile
     return '('.join(output, ' ').')'
 
-  elseif type !=# 'timl.lang/HashMap' && timl#type#canp(a:x, g:timl#core#seq)
+  elseif timl#type#canp(a:x, g:timl#core#seq)
     return timl#printer#string(timl#seq(a:x))
 
-  elseif type(a:x) == type({})
+  elseif type(a:x) == type('')
+    return '"'.substitute(a:x, "[\n\r\t\"\\\\]", '\=get(s:escapes, submatch(0))', 'g').'"'
+
+  elseif type(a:x) == type(function('tr'))
+    return '#*'.substitute(join([a:x]), '[{}]', '', 'g')
+
+  elseif type =~# '^vim/'
+    return string(a:x)
+
+  else
     let acc = []
     for [k, V] in items(a:x)
       if k[0] !=# '#'
@@ -98,15 +112,8 @@ function! timl#printer#string(x)
       endif
       unlet! V
     endfor
-    let prefix = type ==# 'timl.lang/HashMap' ? '' : '#'.type
-    return prefix.'{' . join(acc, ' ') . '}'
+    return prefix.'#<'.type.' {' . join(acc, ', ') . '}>'
 
-  elseif type(a:x) == type('')
-    return '"'.substitute(a:x, "[\n\r\t\"\\\\]", '\=get(s:escapes, submatch(0))', 'g').'"'
-  elseif type(a:x) == type(function('tr'))
-    return '#*'.substitute(join([a:x]), '[{}]', '', 'g')
-  else
-    return string(a:x)
   endif
 endfunction
 
