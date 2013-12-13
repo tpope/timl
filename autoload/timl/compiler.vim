@@ -174,6 +174,10 @@ function! s:emitln(file, str)
   return a:file
 endfunction
 
+function! s:localfy(name) abort
+  return a:name =~# '^\h\w*$' ? 'locals.'.a:name :  'locals['.string(a:name).']'
+endfunction
+
 function! s:with_context(env, context) abort
   let env = copy(a:env)
   let env.context = a:context
@@ -210,6 +214,11 @@ function! s:expr_sf_let_STAR_(file, env, form) abort
   return s:wrap_as_expr(a:file, a:env, a:form)
 endfunction
 
+function! s:add_local(env, sym) abort
+  let str = timl#symbol#coerce(a:sym)[0]
+  let a:env.locals[str] = s:localfy(str)
+endfunction
+
 function! s:emit_sf_let_STAR_(file, env, form) abort
   if a:env.context ==# 'statement'
     return s:emitln('call '.s:wrap_as_expr(a:file, a:env, a:form))
@@ -218,9 +227,9 @@ function! s:emit_sf_let_STAR_(file, env, form) abort
   let env = s:copy_locals(a:env)
   for i in range(0, len(ary)-1, 2)
     let expr = s:emit(a:file, s:with_context(env, 'expr'), ary[i+1])
-    call s:emitstr(a:file, 'let locals['.string(timl#symbol#coerce(ary[i])[0]).'] = '.expr)
+    call s:emitstr(a:file, 'let '.s:localfy(timl#symbol#coerce(ary[i])[0]).' = '.expr)
     call s:emitln(a:file, '')
-    let env.locals[ary[i][0]] = 'locals['.string(timl#symbol#coerce(ary[i])[0]).']'
+    call s:add_local(env, ary[i])
   endfor
   let body = timl#nnext(a:form)
   if timl#count(body) == 1
@@ -273,11 +282,6 @@ function! s:expr_sf_function(file, env, form) abort
   return "function(".timl#compiler#serialize(timl#str(timl#fnext(a:form))).")"
 endfunction
 
-function! s:add_local(env, sym)
-  let str = timl#symbol#coerce(a:sym)[0]
-  let a:env.locals[str] = 'locals['.string(str).']'
-endfunction
-
 function! s:one_fn(file, env, form, name, temp) abort
   let env = s:copy_locals(a:env)
   let args = timl#ary(timl#first(a:form))
@@ -301,16 +305,16 @@ function! s:one_fn(file, env, form, name, temp) abort
   call s:emitln(a:file, "let temp = {}")
   call s:emitln(a:file, "let locals = copy(self.locals)")
   if len(a:name)
-      call s:emitln(a:file, 'let locals['.string(a:name).'] = self')
+      call s:emitln(a:file, 'let '.s:localfy(a:name).' = self')
   endif
   let c = 0
   for _.arg in args
     if timl#symbol#is(_.arg, '&')
-      call s:emitln(a:file, 'let locals['.string(args[-1][0]).'] = a:000')
+      call s:emitln(a:file, 'let '.s:localfy(args[-1][0]).' = a:000')
       let c = 21 + c
       break
     else
-      call s:emitln(a:file, 'let locals['.string(_.arg[0]).'] = a:'.nr2char(char2nr('a') + c))
+      call s:emitln(a:file, 'let '.s:localfy(_.arg[0]).' = a:'.nr2char(char2nr('a') + c))
     endif
     let c += 1
   endfor
@@ -333,7 +337,7 @@ function! s:expr_sf_fn_STAR_(file, env, form) abort
   let _.next = timl#next(a:form)
   if timl#symbol#test(timl#first(_.next))
     let name = timl#first(_.next)[0]
-    let env.locals[name] = 'locals['.string(name).']'
+    let env.locals[name] = s:localfy(name)
     let _.next = timl#next(_.next)
   else
     let name = ''
@@ -422,7 +426,7 @@ function! s:emit_sf_try(file, env, form) abort
       let var = timl#first(timl#nnext(_.first))
       let env = s:copy_locals(a:env)
       if timl#symbol#test(var) && var[0] !=# '_'
-        let env.locals[var[0]] = 'locals['.string(var[0]).']'
+        call s:add_local(env, var)
         call s:emitln(a:file, 'let '.env.locals[var[0]].' = timl#build_exception(v:exception, v:throwpoint)')
       endif
       call s:emit_sf_do(a:file, env, timl#cons#create(timl#symbol('do'), timl#next(timl#nnext(_.first))))
