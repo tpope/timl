@@ -330,7 +330,6 @@ function! s:one_fn(file, env, form, name, temp, catch_errors) abort
   endif
   call s:emitln(a:file, "break")
   call s:emitln(a:file, "endwhile")
-  call s:emitln(a:file, "throw 'timl: how did i get here'")
   call s:emitln(a:file, "endfunction")
   return arity
 endfunction
