@@ -230,17 +230,17 @@ TLpredicate integer_QMARK_(obj) type(a:obj) == type(0)
 TLpredicate float_QMARK_(obj)   type(a:obj) == 5
 TLpredicate number_QMARK_(obj)  type(a:obj) == type(0) || type(a:obj) == 5
 
-TLfunction _PLUS_(...)
+TLargfunction _PLUS_
   let acc = 0
-  for elem in a:000
+  for elem in a:_
     let acc += elem
   endfor
   return acc
 endfunction
 
-TLfunction _STAR_(...)
+TLargfunction _STAR_
   let acc = 1
-  for elem in a:000
+  for elem in a:_
     let acc = acc * elem
   endfor
   return acc
