@@ -14,10 +14,31 @@ endif
 
 let s:ns = timl#namespace#find(timl#symbol('timl.core'))
 
+function! s:function(name) abort
+  return function(substitute(a:name,'^s:',matchstr(expand('<sfile>'), '.*\zs<SNR>\d\+_'),''))
+endfunction
+
+function! s:call(...) dict
+  return self.apply(a:000)
+endfunction
+
+function! s:apply(_) dict
+  return call(self.call, a:_, self)
+endfunction
+
+command! -bang -nargs=1 TLargfunction
+      \ let g:timl#core#{matchstr(<q-args>, '^[[:alnum:]_]\+')} = timl#bless('timl.lang/Function', {
+      \    'ns': s:ns,
+      \    'name': timl#symbol(timl#demunge(matchstr(<q-args>, '^\zs[[:alnum:]_]\+'))),
+      \    'call': s:function('s:call'),
+      \    'apply': function('timl#core#'.matchstr(<q-args>, '^[[:alnum:]_#]\+'))}) |
+      \ function! g:timl#core#{matchstr(<q-args>, '^[[:alnum:]_]\+')}.apply(_) abort
+
 command! -bang -nargs=1 TLfunction
       \ let g:timl#core#{matchstr(<q-args>, '^[[:alnum:]_]\+')} = timl#bless('timl.lang/Function', {
       \    'ns': s:ns,
       \    'name': timl#symbol(timl#demunge(matchstr(<q-args>, '^\zs[[:alnum:]_]\+'))),
+      \    'apply': s:function('s:apply'),
       \    'call': function('timl#core#'.matchstr(<q-args>, '^[[:alnum:]_#]\+'))}) |
       \ function! timl#core#<args> abort
 
@@ -25,6 +46,7 @@ command! -bang -nargs=+ TLalias
       \ let g:timl#core#{[<f-args>][0]} = timl#bless('timl.lang/Function', {
       \    'ns': s:ns,
       \    'name': timl#symbol(timl#demunge(([<f-args>][0]))),
+      \    'apply': s:function('s:apply'),
       \    'call': function([<f-args>][1])})
 
 command! -bang -nargs=1 TLexpr
@@ -124,28 +146,28 @@ endfunction
 " }}}1
 " Section: IO {{{1
 
-TLfunction echon(...)
-  echon join(map(copy(a:000), 'timl#str(v:val)'), ' ')
+TLargfunction echon
+  echon join(map(copy(a:_), 'timl#str(v:val)'), ' ')
   return g:timl#nil
 endfunction
 
 TLfunction echo(...)
-  echo join(map(copy(a:000), 'timl#str(v:val)'), ' ')
+  echo join(map(copy(a:_), 'timl#str(v:val)'), ' ')
   return g:timl#nil
 endfunction
 
 TLfunction echomsg(...)
-  echomsg join(map(copy(a:000), 'timl#str(v:val)'), ' ')
+  echomsg join(map(copy(a:_), 'timl#str(v:val)'), ' ')
   return g:timl#nil
 endfunction
 
 TLfunction print(...)
-  echon join(map(copy(a:000), 'timl#str(v:val)'), ' ')
+  echon join(map(copy(a:_), 'timl#str(v:val)'), ' ')
   return g:timl#nil
 endfunction
 
 TLfunction println(...)
-  echon join(map(copy(a:000), 'timl#str(v:val)'), ' ')."\n"
+  echon join(map(copy(a:_), 'timl#str(v:val)'), ' ')."\n"
   return g:timl#nil
 endfunction
 
