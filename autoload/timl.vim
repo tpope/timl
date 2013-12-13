@@ -467,49 +467,6 @@ function! timl#vectorp(obj) abort
 endfunction
 
 " }}}1
-" Section: Namespaces {{{1
-
-let s:ns = timl#type#intern('timl.lang/Namespace')
-
-function! timl#find_ns(name)
-  return get(g:timl#namespaces, timl#str(a:name), g:timl#nil)
-endfunction
-
-function! timl#the_ns(name)
-  if timl#type#string(a:name) ==# 'timl.lang/Namespace'
-    return a:name
-  endif
-  let name = timl#str(a:name)
-  if has_key(g:timl#namespaces, name)
-    return g:timl#namespaces[name]
-  endif
-  throw 'timl: no such namespace '.name
-endfunction
-
-function! timl#create_ns(name, ...)
-  let name = timl#symbol#coerce(a:name)
-  if !has_key(g:timl#namespaces, name[0])
-    let g:timl#namespaces[name[0]] = timl#bless(s:ns, {'name': name, 'referring': [], 'aliases': {}})
-  endif
-  let ns = g:timl#namespaces[name[0]]
-  if !a:0
-    return ns
-  endif
-  let opts = a:1
-  let _ = {}
-  for _.refer in get(opts, 'referring', [])
-    let sym = timl#symbol#coerce(_.refer)
-    if name !=# sym && index(ns.referring, sym) < 0
-      call insert(ns.referring, sym)
-    endif
-  endfor
-  for [_.name, _.target] in items(get(opts, 'aliases', {}))
-    let ns.aliases[_.name] = timl#symbol#coerce(_.target)
-  endfor
-  return ns
-endfunction
-
-" }}}1
 " Section: Eval {{{1
 
 let s:function_tag = timl#keyword('#timl.lang/Function')
@@ -568,7 +525,8 @@ function! timl#ns_for_cursor(...) abort
   if !exists('g:autoloaded_timl_compiler')
     runtime! autoload/timl/compiler.vim
   endif
-  if has_key(g:timl#namespaces, ns)
+  let nsobj = timl#namespace#find(timl#symbol(ns))
+  if nsobj isnot# g:timl#nil
     return ns
   else
     return 'user'

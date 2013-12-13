@@ -4,7 +4,7 @@ endif
 let g:autoloaded_timl_reflect = 1
 
 function! timl#reflect#ns_uses(ns) abort
-  return timl#the_ns(a:ns).referring
+  return timl#namespace#the(a:ns).referring
 endfunction
 
 function! timl#reflect#vars_matching(pattern) abort
@@ -31,7 +31,7 @@ function! timl#reflect#omnicomplete(findstart, base) abort
   endif
   let results = []
   let ns = timl#ns_for_file(expand('%'))
-  if !has_key(g:timl#namespaces, ns)
+  if timl#namespace#find(ns) is g:timl#nil
     let ns = 'user'
   endif
   let found = timl#reflect#ns_var_completion(ns)

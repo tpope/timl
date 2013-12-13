@@ -163,7 +163,7 @@ function! timl#type#define_method(ns, name, type, fn) abort
   if !exists('g:'.munged) || timl#type#string(g:{munged}) isnot# 'timl.lang/MultiFn'
     unlet! g:{munged}
     let g:{munged} = timl#bless('timl.lang/MultiFn', {
-          \ 'ns': g:timl#namespaces[a:ns],
+          \ 'ns': timl#namespace#find(a:ns),
           \ 'name': timl#symbol(a:name),
           \ 'cache': {},
           \ 'hierarchy': g:timl_hierarchy,

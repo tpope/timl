@@ -28,7 +28,7 @@ endfunction
 
 function! timl#compiler#qualify(sym, ns, ...)
   let sym = type(a:sym) == type('') ? a:sym : a:sym[0]
-  let the_ns = timl#the_ns(a:ns)
+  let the_ns = timl#namespace#the(a:ns)
   if timl#compiler#specialp(sym)
     return sym
   elseif sym =~# '^\w:\|^\$'
@@ -684,7 +684,7 @@ function! timl#compiler#source_file(filename)
   let old_ns = g:timl#core#_STAR_ns_STAR_
   let cache = s:cache_filename(a:filename)
   try
-    let g:timl#core#_STAR_ns_STAR_ = g:timl#namespaces['user']
+    let g:timl#core#_STAR_ns_STAR_ = timl#namespace#find(timl#symbol('user'))
     let ftime = getftime(cache)
     if !exists('$TIML_EXPIRE_CACHE') && ftime > getftime(a:filename) && ftime > s:myftime
       try

@@ -92,7 +92,7 @@ function! s:repl(...) abort
   try
     set nomore
     let ns = timl#ns_for_cursor()
-    let g:timl#core#_STAR_ns_STAR_ = g:timl#namespaces[a:0 ? a:1 : ns]
+    let g:timl#core#_STAR_ns_STAR_ = timl#namespace#the(a:0 ? a:1 : ns)
     if g:timl#core#_STAR_ns_STAR_.name[0] ==# 'user'
       call timl#require(timl#symbol('timl.repl'))
       call timl#core#refer(timl#symbol('timl.repl'))

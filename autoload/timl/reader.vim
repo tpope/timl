@@ -197,7 +197,7 @@ function! s:process(port, token, line, wanted) abort
     if empty(ns)
       let error = 'timl#reader: unknown ns alias '.alias.' in keyword'
     else
-      return timl#keyword#intern(timl#the_ns(ns).name[0].matchstr(token, '.*\zs/.\+'))
+      return timl#keyword#intern(timl#namespace#the(ns).name[0].matchstr(token, '.*\zs/.\+'))
     endif
   elseif token =~# '^::.'
     return timl#keyword#intern(g:timl#core#_STAR_ns_STAR_.name[0].'/'.token[2:-1])
