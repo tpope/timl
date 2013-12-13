@@ -30,7 +30,7 @@ endfunction
 function! timl#key(key)
   if type(a:key) == type(0)
     return string(a:key)
-  elseif timl#keywordp(a:key)
+  elseif timl#keyword#test(a:key)
     return a:key[0]
   elseif a:key is# g:timl#nil
     return ' '
@@ -102,30 +102,8 @@ endfunction
 " }}}1
 " Section: Keywords {{{1
 
-if !exists('s:keywords')
-  let s:keywords = {}
-endif
-
 function! timl#keyword(str)
-  if !has_key(s:keywords, a:str)
-    let s:keywords[a:str] = {'0': a:str}
-    lockvar s:keywords[a:str]
-  endif
-  return s:keywords[a:str]
-endfunction
-
-function! timl#keywordp(keyword)
-  return type(a:keyword) == type({}) &&
-        \ has_key(a:keyword, 0) &&
-        \ type(a:keyword[0]) == type('') &&
-        \ get(s:keywords, a:keyword[0], 0) is a:keyword
-endfunction
-
-function! timl#kw(kw)
-  if !timl#keywordp(a:kw)
-    throw 'timl: keyword expected but received '.timl#type#string(a:kw)
-  endif
-  return a:kw
+  return timl#keyword#intern(a:str)
 endfunction
 
 " }}}1
@@ -191,7 +169,7 @@ function! timl#str(val) abort
     return a:val
   elseif type(a:val) == type(function('tr'))
     return substitute(join([a:val]), '[{}]', '', 'g')
-  elseif timl#symbolp(a:val) || timl#keywordp(a:val)
+  elseif timl#symbol#test(a:val) || timl#keyword#test(a:val)
     return a:val[0]
   elseif timl#consp(a:val)
     let _ = {'val': a:val}
@@ -248,47 +226,14 @@ endfunction
 " }}}1
 " Section: Symbols {{{1
 
-if !exists('s:symbols')
-  let s:symbols = {}
-endif
-
 let s:symbol = timl#keyword('#timl.lang/Symbol')
 function! timl#symbol(str)
-  if !has_key(s:symbols, a:str)
-    let s:symbols[a:str] = timl#bless(s:symbol, {'0': a:str})
-    lockvar s:symbols[a:str]
-  endif
-  return s:symbols[a:str]
-endfunction
-
-function! timl#symbolp(symbol, ...)
-  return type(a:symbol) == type({}) &&
-        \ get(a:symbol, '#tag') is# s:symbol &&
-        \ (a:0 ? a:symbol[0] ==# a:1 : 1)
-endfunction
-
-function! timl#sym(sym)
-  if !timl#symbolp(a:sym)
-    throw 'timl: symbol expected but received '.timl#type#string(a:sym)
-  endif
-  return a:sym
+  return timl#symbol#intern(a:str)
 endfunction
 
 function! timl#gensym(...)
   let s:id = get(s:, 'id', 0) + 1
   return timl#symbol((a:0 ? a:1 : 'G__').s:id)
-endfunction
-
-function! timl#name(val) abort
-  if type(a:val) == type('')
-    return a:val
-  elseif timl#symbolp(a:val)
-    return a:val[0]
-  elseif timl#keywordp(a:val)
-    return a:val[0]
-  else
-    throw "timl: no name for ".timl#type#string(a:val)
-  endif
 endfunction
 
 runtime! autoload/timl/lang.vim
@@ -551,7 +496,7 @@ function! timl#the_ns(name)
 endfunction
 
 function! timl#create_ns(name, ...)
-  let name = timl#sym(a:name)
+  let name = timl#symbol#coerce(a:name)
   if !has_key(g:timl#namespaces, name[0])
     let g:timl#namespaces[name[0]] = timl#bless(s:ns, {'name': name, 'referring': [], 'aliases': {}})
   endif
@@ -562,13 +507,13 @@ function! timl#create_ns(name, ...)
   let opts = a:1
   let _ = {}
   for _.refer in get(opts, 'referring', [])
-    let sym = timl#sym(_.refer)
+    let sym = timl#symbol#coerce(_.refer)
     if name !=# sym && index(ns.referring, sym) < 0
       call insert(ns.referring, sym)
     endif
   endfor
   for [_.name, _.target] in items(get(opts, 'aliases', {}))
-    let ns.aliases[_.name] = timl#sym(_.target)
+    let ns.aliases[_.name] = timl#symbol#coerce(_.target)
   endfor
   return ns
 endfunction

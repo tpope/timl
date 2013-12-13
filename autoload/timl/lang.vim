@@ -37,12 +37,12 @@ endfunction
 
 function! s:methods(type, ...)
   for i in range(0, a:0-1, 2)
-    call timl#type#method(a:000[i], timl#keyword(a:type), a:000[i+1])
+    call timl#type#method(a:000[i], timl#keyword#intern(a:type), a:000[i+1])
   endfor
 endfunction
 
 function! s:implement(type, ...)
-  let type = timl#keyword(a:type)
+  let type = timl#keyword#intern(a:type)
   for i in range(0, a:0-1, 2)
     call timl#type#define_method('timl.core', a:000[i], type, a:000[i+1])
   endfor

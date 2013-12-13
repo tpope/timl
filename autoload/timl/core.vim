@@ -40,7 +40,7 @@ command! -bang -nargs=1 TLpredicate TLexpr <args> ? s:true : s:false
 " Section: Misc {{{1
 
 TLpredicate nil_QMARK_(val) a:val is# g:timl#nil
-TLexpr blessing(val) timl#keyword(timl#type#string(a:val))
+TLexpr blessing(val) timl#keyword#intern(timl#type#string(a:val))
 TLalias meta timl#meta
 TLalias with_meta timl#with_meta
 
@@ -50,7 +50,7 @@ TLalias with_meta timl#with_meta
 TLpredicate special_symbol_QMARK_(sym) timl#compiler#specialp(a:sym)
 
 TLfunction macroexpand_1(form)
-  if timl#consp(a:form) && timl#symbolp(timl#first(a:form)) && !timl#truth(g:timl#core#special_symbol_QMARK_.call(timl#first(a:form)))
+  if timl#consp(a:form) && timl#symbol#test(timl#first(a:form)) && !timl#truth(g:timl#core#special_symbol_QMARK_.call(timl#first(a:form)))
     let var = timl#compiler#ns_resolve(g:timl#core#_STAR_ns_STAR_, timl#first(a:form))
     if var isnot# g:timl#nil
       let Val = eval(var)
@@ -350,10 +350,9 @@ endfunction
 " Section: Strings {{{1
 
 TLpredicate string_QMARK_(obj)  type(a:obj) == type('')
-TLpredicate symbol_QMARK_(obj)  timl#symbolp(a:obj)
-TLpredicate keyword_QMARK_(obj) timl#keywordp(a:obj)
+TLpredicate symbol_QMARK_(obj)  timl#symbol#test(a:obj)
+TLpredicate keyword_QMARK_(obj) timl#keyword#test(a:obj)
 
-TLalias name    timl#name
 TLalias symbol  timl#symbol
 TLalias keyword timl#keyword
 TLalias gensym  timl#gensym

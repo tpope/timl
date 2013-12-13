@@ -12,7 +12,7 @@ if !exists('g:timl_tag_sentinel')
 endif
 
 function! timl#type#intern(type)
-  return timl#keyword('#'.a:type)
+  return timl#keyword#intern('#'.a:type)
 endfunction
 
 let s:types = {
@@ -34,7 +34,7 @@ function! timl#type#string(val) abort
   elseif type == 'vim/Dictionary'
     if get(a:val, '#tagged') is g:timl_tag_sentinel
       return a:val['#tag'][0][1:-1]
-    elseif timl#keywordp(a:val)
+    elseif timl#keyword#test(a:val)
       return 'timl.lang/Keyword'
     endif
   endif
@@ -44,7 +44,7 @@ endfunction
 function! timl#type#bless(class, ...) abort
   let obj = a:0 ? a:1 : {}
   let obj['#tagged'] = g:timl_tag_sentinel
-  let obj['#tag'] = type(a:class) == type('') ? timl#keyword('#'.a:class) : a:class
+  let obj['#tag'] = type(a:class) == type('') ? timl#keyword#intern('#'.a:class) : a:class
   return obj
 endfunction
 
@@ -80,15 +80,16 @@ function! s:isap(tag, parent)
 endfunction
 
 function! timl#type#isap(tag, parent)
-  return timl#kw(a:tag) is# timl#kw(a:parent) || has_key(get(g:timl_hierarchy.ancestors, a:tag[0], {}), a:parent[0])
+  return timl#keyword#coerce(a:tag) is# timl#keyword#coerce(a:parent)
+        \ || has_key(get(g:timl_hierarchy.ancestors, a:tag[0], {}), a:parent[0])
 endfunction
 
 function! timl#type#derive(tag, parent)
   let tp = g:timl_hierarchy.parents
   let td = g:timl_hierarchy.descendants
   let ta = g:timl_hierarchy.ancestors
-  let tag = timl#kw(a:tag)
-  let parent = timl#kw(a:parent)
+  let tag = timl#keyword#coerce(a:tag)
+  let parent = timl#keyword#coerce(a:parent)
   if !has_key(tp, tag[0])
     let tp[tag[0]] = {}
   endif
@@ -178,8 +179,8 @@ endfunction
 
 if !exists('g:timl_hierarchy')
   let g:timl_hierarchy = {'parents': timl#bless('timl.lang/HashMap'), 'descendants': timl#bless('timl.lang/HashMap'), 'ancestors': timl#bless('timl.lang/HashMap')}
-  call timl#type#derive(timl#keyword('vim/Number'), timl#keyword('vim/Numeric'))
-  call timl#type#derive(timl#keyword('vim/Float'), timl#keyword('vim/Numeric'))
+  call timl#type#derive(timl#keyword#intern('vim/Number'), timl#keyword#intern('vim/Numeric'))
+  call timl#type#derive(timl#keyword#intern('vim/Float'), timl#keyword#intern('vim/Numeric'))
 endif
 
 " vim:set et sw=2:

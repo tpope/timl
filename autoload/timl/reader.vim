@@ -61,7 +61,7 @@ let s:constants = {
 
 function! s:add_meta(data, meta) abort
   let data = a:data
-  if timl#symbolp(data)
+  if timl#symbol#test(data)
     let data = copy(data)
   else
     unlockvar 1 data
@@ -194,20 +194,20 @@ function! s:process(port, token, line, wanted) abort
     if empty(ns)
       let error = 'timl#reader: unknown ns alias '.alias.' in keyword'
     else
-      return timl#keyword(timl#the_ns(ns).name[0].matchstr(token, '.*\zs/.\+'))
+      return timl#keyword#intern(timl#the_ns(ns).name[0].matchstr(token, '.*\zs/.\+'))
     endif
   elseif token =~# '^::.'
-    return timl#keyword(g:timl#core#_STAR_ns_STAR_.name[0].'/'.token[2:-1])
+    return timl#keyword#intern(g:timl#core#_STAR_ns_STAR_.name[0].'/'.token[2:-1])
   elseif token =~# '^:.'
-    return timl#keyword(token[1:-1])
+    return timl#keyword#intern(token[1:-1])
   elseif token =~# '^'.s:iskeyword
     return timl#symbol(token)
   elseif token ==# '^'
     let _meta = s:read(port)
     let data = s:read(port)
-    if timl#keywordp(_meta)
+    if timl#keyword#test(_meta)
       let meta = {_meta[0]: g:timl#true}
-    elseif timl#symbolp(_meta) || type(_meta) == type('')
+    elseif timl#symbol#test(_meta) || type(_meta) == type('')
       let meta = {'tag': _meta}
     elseif timl#mapp(_meta)
       let meta = _meta
@@ -249,7 +249,7 @@ let s:vec = timl#symbol('timl.core/vec')
 let s:set = timl#symbol('timl.core/set')
 let s:hash_map = timl#symbol('timl.core/hash-map')
 function! timl#reader#syntax_quote(form, gensyms) abort
-  if timl#symbolp(a:form)
+  if timl#symbol#test(a:form)
     if a:form[0] =~# '^[^/]\+#$'
       if !has_key(a:gensyms, a:form[0])
         let a:gensyms[a:form[0]] = timl#symbol(timl#gensym(a:form[0][0:-2].'__')[0].'__auto__')
@@ -369,13 +369,13 @@ TimLRAssert timl#reader#read_string('#"\(a\\\)"') ==# '\(a\\\)'
 TimLRAssert timl#reader#read_string('#"\""') ==# '"'
 TimLRAssert timl#reader#read_string('(first [1 2])') ==# timl#list(timl#symbol('first'), timl#vector(1, 2))
 TimLRAssert timl#reader#read_string('#["a" 1 "b" 2]') ==# {"a": 1, "b": 2}
-TimLRAssert timl#reader#read_string('{"a" 1 :b 2 3 "c"}') ==# timl#hash_map("a", 1, timl#keyword('b'), 2, 3, "c")
+TimLRAssert timl#reader#read_string('{"a" 1 :b 2 3 "c"}') ==# timl#hash_map("a", 1, timl#keyword#intern('b'), 2, 3, "c")
 TimLRAssert timl#reader#read_string("[1]\n; hi\n") ==# timl#vector(1)
 TimLRAssert timl#reader#read_string("'[1 2 3]") ==# timl#list(timl#symbol('quote'), timl#vector(1, 2, 3))
 TimLRAssert timl#reader#read_string("#*tr") ==# timl#list(timl#symbol('function'), timl#symbol('tr'))
 TimLRAssert timl#reader#read_string("(1 #_2 3)") ==# timl#list(1, 3)
 TimLRAssert timl#reader#read_string("^:foo {}") ==#
-      \ timl#with_meta(timl#hash_map(), timl#hash_map(timl#keyword('foo'), g:timl#true))
+      \ timl#with_meta(timl#hash_map(), timl#hash_map(timl#keyword#intern('foo'), g:timl#true))
 
 TimLRAssert timl#reader#read_string("~foo") ==# timl#list(s:unquote, timl#symbol('foo'))
 TimLRAssert timl#first(timl#rest(timl#reader#read_string("`foo#")))[0] =~# '^foo__\d\+__auto__'

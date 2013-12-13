@@ -8,7 +8,7 @@ function! s:function(name) abort
 endfunction
 
 function! s:implement(type, ...)
-  let type = timl#keyword(a:type)
+  let type = timl#keyword#intern(a:type)
   for i in range(0, a:0-1, 2)
     call timl#type#define_method('timl.core', a:000[i], type, a:000[i+1])
   endfor
