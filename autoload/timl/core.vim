@@ -59,22 +59,6 @@ command! -bang -nargs=1 TLexpr
 
 command! -bang -nargs=1 TLpredicate TLexpr <args> ? s:true : s:false
 
-" Section: Equality {{{1
-
-TLpredicate _EQ_(...)     call('timl#equalp', a:000)
-TLpredicate not_EQ_(...) !call('timl#equalp', a:000)
-
-TLfunction! identical_QMARK_(x, ...) abort
-  for y in a:000
-    if a:x isnot# y
-      return s:false
-    endif
-  endfor
-  return s:true
-endfunction
-
-" }}}1
-
 delcommand TLfunction
 delcommand TLalias
 delcommand TLexpr

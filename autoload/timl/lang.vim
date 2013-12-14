@@ -72,6 +72,12 @@ endfunction
 call s:define_call('blessing', 'timl#type#keyword')
 call s:define_pred('isa?', 'timl#type#isa?')
 
+" Section: Equality
+
+call s:define_apply('identical?', 'timl#equality#identical')
+call s:define_apply('=', 'timl#equality#all')
+call s:define_apply('not=', 'timl#equality#not')
+
 " Section: Number
 
 call s:define_call('num', 'timl#num#coerce')
@@ -408,6 +414,13 @@ call s:define_call('meta', 'timl#meta')
 call s:define_call('with-meta', 'timl#with_meta')
 
 call timl#type#define_method('timl.core', 'empty', g:timl#nil, s:function('s:nil'))
+
+function! s:default_equal(x, y)
+  return type(a:x) != type(a:y) || a:x !=# a:y ? g:timl#false : g:timl#true
+    return 0
+  endif
+endfunction
+call timl#type#define_method('timl.core', 'equal?', g:timl#nil, s:function('s:default_equal'))
 
 function! s:default_first(x)
   return timl#type#dispatch(g:timl#core#first, timl#type#dispatch(g:timl#core#seq, a:x))
