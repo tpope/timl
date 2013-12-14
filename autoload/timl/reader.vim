@@ -245,6 +245,7 @@ endfunction
 let s:quote = timl#symbol('quote')
 let s:unquote = timl#symbol('unquote')
 let s:unquote_splicing = timl#symbol('unquote-splicing')
+let s:function = timl#symbol('function')
 let s:list = timl#symbol('timl.core/list')
 let s:concat = timl#symbol('timl.core/concat')
 let s:seq = timl#symbol('timl.core/seq')
@@ -260,8 +261,8 @@ function! timl#reader#syntax_quote(form, gensyms) abort
       let quote = s:quote
       let x = timl#list(s:quote, a:gensyms[a:form[0]])
       return timl#list(s:quote, a:gensyms[a:form[0]])
-    elseif a:form[0] !~# '/.'
-      return timl#list(s:quote, timl#symbol(timl#compiler#qualify(a:form[0], g:timl#core#_STAR_ns_STAR_.name, a:form[0])))
+    elseif !timl#compiler#specialp(a:form[0]) && a:form[0] !~# '/.'
+      return timl#list(s:quote, timl#symbol(timl#compiler#qualify(a:form[0], g:timl#core#_STAR_ns_STAR_.name, g:timl#core#_STAR_ns_STAR_.name[0].'/'.a:form[0])))
     else
       return timl#list(s:quote, a:form)
     endif
@@ -284,6 +285,8 @@ function! timl#reader#syntax_quote(form, gensyms) abort
       return timl#first(timl#rest(a:form))
     elseif first is# s:unquote_splicing
       throw 'timl#reader: unquote-splicing used outside of list'
+    elseif first is# s:function
+      return a:form
     else
       return timl#list(s:seq, timl#cons#create(s:concat, s:sqexpandlist(a:form, a:gensyms)))
     endif

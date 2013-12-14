@@ -110,10 +110,12 @@
   (let [bindings (partition 2 flat)]
     `((fn ~(vec (map first bindings)) ~@body) ~@(vec (map (fn [x] (first (rest x))) bindings)))))
 
+(defn refer-timl []
+  (refer 'timl.core))
 (defmacro ns [name]
   `(do
      (in-ns '~name)
-     (refer 'timl.core)))
+     (refer-timl)))
 
 (defn ffirst [x] (first (first x)))
 (defn fnext [x] (first (next x)))
