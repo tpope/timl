@@ -314,6 +314,7 @@ TLalias require timl#require
 TLalias create_ns timl#namespace#create
 TLalias find_ns timl#namespace#find
 TLalias the_ns timl#namespace#the
+TLalias ns_name timl#namespace#name
 TLalias all_ns timl#namespace#all
 TLexpr ns_resolve(ns, sym, ...) timl#compiler#ns_resolve(a:ns, a:0 ? a:1 : a:sym, a:0 ? a:sym : {})
 TLexpr resolve(sym, ...) timl#compiler#ns_resolve(g:timl#core#_STAR_ns_STAR_, a:0 ? a:1 : a:sym, a:0 ? a:sym : {})

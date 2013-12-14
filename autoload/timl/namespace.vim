@@ -20,6 +20,10 @@ function! timl#namespace#create(name, ...)
   return ns
 endfunction
 
+function! timl#namespace#name(ns)
+  return a:ns.name
+endfunction
+
 function! timl#namespace#select(name)
   let g:timl#core#_STAR_ns_STAR_ = timl#namespace#create(a:name)
   return g:timl#core#_STAR_ns_STAR_

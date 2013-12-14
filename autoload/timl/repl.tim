@@ -7,11 +7,11 @@
    (throw "timl#repl: exit copen")))
 
 (defn breakpoint-fn [env]
-  (let [str (#*input (format "%s=>> " (. *ns* -name)))]
+  (let [str (#*input (format "%s=>> " (ns-name *ns*)))]
     (when (#*len str)
       (newline)
       (try
-        (prn (#*timl#compiler#eval (read-string str) (. *ns* -name) env))
+        (prn (#*timl#compiler#eval (read-string str) (ns-name *ns*) env))
         (catch "" e (set! *e e) (println (:exception e))))
       (recur env))))
 
