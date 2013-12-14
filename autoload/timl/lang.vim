@@ -38,6 +38,28 @@ function! s:implement(type, ...)
   endfor
 endfunction
 
+let s:ns = timl#namespace#find('timl.core')
+function! s:define_apply(name, fn)
+  let g:timl#core#{timl#munge(a:name)} = timl#bless('timl.lang/Function', {
+        \ 'name': timl#symbol#intern(a:name),
+        \ 'ns': s:ns,
+        \ 'apply': s:function(a:fn)})
+endfunction
+
+" Section: Numbers
+
+call s:define_apply('+', 'timl#number#sum')
+call s:define_apply('*', 'timl#number#product')
+call s:define_apply('-', 'timl#number#minus')
+call s:define_apply('/', 'timl#number#solidus')
+call s:define_apply('>', 'timl#number#gt')
+call s:define_apply('<', 'timl#number#lt')
+call s:define_apply('>=', 'timl#number#gteq')
+call s:define_apply('<=', 'timl#number#lteq')
+call s:define_apply('==', 'timl#number#equiv')
+call s:define_apply('max', 'max')
+call s:define_apply('min', 'min')
+
 " Section: Nil
 
 function! s:nil_lookup(this, key, default)

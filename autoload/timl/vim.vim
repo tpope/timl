@@ -14,8 +14,6 @@ function! s:implement(type, ...)
   endfor
 endfunction
 
-" Section: Number
-
 " Section: String
 
 " Characters, not bytes
@@ -156,7 +154,5 @@ call s:implement('vim/Dictionary',
       \ 'assoc', s:function('s:dict_assoc'),
       \ 'dissoc', s:function('s:dict_dissoc'),
       \ '_invoke', s:function('s:dict_lookup'))
-
-" Section: Float
 
 " vim:set et sw=2:

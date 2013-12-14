@@ -230,46 +230,6 @@ TLpredicate integer_QMARK_(obj) type(a:obj) == type(0)
 TLpredicate float_QMARK_(obj)   type(a:obj) == 5
 TLpredicate number_QMARK_(obj)  type(a:obj) == type(0) || type(a:obj) == 5
 
-TLargfunction _PLUS_
-  let acc = 0
-  for elem in a:_
-    let acc += elem
-  endfor
-  return acc
-endfunction
-
-TLargfunction _STAR_
-  let acc = 1
-  for elem in a:_
-    let acc = acc * elem
-  endfor
-  return acc
-endfunction
-
-TLfunction _(x, ...)
-  if a:0
-    let acc = timl#num(a:x)
-    for elem in a:000
-      let acc -= elem
-    endfor
-    return acc
-  else
-    return 0 - a:x
-  endif
-endfunction
-
-TLfunction _SLASH_(x, ...)
-  if a:0
-    let acc = timl#num(a:x)
-    for elem in a:000
-      let acc = acc / elem
-    endfor
-    return acc
-  else
-    return 1 / a:x
-  endif
-endfunction
-
 TLexpr inc(x) timl#num(a:x) + 1
 TLexpr dec(x) timl#num(a:x) - 1
 TLexpr rem(x, y) timl#num(a:x) % a:y
@@ -281,9 +241,6 @@ TLfunction mod(x, y)
     return a:x % a:y
   endif
 endfunction
-
-TLexpr min(...) min(a:000)
-TLexpr max(...) max(a:000)
 
 TLexpr bit_not(x) invert(a:x)
 TLexpr bit_or(x, y, ...)  a:0 ? call(self.call, [ or(a:x, a:y)] + a:000, self) :  or(a:x, a:y)
@@ -316,60 +273,6 @@ TLpredicate pos_QMARK_(x) timl#num(a:x) > 0
 TLpredicate neg_QMARK_(x) timl#num(a:x) < 0
 TLpredicate odd_QMARK_(x) timl#num(a:x) % 2
 TLpredicate even_QMARK_(x) timl#num(a:x) % 2 == 0
-
-TLfunction _GT_(x, ...)
-  let x = timl#num(a:x)
-  for y in a:000
-    if !(timl#num(x) > y)
-      return s:false
-    endif
-    let x = y
-  endfor
-  return s:true
-endfunction
-
-TLfunction _LT_(x, ...)
-  let x = timl#num(a:x)
-  for y in a:000
-    if !(timl#num(x) < y)
-      return s:false
-    endif
-    let x = y
-  endfor
-  return s:true
-endfunction
-
-TLfunction _GT__EQ_(x, ...)
-  let x = timl#num(a:x)
-  for y in a:000
-    if !(timl#num(x) >= y)
-      return s:false
-    endif
-    let x = y
-  endfor
-  return s:true
-endfunction
-
-TLfunction _LT__EQ_(x, ...)
-  let x = timl#num(a:x)
-  for y in a:000
-    if !(timl#num(x) <= y)
-      return s:false
-    endif
-    let x = y
-  endfor
-  return s:true
-endfunction
-
-TLfunction _EQ__EQ_(x, ...)
-  let x = timl#num(a:x)
-  for y in a:000
-    if x != timl#num(y)
-      return s:false
-    endif
-  endfor
-  return s:true
-endfunction
 
 " }}}1
 " Section: Strings {{{1
