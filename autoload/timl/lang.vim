@@ -79,6 +79,25 @@ call s:define_apply('==', 'timl#number#equiv')
 call s:define_apply('max', 'max')
 call s:define_apply('min', 'min')
 
+" Section: String
+
+" Characters, not bytes
+function! s:string_lookup(this, idx, default) abort
+  if type(a:idx) == type(0)
+    let ch = matchstr(a:this, repeat('.', a:idx).'\zs.')
+    return empty(ch) ? (a:0 ? a:1 : g:timl#nil) : ch
+  endif
+  return a:default
+endfunction
+
+function! s:string_count(this) abort
+  return exists('*strchars') ? strchars(a:this) : len(substitute(a:this, '.', '.', 'g'))
+endfunction
+
+call s:implement('vim/String',
+      \ 'lookup', s:function('s:string_lookup'),
+      \ 'count', s:function('s:string_count'))
+
 " Section: Nil
 
 function! s:nil_lookup(this, key, default)
@@ -137,6 +156,8 @@ call s:implement('timl.lang/Function',
 
 call s:implement('timl.lang/MultiFn',
       \ '_invoke', s:function('timl#type#dispatch'))
+
+call s:implement('vim/Funcref', '_invoke', s:function('call'))
 
 " Section: Array (Vim List)
 
@@ -268,7 +289,6 @@ call s:define_call('read-string', 'timl#reader#read_string')
 
 " Section: Defaults
 
-runtime! autoload/timl/vim.vim
 call timl#type#define_method('timl.core', 'empty', g:timl#nil, s:function('s:nil'))
 
 function! s:default_first(x)
