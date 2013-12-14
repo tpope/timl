@@ -31,7 +31,7 @@
   ([end] (range 0 end 1))
   ([start end] (range start end 1))
   ([start end step]
-   (let [comp (if pos? step < >)]
+   (let [comp (if (pos? step) < >)]
      (if (comp start end)
        (cons start (lazy-seq (range (+ start step) end step)))
        ()))))
