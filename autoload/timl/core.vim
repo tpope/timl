@@ -72,6 +72,8 @@ TLalias with_meta timl#with_meta
 TLpredicate special_symbol_QMARK_(sym) timl#compiler#specialp(a:sym)
 TLalias macroexpand_1 timl#compiler#macroexpand_1
 TLalias macroexpand_all timl#compiler#macroexpand_all
+TLexpr ns_resolve(ns, sym, ...) timl#compiler#ns_resolve(a:ns, a:0 ? a:1 : a:sym, a:0 ? a:sym : {})
+TLexpr resolve(sym, ...) timl#compiler#ns_resolve(g:timl#core#_STAR_ns_STAR_, a:0 ? a:1 : a:sym, a:0 ? a:sym : {})
 
 " }}}1
 " Section: Functions {{{1
@@ -212,22 +214,6 @@ TLfunction! reduce(f, coll, ...) abort
   endwhile
   return _.val
 endfunction
-
-" }}}1
-" Section: Namespaces {{{1
-
-TLalias require timl#require
-TLalias create_ns timl#namespace#create
-TLalias find_ns timl#namespace#find
-TLalias the_ns timl#namespace#the
-TLalias ns_name timl#namespace#name
-TLalias all_ns timl#namespace#all
-TLexpr ns_resolve(ns, sym, ...) timl#compiler#ns_resolve(a:ns, a:0 ? a:1 : a:sym, a:0 ? a:sym : {})
-TLexpr resolve(sym, ...) timl#compiler#ns_resolve(g:timl#core#_STAR_ns_STAR_, a:0 ? a:1 : a:sym, a:0 ? a:sym : {})
-TLalias in_ns timl#namespace#select
-TLalias refer timl#namespace#refer
-TLalias alias timl#namespace#alias
-TLalias use timl#namespace#use
 
 " }}}1
 

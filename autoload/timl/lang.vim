@@ -202,6 +202,20 @@ call s:implement('timl.lang/MultiFn',
 
 call s:implement('vim/Funcref', '_invoke', 'call')
 
+" Section: Namespace
+
+call s:define_apply('load', 'timl#load_all_relative')
+call s:define_call('require', 'timl#require')
+call s:define_call('create_ns', 'timl#namespace#create')
+call s:define_call('find_ns', 'timl#namespace#find')
+call s:define_call('the_ns', 'timl#namespace#the')
+call s:define_call('ns_name', 'timl#namespace#name')
+call s:define_call('all_ns', 'timl#namespace#all')
+call s:define_call('in_ns', 'timl#namespace#select')
+call s:define_call('refer', 'timl#namespace#refer')
+call s:define_call('alias', 'timl#namespace#alias')
+call s:define_call('use', 'timl#namespace#use')
+
 " Section: Array (Vim List)
 
 call s:implement('vim/List',
