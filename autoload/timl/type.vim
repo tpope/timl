@@ -165,13 +165,15 @@ endfunction
 function! timl#type#define_method(ns, name, type, fn) abort
   let munged = timl#munge(a:ns.'#'.a:name)
   if !exists('g:'.munged) || timl#type#string(g:{munged}) isnot# 'timl.lang/MultiFn'
+    let ns = timl#namespace#find(a:ns)
+    let name = timl#symbol#intern(a:name)
     unlet! g:{munged}
-    let g:{munged} = timl#bless('timl.lang/MultiFn', {
-          \ 'ns': timl#namespace#find(a:ns),
-          \ 'name': timl#symbol(a:name),
+    call timl#namespace#intern(ns, name, timl#bless('timl.lang/MultiFn', {
+          \ 'ns': ns,
+          \ 'name': name,
           \ 'cache': {},
           \ 'hierarchy': g:timl_hierarchy,
-          \ 'methods': {}})
+          \ 'methods': {}}))
   endif
   let multi = g:{munged}
   let multi.methods[a:type is# g:timl#nil ? ' ' : timl#str(a:type)] = a:fn

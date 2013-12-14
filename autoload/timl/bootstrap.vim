@@ -30,8 +30,9 @@ endfunction
 
 let s:ns = timl#namespace#find('timl.core')
 function! s:define_apply(name, fn) abort
-  let g:timl#core#{timl#munge(a:name)} = timl#bless('timl.lang/Function', {
-        \ 'name': timl#symbol#intern(a:name),
+  let name = timl#symbol#intern(a:name)
+  call timl#namespace#intern(s:ns, name, timl#bless('timl.lang/Function', {
+        \ 'name': name,
         \ 'ns': s:ns,
         \ 'apply': s:function(a:fn)})
 endfunction
@@ -45,26 +46,29 @@ function! s:predicate(_) dict abort
 endfunction
 
 function! s:define_call(name, fn)
-  let g:timl#core#{timl#munge(a:name)} = timl#bless('timl.lang/Function', {
-        \ 'name': timl#symbol#intern(a:name),
+  let name = timl#symbol#intern(a:name)
+  call timl#namespace#intern(s:ns, name, timl#bless('timl.lang/Function', {
+        \ 'name': name,
         \ 'ns': s:ns,
         \ 'apply': s:function('s:apply'),
-        \ 'call': s:function(a:fn)})
+        \ 'call': s:function(a:fn)}))
 endfunction
 
 function! s:define_pred(name, fn)
-  let g:timl#core#{timl#munge(a:name)} = timl#bless('timl.lang/Function', {
-        \ 'name': timl#symbol#intern(a:name),
+  let name = timl#symbol#intern(a:name)
+  call timl#namespace#intern(s:ns, name, timl#bless('timl.lang/Function', {
+        \ 'name': name,
         \ 'ns': s:ns,
         \ 'apply': s:function('s:predicate'),
-        \ 'call': s:function(a:fn)})
+        \ 'call': s:function(a:fn)}))
 endfunction
 
 function! s:define_apply(name, fn)
-  let g:timl#core#{timl#munge(a:name)} = timl#bless('timl.lang/Function', {
-        \ 'name': timl#symbol#intern(a:name),
+  let name = timl#symbol#intern(a:name)
+  call timl#namespace#intern(s:ns, name, timl#bless('timl.lang/Function', {
+        \ 'name': name,
         \ 'ns': s:ns,
-        \ 'apply': s:function(a:fn)})
+        \ 'apply': s:function(a:fn)}))
 endfunction
 
 " Section: Type Sytem
