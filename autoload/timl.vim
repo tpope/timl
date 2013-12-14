@@ -366,7 +366,7 @@ function! timl#vec(coll) abort
   else
     let vec = timl#array#coerce(a:coll)
   endif
-  return timl#array#lock(a:coll)
+  return timl#array#lock(vec)
 endfunction
 
 function! timl#vector(...) abort
