@@ -423,6 +423,35 @@ function! s:expr_sf_try(file, env, form) abort
   return s:wrap_as_expr(a:file, a:env, a:form)
 endfunction
 
+function! timl#compiler#build_exception(exception, throwpoint)
+  let dict = {"exception": a:exception}
+  let dict.line = +matchstr(a:throwpoint, '\d\+$')
+  let dict.qflist = []
+  if a:throwpoint !~# '^function '
+    call add(dict.qflist, {"filename": matchstr(a:throwpoint, '^.\{-\}\ze\.\.')})
+  endif
+  for fn in split(matchstr(a:throwpoint, '\%( \|\.\.\)\zs.*\ze,'), '\.\.')
+    call insert(dict.qflist, {'text': fn})
+    if has_key(g:timl_functions, fn)
+      let dict.qflist[0].filename = g:timl_functions[fn].file
+      let dict.qflist[0].lnum = g:timl_functions[fn].line
+    else
+      try
+        redir => out
+        exe 'silent verbose function '.(fn =~# '^\d' ? '{'.fn.'}' : fn)
+      catch
+      finally
+        redir END
+      endtry
+      if fn !~# '^\d'
+        let dict.qflist[0].filename = expand(matchstr(out, "\n\tLast set from \\zs[^\n]*"))
+        let dict.qflist[0].pattern = '^\s*fu\%[nction]!\=\s*'.substitute(fn,'^<SNR>\d\+_','s:','').'\s*('
+      endif
+    endif
+  endfor
+  return dict
+endfunction
+
 function! s:emit_sf_try(file, env, form) abort
   if a:env.context ==# 'statement'
     return s:emitln(a:file, 'call '.s:wrap_as_expr(a:file, a:env, a:form))
@@ -454,7 +483,7 @@ function! s:emit_sf_try(file, env, form) abort
       let env = s:copy_locals(a:env)
       if timl#symbol#test(var) && var[0] !=# '_'
         call s:add_local(env, var)
-        call s:emitln(a:file, 'let '.env.locals[var[0]].' = timl#build_exception(v:exception, v:throwpoint)')
+        call s:emitln(a:file, 'let '.env.locals[var[0]].' = timl#compiler#build_exception(v:exception, v:throwpoint)')
       endif
       call s:emit_sf_do(a:file, env, timl#cons#create(timl#symbol('do'), timl#next(timl#nnext(_.first))))
     elseif timl#consp(_.first) && timl#symbol#is(timl#first(_.first), 'finally')

@@ -26,7 +26,7 @@ command! -nargs=1 -complete=customlist,timl#reflect#input_complete TLeval
       \    echo timl#rep(<q-args>) |
       \ catch |
       \    unlet! g:timl#core#_STAR_e |
-      \    let g:timl#core#_STAR_e = timl#build_exception(v:exception, v:throwpoint) |
+      \    let g:timl#core#_STAR_e = timl#compiler#build_exception(v:exception, v:throwpoint) |
       \    echoerr v:exception |
       \ endtry
 
@@ -134,7 +134,7 @@ function! s:repl(...) abort
         return ''
       catch
         unlet! g:timl#core#_STAR_e
-        let g:timl#core#_STAR_e = timl#build_exception(v:exception, v:throwpoint)
+        let g:timl#core#_STAR_e = timl#compiler#build_exception(v:exception, v:throwpoint)
         echohl ErrorMSG
         echo v:exception
         echohl NONE
