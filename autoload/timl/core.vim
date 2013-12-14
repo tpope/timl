@@ -196,46 +196,6 @@ TLpredicate odd_QMARK_(x) timl#num(a:x) % 2
 TLpredicate even_QMARK_(x) timl#num(a:x) % 2 == 0
 
 " }}}1
-" Section: Strings {{{1
-
-TLpredicate string_QMARK_(obj)  type(a:obj) == type('')
-TLpredicate symbol_QMARK_(obj)  timl#symbol#test(a:obj)
-TLpredicate keyword_QMARK_(obj) timl#keyword#test(a:obj)
-
-TLalias symbol  timl#symbol
-TLalias keyword timl#keyword
-TLalias gensym  timl#gensym
-
-TLexpr pr_str(...) join(map(copy(a:000), 'timl#printer#string(v:val)'), ' ')
-TLexpr prn_str(...) join(map(copy(a:000), 'timl#printer#string(v:val)'), ' ')."\n"
-TLexpr print_str(...) join(map(copy(a:000), 'timl#str(v:val)'), ' ')
-TLexpr println_str(...) join(map(copy(a:000), 'timl#str(v:val)'), ' ')."\n"
-
-TLexpr str(...) join(map(copy(a:000), 'timl#str(v:val)'), '')
-TLexpr format(fmt, ...) call('printf', [timl#str(a:fmt)] + a:000)
-
-TLfunction subs(str, start, ...)
-  if a:0 && a:1 <= a:start
-    return ''
-  elseif a:0
-    return matchstr(a:str, '.\{,'.(a:1-a:start).'\}', byteidx(a:str, a:start))
-  else
-    return a:str[byteidx(a:str, a:start) :]
-  endif
-endfunction
-
-TLexpr join(sep_or_coll, ...)
-      \ join(map(copy(a:0 ? a:1 : a:sep_or_coll), 'timl#str(v:val)'), a:0 ? a:sep_or_coll : '')
-TLexpr split(s, re) split(a:s, '\C'.a:re)
-TLexpr replace(s, re, repl)     substitute(a:s, '\C'.a:re, a:repl, 'g')
-TLexpr replace_one(s, re, repl) substitute(a:s, '\C'.a:re, a:repl, '')
-TLexpr re_quote_replacement(re) escape(a:re, '\~&')
-TLfunction re_find(re, s)
-  let result = matchlist(a:s, '\C'.a:re)
-  return empty(result) ? g:timl#nil : timl#vec(result)
-endfunction
-
-" }}}1
 " Section: Lists {{{1
 
 TLalias list timl#list

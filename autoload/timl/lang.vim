@@ -40,8 +40,12 @@ function! s:define_apply(name, fn)
         \ 'apply': s:function(a:fn)})
 endfunction
 
-function! s:apply(_) abort
+function! s:apply(_) dict abort
   return call(self.call, a:_, self)
+endfunction
+
+function! s:predicate(_) dict abort
+  return call(self.call, a:_, self) ? g:timl#true : g:timl#false
 endfunction
 
 function! s:define_call(name, fn)
@@ -49,6 +53,14 @@ function! s:define_call(name, fn)
         \ 'name': timl#symbol#intern(a:name),
         \ 'ns': s:ns,
         \ 'apply': s:function('s:apply'),
+        \ 'call': s:function(a:fn)})
+endfunction
+
+function! s:define_pred(name, fn)
+  let g:timl#core#{timl#munge(a:name)} = timl#bless('timl.lang/Function', {
+        \ 'name': timl#symbol#intern(a:name),
+        \ 'ns': s:ns,
+        \ 'apply': s:function('s:predicate'),
         \ 'call': s:function(a:fn)})
 endfunction
 
@@ -75,22 +87,30 @@ call s:define_apply('min', 'min')
 
 " Section: String
 
-" Characters, not bytes
-function! s:string_lookup(this, idx, default) abort
-  if type(a:idx) == type(0)
-    let ch = matchstr(a:this, repeat('.', a:idx).'\zs.')
-    return empty(ch) ? (a:0 ? a:1 : g:timl#nil) : ch
-  endif
-  return a:default
-endfunction
-
-function! s:string_count(this) abort
-  return exists('*strchars') ? strchars(a:this) : len(substitute(a:this, '.', '.', 'g'))
-endfunction
-
 call s:implement('vim/String',
-      \ 'lookup', 's:string_lookup',
-      \ 'count', 's:string_count')
+      \ 'lookup', 'timl#string#lookup',
+      \ 'count', 'timl#string#count')
+
+call s:define_call('symbol', 'timl#symbol#intern')
+call s:define_call('keyword', 'timl#keyword#intern')
+call s:define_call('gensym', 'timl#gensym')
+call s:define_call('format', 'printf')
+call s:define_apply('str', 'timl#string#join')
+call s:define_call('join', 'timl#string#join')
+call s:define_call('split', 'timl#string#split')
+call s:define_call('replace', 'timl#string#replace')
+call s:define_call('replace-one', 'timl#string#replace_one')
+call s:define_call('re-quote-replacement', 'timl#string#re_quote_replacement')
+call s:define_call('re-find', 'timl#string#re_find')
+call s:define_call('subs', 'timl#string#sub')
+call s:define_apply('pr-str', 'timl#string#pr')
+call s:define_apply('prn-str', 'timl#string#prn')
+call s:define_apply('print-str', 'timl#string#print')
+call s:define_apply('println-str', 'timl#string#println')
+
+call s:define_pred('symbol?', 'timl#symbol#test')
+call s:define_pred('keyword?', 'timl#keyword#test')
+call s:define_pred('string?', 'timl#string#test')
 
 " Section: Nil
 
