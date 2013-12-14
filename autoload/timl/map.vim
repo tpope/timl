@@ -16,8 +16,36 @@ function! timl#map#create(_) abort
   return map
 endfunction
 
-function! timl#map#seq(dict) abort
-  let items = map(filter(items(a:dict), 'v:val[0][0] !=# "#"'), '[timl#dekey(v:val[0]), v:val[1]]')
+function! timl#map#to_array(this) abort
+  return map(filter(items(a:this), 'v:val[0][0] !=# "#"'), '[timl#dekey(v:val[0]), v:val[1]]')
+endfunction
+
+function! timl#map#count(this) abort
+  return len(timl#map#to_array(a:this))
+endfunction
+
+function! timl#map#equal(this, that)
+  if a:this is# a:that
+    return g:timl#true
+  elseif !timl#mapp(a:that)
+    return g:timl#false
+  endif
+  if timl#count(a:this) !=# timl#count(a:that)
+    return g:timl#false
+  endif
+  let _ = {'seq': timl#seq(a:this)}
+  while _.seq isnot# g:timl#nil
+    let _.other = timl#get(a:that, timl#ffirst(_.seq), _)
+    if _.other is# _ || !timl#truth(timl#type#dispatch(g:timl#core#equal_QMARK_, timl#first(timl#nfirst(_.seq)), _.other))
+      return g:timl#false
+    endif
+    let _.seq = timl#next(_.seq)
+  endwhile
+  return g:timl#true
+endfunction
+
+function! timl#map#seq(this) abort
+  let items = timl#map#to_array(a:this)
   return empty(items) ? g:timl#nil : timl#array_seq#create(items)
 endfunction
 

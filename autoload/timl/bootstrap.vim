@@ -330,6 +330,10 @@ call s:implement('vim/Dictionary',
       \ 'lookup', 'timl#dictionary#lookup',
       \ 'empty', 'timl#dictionary#empty',
       \ 'conj', 'timl#dictionary#conj',
+      \ 'count', 'len',
+      \ 'equal?', 'timl#map#equal')
+
+call s:implement('vim/Dictionary',
       \ 'assoc', 'timl#dictionary#assoc',
       \ 'dissoc', 'timl#dictionary#dissoc',
       \ 'transient', 'timl#dictionary#transient',
@@ -351,6 +355,10 @@ call s:implement('timl.lang/HashMap',
       \ 'lookup', 'timl#map#lookup',
       \ 'empty', 'timl#map#empty',
       \ 'conj', 'timl#map#conj',
+      \ 'count', 'timl#map#count',
+      \ 'equal?', 'timl#map#equal')
+
+call s:implement('timl.lang/HashMap',
       \ 'assoc', 'timl#map#assoc',
       \ 'dissoc', 'timl#map#dissoc',
       \ 'transient', 'timl#map#transient',
