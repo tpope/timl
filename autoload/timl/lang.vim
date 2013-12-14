@@ -262,6 +262,18 @@ call s:implement('timl.lang/EmptyList',
       \ 'conj', 'timl#cons#conj',
       \ 'empty', 's:identity')
 
+" Section: Seq
+
+call s:define_call('next', 'timl#next')
+call s:define_call('rest', 'timl#rest')
+call s:define_pred('empty?', 'timl#emptyp')
+call s:define_call('ffirst', 'timl#ffirst')
+call s:define_call('fnext', 'timl#fnext')
+call s:define_call('nfirst', 'timl#nfirst')
+call s:define_call('nnext', 'timl#nnext')
+call s:define_call('second', 'timl#fnext')
+call s:define_call('reduce', 'timl#reduce')
+
 " Section: Array Seq
 
 call s:implement('timl.lang/ArraySeq',

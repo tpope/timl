@@ -1,7 +1,6 @@
 (in-ns 'timl.core)
 
-(defn not-empty [xs] (if (empty? xs) nil xs))
-(defn second [xs] (first (rest xs)))
+(defn not-empty [xs] (when (seq xs) xs))
 
 (defn filter [pred coll]
   (lazy-seq

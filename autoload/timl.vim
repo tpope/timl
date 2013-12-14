@@ -240,6 +240,26 @@ function! timl#set(seq) abort
   return timl#set#coerce(a:seq)
 endfunction
 
+function! timl#reduce(f, coll, ...) abort
+  let _ = {}
+  if a:0
+    let _.val = a:coll
+    let _.seq = timl#seq(a:1)
+  else
+    let _.seq = timl#seq(a:coll)
+    if empty(_.seq)
+      return g:timl#nil
+    endif
+    let _.val = timl#first(_.seq)
+    let _.seq = timl#rest(_.seq)
+  endif
+  while _.seq isnot# g:timl#nil
+    let _.val = timl#call(a:f, [_.val, timl#first(_.seq)])
+    let _.seq = timl#next(_.seq)
+  endwhile
+  return _.val
+endfunction
+
 " }}}1
 " Section: Lists {{{1
 
@@ -249,6 +269,10 @@ let s:ary = type([])
 
 function! timl#seq(coll) abort
   return timl#type#dispatch(g:timl#core#seq, a:coll)
+endfunction
+
+function! timl#emptyp(seq) abort
+  return timl#seq(a:seq) is# g:timl#nil
 endfunction
 
 function! timl#seqp(coll) abort

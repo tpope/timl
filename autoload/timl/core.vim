@@ -180,35 +180,6 @@ TLalias into timl#into
 TLpredicate contains_QMARK_(coll, val) timl#containsp(a:coll, a:val)
 
 " }}}1
-" Section: Sequences {{{1
-
-TLalias next timl#next
-TLalias rest timl#rest
-TLpredicate seq_QMARK_(seq) timl#seqp(a:seq)
-
-TLpredicate empty_QMARK_(coll) timl#core#seq(a:coll) is# g:timl#nil
-
-TLfunction! reduce(f, coll, ...) abort
-  let _ = {}
-  if a:0
-    let _.val = a:coll
-    let _.seq = timl#seq(a:1)
-  else
-    let _.seq = timl#seq(a:coll)
-    if empty(_.seq)
-      return g:timl#nil
-    endif
-    let _.val = timl#first(_.seq)
-    let _.seq = timl#rest(_.seq)
-  endif
-  while _.seq isnot# g:timl#nil
-    let _.val = timl#call(a:f, [_.val, timl#first(_.seq)])
-    let _.seq = timl#next(_.seq)
-  endwhile
-  return _.val
-endfunction
-
-" }}}1
 
 delcommand TLfunction
 delcommand TLalias
