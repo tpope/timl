@@ -214,6 +214,21 @@ call s:implement('timl.lang/HashSet',
       \ 'disj!', s:function('timl#set#disjb'),
       \ 'persistent!', s:function('timl#set#persistentb'))
 
+" Section: I/O
+
+call s:define_apply('echo', 'timl#io#echo')
+call s:define_apply('echon', 'timl#io#echon')
+call s:define_apply('echomsg', 'timl#io#echomsg')
+call s:define_apply('print', 'timl#io#echon')
+call s:define_apply('println', 'timl#io#println')
+call s:define_call('newline', 'timl#io#newline')
+call s:define_call('printf', 'timl#io#printf')
+call s:define_apply('pr', 'timl#io#pr')
+call s:define_apply('prn', 'timl#io#prn')
+call s:define_call('spit', 'timl#io#spit')
+call s:define_call('slurp', 'timl#io#slurp')
+call s:define_call('read-string', 'timl#reader#read_string')
+
 " Section: Defaults
 
 runtime! autoload/timl/vim.vim

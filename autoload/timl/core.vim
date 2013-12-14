@@ -127,65 +127,6 @@ TLargfunction apply
 endfunction
 
 " }}}1
-" Section: IO {{{1
-
-TLargfunction echon
-  echon join(map(copy(a:_), 'timl#str(v:val)'), ' ')
-  return g:timl#nil
-endfunction
-
-TLargfunction echo
-  echo join(map(copy(a:_), 'timl#str(v:val)'), ' ')
-  return g:timl#nil
-endfunction
-
-TLargfunction echomsg
-  echomsg join(map(copy(a:_), 'timl#str(v:val)'), ' ')
-  return g:timl#nil
-endfunction
-
-TLargfunction print
-  echon join(map(copy(a:_), 'timl#str(v:val)'), ' ')
-  return g:timl#nil
-endfunction
-
-TLargfunction println
-  echon join(map(copy(a:_), 'timl#str(v:val)'), ' ')."\n"
-  return g:timl#nil
-endfunction
-
-TLfunction newline()
-  echon "\n"
-  return g:timl#nil
-endfunction
-
-TLfunction printf(fmt, ...) abort
-  echon call('printf', [timl#str(a:fmt)] + a:000)."\n"
-  return g:timl#nil
-endfunction
-
-TLfunction pr(...)
-  echon join(map(copy(a:000), 'timl#printer#string(v:val)'), ' ')
-  return g:timl#nil
-endfunction
-
-TLfunction prn(...)
-  echon join(map(copy(a:000), 'timl#printer#string(v:val)'), ' ')."\n"
-  return g:timl#nil
-endfunction
-
-TLfunction spit(filename, body)
-  if type(body) == type([])
-    call writefile(body, a:filename)
-  else
-    call writefile(split(body, "\n"), a:filename, 'b')
-endfunction
-
-TLexpr slurp(filename) join(readfile(a:filename, 'b'), "\n")
-
-TLalias read_string timl#reader#read_string
-
-" }}}1
 " Section: Equality {{{1
 
 TLpredicate _EQ_(...)     call('timl#equalp', a:000)
