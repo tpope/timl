@@ -121,3 +121,9 @@
 (defn fnext [x] (first (next x)))
 (defn nfirst [x] (next (first x)))
 (defn nnext [x] (next (next x)))
+
+(load "core_macros")
+(load "core_basics")
+(load "core_seq")
+(load "core_coll")
+(load "core_vim")
