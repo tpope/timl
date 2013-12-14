@@ -235,6 +235,7 @@ call s:define_call('in_ns', 'timl#namespace#select')
 call s:define_call('refer', 'timl#namespace#refer')
 call s:define_call('alias', 'timl#namespace#alias')
 call s:define_call('use', 'timl#namespace#use')
+call s:define_call('intern', 'timl#namespace#intern')
 
 " Section: Array (Vim List)
 

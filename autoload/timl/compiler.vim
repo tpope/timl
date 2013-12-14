@@ -54,10 +54,7 @@ function! timl#compiler#qualify(sym, ns, ...)
   throw 'timl#compiler: could not resolve '.timl#str(a:sym)
 endfunction
 
-function! timl#compiler#ns_resolve(ns, sym, ...) abort
-  if has_key(a:0 ? a:1 : {}, timl#str(a:sym))
-    return g:timl#nil
-  endif
+function! timl#compiler#ns_resolve(ns, sym) abort
   let sym = timl#compiler#qualify(a:sym, a:ns, g:timl#nil)
   if sym is# g:timl#nil
     return sym
@@ -541,17 +538,12 @@ endfunction
 function! s:expr_sf_def(file, env, form) abort
   let rest = timl#next(a:form)
   let var = timl#symbol#coerce(timl#first(rest))
-  let assign = 'timl#munge(g:timl#core#_STAR_ns_STAR_.name).'.string('#'.timl#munge(var))
   if timl#next(rest) isnot# g:timl#nil
     let val = s:expr(a:file, a:env, timl#fnext(rest))
-    call s:emitln(a:file, 'unlet! g:{'.assign.'}')
-    call s:emitln(a:file, 'let g:{'.assign.'} = '.val)
+    return 'timl#namespace#intern(g:timl#core#_STAR_ns_STAR_, '.timl#compiler#serialize(var).', '.val.')'
   else
-    call s:emitln(a:file, 'if !exists("g:".'.assign.')')
-    call s:emitln(a:file, 'let g:{'.assign.'} = g:timl#nil')
-    call s:emitln(a:file, 'endif')
+    return 'timl#namespace#intern(g:timl#core#_STAR_ns_STAR_, '.timl#compiler#serialize(var).')'
   endif
-  return 'g:{'.assign.'}'
 endfunction
 
 function! s:expr_dot(file, env, form) abort
@@ -809,7 +801,7 @@ command! -nargs=1 TimLCAssert
       \  echomsg "Error:  ".<q-args>." (".v:exception.") @ " . v:throwpoint |
       \ endtry
 
-TimLCAssert s:re('(let* [x 42] (def forty-two x))')
+TimLCAssert !empty(s:re('(let* [x 42] (def forty-two x))'))
 TimLCAssert s:re('forty-two') ==# 42
 
 TimLCAssert s:re('(if true forty-two 69)') ==# 42
