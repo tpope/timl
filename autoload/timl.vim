@@ -181,7 +181,7 @@ function! timl#equalp(x, y) abort
   return 1
 endfunction
 
-runtime! autoload/timl/lang.vim
+runtime! autoload/timl/bootstrap.vim
 
 " }}}1
 " Section: Collections {{{1
