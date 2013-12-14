@@ -367,6 +367,12 @@ call s:define_call('get', 'timl#get')
 call s:define_call('into', 'timl#into')
 call s:define_pred('contains?', 'timl#containsp')
 
+" Section: Compiler
+
+call s:define_pred('special-symbol?', 'timl#compiler#specialp')
+call s:define_call('macroexpand-1', 'timl#compiler#macroexpand_1')
+call s:define_call('macroexpand-all', 'timl#compiler#macroexpand_all')
+
 " Section: I/O
 
 call s:define_apply('echo', 'timl#io#echo')

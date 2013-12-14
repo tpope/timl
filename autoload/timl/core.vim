@@ -67,15 +67,6 @@ TLalias meta timl#meta
 TLalias with_meta timl#with_meta
 
 " }}}1
-" Section: Compiler {{{1
-
-TLpredicate special_symbol_QMARK_(sym) timl#compiler#specialp(a:sym)
-TLalias macroexpand_1 timl#compiler#macroexpand_1
-TLalias macroexpand_all timl#compiler#macroexpand_all
-TLexpr ns_resolve(ns, sym, ...) timl#compiler#ns_resolve(a:ns, a:0 ? a:1 : a:sym, a:0 ? a:sym : {})
-TLexpr resolve(sym, ...) timl#compiler#ns_resolve(g:timl#core#_STAR_ns_STAR_, a:0 ? a:1 : a:sym, a:0 ? a:sym : {})
-
-" }}}1
 " Section: Functions {{{1
 
 let s:def = timl#symbol('def')

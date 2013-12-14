@@ -117,6 +117,14 @@
      (in-ns '~name)
      (refer-timl)))
 
+(defn ns-resolve
+  ([ns sym] (#*timl#compiler#ns_resolve ns sym (dict)))
+  ([ns env sym] (if (contains? (:locals env) sym) nil (ns-resolve ns sym))))
+
+(defn resolve
+  ([sym] (ns-resolve *ns* sym))
+  ([env sym] (ns-resolve *ns* env sym)))
+
 (load "core_macros")
 (load "core_basics")
 (load "core_seq")
