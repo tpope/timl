@@ -183,7 +183,7 @@ function! s:process(port, token, line, wanted) abort
   elseif token =~# '^%\d*$\|^%&$' && has_key(port, 'argsyms')
     let token = (token ==# '%' ? '%1' : token)
     if !has_key(port.argsyms, token)
-      let port.argsyms[token] = timl#gensym('p1__')
+      let port.argsyms[token] = timl#symbol#gen('p1__')
     endif
     return port.argsyms[token]
   elseif token =~# '^#\a'
@@ -263,7 +263,7 @@ function! timl#reader#syntax_quote(form, gensyms) abort
   if timl#symbol#test(a:form)
     if a:form[0] =~# '^[^/]\+#$'
       if !has_key(a:gensyms, a:form[0])
-        let a:gensyms[a:form[0]] = timl#symbol(timl#gensym(a:form[0][0:-2].'__')[0].'__auto__')
+        let a:gensyms[a:form[0]] = timl#symbol(timl#symbol#gen(a:form[0][0:-2].'__')[0].'__auto__')
       endif
       let quote = s:quote
       let x = timl#list(s:quote, a:gensyms[a:form[0]])

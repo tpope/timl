@@ -122,7 +122,7 @@ call s:implement('vim/String',
 
 call s:define_call('symbol', 'timl#symbol#intern')
 call s:define_call('keyword', 'timl#keyword#intern')
-call s:define_call('gensym', 'timl#gensym')
+call s:define_call('gensym', 'timl#symbol#gen')
 call s:define_call('format', 'printf')
 call s:define_apply('str', 'timl#string#join')
 call s:define_call('join', 'timl#string#join')

@@ -109,7 +109,7 @@ TLfunction defmacro(form, env, name, params, ...)
       call add(body, timl#cons#create(extra + timl#first(_.list), timl#next(_.list)))
     endfor
   endif
-  let fn = timl#gensym('fn')
+  let fn = timl#symbol#gen('fn')
   return timl#list(s:lets,
         \ [fn, timl#cons#from_array([s:defn, a:name] + body)],
         \ timl#list(s:setq, timl#list(s:dot, fn, timl#symbol('macro')), 1),

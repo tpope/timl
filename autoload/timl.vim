@@ -53,6 +53,14 @@ function! timl#dekey(key)
   endif
 endfunction
 
+function! timl#keyword(str)
+  return timl#keyword#intern(a:str)
+endfunction
+
+function! timl#symbol(str)
+  return timl#symbol#intern(a:str)
+endfunction
+
 " }}}1
 " Section: Munging {{{1
 
@@ -100,23 +108,16 @@ function! timl#demunge(var) abort
 endfunction
 
 " }}}1
-" Section: Keywords {{{1
-
-function! timl#keyword(str)
-  return timl#keyword#intern(a:str)
-endfunction
-
-" }}}1
 " Section: Type System {{{1
-
-function! timl#bless(class, ...) abort
-  return timl#type#bless(a:class, a:0 ? a:1 : {})
-endfunction
 
 if !exists('g:timl#nil')
   let g:timl#nil = timl#freeze()
   lockvar 1 g:timl#nil
 endif
+
+function! timl#bless(class, ...) abort
+  return timl#type#bless(a:class, a:0 ? a:1 : {})
+endfunction
 
 function! timl#type(val) abort
   return timl#type#string(a:val)
@@ -184,19 +185,6 @@ function! timl#equalp(x, ...) abort
     endif
   endfor
   return 1
-endfunction
-
-" }}}1
-" Section: Symbols {{{1
-
-let s:symbol = timl#keyword('#timl.lang/Symbol')
-function! timl#symbol(str)
-  return timl#symbol#intern(a:str)
-endfunction
-
-function! timl#gensym(...)
-  let s:id = get(s:, 'id', 0) + 1
-  return timl#symbol((a:0 ? a:1 : 'G__').s:id)
 endfunction
 
 runtime! autoload/timl/lang.vim

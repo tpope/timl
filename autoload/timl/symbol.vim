@@ -35,3 +35,8 @@ function! timl#symbol#coerce(symbol)
   endif
   return a:symbol
 endfunction
+
+function! timl#symbol#gen(...)
+  let s:id = get(s:, 'id', 0) + 1
+  return timl#symbol((a:0 ? a:1 : 'G__').s:id)
+endfunction
