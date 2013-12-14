@@ -70,7 +70,7 @@ function! s:add_meta(data, meta) abort
     unlockvar 1 data
   endif
   if !has_key(data, '#meta')
-    let data['#meta'] = timl#hash_map()
+    let data['#meta'] = timl#map#create([])
   endif
   unlockvar 1 data['#meta']
   call extend(data['#meta'], a:meta)
@@ -102,7 +102,7 @@ function! s:process(port, token, line, wanted) abort
     if len(list) % 2 != 0
       let error = 'timl#reader: invalid hash map literal'
     else
-      return timl#hash_map(list)
+      return timl#map#create(list)
     endif
   elseif token == '#['
     let list = s:read_until(port, ']')
@@ -372,13 +372,13 @@ TimLRAssert timl#reader#read_string('#"\(a\\\)"') ==# '\(a\\\)'
 TimLRAssert timl#reader#read_string('#"\""') ==# '"'
 TimLRAssert timl#reader#read_string('(first [1 2])') ==# timl#list(timl#symbol('first'), timl#vector(1, 2))
 TimLRAssert timl#reader#read_string('#["a" 1 "b" 2]') ==# {"a": 1, "b": 2}
-TimLRAssert timl#reader#read_string('{"a" 1 :b 2 3 "c"}') ==# timl#hash_map("a", 1, timl#keyword#intern('b'), 2, 3, "c")
+TimLRAssert timl#reader#read_string('{"a" 1 :b 2 3 "c"}') ==# timl#map#create(["a", 1, timl#keyword#intern('b'), 2, 3, "c"])
 TimLRAssert timl#reader#read_string("[1]\n; hi\n") ==# timl#vector(1)
 TimLRAssert timl#reader#read_string("'[1 2 3]") ==# timl#list(timl#symbol('quote'), timl#vector(1, 2, 3))
 TimLRAssert timl#reader#read_string("#*tr") ==# timl#list(timl#symbol('function'), timl#symbol('tr'))
 TimLRAssert timl#reader#read_string("(1 #_2 3)") ==# timl#list(1, 3)
 TimLRAssert timl#reader#read_string("^:foo {}") ==#
-      \ timl#with_meta(timl#hash_map(), timl#hash_map(timl#keyword#intern('foo'), g:timl#true))
+      \ timl#with_meta(timl#map#create([]), timl#map#create([timl#keyword#intern('foo'), g:timl#true]))
 
 TimLRAssert timl#reader#read_string("~foo") ==# timl#list(s:unquote, timl#symbol('foo'))
 TimLRAssert timl#first(timl#rest(timl#reader#read_string("`foo#")))[0] =~# '^foo__\d\+__auto__'

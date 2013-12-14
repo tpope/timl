@@ -126,7 +126,7 @@ function! timl#compiler#serialize(x, ...)
       call extend(keyvals, timl#ary(timl#first(_.seq)))
       let _.seq = timl#next(_.seq)
     endwhile
-    return 'timl#hash_map('.timl#compiler#serialize(keyvals).')'
+    return 'timl#map#create('.timl#compiler#serialize(keyvals).')'
 
   elseif timl#setp(a:x)
     let _ = {}
@@ -136,7 +136,7 @@ function! timl#compiler#serialize(x, ...)
       call add(keyvals, timl#first(_.seq))
       let _.seq = timl#next(_.seq)
     endwhile
-    return 'timl#set('.timl#compiler#serialize(keyvals).')'
+    return 'timl#set#create('.timl#compiler#serialize(keyvals).')'
 
   elseif timl#consp(a:x)
     return 'timl#cons#create('.timl#compiler#serialize(a:x.car).','.timl#compiler#serialize(a:x.cdr).')'
@@ -514,7 +514,7 @@ function! s:expr_map(file, env, form)
     call extend(kvs, timl#ary(timl#first(_.seq)))
     let _.seq = timl#next(_.seq)
   endwhile
-  return 'timl#hash_map(['.join(map(kvs, 's:emit(a:file, s:with_context(a:env, "expr"), v:val)'), ', ').'])'
+  return 'timl#map#create(['.join(map(kvs, 's:emit(a:file, s:with_context(a:env, "expr"), v:val)'), ', ').'])'
 endfunction
 
 let s:colon = timl#symbol(':')

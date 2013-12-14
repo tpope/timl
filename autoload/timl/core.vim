@@ -439,11 +439,9 @@ endfunction
 " Section: Dictionaries {{{1
 
 TLalias dict timl#dict
-TLalias hash_map timl#hash_map
-TLalias hash_set timl#hash_set
-TLalias set timl#set
-TLalias assoc_BANG_ timl#assocb
-TLalias dissoc_BANG_ timl#dissocb
+TLexpr hash_map(...) timl#map#create(a:000)
+TLexpr hash_set(...) timl#set#coerce(a:000)
+TLalias set timl#set#coerce
 TLpredicate map_QMARK_(x) timl#mapp(a:x)
 TLpredicate set_QMARK_(x) timl#setp(a:x)
 TLpredicate dict_QMARK_(x) timl#dictp(a:x)

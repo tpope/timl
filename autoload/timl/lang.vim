@@ -49,7 +49,7 @@ function! s:nil_cons(this, ...)
 endfunction
 
 function! s:nil_assoc(this, ...)
-  return call('s:map_assoc', [timl#hash_map()] + a:000)
+  return timl#map#create(a:000)
 endfunction
 
 call s:implement('timl.lang/Nil',
@@ -142,61 +142,20 @@ call s:implement('timl.lang/LazySeq',
 
 " Section: Hash Map
 
-function! s:map_seq(hash) abort
-  let items = map(filter(items(a:hash), 'v:val[0][0] !=# "#"'), '[timl#dekey(v:val[0]), v:val[1]]')
-  return empty(items) ? g:timl#nil : timl#array_seq#create(items)
-endfunction
-
-function! s:map_lookup(this, key, ...) abort
-  return get(a:this, timl#key(a:key), a:0 ? a:1 : g:timl#nil)
-endfunction
-
-function! s:map_cons(this, ...) abort
-  let this = copy(a:this)
-  let _ = {}
-  for _.e in a:000
-    let this[timl#key(timl#first(_.e))] = timl#fnext(_.e)
-  endfor
-  lockvar 1 this
-  return this
-endfunction
-
-function! s:map_assoc(this, ...) abort
-  let this = copy(a:this)
-  let _ = {}
-  for i in range(0, len(a:000)-2, 2)
-    let this[timl#key(a:000[i])] = a:000[i+1]
-  endfor
-  lockvar 1 this
-  return this
-endfunction
-
-function! s:map_dissoc(this, ...) abort
-  let _ = {}
-  let this = copy(a:this)
-  for _.x in a:000
-    let key = timl#key(_.x)
-    if has_key(this, key)
-      call remove(this, key)
-    endif
-  endfor
-  lockvar 1 this
-  return this
-endfunction
-
-let s:empty_map = timl#persistentb(timl#bless('timl.lang/HashMap'))
-function! s:map_empty(this) abort
-  return s:empty_map
-endfunction
+call s:implement('timl.lang/HashMap',
+      \ 'seq', s:function('timl#map#seq'),
+      \ 'lookup', s:function('timl#map#lookup'),
+      \ 'empty', s:function('timl#map#empty'),
+      \ 'conj', s:function('timl#map#conj'),
+      \ 'assoc', s:function('timl#map#assoc'),
+      \ 'dissoc', s:function('timl#map#dissoc'),
+      \ 'invoke', s:function('timl#map#lookup'))
 
 call s:implement('timl.lang/HashMap',
-      \ 'seq', s:function('s:map_seq'),
-      \ 'lookup', s:function('s:map_lookup'),
-      \ 'empty', s:function('s:map_empty'),
-      \ 'conj', s:function('s:map_cons'),
-      \ 'assoc', s:function('s:map_assoc'),
-      \ 'dissoc', s:function('s:map_dissoc'),
-      \ 'invoke', s:function('s:map_lookup'))
+      \ 'conj!', s:function('timl#set#conjb'),
+      \ 'assoc!', s:function('timl#set#assocb'),
+      \ 'dissoc!', s:function('timl#set#dissocb'),
+      \ 'persistent!', s:function('timl#set#persistentb'))
 
 " Section: Hash Set
 

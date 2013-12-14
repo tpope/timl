@@ -311,21 +311,6 @@ function! timl#dict(...) abort
   return dict
 endfunction
 
-let s:hash_map = timl#type#intern('timl.lang/HashMap')
-function! timl#hash_map(...) abort
-  let keyvals = a:0 == 1 ? a:1 : a:000
-  let map = timl#bless(s:hash_map)
-  if timl#dictp(keyvals)
-    return timl#into(timl#persistentb(map), keyvals)
-  endif
-  call timl#assocb(map, keyvals)
-  return timl#persistentb(map)
-endfunction
-
-function! timl#hash_set(...) abort
-  return timl#set#coerce(a:000)
-endfunction
-
 function! timl#set(seq) abort
   return timl#set#coerce(a:seq)
 endfunction
