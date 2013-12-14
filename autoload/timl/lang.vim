@@ -234,6 +234,11 @@ call s:implement('vim/List',
       \ 'conj!', 'timl#array#conjb',
       \ 'persistent!', 'timl#array#persistentb')
 
+call s:define_call('subvec', 'timl#array#sub')
+call s:define_pred('vector?', 'timl#vectorp')
+call s:define_call('vec', 'timl#vec')
+call s:define_apply('vector', 'timl#vec')
+
 " Section: Cons
 
 call s:implement('timl.lang/Cons',
@@ -311,6 +316,9 @@ call s:implement('vim/Dictionary',
       \ 'dissoc!', 'timl#dictionary#dissocb',
       \ 'persistent!', 'timl#dictionary#persistentb')
 
+call s:define_pred('dict?', 'timl#dictp')
+call s:define_apply('dict', 'timl#dictionary#create')
+
 " Section: Hash Map
 
 call s:implement('timl.lang/HashMap',
@@ -329,6 +337,9 @@ call s:implement('timl.lang/HashMap',
       \ 'dissoc!', 'timl#map#dissocb',
       \ 'persistent!', 'timl#map#persistentb')
 
+call s:define_pred('map?', 'timl#mapp')
+call s:define_apply('hash-map', 'timl#map#create')
+
 " Section: Hash Set
 
 call s:implement('timl.lang/HashSet',
@@ -344,6 +355,17 @@ call s:implement('timl.lang/HashSet',
       \ 'conj!', 'timl#set#conjb',
       \ 'disj!', 'timl#set#disjb',
       \ 'persistent!', 'timl#set#persistentb')
+
+call s:define_pred('set?', 'timl#setp')
+call s:define_call('set', 'timl#set#coerce')
+call s:define_apply('hash-set', 'timl#set#coerce')
+
+" Section: Collection
+
+call s:define_pred('coll?', 'timl#collp')
+call s:define_call('get', 'timl#get')
+call s:define_call('into', 'timl#into')
+call s:define_pred('contains?', 'timl#containsp')
 
 " Section: I/O
 

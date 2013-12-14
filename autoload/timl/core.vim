@@ -144,42 +144,6 @@ TLfunction! identical_QMARK_(x, ...) abort
 endfunction
 
 " }}}1
-" Section: Vectors {{{1
-
-TLpredicate vector_QMARK_(val) timl#vectorp(a:val)
-TLalias vector timl#vector
-TLalias vec timl#vec
-
-TLfunction! subvec(list, start, ...) abort
-  if a:0 && a:1 == 0
-    return type(a:list) == type('') ? '' : timl#persistentb([])
-  elseif a:0
-    return timl#persistentb(a:list[a:start : (a:1 < 0 ? a:1 : a:1-1)])
-  else
-    return timl#persistentb(a:list[a:start :])
-  endif
-endfunction
-
-" }}}1
-" Section: Dictionaries {{{1
-
-TLexpr dict(...) timl#dictionary#create(a:000)
-TLexpr hash_map(...) timl#map#create(a:000)
-TLexpr hash_set(...) timl#set#coerce(a:000)
-TLalias set timl#set#coerce
-TLpredicate map_QMARK_(x) timl#mapp(a:x)
-TLpredicate set_QMARK_(x) timl#setp(a:x)
-TLpredicate dict_QMARK_(x) timl#dictp(a:x)
-
-" }}}1
-" Section: Collections {{{1
-
-TLpredicate coll_QMARK_(seq) timl#collp(a:seq)
-TLalias get timl#get
-TLalias into timl#into
-TLpredicate contains_QMARK_(coll, val) timl#containsp(a:coll, a:val)
-
-" }}}1
 
 delcommand TLfunction
 delcommand TLalias

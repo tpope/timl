@@ -90,3 +90,13 @@ function! timl#array#persistentb(this) abort
   lockvar 1 a:this
   return a:this
 endfunction
+
+function! timl#array#sub(list, start, ...) abort
+  if a:0 && a:1 == 0
+    return []
+  elseif a:0
+    return a:list[a:start : (a:1 < 0 ? a:1 : a:1-1)]
+  else
+    return a:list[a:start :]
+  endif
+endfunction
