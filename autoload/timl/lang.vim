@@ -46,7 +46,26 @@ function! s:define_apply(name, fn)
         \ 'apply': s:function(a:fn)})
 endfunction
 
-" Section: Numbers
+function! s:apply(_) abort
+  return call(self.call, a:_, self)
+endfunction
+
+function! s:define_call(name, fn)
+  let g:timl#core#{timl#munge(a:name)} = timl#bless('timl.lang/Function', {
+        \ 'name': timl#symbol#intern(a:name),
+        \ 'ns': s:ns,
+        \ 'apply': s:function('s:apply'),
+        \ 'call': s:function(a:fn)})
+endfunction
+
+function! s:define_apply(name, fn)
+  let g:timl#core#{timl#munge(a:name)} = timl#bless('timl.lang/Function', {
+        \ 'name': timl#symbol#intern(a:name),
+        \ 'ns': s:ns,
+        \ 'apply': s:function(a:fn)})
+endfunction
+
+" Section: Number
 
 call s:define_apply('+', 'timl#number#sum')
 call s:define_apply('*', 'timl#number#product')
@@ -91,7 +110,7 @@ if !exists('g:timl#false')
   lockvar 1 g:timl#false g:timl#true
 endif
 
-" Section: Symbols/Keywords
+" Section: Symbol/Keyword
 
 function! s:this_get(this, coll, ...) abort
   if a:0

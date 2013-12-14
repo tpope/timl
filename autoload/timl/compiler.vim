@@ -77,6 +77,29 @@ function! timl#compiler#resolve_or_throw(sym)
   throw "timl#compiler: could not resolve ".timl#str(a:sym)
 endfunction
 
+" Section: Macroexpand
+
+function! timl#compiler#macroexpand_1(form) abort
+  if timl#consp(a:form) && timl#symbol#test(timl#first(a:form)) && !timl#compiler#specialp(timl#first(a:form))
+    let var = timl#compiler#ns_resolve(g:timl#core#_STAR_ns_STAR_, timl#first(a:form))
+    if var isnot# g:timl#nil
+      let Val = eval(var)
+      if timl#truth(get(Val, 'macro', g:timl#false))
+        return timl#call(Val, [a:form, {}] + timl#ary(timl#next(a:form)))
+      endif
+    endif
+  endif
+  return a:form
+endfunction
+
+function! timl#compiler#macroexpand_all(form) abort
+  let _ = {'last': g:timl#nil, 'this': a:form}
+  while _.last isnot# _.this
+    let [_.last, _.this] = [_.this, timl#compiler#macroexpand_1(_.this)]
+  endwhile
+  return _.this
+endfunction
+
 " Section: Serialization
 
 let s:escapes = {

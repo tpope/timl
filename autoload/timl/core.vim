@@ -67,31 +67,11 @@ TLalias meta timl#meta
 TLalias with_meta timl#with_meta
 
 " }}}1
-" Section: Introspection {{{1
+" Section: Compiler {{{1
 
 TLpredicate special_symbol_QMARK_(sym) timl#compiler#specialp(a:sym)
-
-TLfunction macroexpand_1(form)
-  if timl#consp(a:form) && timl#symbol#test(timl#first(a:form)) && !timl#truth(g:timl#core#special_symbol_QMARK_.call(timl#first(a:form)))
-    let var = timl#compiler#ns_resolve(g:timl#core#_STAR_ns_STAR_, timl#first(a:form))
-    if var isnot# g:timl#nil
-      let Val = eval(var)
-      if timl#truth(get(Val, 'macro', g:timl#false))
-    echo var
-        return timl#call(Val, [a:form, {}] + timl#ary(timl#next(a:form)))
-      endif
-    endif
-  endif
-  return a:form
-endfunction
-
-TLfunction macroexpand_all(form)
-  let _ = {'last': g:timl#nil, 'this': a:form}
-  while _.last isnot# _.this
-    let [_.last, _.this] = [_.this, g:timl#core#macroexpand_1.call(_.this)]
-  endwhile
-  return _.this
-endfunction
+TLalias macroexpand_1 timl#compiler#macroexpand_1
+TLalias macroexpand_all timl#compiler#macroexpand_all
 
 " }}}1
 " Section: Functions {{{1
