@@ -36,7 +36,7 @@ function! timl#map#equal(this, that)
   let _ = {'seq': timl#seq(a:this)}
   while _.seq isnot# g:timl#nil
     let _.other = timl#get(a:that, timl#ffirst(_.seq), _)
-    if _.other is# _ || !timl#truth(timl#type#dispatch(g:timl#core#equal_QMARK_, timl#first(timl#nfirst(_.seq)), _.other))
+    if _.other is# _ || !timl#equalp(timl#first(timl#nfirst(_.seq)), _.other)
       return g:timl#false
     endif
     let _.seq = timl#next(_.seq)

@@ -138,7 +138,7 @@ endfunction
 
 function! timl#with_meta(obj, meta) abort
   if timl#type#objectp(a:obj)
-    if !timl#truth(timl#type#dispatch(g:timl#core#equal_QMARK_, get(a:obj, '#meta', g:timl#nil), a:meta))
+    if !timl#equalp(get(a:obj, '#meta', g:timl#nil), a:meta)
       let obj = copy(a:obj)
       if a:meta is# g:timl#nil
         call remove(obj, '#meta')
@@ -175,10 +175,7 @@ function! timl#str(val) abort
 endfunction
 
 function! timl#equalp(x, y) abort
-  if type(a:x) != type(a:y) || a:x !=# a:y
-    return 0
-  endif
-  return 1
+  return timl#type#dispatch(g:timl#core#equal_QMARK_, a:x, a:y) is# g:timl#true
 endfunction
 
 runtime! autoload/timl/bootstrap.vim

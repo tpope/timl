@@ -437,7 +437,7 @@ function! s:default_equal(x, y)
     return 0
   endif
 endfunction
-call timl#type#define_method('timl.core', 'equal?', g:timl#nil, s:function('s:default_equal'))
+call timl#type#define_method('timl.core', 'equal?', g:timl#nil, g:timl#core#identical_QMARK_)
 
 function! s:default_first(x)
   return timl#type#dispatch(g:timl#core#first, timl#type#dispatch(g:timl#core#seq, a:x))

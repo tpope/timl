@@ -8,7 +8,7 @@ let g:autoloaded_timl_equality = 1
 function! timl#equality#all(_) abort
   let _ = {}
   for _.y in a:_[1:-1]
-    if !timl#truth(timl#type#dispatch(g:timl#core#equal_QMARK_, a:_[0], _.y))
+    if !timl#equalp(a:_[0], _.y)
       return g:timl#false
     endif
   endfor
@@ -23,10 +23,10 @@ function! timl#equality#identical(_) abort
   let _ = {}
   for _.y in a:_[1:-1]
     if a:_[0] isnot# _.y
-      return s:false
+      return g:timl#false
     endif
   endfor
-  return s:true
+  return g:timl#true
 endfunction
 
 function! timl#equality#seq(x, y) abort
@@ -37,7 +37,7 @@ function! timl#equality#seq(x, y) abort
   endif
   let _ = {'x': timl#seq(a:x), 'y': timl#seq(a:y)}
   while _.x isnot# g:timl#nil && _.y isnot# g:timl#nil
-    if !timl#truth(timl#type#dispatch(g:timl#core#equal_QMARK_, timl#first(_.x), timl#first(_.y)))
+    if !timl#equalp(timl#first(_.x), timl#first(_.y))
       return g:timl#false
     endif
     let _.x = timl#next(_.x)
