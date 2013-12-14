@@ -25,16 +25,10 @@ function! s:zero(...)
   return 0
 endfunction
 
-function! s:methods(type, ...)
-  for i in range(0, a:0-1, 2)
-    call timl#type#method(a:000[i], timl#keyword#intern(a:type), a:000[i+1])
-  endfor
-endfunction
-
 function! s:implement(type, ...)
   let type = timl#keyword#intern(a:type)
   for i in range(0, a:0-1, 2)
-    call timl#type#define_method('timl.core', a:000[i], type, a:000[i+1])
+    call timl#type#define_method('timl.core', a:000[i], type, s:function(a:000[i+1]))
   endfor
 endfunction
 
@@ -95,8 +89,8 @@ function! s:string_count(this) abort
 endfunction
 
 call s:implement('vim/String',
-      \ 'lookup', s:function('s:string_lookup'),
-      \ 'count', s:function('s:string_count'))
+      \ 'lookup', 's:string_lookup',
+      \ 'count', 's:string_count')
 
 " Section: Nil
 
@@ -113,13 +107,13 @@ function! s:nil_assoc(this, ...)
 endfunction
 
 call s:implement('timl.lang/Nil',
-      \ 'seq', s:function('s:nil'),
-      \ 'first', s:function('s:nil'),
-      \ 'more', s:function('s:empty_list'),
-      \ 'conj', s:function('s:nil_cons'),
-      \ 'assoc', s:function('s:nil_assoc'),
-      \ 'count', s:function('s:zero'),
-      \ 'lookup', s:function('s:nil_lookup'))
+      \ 'seq', 's:nil',
+      \ 'first', 's:nil',
+      \ 'more', 's:empty_list',
+      \ 'conj', 's:nil_cons',
+      \ 'assoc', 's:nil_assoc',
+      \ 'count', 's:zero',
+      \ 'lookup', 's:nil_lookup')
 
 " Section: Boolean
 
@@ -140,10 +134,10 @@ function! s:this_get(this, coll, ...) abort
 endfunction
 
 call s:implement('timl.lang/Symbol',
-      \ '_invoke', s:function('s:this_get'))
+      \ '_invoke', 's:this_get')
 
 call s:implement('timl.lang/Keyword',
-      \ '_invoke', s:function('s:this_get'))
+      \ '_invoke', 's:this_get')
 
 " Section: Function
 
@@ -152,39 +146,39 @@ function! s:function_invoke(this, ...) abort
 endfunction
 
 call s:implement('timl.lang/Function',
-      \ '_invoke', s:function('s:function_invoke'))
+      \ '_invoke', 's:function_invoke')
 
 call s:implement('timl.lang/MultiFn',
-      \ '_invoke', s:function('timl#type#dispatch'))
+      \ '_invoke', 'timl#type#dispatch')
 
-call s:implement('vim/Funcref', '_invoke', s:function('call'))
+call s:implement('vim/Funcref', '_invoke', 'call')
 
 " Section: Array (Vim List)
 
 call s:implement('vim/List',
-      \ 'seq', s:function('timl#array#seq'),
-      \ 'first', s:function("timl#array#first"),
-      \ 'more', s:function("timl#array#rest"),
-      \ 'lookup', s:function('timl#array#lookup'),
-      \ 'nth', s:function('timl#array#nth'),
-      \ 'count', s:function('len'),
-      \ 'conj', s:function('timl#array#cons'),
-      \ 'empty', s:function('timl#array#empty'),
-      \ '_invoke', s:function('timl#array#lookup'))
+      \ 'seq', 'timl#array#seq',
+      \ 'first', 'timl#array#first',
+      \ 'more', 'timl#array#rest',
+      \ 'lookup', 'timl#array#lookup',
+      \ 'nth', 'timl#array#nth',
+      \ 'count', 'len',
+      \ 'conj', 'timl#array#cons',
+      \ 'empty', 'timl#array#empty',
+      \ '_invoke', 'timl#array#lookup')
 
 call s:implement('vim/List',
-      \ 'transient', s:function('timl#array#transient'),
-      \ 'conj!', s:function('timl#array#conjb'),
-      \ 'persistent!', s:function('timl#array#persistentb'))
+      \ 'transient', 'timl#array#transient',
+      \ 'conj!', 'timl#array#conjb',
+      \ 'persistent!', 'timl#array#persistentb')
 
 " Section: Cons
 
 call s:implement('timl.lang/Cons',
-      \ 'seq', s:function('s:identity'),
-      \ 'first', s:function('timl#cons#first'),
-      \ 'more', s:function('timl#cons#more'),
-      \ 'conj', s:function('timl#cons#conj'),
-      \ 'empty', s:function('s:empty_list'))
+      \ 'seq', 's:identity',
+      \ 'first', 'timl#cons#first',
+      \ 'more', 'timl#cons#more',
+      \ 'conj', 'timl#cons#conj',
+      \ 'empty', 's:empty_list')
 
 " Section: Empty list
 
@@ -194,83 +188,83 @@ if !exists('g:timl#empty_list')
 endif
 
 call s:implement('timl.lang/EmptyList',
-      \ 'seq', s:function('s:nil'),
-      \ 'first', s:function('s:nil'),
-      \ 'more', s:function('s:identity'),
-      \ 'count', s:function('s:zero'),
-      \ 'conj', s:function('timl#cons#conj'),
-      \ 'empty', s:function('s:identity'))
+      \ 'seq', 's:nil',
+      \ 'first', 's:nil',
+      \ 'more', 's:identity',
+      \ 'count', 's:zero',
+      \ 'conj', 'timl#cons#conj',
+      \ 'empty', 's:identity')
 
 " Section: Array Seq
 
 call s:implement('timl.lang/ArraySeq',
-      \ 'seq', s:function('s:identity'),
-      \ 'first', s:function('timl#array_seq#first'),
-      \ 'more', s:function('timl#array_seq#more'),
-      \ 'count', s:function('timl#array_seq#count'),
-      \ 'conj', s:function('timl#cons#conj'),
-      \ 'empty', s:function('s:empty_list'))
+      \ 'seq', 's:identity',
+      \ 'first', 'timl#array_seq#first',
+      \ 'more', 'timl#array_seq#more',
+      \ 'count', 'timl#array_seq#count',
+      \ 'conj', 'timl#cons#conj',
+      \ 'empty', 's:empty_list')
 
 " Section: Lazy Seq
 
 call s:implement('timl.lang/LazySeq',
-      \ 'seq', s:function('timl#lazy_seq#seq'),
-      \ 'realized?', s:function('timl#lazy_seq#realized'),
-      \ 'count', s:function('timl#lazy_seq#count'),
-      \ 'conj', s:function('timl#cons#conj'),
-      \ 'empty', s:function('s:empty_list'))
+      \ 'seq', 'timl#lazy_seq#seq',
+      \ 'realized?', 'timl#lazy_seq#realized',
+      \ 'count', 'timl#lazy_seq#count',
+      \ 'conj', 'timl#cons#conj',
+      \ 'empty', 's:empty_list')
 
 " Section: Dictionary
 
 call s:implement('vim/Dictionary',
-      \ 'seq', s:function('timl#dictionary#seq'),
-      \ 'lookup', s:function('timl#dictionary#lookup'),
-      \ 'empty', s:function('timl#dictionary#empty'),
-      \ 'conj', s:function('timl#dictionary#conj'),
-      \ 'assoc', s:function('timl#dictionary#assoc'),
-      \ 'dissoc', s:function('timl#dictionary#dissoc'),
-      \ 'transient', s:function('timl#dictionary#transient'),
-      \ 'invoke', s:function('timl#dictionary#lookup'))
+      \ 'seq', 'timl#dictionary#seq',
+      \ 'lookup', 'timl#dictionary#lookup',
+      \ 'empty', 'timl#dictionary#empty',
+      \ 'conj', 'timl#dictionary#conj',
+      \ 'assoc', 'timl#dictionary#assoc',
+      \ 'dissoc', 'timl#dictionary#dissoc',
+      \ 'transient', 'timl#dictionary#transient',
+      \ 'invoke', 'timl#dictionary#lookup')
 
 call s:implement('vim/Dictionary',
-      \ 'conj!', s:function('timl#dictionary#conjb'),
-      \ 'assoc!', s:function('timl#dictionary#assocb'),
-      \ 'dissoc!', s:function('timl#dictionary#dissocb'),
-      \ 'persistent!', s:function('timl#dictionary#persistentb'))
+      \ 'conj!', 'timl#dictionary#conjb',
+      \ 'assoc!', 'timl#dictionary#assocb',
+      \ 'dissoc!', 'timl#dictionary#dissocb',
+      \ 'persistent!', 'timl#dictionary#persistentb')
 
 " Section: Hash Map
 
 call s:implement('timl.lang/HashMap',
-      \ 'seq', s:function('timl#map#seq'),
-      \ 'lookup', s:function('timl#map#lookup'),
-      \ 'empty', s:function('timl#map#empty'),
-      \ 'conj', s:function('timl#map#conj'),
-      \ 'assoc', s:function('timl#map#assoc'),
-      \ 'dissoc', s:function('timl#map#dissoc'),
-      \ 'transient', s:function('timl#map#transient'),
-      \ 'invoke', s:function('timl#map#lookup'))
+      \ 'seq', 'timl#map#seq',
+      \ 'lookup', 'timl#map#lookup',
+      \ 'empty', 'timl#map#empty',
+      \ 'conj', 'timl#map#conj',
+      \ 'assoc', 'timl#map#assoc',
+      \ 'dissoc', 'timl#map#dissoc',
+      \ 'transient', 'timl#map#transient',
+      \ 'invoke', 'timl#map#lookup')
 
 call s:implement('timl.lang/HashMap',
-      \ 'conj!', s:function('timl#map#conjb'),
-      \ 'assoc!', s:function('timl#map#assocb'),
-      \ 'dissoc!', s:function('timl#map#dissocb'),
-      \ 'persistent!', s:function('timl#map#persistentb'))
+      \ 'conj!', 'timl#map#conjb',
+      \ 'assoc!', 'timl#map#assocb',
+      \ 'dissoc!', 'timl#map#dissocb',
+      \ 'persistent!', 'timl#map#persistentb')
 
 " Section: Hash Set
 
 call s:implement('timl.lang/HashSet',
-      \ 'seq', s:function('timl#set#seq'),
-      \ 'lookup', s:function('timl#set#lookup'),
-      \ 'empty', s:function('timl#set#empty'),
-      \ 'conj', s:function('timl#set#conj'),
-      \ 'disj', s:function('timl#set#disj'),
-      \ 'transient', s:function('timl#set#transient'),
-      \ '_invoke', s:function('timl#set#lookup'))
+      \ 'seq', 'timl#set#seq',
+      \ 'lookup', 'timl#set#lookup',
+      \ 'empty', 'timl#set#empty',
+      \ 'conj', 'timl#set#conj',
+      \ 'disj', 'timl#set#disj',
+      \ 'transient', 'timl#set#transient',
+      \ '_invoke', 'timl#set#lookup')
 
 call s:implement('timl.lang/HashSet',
-      \ 'conj!', s:function('timl#set#conjb'),
-      \ 'disj!', s:function('timl#set#disjb'),
-      \ 'persistent!', s:function('timl#set#persistentb'))
+      \ 'conj!', 'timl#set#conjb',
+      \ 'disj!', 'timl#set#disjb',
+      \ 'persistent!', 'timl#set#persistentb')
 
 " Section: I/O
 
