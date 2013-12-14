@@ -7,16 +7,12 @@ let g:autoloaded_timl_namespace = 1
 
 let s:type = timl#type#intern('timl.lang/Namespace')
 
-function! timl#namespace#create(name, ...) abort
+function! timl#namespace#create(name) abort
   let name = timl#symbol#coerce(a:name)
   if !has_key(g:timl#namespaces, name[0])
-    let g:timl#namespaces[name[0]] = timl#bless(s:type, {'name': name, 'referring': [], 'aliases': {}})
+    let g:timl#namespaces[name[0]] = timl#bless(s:type, {'name': name, 'referring': [], 'aliases': {}, 'mappings': {}})
   endif
   let ns = g:timl#namespaces[name[0]]
-  if !a:0
-    return ns
-  endif
-  let opts = a:1
   return ns
 endfunction
 
@@ -73,6 +69,7 @@ function! timl#namespace#intern(ns, name, ...)
   elseif !exists('g:'.munged)
     let g:{munged} = g:timl#nil
   endif
+  let ns.mappings[a:name[0]] = {'name': a:name, 'ns': ns, 'meta': timl#meta(a:name)}
   return a:0 ? a:1 : g:timl#nil
 endfunction
 
@@ -82,8 +79,8 @@ endfunction
 
 if !exists('g:timl#namespaces')
   let g:timl#namespaces = {
-        \ 'timl.core': timl#bless('timl.lang/Namespace', {'name': timl#symbol('timl.core'), 'referring': [], 'aliases': {}}),
-        \ 'user':      timl#bless('timl.lang/Namespace', {'name': timl#symbol('user'), 'referring': [timl#symbol('timl.core')], 'aliases': {}})}
+        \ 'timl.core': timl#bless('timl.lang/Namespace', {'name': timl#symbol('timl.core'), 'referring': [], 'aliases': {}, 'mappings': {}}),
+        \ 'user':      timl#bless('timl.lang/Namespace', {'name': timl#symbol('user'), 'referring': [timl#symbol('timl.core')], 'aliases': {}, 'mappings': {}})}
 endif
 
 if !exists('g:timl#core#_STAR_ns_STAR_')
