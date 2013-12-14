@@ -635,6 +635,9 @@ function! s:emit(file, env, form) abort
 
   elseif timl#mapp(a:form)
     let expr = s:expr_map(a:file, a:env, a:form)
+    if timl#type#string(a:form) == 'vim/Dictionary'
+      let expr = substitute(expr, '\C#map#', '#dictionary#', '')
+    endif
     let meta = timl#meta(a:form)
     if meta isnot g:timl#nil
       let expr = 'timl#with_meta('.expr.', '.s:expr_map(a:file, a:env, meta).')'

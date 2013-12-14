@@ -25,7 +25,7 @@ function! timl#dictionary#create(_) abort
 endfunction
 
 function! timl#dictionary#seq(dict) abort
-  let items = dictionary(filter(items(a:dict), 'v:val[0][0] !=# "#"'), '[v:val[0], v:val[1]]')
+  let items = map(filter(items(a:dict), 'v:val[0][0] !=# "#"'), '[v:val[0], v:val[1]]')
   return empty(items) ? g:timl#nil : timl#array_seq#create(items)
 endfunction
 

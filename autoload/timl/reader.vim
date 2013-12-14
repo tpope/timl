@@ -151,7 +151,14 @@ function! s:process(port, token, line, wanted) abort
   elseif token ==# '~@'
     return timl#list(s:unquote_splicing, s:read_bang(port))
   elseif token ==# '#*'
-    return timl#list(timl#symbol('function'), s:read_bang(port))
+    let next = s:read_bang(port)
+    if timl#mapp(next)
+      return timl#dictionary#create([next])
+    elseif timl#vectorp(next)
+      return timl#vec(next)
+    else
+      return timl#list(timl#symbol('function'), next)
+    endif
   elseif token[0] ==# ';'
     return s:read(port, a:wanted)
   elseif token ==# '#_'

@@ -60,7 +60,7 @@ function! timl#printer#string(x)
       call add(acc, timl#printer#string(k) . ' ' . timl#printer#string(V))
       unlet! V
     endfor
-    return '#<{' . join(acc, ' ') . '}>'
+    return '#*{' . join(acc, ' ') . '}'
 
   elseif timl#mapp(a:x)
     let acc = []
@@ -132,7 +132,7 @@ command! -nargs=1 TimLPAssert
 TimLPAssert timl#printer#string('foo') ==# '"foo"'
 TimLPAssert timl#printer#string(timl#symbol('foo')) ==# 'foo'
 TimLPAssert timl#printer#string([1,2]) ==# '[1 2]'
-TimLPAssert timl#printer#string({"a": 1, "b": 2}) ==# '#<{"a" 1 "b" 2}>'
+TimLPAssert timl#printer#string({"a": 1, "b": 2}) ==# '#*{"a" 1 "b" 2}'
 
 delcommand TimLPAssert
 
