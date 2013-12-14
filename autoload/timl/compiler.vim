@@ -365,7 +365,7 @@ function! s:expr_sf_fn_STAR_(file, env, form) abort
       if arity >= 1000
         call s:emitln(a:file, "elseif len(a:_) >= ".(arity-1000))
       else
-        call s:emitln(a:file, "elseif len(a:_) == ".arity)
+        call s:emitln(a:file, "elseif len(a:_) == ".str2nr(arity))
       endif
       call s:emitln(a:file, 'return self.'.fns[str2nr(arity)]. '(a:_)')
     endfor
