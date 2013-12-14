@@ -28,7 +28,7 @@ function! timl#printer#string(x)
     return a:x.value ? 'true' : 'false'
 
   elseif type == 'timl.lang/Function'
-    return '#<'.get(a:x, 'ns', {'name': ['...']}).name[0].'/'.get(a:x, 'name', ['...'])[0].' #*'.join([a:x.call]).'>'
+    return '#<'.get(a:x, 'ns', {'name': ['...']}).name[0].'/'.get(a:x, 'name', ['...'])[0].' #*'.join([a:x.apply]).'>'
 
   elseif type == 'timl.lang/MultiFn'
     return '#<'.get(a:x, 'ns', {'name': ['...']}).name[0].'/'.get(a:x, 'name', ['...'])[0].' multi>'
