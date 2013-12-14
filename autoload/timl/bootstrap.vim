@@ -380,6 +380,10 @@ call s:implement('timl.lang/HashSet',
       \ 'lookup', 'timl#set#lookup',
       \ 'empty', 'timl#set#empty',
       \ 'conj', 'timl#set#conj',
+      \ 'count', 'timl#set#count',
+      \ 'equal?', 'timl#set#equal')
+
+call s:implement('timl.lang/HashSet',
       \ 'disj', 'timl#set#disj',
       \ 'transient', 'timl#set#transient',
       \ '_invoke', 'timl#set#lookup')
