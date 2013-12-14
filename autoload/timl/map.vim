@@ -6,18 +6,14 @@ endif
 let g:autoloaded_timl_map = 1
 
 let s:type = timl#type#intern('timl.lang/HashMap')
-function! timl#map#create(keyvals) abort
-  let keyvals = a:0 == 1 ? a:1 : a:000
+function! timl#map#create(_) abort
+  let keyvals = len(a:_) == 1 ? a:_[0] : a:_
   let map = timl#bless(s:type)
-  for i in range(0, len(a:keyvals)-1, 2)
-    let map[timl#key(a:keyvals[i])] = get(a:keyvals, i+1, g:timl#nil)
+  for i in range(0, len(keyvals)-1, 2)
+    let map[timl#key(keyvals[i])] = get(keyvals, i+1, g:timl#nil)
   endfor
   lockvar 1 map
   return map
-endfunction
-
-function! timl#map#create_from_dict(dict)
-
 endfunction
 
 function! timl#map#seq(dict) abort
@@ -52,7 +48,7 @@ function! timl#map#conjb(this, ...) abort
   for _.e in a:000
     let a:this[timl#key(timl#first(_.e))] = timl#fnext(_.e)
   endfor
-  return this
+  return a:this
 endfunction
 
 function! timl#map#assoc(this, ...) abort

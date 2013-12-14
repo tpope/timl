@@ -181,6 +181,24 @@ call s:implement('timl.lang/LazySeq',
       \ 'conj', s:function('timl#cons#conj'),
       \ 'empty', s:function('s:empty_list'))
 
+" Section: Dictionary
+
+call s:implement('vim/Dictionary',
+      \ 'seq', s:function('timl#dictionary#seq'),
+      \ 'lookup', s:function('timl#dictionary#lookup'),
+      \ 'empty', s:function('timl#dictionary#empty'),
+      \ 'conj', s:function('timl#dictionary#conj'),
+      \ 'assoc', s:function('timl#dictionary#assoc'),
+      \ 'dissoc', s:function('timl#dictionary#dissoc'),
+      \ 'transient', s:function('timl#dictionary#transient'),
+      \ 'invoke', s:function('timl#dictionary#lookup'))
+
+call s:implement('vim/Dictionary',
+      \ 'conj!', s:function('timl#dictionary#conjb'),
+      \ 'assoc!', s:function('timl#dictionary#assocb'),
+      \ 'dissoc!', s:function('timl#dictionary#dissocb'),
+      \ 'persistent!', s:function('timl#dictionary#persistentb'))
+
 " Section: Hash Map
 
 call s:implement('timl.lang/HashMap',
@@ -190,13 +208,14 @@ call s:implement('timl.lang/HashMap',
       \ 'conj', s:function('timl#map#conj'),
       \ 'assoc', s:function('timl#map#assoc'),
       \ 'dissoc', s:function('timl#map#dissoc'),
+      \ 'transient', s:function('timl#map#transient'),
       \ 'invoke', s:function('timl#map#lookup'))
 
 call s:implement('timl.lang/HashMap',
-      \ 'conj!', s:function('timl#set#conjb'),
-      \ 'assoc!', s:function('timl#set#assocb'),
-      \ 'dissoc!', s:function('timl#set#dissocb'),
-      \ 'persistent!', s:function('timl#set#persistentb'))
+      \ 'conj!', s:function('timl#map#conjb'),
+      \ 'assoc!', s:function('timl#map#assocb'),
+      \ 'dissoc!', s:function('timl#map#dissocb'),
+      \ 'persistent!', s:function('timl#map#persistentb'))
 
 " Section: Hash Set
 

@@ -262,7 +262,7 @@ endfunction
 " }}}1
 " Section: Dictionaries {{{1
 
-TLalias dict timl#dict
+TLexpr dict(...) timl#dictionary#create(a:000)
 TLexpr hash_map(...) timl#map#create(a:000)
 TLexpr hash_set(...) timl#set#coerce(a:000)
 TLalias set timl#set#coerce
