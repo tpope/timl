@@ -41,6 +41,10 @@ function! timl#type#string(val) abort
   return type
 endfunction
 
+function! timl#type#keyword(val) abort
+  return timl#keyword#intern(timl#type#string(a:val))
+endfunction
+
 function! timl#type#bless(class, ...) abort
   let obj = a:0 ? a:1 : {}
   let obj['#tagged'] = g:timl_tag_sentinel

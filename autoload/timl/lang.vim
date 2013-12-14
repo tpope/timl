@@ -67,6 +67,11 @@ function! s:define_apply(name, fn)
         \ 'apply': s:function(a:fn)})
 endfunction
 
+" Section: Type Sytem
+
+call s:define_call('blessing', 'timl#type#keyword')
+call s:define_pred('isa?', 'timl#type#isa?')
+
 " Section: Number
 
 call s:define_call('num', 'timl#num#coerce')
@@ -139,15 +144,19 @@ call s:define_pred('string?', 'timl#string#test')
 
 " Section: Nil
 
-function! s:nil_lookup(this, key, default)
+function! s:nilp(this) abort
+  return a:this is g:timl#nil
+endfunction
+
+function! s:nil_lookup(this, key, default) abort
   return a:default
 endfunction
 
-function! s:nil_cons(this, ...)
+function! s:nil_cons(this, ...) abort
   return call('timl#cons#conj', [g:timl#empty_list] + a:000)
 endfunction
 
-function! s:nil_assoc(this, ...)
+function! s:nil_assoc(this, ...) abort
   return timl#map#create(a:000)
 endfunction
 
@@ -159,6 +168,8 @@ call s:implement('timl.lang/Nil',
       \ 'assoc', 's:nil_assoc',
       \ 'count', 's:zero',
       \ 'lookup', 's:nil_lookup')
+
+call s:define_pred('nil?', 's:nilp')
 
 " Section: Boolean
 
@@ -392,6 +403,9 @@ call s:define_call('slurp', 'timl#io#slurp')
 call s:define_call('read-string', 'timl#reader#read_string')
 
 " Section: Defaults
+
+call s:define_call('meta', 'timl#meta')
+call s:define_call('with-meta', 'timl#with_meta')
 
 call timl#type#define_method('timl.core', 'empty', g:timl#nil, s:function('s:nil'))
 

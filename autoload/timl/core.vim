@@ -59,14 +59,6 @@ command! -bang -nargs=1 TLexpr
 
 command! -bang -nargs=1 TLpredicate TLexpr <args> ? s:true : s:false
 
-" Section: Misc {{{1
-
-TLpredicate nil_QMARK_(val) a:val is# g:timl#nil
-TLexpr blessing(val) timl#keyword#intern(timl#type#string(a:val))
-TLalias meta timl#meta
-TLalias with_meta timl#with_meta
-
-" }}}1
 " Section: Equality {{{1
 
 TLpredicate _EQ_(...)     call('timl#equalp', a:000)
