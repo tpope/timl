@@ -17,17 +17,32 @@ function! timl#namespace#create(name, ...)
     return ns
   endif
   let opts = a:1
-  let _ = {}
-  for _.refer in get(opts, 'referring', [])
-    let sym = timl#symbol#coerce(_.refer)
-    if name !=# sym && index(ns.referring, sym) < 0
-      call insert(ns.referring, sym)
-    endif
-  endfor
-  for [_.name, _.target] in items(get(opts, 'aliases', {}))
-    let ns.aliases[_.name] = timl#symbol#coerce(_.target)
-  endfor
   return ns
+endfunction
+
+function! timl#namespace#select(name)
+  let g:timl#core#_STAR_ns_STAR_ = timl#namespace#create(a:name)
+  return g:timl#core#_STAR_ns_STAR_
+endfunction
+
+function! timl#namespace#refer(name)
+  let me = g:timl#core#_STAR_ns_STAR_
+  let sym = timl#symbol#coerce(a:name)
+  if sym isnot# me.name && index(me.referring, sym) < 0
+    call insert(me.referring, sym)
+  endif
+  return g:timl#nil
+endfunction
+
+function! timl#namespace#use(name)
+  call timl#require(a:name)
+  return timl#namespace#refer(a:name)
+endfunction
+
+function! timl#namespace#alias(alias, name)
+  let me = g:timl#core#_STAR_ns_STAR_
+  let me.aliases[timl#str(a:alias)] = a:name
+  return g:timl#nil
 endfunction
 
 function! timl#namespace#find(name)

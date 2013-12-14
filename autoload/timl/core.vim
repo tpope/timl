@@ -390,33 +390,16 @@ endfunction
 " Section: Namespaces {{{1
 
 TLalias require timl#require
+TLalias create_ns timl#namespace#create
 TLalias find_ns timl#namespace#find
 TLalias the_ns timl#namespace#the
 TLalias all_ns timl#namespace#all
 TLexpr ns_resolve(ns, sym, ...) timl#compiler#ns_resolve(a:ns, a:0 ? a:1 : a:sym, a:0 ? a:sym : {})
 TLexpr resolve(sym, ...) timl#compiler#ns_resolve(g:timl#core#_STAR_ns_STAR_, a:0 ? a:1 : a:sym, a:0 ? a:sym : {})
-
-TLfunction! in_ns(name) abort
-  let g:timl#core#_STAR_ns_STAR_ = timl#namespace#create(a:name)
-  return g:timl#core#_STAR_ns_STAR_
-endfunction
-
-TLfunction! refer(ns) abort
-  let me = g:timl#core#_STAR_ns_STAR_.name
-  call timl#namespace#create(me, {'referring': [a:ns]})
-  return g:timl#nil
-endfunction
-
-TLfunction! use(ns) abort
-  call timl#require(a:ns)
-  return g:timl#core#refer.call(a:ns)
-endfunction
-
-TLfunction! alias(alias, ns) abort
-  let me = g:timl#core#_STAR_ns_STAR_.name
-  call timl#namespace#create(me, {'aliases': {timl#str(a:alias): a:ns}})
-  return g:timl#nil
-endfunction
+TLalias in_ns timl#namespace#select
+TLalias refer timl#namespace#refer
+TLalias alias timl#namespace#alias
+TLalias use timl#namespace#use
 
 " }}}1
 
