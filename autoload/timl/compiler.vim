@@ -140,7 +140,7 @@ function! timl#compiler#serialize(x, ...)
     return 'g:timl#empty_list'
 
   elseif type(a:x) == type([])
-    return '['.join(map(copy(a:x), 'timl#compiler#serialize(v:val)'), ', ').']'
+    return 'timl#array#lock(['.join(map(copy(a:x), 'timl#compiler#serialize(v:val)'), ', ').'])'
 
   elseif timl#mapp(a:x) && timl#type(a:x) !=# 'vim/Dictionary'
     let _ = {}
@@ -570,13 +570,15 @@ function! s:emit(file, env, form) abort
             return s:emit(a:file, a:env, E)
           endif
         endif
-        let expr = 'timl#call('.resolved.', '.s:expr(a:file, a:env, timl#ary(timl#next(a:form))).')'
+        let args = join(map(copy(timl#ary(timl#next(a:form))), 's:emit(a:file, s:with_context(a:env, "expr"), v:val)'), ', ')
+        let expr = 'timl#call('.resolved.', ['.args.'])'
       endif
     else
+      let args = join(map(copy(timl#ary(timl#next(a:form))), 's:emit(a:file, s:with_context(a:env, "expr"), v:val)'), ', ')
       if timl#consp(First) && timl#symbol#is(timl#first(First), 'function')
-        let expr = timl#munge(timl#fnext(First)).'('.s:expr(a:file, a:env, timl#ary(timl#next(a:form)))[1:-2].')'
+        let expr = timl#munge(timl#fnext(First)).'('.args.')'
       else
-        let expr = 'timl#call('.s:expr(a:file, a:env, First).', '.s:expr(a:file, a:env, timl#ary(timl#next(a:form))).')'
+        let expr = 'timl#call('.s:expr(a:file, a:env, First).', ['.args.'])'
       endif
     endif
   elseif timl#symbol#test(a:form)
@@ -586,7 +588,7 @@ function! s:emit(file, env, form) abort
       let expr = timl#compiler#resolve_or_throw(a:form)
     endif
   elseif type(a:form) == type([]) && a:form isnot# g:timl#nil
-    let expr = '['.join(map(copy(a:form), 's:emit(a:file, s:with_context(a:env, "expr"), v:val)'), ', ').']'
+    let expr = 'timl#array#lock(['.join(map(copy(a:form), 's:emit(a:file, s:with_context(a:env, "expr"), v:val)'), ', ').'])'
 
   elseif timl#vectorp(a:form)
     let expr = 'timl#vec(['.join(map(copy(timl#ary(a:form)), 's:emit(a:file, s:with_context(a:env, "expr"), v:val)'), ', ').'])'
@@ -618,8 +620,6 @@ function! s:emit(file, env, form) abort
   elseif a:env.context == 'statement'
     if expr =~# '^[[:alnum:]_#]\+('
       call s:emitln(a:file, 'call '.expr)
-    elseif expr =~# '^['
-      call s:emitln(a:file, 'call timl#identity('.expr.')')
     endif
     return ''
   else

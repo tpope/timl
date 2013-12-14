@@ -138,6 +138,24 @@ call s:implement('timl.lang/Function',
 call s:implement('timl.lang/MultiFn',
       \ '_invoke', s:function('timl#type#dispatch'))
 
+" Section: Array (Vim List)
+
+call s:implement('vim/List',
+      \ 'seq', s:function('timl#array#seq'),
+      \ 'first', s:function("timl#array#first"),
+      \ 'more', s:function("timl#array#rest"),
+      \ 'lookup', s:function('timl#array#lookup'),
+      \ 'nth', s:function('timl#array#nth'),
+      \ 'count', s:function('len'),
+      \ 'conj', s:function('timl#array#cons'),
+      \ 'empty', s:function('timl#array#empty'),
+      \ '_invoke', s:function('timl#array#lookup'))
+
+call s:implement('vim/List',
+      \ 'transient', s:function('timl#array#transient'),
+      \ 'conj!', s:function('timl#array#conjb'),
+      \ 'persistent!', s:function('timl#array#persistentb'))
+
 " Section: Cons
 
 call s:implement('timl.lang/Cons',

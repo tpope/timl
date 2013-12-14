@@ -239,17 +239,17 @@ endfunction
 function! timl#into(coll, seq) abort
   let t = timl#type#string(a:coll)
   if timl#type#canp(a:coll, g:timl#core#transient)
-    let _ = {'coll': timl#type#dispatch(g:timl#core#transient, a:coll)}
-    for _.v in timl#ary(a:seq)
-      let _.coll = timl#type#dispatch(g:timl#core#conj_BANG_, _.coll, _.v)
+    let _ = {'coll': timl#type#dispatch(g:timl#core#transient, a:coll), 'seq': timl#seq(a:seq)}
+    while _.seq isnot# g:timl#nil
+      let _.coll = timl#type#dispatch(g:timl#core#conj_BANG_, _.coll, timl#first(_.seq))
+      let _.seq = timl#next(_.seq)
     endfor
     return timl#type#dispatch(g:timl#core#persistent_BANG_, _.coll)
-  elseif t ==# 'vim/List'
-    return timl#persistentb(extend(copy(a:coll), timl#ary(a:seq)))
   else
-    let _ = {'coll': a:coll}
-    for _.v in timl#ary(a:seq)
-      let _.coll = timl#type#dispatch(g:timl#core#conj, _.coll, _.v)
+    let _ = {'coll': a:coll, 'seq': timl#seq(a:seq)}
+    while _.seq isnot# g:timl#nil
+      let _.coll = timl#type#dispatch(g:timl#core#conj, _.coll, timl#first(_.seq))
+      let _.seq = timl#next(_.seq)
     endfor
     return _.coll
   endif
@@ -356,21 +356,17 @@ function! timl#list2(array)
   return _.cdr
 endfunction
 
-function! timl#vec(coll) abort
-  if type(a:coll) ==# s:ary
-    return a:coll is# g:timl#nil ? [] : a:coll
-  endif
-  let array = []
-  let _ = {'seq': timl#seq(a:coll)}
-  while _.seq isnot# g:timl#nil
-    call add(array, timl#first(_.seq))
-    let _.seq = timl#next(_.seq)
-  endwhile
-  return timl#persistentb(extend(array, _.seq))
+function! timl#ary(coll) abort
+  return timl#array#coerce(a:coll)
 endfunction
 
-function! timl#ary(coll) abort
-  return timl#vec(a:coll)
+function! timl#vec(coll) abort
+  if type(a:coll) == type([])
+    let vec = copy(a:coll)
+  else
+    let vec = timl#array#coerce(a:coll)
+  endif
+  return timl#array#lock(a:coll)
 endfunction
 
 function! timl#vector(...) abort

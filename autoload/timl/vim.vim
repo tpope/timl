@@ -41,58 +41,5 @@ endfunction
 
 call s:implement('vim/Funcref', '_invoke', s:function('s:funcall'))
 
-" Section: List
-
-function! s:list_seq(this) abort
-  return empty(a:this) ? g:timl#nil : timl#array_seq#create(a:this)
-endfunction
-
-function! s:list_first(this) abort
-  return get(a:this, 0, g:timl#nil)
-endfunction
-
-function! s:list_rest(this) abort
-  return len(a:this) <= 1 ? g:timl#empty_list : timl#array_seq#create(a:this, 1)
-endfunction
-
-function! s:list_lookup(this, idx, ...) abort
-  if type(a:idx) == type(0)
-    return get(a:this, a:idx, a:0 ? a:1 g:timl#nil)
-  endif
-  return a:0 ? a:1 : g:timl#nil
-endfunction
-
-function! s:list_nth(this, idx, ...) abort
-  let idx = timl#int(a:idx)
-  if a:0
-    return get(a:this, idx, a:1)
-  else
-    return a:this[idx]
-  endif
-endfunction
-
-function! s:list_cons(this, ...) abort
-  return timl#persistentb(a:this + a:000)
-endfunction
-
-function! s:list_empty(this) abort
-  let this = a:this
-  let empty = []
-  if islocked('this')
-    lockvar 1 empty
-  endif
-  return this
-endfunction
-
-call s:implement('vim/List',
-      \ 'seq', s:function('s:list_seq'),
-      \ 'first', s:function("s:list_first"),
-      \ 'more', s:function("s:list_rest"),
-      \ 'lookup', s:function('s:list_lookup'),
-      \ 'nth', s:function('s:list_nth'),
-      \ 'count', s:function('len'),
-      \ 'conj', s:function('s:list_cons'),
-      \ 'empty', s:function('s:list_empty'),
-      \ '_invoke', s:function('s:list_lookup'))
 
 " vim:set et sw=2:
