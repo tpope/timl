@@ -33,5 +33,5 @@
        (throw "timl#repl: exit"))))
 
 (defn source [sym]
-  (if-let [meta (get g:timl_functions (. sym -call))]
+  (if-let [meta (get g:timl_functions (. sym -apply))]
     (throw (str "timl#repl: exit edit +" (get meta "line") " " (#*fnameescape (get meta "file"))))))
