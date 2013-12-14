@@ -250,6 +250,7 @@ call s:implement('vim/List',
       \ '_invoke', 'timl#array#lookup')
 
 call s:implement('vim/List',
+      \ 'equal?', 'timl#equality#seq',
       \ 'transient', 'timl#array#transient',
       \ 'conj!', 'timl#array#conjb',
       \ 'persistent!', 'timl#array#persistentb')
@@ -263,6 +264,7 @@ call s:define_apply('vector', 'timl#vec')
 
 call s:implement('timl.lang/Cons',
       \ 'seq', 'timl#function#identity',
+      \ 'equal?', 'timl#equality#seq',
       \ 'first', 'timl#cons#first',
       \ 'more', 'timl#cons#more',
       \ 'conj', 'timl#cons#conj',
@@ -281,6 +283,7 @@ endif
 
 call s:implement('timl.lang/EmptyList',
       \ 'seq', 's:nil',
+      \ 'equal?', 'timl#equality#seq',
       \ 'first', 's:nil',
       \ 'more', 'timl#function#identity',
       \ 'count', 's:zero',
@@ -303,6 +306,7 @@ call s:define_call('reduce', 'timl#reduce')
 
 call s:implement('timl.lang/ArraySeq',
       \ 'seq', 'timl#function#identity',
+      \ 'equal?', 'timl#equality#seq',
       \ 'first', 'timl#array_seq#first',
       \ 'more', 'timl#array_seq#more',
       \ 'count', 'timl#array_seq#count',
@@ -313,6 +317,7 @@ call s:implement('timl.lang/ArraySeq',
 
 call s:implement('timl.lang/LazySeq',
       \ 'seq', 'timl#lazy_seq#seq',
+      \ 'equal?', 'timl#equality#seq',
       \ 'realized?', 'timl#lazy_seq#realized',
       \ 'count', 'timl#lazy_seq#count',
       \ 'conj', 'timl#cons#conj',
