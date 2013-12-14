@@ -216,11 +216,11 @@ delcommand TLexpr
 delcommand TLpredicate
 unlet s:dict
 
-call timl#source_file(expand('<sfile>:r') . '.bootstrap.tim')
-call timl#source_file(expand('<sfile>:r') . '.macros.tim')
-call timl#source_file(expand('<sfile>:r') . '.basics.tim')
-call timl#source_file(expand('<sfile>:r') . '.seq.tim')
-call timl#source_file(expand('<sfile>:r') . '.coll.tim')
-call timl#source_file(expand('<sfile>:r') . '.vim.tim')
+call timl#source_file(expand('<sfile>:r') . '_bootstrap.tim')
+call timl#source_file(expand('<sfile>:r') . '_macros.tim')
+call timl#source_file(expand('<sfile>:r') . '_basics.tim')
+call timl#source_file(expand('<sfile>:r') . '_seq.tim')
+call timl#source_file(expand('<sfile>:r') . '_coll.tim')
+call timl#source_file(expand('<sfile>:r') . '_vim.tim')
 
 " vim:set et sw=2:
