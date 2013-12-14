@@ -23,10 +23,6 @@ function! timl#truth(val) abort
   return a:val isnot# g:timl#nil && a:val isnot# g:timl#false
 endfunction
 
-function! timl#identity(x) abort
-  return a:x
-endfunction
-
 function! timl#key(key)
   if type(a:key) == type(0)
     return string(a:key)

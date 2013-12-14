@@ -9,10 +9,6 @@ function! s:function(name) abort
   return function(substitute(a:name,'^s:',matchstr(expand('<sfile>'), '.*\zs<SNR>\d\+_'),''))
 endfunction
 
-function! s:identity(x)
-  return a:x
-endfunction
-
 function! s:nil(...)
   return g:timl#nil
 endfunction
@@ -190,17 +186,24 @@ call s:implement('timl.lang/Keyword',
 
 " Section: Function
 
-function! s:function_invoke(this, ...) abort
-  return a:this.apply(a:000)
-endfunction
-
 call s:implement('timl.lang/Function',
-      \ '_invoke', 's:function_invoke')
+      \ '_invoke', 'timl#function#invoke')
 
 call s:implement('timl.lang/MultiFn',
       \ '_invoke', 'timl#type#dispatch')
 
-call s:implement('vim/Funcref', '_invoke', 'call')
+call s:implement('vim/Funcref',
+      \ '_invoke', 'call')
+
+call s:define_apply('apply', 'timl#function#apply')
+call s:define_call('identity', 'timl#function#identity')
+
+call s:define_call('fn', 'timl#function#fn')
+call s:define_call('defn', 'timl#function#defn')
+call s:define_call('defmacro', 'timl#function#defmacro')
+let g:timl#core#fn.macro = g:timl#true
+let g:timl#core#defn.macro = g:timl#true
+let g:timl#core#defmacro.macro = g:timl#true
 
 " Section: Namespace
 
@@ -242,7 +245,7 @@ call s:define_apply('vector', 'timl#vec')
 " Section: Cons
 
 call s:implement('timl.lang/Cons',
-      \ 'seq', 's:identity',
+      \ 'seq', 'timl#function#identity',
       \ 'first', 'timl#cons#first',
       \ 'more', 'timl#cons#more',
       \ 'conj', 'timl#cons#conj',
@@ -262,10 +265,10 @@ endif
 call s:implement('timl.lang/EmptyList',
       \ 'seq', 's:nil',
       \ 'first', 's:nil',
-      \ 'more', 's:identity',
+      \ 'more', 'timl#function#identity',
       \ 'count', 's:zero',
       \ 'conj', 'timl#cons#conj',
-      \ 'empty', 's:identity')
+      \ 'empty', 'timl#function#identity')
 
 " Section: Seq
 
@@ -282,7 +285,7 @@ call s:define_call('reduce', 'timl#reduce')
 " Section: Array Seq
 
 call s:implement('timl.lang/ArraySeq',
-      \ 'seq', 's:identity',
+      \ 'seq', 'timl#function#identity',
       \ 'first', 'timl#array_seq#first',
       \ 'more', 'timl#array_seq#more',
       \ 'count', 'timl#array_seq#count',
