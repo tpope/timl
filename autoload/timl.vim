@@ -317,15 +317,7 @@ function! timl#consp(obj) abort
 endfunction
 
 function! timl#list(...) abort
-  return timl#list2(a:000)
-endfunction
-
-function! timl#list2(array)
-  let _ = {'cdr': g:timl#empty_list}
-  for i in range(len(a:array)-1, 0, -1)
-    let _.cdr = timl#cons#create(a:array[i], _.cdr)
-  endfor
-  return _.cdr
+  return timl#cons#from_array(a:000)
 endfunction
 
 function! timl#ary(coll) abort
@@ -358,10 +350,6 @@ function! timl#call(Func, args, ...) abort
   if type(a:Func) == type(function('tr'))
     return call(a:Func, a:args, a:0 ? a:1 : {})
   elseif type(a:Func) == type({}) && get(a:Func, '#tag') is# s:function_tag
-    if !has_key(a:Func, 'apply')
-      let g:FFF = a:Func
-      TLinspect a:Func
-    endif
     return a:Func.apply(a:args)
   elseif type(a:Func) == type({}) && get(a:Func, '#tag') is# s:multifn_tag
     return call('timl#type#dispatch', [a:Func] + a:args)

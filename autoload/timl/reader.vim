@@ -94,7 +94,7 @@ function! s:process(port, token, line, wanted) abort
   let token = a:token
   let line = a:line
   if token ==# '('
-    return timl#list2(s:read_until(port, ')'))
+    return timl#cons#from_array(s:read_until(port, ')'))
   elseif token == '['
     return timl#vec(s:read_until(port, ']'))
   elseif token == '{'
@@ -176,7 +176,7 @@ function! s:process(port, token, line, wanted) abort
       if rest
         call add(args, a:port.argsyms['%&'])
       endif
-      return timl#list(timl#symbol('fn*'), args, timl#list2(list))
+      return timl#list(timl#symbol('fn*'), args, timl#cons#from_array(list))
     finally
       unlet! a:port.argsyms
     endtry

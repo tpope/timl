@@ -243,6 +243,10 @@ call s:implement('timl.lang/Cons',
       \ 'conj', 'timl#cons#conj',
       \ 'empty', 's:empty_list')
 
+call s:define_apply('list', 'timl#cons#from_array')
+call s:define_pred('list?', 'timl#cons#test')
+call s:define_call('cons', 'timl#cons#create')
+
 " Section: Empty list
 
 if !exists('g:timl#empty_list')

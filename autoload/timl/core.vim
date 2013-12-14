@@ -89,12 +89,12 @@ let s:form = timl#symbol('&form')
 let s:env = timl#symbol('&env')
 
 TLfunction fn(form, env, ...)
-  return timl#with_meta(timl#list2([s:fns] + a:000), timl#meta(a:form))
+  return timl#with_meta(timl#cons#from_array([s:fns] + a:000), timl#meta(a:form))
 endfunction
 let g:timl#core#fn.macro = g:timl#true
 
 TLfunction defn(form, env, name, ...)
-  return timl#list(s:def, a:name, timl#with_meta(timl#list2([s:fn1, a:name] + a:000), timl#meta(a:form)))
+  return timl#list(s:def, a:name, timl#with_meta(timl#cons#from_array([s:fn1, a:name] + a:000), timl#meta(a:form)))
 endfunction
 let g:timl#core#defn.macro = g:timl#true
 
@@ -111,7 +111,7 @@ TLfunction defmacro(form, env, name, params, ...)
   endif
   let fn = timl#gensym('fn')
   return timl#list(s:lets,
-        \ [fn, timl#list2([s:defn, a:name] + body)],
+        \ [fn, timl#cons#from_array([s:defn, a:name] + body)],
         \ timl#list(s:setq, timl#list(s:dot, fn, timl#symbol('macro')), 1),
         \ fn)
 endfunction
@@ -142,13 +142,6 @@ TLfunction! identical_QMARK_(x, ...) abort
   endfor
   return s:true
 endfunction
-
-" }}}1
-" Section: Lists {{{1
-
-TLalias list timl#list
-TLpredicate list_QMARK_(val) timl#consp(a:val)
-TLalias cons timl#cons#create
 
 " }}}1
 " Section: Vectors {{{1
