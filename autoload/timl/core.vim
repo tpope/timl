@@ -142,60 +142,6 @@ TLfunction! identical_QMARK_(x, ...) abort
 endfunction
 
 " }}}1
-" Section: Numbers {{{
-
-TLalias num timl#num
-TLalias int timl#int
-TLalias float timl#float
-TLpredicate integer_QMARK_(obj) type(a:obj) == type(0)
-TLpredicate float_QMARK_(obj)   type(a:obj) == 5
-TLpredicate number_QMARK_(obj)  type(a:obj) == type(0) || type(a:obj) == 5
-
-TLexpr inc(x) timl#num(a:x) + 1
-TLexpr dec(x) timl#num(a:x) - 1
-TLexpr rem(x, y) timl#num(a:x) % a:y
-TLexpr quot(x, y) type(a:x) == 5 || type(a:y) == type(5) ? trunc(a:x/a:y) : timl#num(a:x)/a:y
-TLfunction mod(x, y)
-  if (timl#num(a:x) < 0 && timl#num(a:y) > 0 || timl#num(a:x) > 0 && timl#num(a:y) < 0) && a:x % a:y != 0
-    return (a:x % a:y) + a:y
-  else
-    return a:x % a:y
-  endif
-endfunction
-
-TLexpr bit_not(x) invert(a:x)
-TLexpr bit_or(x, y, ...)  a:0 ? call(self.call, [ or(a:x, a:y)] + a:000, self) :  or(a:x, a:y)
-TLexpr bit_xor(x, y, ...) a:0 ? call(self.call, [xor(a:x, a:y)] + a:000, self) : xor(a:x, a:y)
-TLexpr bit_and(x, y, ...) a:0 ? call(self.call, [and(a:x, a:y)] + a:000, self) : and(a:x, a:y)
-TLexpr bit_and_not(x, y, ...) a:0 ? call(self.call, [and(a:x, invert(a:y))] + a:000, self) : and(a:x, invert(a:y))
-TLfunction bit_shift_left(x, n)
-  let x = timl#int(a:x)
-  for i in range(timl#int(a:n))
-    let x = x * 2
-  endfor
-  return x
-endfunction
-TLfunction bit_shift_right(x, n)
-  let x = timl#int(a:x)
-  for i in range(timl#int(a:n))
-    let x = x / 2
-  endfor
-  return x
-endfunction
-TLexpr bit_flip(x, n)  xor(a:x, g:timl#core#bit_shift_left.call(1, a:n))
-TLexpr bit_set(x, n)    or(a:x, g:timl#core#bit_shift_left.call(1, a:n))
-TLexpr bit_clear(x, n) and(a:x, invert(g:timl#core#bit_shift_left.call(1, a:n)))
-TLpredicate bit_test(x, n) and(a:x, g:timl#core#bit_shift_left.call(1, a:n))
-
-TLexpr      not_negative(x) timl#num(a:x) < 0 ? g:timl#nil : a:x
-TLpredicate zero_QMARK_(x) timl#num(a:x) == 0
-TLpredicate nonzero_QMARK_(x) timl#num(a:x) != 0
-TLpredicate pos_QMARK_(x) timl#num(a:x) > 0
-TLpredicate neg_QMARK_(x) timl#num(a:x) < 0
-TLpredicate odd_QMARK_(x) timl#num(a:x) % 2
-TLpredicate even_QMARK_(x) timl#num(a:x) % 2 == 0
-
-" }}}1
 " Section: Lists {{{1
 
 TLalias list timl#list

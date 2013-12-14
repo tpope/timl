@@ -177,34 +177,6 @@ function! timl#str(val) abort
   endif
 endfunction
 
-let s:tint = type(0)
-let s:tfloat = 5
-
-function! timl#num(obj) abort
-  if type(a:obj) == s:tint || type(a:obj) == s:tfloat
-    return a:obj
-  endif
-  throw "timl: not a number"
-endfunction
-
-function! timl#int(obj) abort
-  if type(a:obj) == s:tint
-    return a:obj
-  elseif type(a:obj) == s:tfloat
-    return float2nr(a:obj)
-  endif
-  throw "timl: not a number"
-endfunction
-
-function! timl#float(obj) abort
-  if type(a:obj) == s:tfloat
-    return a:obj
-  elseif type(a:obj) == s:tint
-    return 0.0 + a:obj
-  endif
-  throw "timl: not a float"
-endfunction
-
 function! timl#equalp(x, ...) abort
   for y in a:000
     if type(a:x) != type(y) || a:x !=# y

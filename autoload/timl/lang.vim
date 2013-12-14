@@ -25,7 +25,7 @@ function! s:zero(...)
   return 0
 endfunction
 
-function! s:implement(type, ...)
+function! s:implement(type, ...) abort
   let type = timl#keyword#intern(a:type)
   for i in range(0, a:0-1, 2)
     call timl#type#define_method('timl.core', a:000[i], type, s:function(a:000[i+1]))
@@ -33,7 +33,7 @@ function! s:implement(type, ...)
 endfunction
 
 let s:ns = timl#namespace#find('timl.core')
-function! s:define_apply(name, fn)
+function! s:define_apply(name, fn) abort
   let g:timl#core#{timl#munge(a:name)} = timl#bless('timl.lang/Function', {
         \ 'name': timl#symbol#intern(a:name),
         \ 'ns': s:ns,
@@ -73,6 +73,12 @@ endfunction
 
 " Section: Number
 
+call s:define_call('num', 'timl#num#coerce')
+call s:define_call('int', 'timl#number#int')
+call s:define_call('float', 'timl#number#float')
+call s:define_pred('number?', 'timl#number#test')
+call s:define_pred('integer?', 'timl#number#integerp')
+call s:define_pred('float?', 'timl#number#floatp')
 call s:define_apply('+', 'timl#number#sum')
 call s:define_apply('*', 'timl#number#product')
 call s:define_apply('-', 'timl#number#minus')
@@ -84,6 +90,29 @@ call s:define_apply('<=', 'timl#number#lteq')
 call s:define_apply('==', 'timl#number#equiv')
 call s:define_apply('max', 'max')
 call s:define_apply('min', 'min')
+call s:define_call('inc', 'timl#number#inc')
+call s:define_call('dec', 'timl#number#dec')
+call s:define_call('rem', 'timl#number#rem')
+call s:define_call('quot', 'timl#number#quot')
+call s:define_call('mod', 'timl#number#mod')
+call s:define_call('bit-not', 'timl#number#bit_not')
+call s:define_apply('bit-or', 'timl#number#bit_or')
+call s:define_apply('bit-xor', 'timl#number#bit_xor')
+call s:define_apply('bit-and', 'timl#number#bit_and')
+call s:define_apply('bit-and-not', 'timl#number#bit_and_not')
+call s:define_call('bit-shift-left', 'timl#number#bit_shift_left')
+call s:define_call('bit-shift-right', 'timl#number#bit_shift_right')
+call s:define_call('bit-flip', 'timl#number#bit_flip')
+call s:define_call('bit-set', 'timl#number#bit_set')
+call s:define_call('bit-clear', 'timl#number#bit_clear')
+call s:define_pred('bit-test', 'timl#number#bit_test')
+call s:define_call('not-negative', 'timl#number#not_negative')
+call s:define_pred('zero?', 'timl#number#zerop')
+call s:define_pred('nonzero?', 'timl#number#nonzerop')
+call s:define_pred('pos?', 'timl#number#posp')
+call s:define_pred('neg?', 'timl#number#negp')
+call s:define_pred('odd?', 'timl#number#oddp')
+call s:define_pred('even?', 'timl#number#evenp')
 
 " Section: String
 
