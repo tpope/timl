@@ -52,7 +52,7 @@ syntax match timlQuote "'"
 syntax match timlSyntaxQuote "`"
 syntax match timlUnquote "\~@\="
 syntax match timlDeref "@"
-syntax match timlMeta "^"
+syntax match timlMeta "\^"
 
 syntax region timlList matchgroup=timlGroup start="(" end=")" contains=TOP,@Spell
 syntax region timlVector matchgroup=timlGroup start="\[" end="]" contains=TOP,@Spell
