@@ -12,10 +12,10 @@
 (execute "nnoremap <buffer> K :execute 'help' ftplugin#timl#cursor_keyword()<CR>")
 (defn cursor-keyword []
   (let [kw (#*expand "<cword>")
-        ns (the-ns (#*timl#ns_for_cursor))]
+        ns (the-ns (symbol (#*timl#ns_for_cursor)))]
     (cond
       (re-find "^#\\*" kw) (str (subs kw 2) "()")
       (re-find "^&" kw)    (str "'" (subs kw 1) "'")
       (special-symbol?     (symbol kw)) (str "timl-" kw)
-      (ns-resolve ns kw)   (ns-resolve ns kw)
+      (ns-resolve ns (symbol kw)) (. (ns-resolve ns (symbol kw)) -munged)
       :else                kw)))
