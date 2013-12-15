@@ -147,6 +147,9 @@ function! timl#compiler#serialize(x, ...)
   elseif timl#consp(a:x)
     return 'timl#cons#create('.timl#compiler#serialize(a:x.car).','.timl#compiler#serialize(a:x.cdr).')'
 
+  elseif timl#var#test(a:x)
+    return 'timl#var#find('.timl#compiler#serialize(a:x.ns.name[0]).', '.timl#compiler#serialize(a:x.name[0]).')'
+
   elseif type(a:x) == type({})
     let acc = []
     for [k, V] in items(a:x)
@@ -286,6 +289,15 @@ endfunction
 
 function! s:expr_sf_function(file, env, form) abort
   return "function(".timl#compiler#serialize(timl#str(timl#fnext(a:form))).")"
+endfunction
+
+function! s:expr_sf_var(file, env, form) abort
+  let sym = timl#symbol#coerce(timl#fnext(a:form))
+  let var = timl#namespace#maybe_resolve(g:timl#core#_STAR_ns_STAR_, sym)
+  if var isnot# g:timl#nil
+    return timl#compiler#serialize(var)
+  endif
+  throw "timl#compiler: could not resolve ".timl#str(sym)
 endfunction
 
 function! s:one_fn(file, env, form, name, temp, catch_errors) abort

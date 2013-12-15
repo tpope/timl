@@ -150,6 +150,8 @@ function! s:process(port, token, line, wanted) abort
     return timl#list(s:unquote, s:read_bang(port))
   elseif token ==# '~@'
     return timl#list(s:unquote_splicing, s:read_bang(port))
+  elseif token ==# "#'"
+    return timl#list(timl#symbol('var'), s:read_bang(port))
   elseif token ==# '#*'
     let next = s:read_bang(port)
     if timl#mapp(next)

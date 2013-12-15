@@ -33,8 +33,11 @@ function! timl#printer#string(x)
   elseif type == 'timl.lang/MultiFn'
     return '#<'.get(a:x, 'ns', {'name': ['...']}).name[0].'/'.get(a:x, 'name', ['...'])[0].' multi>'
 
-  elseif type == 'timl.lang/Namespace'
+  elseif type ==# 'timl.lang/Namespace'
     return '#<Namespace '.get(a:x, 'name', '')[0].'>'
+
+  elseif type ==# 'timl.lang/Var'
+    return "#'".a:x.str
 
   elseif type == 'timl.lang/Type'
     return timl#str(a:x.name)

@@ -95,7 +95,7 @@ function! timl#namespace#intern(ns, name, ...)
   elseif !exists('g:'.munged)
     let g:{munged} = g:timl#nil
   endif
-  let ns.mappings[a:name[0]] = timl#bless('timl.lang/Var', {'name': a:name, 'ns': ns, 'str': str, 'munged': munged, 'meta': timl#meta(a:name)})
+  let ns.mappings[a:name[0]] = timl#bless('timl.lang/Var', {'name': a:name, 'ns': ns, 'str': str, 'munged': munged, '#meta': timl#meta(a:name)})
   return a:0 ? a:1 : g:timl#nil
 endfunction
 
