@@ -25,7 +25,7 @@
        (cat (concat x y) zs))))
 
 (defmacro defn- [name & fdecl]
-  `(defn ^:private ~name ~@fdecl))
+  `(defn ~(with-meta name (assoc (meta name) :private true)) ~@fdecl))
 
 (defmacro when [test & body]
   `(if ~test (do ~@body)))
