@@ -43,6 +43,7 @@ function! timl#function#defn(form, env, name, ...)
   return timl#list(s:def, a:name, timl#with_meta(timl#cons#from_array([s:fn, a:name] + a:000), timl#meta(a:form)))
 endfunction
 
+let s:kmacro = timl#keyword#intern('macro')
 function! timl#function#defmacro(form, env, name, params, ...)
   let extra = [s:form, s:env]
   if type(a:params) == type([])
@@ -54,9 +55,11 @@ function! timl#function#defmacro(form, env, name, params, ...)
       call add(body, timl#cons#create(extra + timl#first(_.list), timl#next(_.list)))
     endfor
   endif
+  let name = copy(a:name)
+  let name['#meta'] = timl#type#dispatch(g:timl#core#assoc, get(a:name, '#meta', g:timl#nil), s:kmacro, g:timl#true)
   let fn = timl#symbol#gen('fn')
   return timl#list(s:lets,
-        \ [fn, timl#cons#from_array([s:defn, a:name] + body)],
+        \ [fn, timl#cons#from_array([s:defn, name] + body)],
         \ timl#list(s:setq, timl#list(s:dot, fn, timl#symbol('macro')), 1),
         \ fn)
 endfunction
