@@ -241,10 +241,13 @@ call s:define_call('refer', 'timl#namespace#refer')
 call s:define_call('alias', 'timl#namespace#alias')
 call s:define_call('use', 'timl#namespace#use')
 call s:define_call('intern', 'timl#namespace#intern')
+
 call s:implement('timl.lang/Var',
       \ '_invoke', 'timl#var#invoke',
-      \ 'var-get', 'timl#var#get',
       \ 'deref', 'timl#var#get')
+call s:define_call('var-get', 'timl#var#get')
+call s:define_call('find-var', 'timl#var#find')
+call s:define_pred('var?', 'timl#var#test')
 
 " Section: Array (Vim List)
 

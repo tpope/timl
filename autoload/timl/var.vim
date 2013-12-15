@@ -17,6 +17,8 @@ function! timl#var#test(this) abort
   return timl#type#string(a:this) ==# 'timl.lang/Var'
 endfunction
 
-function! timl#var#find(ns_str, name_str) abort
-  return timl#namespace#find(a:ns_str).mappings[a:name_str]
+function! timl#var#find(sym) abort
+  let sym = timl#symbol#coerce(a:sym)
+  let ns = empty(sym.namespace) ? g:timl#core#_STAR_ns_STAR_.name[0] : sym.namespace
+  return get(timl#namespace#find(ns).mappings, sym.name, g:timl#nil)
 endfunction

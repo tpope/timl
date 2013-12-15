@@ -148,7 +148,7 @@ function! timl#compiler#serialize(x, ...)
     return 'timl#cons#create('.timl#compiler#serialize(a:x.car).','.timl#compiler#serialize(a:x.cdr).')'
 
   elseif timl#var#test(a:x)
-    return 'timl#var#find('.timl#compiler#serialize(a:x.ns.name[0]).', '.timl#compiler#serialize(a:x.name[0]).')'
+    return 'timl#var#find('.timl#compiler#serialize(timl#symbol#intern(a:x.str)).')'
 
   elseif type(a:x) == type({})
     let acc = []
