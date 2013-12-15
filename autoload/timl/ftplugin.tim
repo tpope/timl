@@ -7,5 +7,5 @@
 ; should append to b:undo-ftplugin
 (defmacro setlocal [& opts]
   `(do
-     (: (str "setlocal " ~(build-option-string opts)))
+     (execute (str "setlocal " ~(build-option-string opts)))
      (set! b:undo-ftplugin ~(extract-option-restore opts))))

@@ -1,2 +1,2 @@
 (ns indent.timl)
-(: "runtime! indent/clojure.vim")
+(execute "runtime! indent/clojure.vim")

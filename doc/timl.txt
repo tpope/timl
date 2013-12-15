@@ -131,9 +131,9 @@ the exception, or look in dictionary {e}.
 (throw {string}) ~
 Pass the given {string} to |:throw|.
 
-                                                *timl-:* *timl-colon*
-(: {command}) ~
-Run the given string as an ex command.
+                                                *timl-execute*
+(execute {string}) ~
+Run the given string with |:execute|.
 
                                                 *timl-.* *timl-dot*
 (. {dict} -{key}) ~

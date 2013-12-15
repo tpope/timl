@@ -19,7 +19,7 @@
   `(timl.repl/breakpoint-fn ~(list #*eval "locals")))
 
 (defmacro breakadd []
-  `(: "execute 'breakadd func '.(1+expand('<slnum>')).' '.matchstr(expand('<sfile>'), '.*\\.\\zs.*')"))
+  `(execute "execute 'breakadd func '.(1+expand('<slnum>')).' '.matchstr(expand('<sfile>'), '.*\\.\\zs.*')"))
 (defn breakme []
   (breakadd)
   (+ 1 (* 2 3)))

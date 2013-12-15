@@ -14,7 +14,7 @@ let s:specials = {
       \ 'fn*': 1,
       \ 'def': 1,
       \ 'set!': 1,
-      \ ':': 1,
+      \ 'execute': 1,
       \ '.': 1,
       \ 'quote': 1,
       \ 'function': 1,
@@ -408,9 +408,14 @@ function! s:emit_sf_recur(file, env, form) abort
   call s:emitln(a:file, 'continue')
 endfunction
 
-function! s:colon(file, env, form) abort
+function! s:expr_sf_execute(file, env, form) abort
+  return s:wrap_as_expr(a:file, a:env, a:form)
+endfunction
+
+function! s:emit_sf_execute(file, env, form) abort
   let expr = map(copy(timl#ary(timl#next(a:form))), 's:expr(a:file, a:env, v:val)')
   call s:emitln(a:file, 'execute '.join(expr, ' '))
+  return s:emit(a:file, a:env, g:timl#nil)
 endfunction
 
 function! s:expr_sf_try(file, env, form) abort
@@ -559,15 +564,11 @@ function! s:expr_map(file, env, form)
   return 'timl#map#create(['.join(map(kvs, 's:emit(a:file, s:with_context(a:env, "expr"), v:val)'), ', ').'])'
 endfunction
 
-let s:colon = timl#symbol(':')
 let s:dot = timl#symbol('.')
 function! s:emit(file, env, form) abort
   if timl#consp(a:form)
     let First = timl#first(a:form)
-    if First is# s:colon
-      call s:colon(a:file, a:env, a:form)
-      let expr = 'g:timl#nil'
-    elseif First is# s:dot
+    if First is# s:dot
       let expr = s:expr_dot(a:file, a:env, a:form)
     elseif timl#symbol#test(First)
       let munged = timl#munge(First[0])

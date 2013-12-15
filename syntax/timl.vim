@@ -31,7 +31,7 @@ syntax keyword timlSpecialParam & &form &env
 syntax keyword timlConditional if
 syntax keyword timlDefine def set! declare
 syntax keyword timlRepeat loop recur
-syntax keyword timlStatement do let fn . :
+syntax keyword timlStatement do let fn . execute
 syntax keyword timlSpecial let* fn* var function
 syntax keyword timlException try catch finally throw
 

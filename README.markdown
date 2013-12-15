@@ -14,7 +14,6 @@ scripting language provided by the Vim text editor.  Think Clojure meets VimL.
 * Macros, including syntax quoting and the implicit `&form` and `&env`.
 * Metadata (although a lack of proper `var`s eliminates several common
   use cases).
-* Call a Vim command with `:`: `(: "wq")`.
 
 ## Clojure differences
 
@@ -36,6 +35,7 @@ Too many omissions to list, but:
   `set!`: `(set! &filetype "timl")`.
 * `#*function` returns a reference to a built-in or user defined function.
   You can call it like any other function: `(#*toupper "TimL Rocks!")`.
+* Call a Vim command with `execute`: `(execute "wq")`.
 
 ## Getting started
 

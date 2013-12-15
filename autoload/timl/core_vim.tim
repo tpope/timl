@@ -3,7 +3,7 @@
 (defmacro include-guard [var]
   (let [string (#*timl#munge (str var))]
    `(if (nonzero? (#*exists ~string))
-     (: "finish")
+     (execute "finish")
      (set! ~var 1))))
 
 (defn build-option-string [args]
@@ -26,7 +26,7 @@
     (str "setlocal " (#*join (vec (map str options)) "< ") "<")))
 
 (defmacro setlocal [& opts]
-  `(: (str "setlocal " ~(build-option-string opts))))
+  `(execute (str "setlocal " ~(build-option-string opts))))
 
 (defmacro setglobal [& opts]
-  `(: (str "setlocal " ~(build-option-string opts))))
+  `(execute (str "setlocal " ~(build-option-string opts))))

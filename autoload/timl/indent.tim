@@ -6,5 +6,5 @@
 
 (defmacro setlocal [& opts]
   `(do
-     (: (str "setlocal " ~(build-option-string opts)))
+     (execute (str "setlocal " ~(build-option-string opts)))
      (set! b:undo-indent ~(extract-option-restore opts))))

@@ -39,11 +39,11 @@
   `(do
      (try
        (set! l:TimLfn (fn [] ~@body))
-       (: "redraw")
-       (: "redir => l:TimLcaptured")
-       (: "silent call timl#call(l:TimLfn, [])")
-       (finally (: "unlet! l:TimLfn") (: "redir END")))
-     (#*substitute l:TimLcaptured "^\n" "" "g")))
+       (execute "redraw")
+       (execute "redir => g:TimLcaptured")
+       (execute "silent call timl#call(l:TimLfn, [])")
+       (finally (execute "unlet! l:TimLfn") (execute "redir END")))
+     (#*substitute g:TimLcaptured "^\n" "" "g")))
 
 (defmacro time [& body]
   `(let [reltime# (#*reltime)

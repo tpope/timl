@@ -9,7 +9,7 @@
 (setlocal formatoptions+=croql)
 (setlocal omnifunc=timl#reflect#omnicomplete)
 
-(: "nnoremap <buffer> K :execute 'help' ftplugin#timl#cursor_keyword()<CR>")
+(execute "nnoremap <buffer> K :execute 'help' ftplugin#timl#cursor_keyword()<CR>")
 (defn cursor-keyword []
   (let [kw (#*expand "<cword>")
         ns (the-ns (#*timl#ns_for_cursor))]
