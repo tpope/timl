@@ -36,6 +36,10 @@ function! timl#symbol#coerce(symbol)
   return a:symbol
 endfunction
 
+function! timl#symbol#equal(this, that)
+  return timl#symbol#test(a:that) && a:this[0] ==# a:that[0] ? g:timl#true : g:timl#false
+endfunction
+
 function! timl#symbol#gen(...)
   let s:id = get(s:, 'id', 0) + 1
   return timl#symbol((a:0 ? a:1 : 'G__').s:id)

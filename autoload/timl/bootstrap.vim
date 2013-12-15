@@ -200,6 +200,7 @@ function! s:this_get(this, coll, ...) abort
 endfunction
 
 call s:implement('timl.lang/Symbol',
+      \ 'equal?', 'timl#symbol#equal',
       \ '_invoke', 's:this_get')
 
 call s:implement('timl.lang/Keyword',
