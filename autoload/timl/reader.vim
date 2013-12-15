@@ -141,7 +141,7 @@ function! s:process(port, token, line, wanted) abort
   elseif token =~# '^"\|^[+-]\=\d\%(.*\d\)\=$'
     return eval(token)
   elseif token =~# '^#"'
-    return substitute(token[2:-2], '\\\@<!\(\%(\\\\\)*\)\\"', '\1"', 'g')
+    return '\C\v'.substitute(token[2:-2], '\\\@<!\(\%(\\\\\)*\)\\"', '\1"', 'g')
   elseif token[0] ==# '\'
     return token[1]
   elseif token ==# "'"
@@ -382,8 +382,8 @@ command! -nargs=1 TimLRAssert
 
 TimLRAssert timl#reader#read_string('foo') ==# timl#symbol('foo')
 TimLRAssert timl#reader#read_string('":)"') ==# ':)'
-TimLRAssert timl#reader#read_string('#"\(a\\\)"') ==# '\(a\\\)'
-TimLRAssert timl#reader#read_string('#"\""') ==# '"'
+TimLRAssert timl#reader#read_string('#"\(a\\\)"') ==# '\C\v\(a\\\)'
+TimLRAssert timl#reader#read_string('#"\""') ==# '\C\v"'
 TimLRAssert timl#reader#read_string('(first [1 2])') ==# timl#list(timl#symbol('first'), timl#vector(1, 2))
 TimLRAssert timl#reader#read_string('#["a" 1 "b" 2]') ==# {"a": 1, "b": 2}
 TimLRAssert timl#reader#read_string('{"a" 1 :b 2 3 "c"}') ==# timl#map#create(["a", 1, timl#keyword#intern('b'), 2, 3, "c"])

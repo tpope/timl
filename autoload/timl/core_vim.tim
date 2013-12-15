@@ -19,7 +19,7 @@
         )) 1 -1))
 
 (defn extract-option-names [args]
-  (map (fn [x] (#*matchstr (str x) #"\%(inv\|no\)\=\zs\w\+")) (filter symbol? args)))
+  (map (fn [x] (#*matchstr (str x) #"%(inv|no)?\zs\w+")) (filter symbol? args)))
 
 (defn extract-option-restore [args]
   (if-let [options (extract-option-names args)]
