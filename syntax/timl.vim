@@ -15,13 +15,18 @@ endif
 
 runtime! syntax/clojure.vim
 setl iskeyword+=?,!,#,$,%,&,*,+,.,/,<,>,:,=,45
-let b:syntax_ns = timl#ns_for_cursor(0)
-let b:syntax_vars = keys(timl#reflect#ns_var_completion(b:syntax_ns))
+let b:syntax_ns_str = timl#ns_for_cursor(0)
+let b:syntax_vars = keys(timl#namespace#find(b:syntax_ns_str).mappings)
 
 let b:current_syntax = "timl"
 
-exe 'syn keyword timlSymbol '.join(b:syntax_vars, ' ')
-exe 'syn keyword timlDefine '.join(filter(copy(b:syntax_vars), 'v:val =~# "^def\\%(ault\\)\\@!"'), ' ')
+function! s:syn_keyword(group, keywords)
+  if !empty(a:keywords)
+    exe 'syn keyword '.a:group.' '.join(a:keywords, ' ')
+  endif
+endfunction
+call s:syn_keyword('timlSymbol', b:syntax_vars)
+call s:syn_keyword('timlDefine', filter(copy(b:syntax_vars), 'v:val =~# "^def\\%(ault\\)\\@!"'))
 
 syntax keyword timlConstant nil
 syntax keyword timlBoolean false true
@@ -34,9 +39,9 @@ syn keyword timlRepeat loop recur
 syn keyword timlStatement do let fn . :
 syn keyword timlException try catch finally throw
 
-exe 'syn keyword timlVimOption '.join(map(copy(s:options), "'&'.v:val"), ' ')
-exe 'syn keyword timlVimOption '.join(map(copy(s:options), "'&l:'.v:val"), ' ')
-exe 'syn keyword timlVimOption '.join(map(copy(s:options), "'&g:'.v:val"), ' ')
+call s:syn_keyword('timlVimOption', map(copy(s:options), "'&'.v:val"))
+call s:syn_keyword('timlVimOption', map(copy(s:options), "'&l:'.v:val"))
+call s:syn_keyword('timlVimOption', map(copy(s:options), "'&g:'.v:val"))
 exe 'syn match timlVimFunction contained "\%('.join(s:functions, '\|').'\)\>"'
 
 hi def link timlDefine Define
