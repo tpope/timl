@@ -89,13 +89,14 @@ function! timl#namespace#intern(ns, name, ...)
   let ns = timl#namespace#the(a:ns)
   let str = ns.name[0].'/'.timl#symbol#coerce(a:name)[0]
   let munged = timl#munge(str)
+  let var = timl#bless('timl.lang/Var', {'name': a:name, 'ns': ns, 'str': str, 'munged': munged, '#meta': timl#meta(a:name)})
   if a:0
     unlet! g:{munged}
     let g:{munged} = a:1
   elseif !exists('g:'.munged)
     let g:{munged} = g:timl#nil
   endif
-  let ns.mappings[a:name[0]] = timl#bless('timl.lang/Var', {'name': a:name, 'ns': ns, 'str': str, 'munged': munged, '#meta': timl#meta(a:name)})
+  let ns.mappings[a:name[0]] = var
   return a:0 ? a:1 : g:timl#nil
 endfunction
 
