@@ -52,11 +52,15 @@ syntax match timlQuote "'"
 syntax match timlSyntaxQuote "`"
 syntax match timlUnquote "\~@\="
 syntax match timlDeref "@"
+syntax match timlMeta "^"
 
 syntax region timlList matchgroup=timlGroup start="(" end=")" contains=TOP,@Spell
 syntax region timlVector matchgroup=timlGroup start="\[" end="]" contains=TOP,@Spell
 syntax region timlMap matchgroup=timlGroup start="{" end="}" contains=TOP,@Spell
 syntax region timlSet matchgroup=timlGroup start="#{" end="}" contains=TOP,@Spell
+syntax region timlFn matchgroup=timlGroup start="#(" end=")" contains=TOP,@Spell
+syntax match timlSymbol '\<%[1-9]\d*\>'
+syntax match timlSymbol '\<%&\=\>'
 
 syntax match timlComment "\<#_"
 syntax match timlComment ";.*$"
@@ -92,6 +96,7 @@ hi def link timlQuote Special
 hi def link timlSyntaxQuote Special
 hi def link timlUnquote Special
 hi def link timlDeref Special
+hi def link timlMeta Special
 hi def link timlGroup Special
 hi def link timlComment Comment
 
