@@ -1,7 +1,5 @@
 (ns ftplugin.timl)
 (use 'timl.ftplugin)
-(require 'timl.file)
-(alias 'file 'timl.file)
 (include-guard)
 
 (setlocal comments=":;,:;;;,:;;,sr:#|,mb:|,ex:|#" commentstring=";%s")
