@@ -2,7 +2,7 @@
 
 (defmacro include-guard [var]
   (let [string (#*timl#munge (str var))]
-   `(if (nonzero? (#*exists ~string))
+   `(if (exists? ~string)
      (execute "finish")
      (set! ~var 1))))
 

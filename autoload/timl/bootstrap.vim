@@ -438,6 +438,11 @@ call s:define_call('spit', 'timl#io#spit')
 call s:define_call('slurp', 'timl#io#slurp')
 call s:define_call('read-string', 'timl#reader#read_string')
 
+" Section: Vim Interop
+
+call s:define_pred('exists?', 'exists')
+call s:define_pred('has?', 'has')
+
 " Section: Defaults
 
 call s:define_call('meta', 'timl#meta')
