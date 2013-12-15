@@ -105,11 +105,11 @@ function! timl#printer#string(x)
     let acc = []
     for [k, V] in items(a:x)
       if k[0] !=# '#'
-        call add(acc, timl#printer#string(timl#dekey(k)) . ' ' . timl#printer#string(V))
+        call add(acc, k . '=' . timl#printer#string(V))
       endif
       unlet! V
     endfor
-    return prefix.'#<'.type.' {' . join(acc, ', ') . '}>'
+    return '#<'.type.' ' . join(acc, ', ') . '>'
 
   endif
 endfunction
