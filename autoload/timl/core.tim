@@ -118,7 +118,7 @@
      (refer-timl)))
 
 (defn ns-resolve
-  ([ns sym] (#*timl#compiler#ns_resolve ns sym (dict)))
+  ([ns sym] (#*timl#namespace#maybe_resolve ns sym))
   ([ns env sym] (if (contains? (:locals env) sym) nil (ns-resolve ns sym))))
 
 (defn resolve

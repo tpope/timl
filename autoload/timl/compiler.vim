@@ -79,9 +79,9 @@ endfunction
 
 function! timl#compiler#macroexpand_1(form) abort
   if timl#consp(a:form) && timl#symbol#test(timl#first(a:form)) && !timl#compiler#specialp(timl#first(a:form))
-    let var = timl#compiler#ns_resolve(g:timl#core#_STAR_ns_STAR_, timl#first(a:form))
+    let var = timl#namespace#maybe_resolve(g:timl#core#_STAR_ns_STAR_, timl#first(a:form))
     if var isnot# g:timl#nil
-      let Val = eval(var)
+      let Val = g:{var.munged}
       if timl#truth(get(Val, 'macro', g:timl#false))
         return timl#call(Val, [a:form, {}] + timl#ary(timl#next(a:form)))
       endif

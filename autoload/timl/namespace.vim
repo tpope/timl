@@ -61,16 +61,37 @@ function! timl#namespace#the(name) abort
   throw 'timl: no such namespace '.name
 endfunction
 
+function! timl#namespace#maybe_resolve(ns, sym)
+  let ns = timl#namespace#the(a:ns)
+  let sym = timl#symbol#coerce(a:sym)
+  if has_key(ns.mappings, sym.str)
+    return ns.mappings[sym.str]
+  endif
+  if !empty(sym.namespace)
+    if has_key(ns.aliases, sym.namespace)
+      let aliasns = timl#namespace#the(ns.aliases[sym.namespace])
+      if has_key(aliasns.mappings, sym.name)
+        return aliasns.mappings[sym.name]
+      endif
+    endif
+    if has_key(g:timl#namespaces, sym.namespace) && has_key(g:timl#namespaces[sym.namespace].mappings, sym.name)
+      return g:timl#namespaces[sym.namespace].mappings[sym.name]
+    endif
+  endif
+  return g:timl#nil
+endfunction
+
 function! timl#namespace#intern(ns, name, ...)
   let ns = timl#namespace#the(a:ns)
-  let munged = timl#munge(ns.name[0].'/'.timl#symbol#coerce(a:name)[0])
+  let str = ns.name[0].'/'.timl#symbol#coerce(a:name)[0]
+  let munged = timl#munge(str)
   if a:0
     unlet! g:{munged}
     let g:{munged} = a:1
   elseif !exists('g:'.munged)
     let g:{munged} = g:timl#nil
   endif
-  let ns.mappings[a:name[0]] = {'name': a:name, 'ns': ns, 'meta': timl#meta(a:name)}
+  let ns.mappings[a:name[0]] = timl#bless('timl.lang/Var', {'name': a:name, 'ns': ns, 'str': str, 'munged': munged, 'meta': timl#meta(a:name)})
   return a:0 ? a:1 : g:timl#nil
 endfunction
 
