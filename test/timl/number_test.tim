@@ -1,0 +1,90 @@
+(ns timl.number-test)
+(use 'timl.test)
+
+(assert (number? 3))
+(assert (number? 3.0))
+(assert (not (number? "")))
+(assert (integer? 3))
+(assert (not (integer? 3.0)))
+(assert (not (integer? "")))
+(assert (not (float? 3)))
+(assert (float? 3.0))
+(assert (not (integer? "")))
+
+(assert (= 0 (+)))
+(assert (= 1 (+ 1)))
+(assert (= 3 (+ 1 2)))
+(assert (= 6 (+ 1 2 3)))
+(assert (= 4 (inc 3)))
+
+(assert (= -1 (- 1)))
+(assert (= 0 (- 3 1 2)))
+(assert (= 2 (dec 3)))
+
+(assert (= 1 (*)))
+(assert (= 6 (* 1 2 3)))
+
+(assert (= 0 (/ 2)))
+(assert (= 0.5 (/ 2.0)))
+(assert (= 0.5 (/ 1 2.0)))
+(assert (= 0.25 (/ 1 2.0 2.0)))
+
+(assert (= 1 (rem 4 3)))
+(assert (= -1 (rem -4 3)))
+(assert (= 1 (mod 4 3)))
+(assert (= 2 (mod -4 3)))
+(assert (= 0 (mod 0 3)))
+(assert (= -2 (mod 4 -3)))
+(assert (= 1.0 (quot 3.0 2)))
+
+(assert (= 7 (max 3 7 2 4)))
+(assert (= 2 (min 3 7 2 4)))
+
+(assert (= -1 (bit-not 0)))
+(assert (= 5 (bit-xor 7 3 1)))
+(assert (= 4 (bit-and 7 6 5)))
+(assert (= 7 (bit-or 1 2 4)))
+(assert (= 6 (bit-and-not 7 1 8)))
+(assert (= 8 (bit-shift-left 1 3)))
+(assert (= 1 (bit-shift-right 8 3)))
+(assert (= 3 (bit-flip 1 1)))
+(assert (= 3 (bit-set 1 1)))
+(assert (= 1 (bit-clear 3 1)))
+(assert (bit-test 3 1))
+(assert (not (bit-test 5 1)))
+
+(assert (= nil (not-negative -1)))
+(assert (= 0 (not-negative 0)))
+(assert (zero? 0))
+(assert (not (zero? 1)))
+(assert (nonzero? 1))
+(assert (not (nonzero? 0)))
+(assert (even? 2))
+(assert (not (even? 3)))
+(assert (odd? 3))
+(assert (not (odd? 2)))
+
+(assert (> 3 2 1))
+(assert (not (> 3 2 2)))
+(assert (< 1 2 3))
+(assert (not (< 1 2 2)))
+(assert (>= 3 2 2))
+(assert (not (>= 3 1 2)))
+(assert (<= 1 2 2))
+(assert (not (< 1 3 2)))
+(assert (== 0 0.0 0))
+(assert (not (== 0 0.0 1)))
+
+(defn fact [x]
+  (loop [n x
+         f 1]
+    (if (<= n 1) f (recur (dec n) (* f n)))))
+
+(defn fib [n]
+  (first
+    (loop [xs [1 0]]
+      (if (< (count xs) n)
+        (recur (cons (+ (first xs) (second xs)) xs))
+        xs))))
+
+(assert (= 120 (fact 5)))
