@@ -779,6 +779,8 @@ function! timl#compiler#source_file(filename)
 endfunction
 
 call timl#require('timl.core')
+let s:user = timl#namespace#create(timl#symbol#intern('user'))
+call extend(s:user.mappings, timl#namespace#find(timl#symbol#intern('timl.core')).mappings)
 
 " Section: Tests
 

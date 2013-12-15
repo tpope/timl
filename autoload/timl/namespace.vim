@@ -31,6 +31,7 @@ function! timl#namespace#refer(name) abort
   if sym isnot# me.name && index(me.referring, sym) < 0
     call insert(me.referring, sym)
   endif
+  call extend(me.mappings, timl#namespace#find(sym).mappings)
   return g:timl#nil
 endfunction
 
