@@ -11,9 +11,12 @@ function! timl#cons#test(obj) abort
   return type(a:obj) == type({}) && get(a:obj, '#tag') is# s:type
 endfunction
 
-function! timl#cons#create(car, cdr) abort
+function! timl#cons#create(car, cdr, ...) abort
   if timl#type#canp(a:cdr, g:timl#core#seq)
     let cons = timl#bless(s:type, {'car': a:car, 'cdr': a:cdr is# g:timl#nil ? g:timl#empty_list : a:cdr})
+    if a:0
+      let cons.meta = a:1
+    endif
     lockvar 1 cons
     return cons
   endif

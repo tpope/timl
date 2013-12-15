@@ -119,37 +119,12 @@ function! timl#type(val) abort
   return timl#type#string(a:val)
 endfunction
 
-function! timl#persistentb(val) abort
-  let val = a:val
-  if islocked('val')
-    throw "timl: persistent! called on an already persistent value"
-  else
-    lockvar 1 val
-    return val
-  endif
-endfunction
-
 function! timl#meta(obj) abort
-  if timl#type#objectp(a:obj)
-    return get(a:obj, '#meta', g:timl#nil)
-  endif
-  return g:timl#nil
+  return timl#type#dispatch(g:timl#core#meta, a:obj)
 endfunction
 
 function! timl#with_meta(obj, meta) abort
-  if timl#type#objectp(a:obj)
-    if !timl#equalp(get(a:obj, '#meta', g:timl#nil), a:meta)
-      let obj = copy(a:obj)
-      if a:meta is# g:timl#nil
-        call remove(obj, '#meta')
-      else
-        let obj['#meta'] = a:meta
-      endif
-      return timl#persistentb(obj)
-    endif
-    return a:obj
-  endif
-  throw 'timl: cannot attach metadata to a '.timl#type#string(a:obj)
+  return timl#type#dispatch(g:timl#core#with_meta, a:obj, a:meta)
 endfunction
 
 function! timl#str(val) abort
@@ -178,8 +153,6 @@ function! timl#equalp(x, y) abort
   return timl#type#dispatch(g:timl#core#equal_QMARK_, a:x, a:y) is# g:timl#true
 endfunction
 
-runtime! autoload/timl/bootstrap.vim
-
 " }}}1
 " Section: Collections {{{1
 
@@ -194,14 +167,14 @@ function! timl#into(coll, seq) abort
     while _.seq isnot# g:timl#nil
       let _.coll = timl#type#dispatch(g:timl#core#conj_BANG_, _.coll, timl#first(_.seq))
       let _.seq = timl#next(_.seq)
-    endfor
+    endwhile
     return timl#type#dispatch(g:timl#core#persistent_BANG_, _.coll)
   else
     let _ = {'coll': a:coll, 'seq': timl#seq(a:seq)}
     while _.seq isnot# g:timl#nil
       let _.coll = timl#type#dispatch(g:timl#core#conj, _.coll, timl#first(_.seq))
       let _.seq = timl#next(_.seq)
-    endfor
+    endwhile
     return _.coll
   endif
 endfunction
@@ -463,6 +436,8 @@ function! timl#require(ns) abort
   endif
   return g:timl#nil
 endfunction
+
+runtime! autoload/timl/bootstrap.vim
 
 " }}}1
 

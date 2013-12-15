@@ -10,7 +10,7 @@ if !exists('s:symbols')
 endif
 
 let s:symbol = timl#keyword('#timl.lang/Symbol')
-function! timl#symbol#intern(str)
+function! timl#symbol#intern(str) abort
   if !has_key(s:symbols, a:str)
     let s:symbols[a:str] = timl#bless(s:symbol, {
           \ '0': a:str,
@@ -20,6 +20,12 @@ function! timl#symbol#intern(str)
     lockvar s:symbols[a:str]
   endif
   return s:symbols[a:str]
+endfunction
+
+function! timl#symbol#intern_with_meta(str, meta) abort
+  let sym = copy(timl#symbol#intern(a:str))
+  let sym.meta = a:meta
+  return sym
 endfunction
 
 function! timl#symbol#test(symbol)

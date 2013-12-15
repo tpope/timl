@@ -95,19 +95,17 @@ let s:escapes = {
       \ "\"": '\"',
       \ "\\": '\\'}
 
-function! timl#compiler#serialize(x, ...)
+function! timl#compiler#serialize(x)
   " TODO: guard against recursion
-  if !a:0
-    let meta = timl#meta(a:x)
-    if !empty(meta)
-      return 'timl#with_meta('.timl#compiler#serialize(a:x, 'nometa').', '.timl#compiler#serialize(meta).')'
-    endif
-  endif
   if timl#keyword#test(a:x)
     return 'timl#keyword#intern('.timl#compiler#serialize(a:x[0]).')'
 
   elseif timl#symbol#test(a:x)
-    return 'timl#symbol#intern('.timl#compiler#serialize(a:x[0]).')'
+    if has_key(a:x, 'meta')
+      return 'timl#symbol#intern_with_meta('.timl#compiler#serialize(a:x[0]).', '.timl#compiler#serialize(a:x.meta).')'
+    else
+      return 'timl#symbol#intern('.timl#compiler#serialize(a:x[0]).')'
+    endif
 
   elseif a:x is# g:timl#nil
     return 'g:timl#nil'
@@ -145,7 +143,10 @@ function! timl#compiler#serialize(x, ...)
     return 'timl#set#create('.timl#compiler#serialize(keyvals).')'
 
   elseif timl#consp(a:x)
-    return 'timl#cons#create('.timl#compiler#serialize(a:x.car).','.timl#compiler#serialize(a:x.cdr).')'
+    return 'timl#cons#create('
+          \ . timl#compiler#serialize(a:x.car).','
+          \ . timl#compiler#serialize(a:x.cdr)
+          \ . (has_key(a:x, 'meta') ? ',' . timl#compiler#serialize(a:x.meta) : '').')'
 
   elseif timl#var#test(a:x)
     return 'timl#var#find('.timl#compiler#serialize(timl#symbol#intern(a:x.str)).')'
@@ -611,26 +612,14 @@ function! s:emit(file, env, form) abort
 
   elseif timl#vectorp(a:form)
     let expr = 'timl#vec(['.join(map(copy(timl#ary(a:form)), 's:emit(a:file, s:with_context(a:env, "expr"), v:val)'), ', ').'])'
-    let meta = timl#meta(a:form)
-    if meta isnot g:timl#nil
-      let expr = 'timl#with_meta('.expr.', '.s:expr_map(a:file, a:env, meta).')'
-    endif
 
   elseif timl#setp(a:form)
     let expr = 'timl#set(['.join(map(copy(timl#ary(a:form)), 's:emit(a:file, s:with_context(a:env, "expr"), v:val)'), ', ').'])'
-    let meta = timl#meta(a:form)
-    if meta isnot g:timl#nil
-      let expr = 'timl#with_meta('.expr.', '.s:expr_map(a:file, a:env, meta).')'
-    endif
 
   elseif timl#mapp(a:form)
     let expr = s:expr_map(a:file, a:env, a:form)
     if timl#type#string(a:form) == 'vim/Dictionary'
       let expr = substitute(expr, '\C#map#', '#dictionary#', '')
-    endif
-    let meta = timl#meta(a:form)
-    if meta isnot g:timl#nil
-      let expr = 'timl#with_meta('.expr.', '.s:expr_map(a:file, a:env, meta).')'
     endif
 
   else

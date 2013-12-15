@@ -65,38 +65,28 @@ let s:constants = {
       \ '\backspace': "\b"}
 
 function! s:add_meta(data, meta) abort
-  let data = a:data
-  if timl#symbol#test(data)
-    let data = copy(data)
+  let _ = {}
+  let _.meta = timl#meta(a:data)
+  if _.meta is g:timl#nil
+    let _.meta = a:meta
   else
-    unlockvar 1 data
+    let _.meta = timl#into(_.meta, a:meta)
   endif
-  if !has_key(data, '#meta')
-    let data['#meta'] = timl#map#create([])
-  endif
-  unlockvar 1 data['#meta']
-  call extend(data['#meta'], a:meta)
-  lockvar 1 data['#meta']
-  lockvar 1 data
-  return data
+  return timl#with_meta(a:data, _.meta)
 endfunction
 
 function! s:read(port, ...) abort
   let port = a:port
   let [token, pos, line] = s:read_token(a:port)
-  let data = s:process(a:port, token, line, a:0 ? a:1 : ' ')
-  if has_key(a:port, 'filename') && timl#consp(data)
-    return s:add_meta(data, {'file': a:port.filename, 'line': line})
-  endif
-  return data
-endfunction
-
-function! s:process(port, token, line, wanted) abort
-  let port = a:port
-  let token = a:token
-  let line = a:line
+  let wanted = a:0 ? a:1 : ''
   if token ==# '('
-    return timl#cons#from_array(s:read_until(port, ')'))
+    let data = timl#cons#from_array(s:read_until(port, ')'))
+    if has_key(a:port, 'filename') && data isnot# g:timl#empty_list
+      unlockvar 1 data
+      let data.meta = timl#type#bless('timl.lang/HashMap', {'line': line, 'file': a:port.filename})
+      lockvar 1 data
+    endif
+    return data
   elseif token == '['
     return timl#vec(s:read_until(port, ']'))
   elseif token == '{'
@@ -164,10 +154,10 @@ function! s:process(port, token, line, wanted) abort
       return timl#list(timl#symbol('function'), next)
     endif
   elseif token[0] ==# ';' || token =~# '^#!'
-    return s:read(port, a:wanted)
+    return s:read(port, wanted)
   elseif token ==# '#_'
     call s:read(port)
-    return s:read(port, a:wanted)
+    return s:read(port, wanted)
   elseif token ==# '#('
     if has_key(port, 'argsyms')
       throw "timl#reader: can't nest #()"
@@ -220,9 +210,9 @@ function! s:process(port, token, line, wanted) abort
     let _meta = s:read(port)
     let data = s:read(port)
     if timl#keyword#test(_meta)
-      let meta = {_meta[0]: g:timl#true}
+      let meta = timl#map#create([_meta, g:timl#true])
     elseif timl#symbol#test(_meta) || type(_meta) == type('')
-      let meta = {'tag': _meta}
+      let meta = timl#map#create([timl#keyword#intern('tag'), _meta])
     elseif timl#mapp(_meta)
       let meta = _meta
     else
@@ -237,7 +227,7 @@ function! s:process(port, token, line, wanted) abort
     return timl#list(timl#symbol('timl.core/deref'), s:read_bang(port))
   elseif empty(token)
     return g:timl#reader#eof
-  elseif token ==# a:wanted
+  elseif token ==# wanted
     return s:found
   else
     let error = 'timl#reader: unexpected token '.string(token)
@@ -391,8 +381,8 @@ TimLRAssert timl#reader#read_string("[1]\n; hi\n") ==# timl#vector(1)
 TimLRAssert timl#reader#read_string("'[1 2 3]") ==# timl#list(timl#symbol('quote'), timl#vector(1, 2, 3))
 TimLRAssert timl#reader#read_string("#*tr") ==# timl#list(timl#symbol('function'), timl#symbol('tr'))
 TimLRAssert timl#reader#read_string("(1 #_2 3)") ==# timl#list(1, 3)
-TimLRAssert timl#reader#read_string("^:foo {}") ==#
-      \ timl#with_meta(timl#map#create([]), timl#map#create([timl#keyword#intern('foo'), g:timl#true]))
+TimLRAssert timl#reader#read_string("^:foo ()") ==#
+      \ timl#with_meta(g:timl#empty_list, timl#map#create([timl#keyword#intern('foo'), g:timl#true]))
 
 TimLRAssert timl#reader#read_string("~foo") ==# timl#list(s:unquote, timl#symbol('foo'))
 TimLRAssert timl#first(timl#rest(timl#reader#read_string("`foo#")))[0] =~# '^foo__\d\+__auto__'

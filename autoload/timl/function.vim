@@ -56,7 +56,7 @@ function! timl#function#defmacro(form, env, name, params, ...)
     endfor
   endif
   let name = copy(a:name)
-  let name['#meta'] = timl#type#dispatch(g:timl#core#assoc, get(a:name, '#meta', g:timl#nil), s:kmacro, g:timl#true)
+  let name.meta = timl#type#dispatch(g:timl#core#assoc, get(a:name, 'meta', g:timl#nil), s:kmacro, g:timl#true)
   let fn = timl#symbol#gen('fn')
   return timl#list(s:lets,
         \ [fn, timl#cons#from_array([s:defn, name] + body)],
