@@ -13,7 +13,6 @@ if !exists('s:functions')
   let s:functions = split(join(map(filter(copy(s:file), 'v:val =~# "^syn keyword vimFuncName contained\t[^in]"'), 'substitute(v:val, "^.*\t", "", "g")'), ' '), ' ')
 endif
 
-runtime! syntax/clojure.vim
 setl iskeyword+=?,!,#,$,%,&,*,+,.,/,<,>,:,=,45
 let b:syntax_ns_str = timl#ns_for_cursor(0)
 let b:syntax_vars = keys(timl#namespace#find(b:syntax_ns_str).mappings)
@@ -22,39 +21,79 @@ let b:current_syntax = "timl"
 
 function! s:syn_keyword(group, keywords)
   if !empty(a:keywords)
-    exe 'syn keyword '.a:group.' '.join(a:keywords, ' ')
+    exe 'syntax keyword '.a:group.' '.join(a:keywords, ' ')
   endif
 endfunction
 call s:syn_keyword('timlSymbol', b:syntax_vars)
 call s:syn_keyword('timlDefine', filter(copy(b:syntax_vars), 'v:val =~# "^def\\%(ault\\)\\@!"'))
+syntax keyword timlSpecialParam & &form &env
+
+syntax keyword timlConditional if
+syntax keyword timlDefine def set! declare
+syntax keyword timlRepeat loop recur
+syntax keyword timlStatement do let fn . :
+syntax keyword timlSpecial let* fn* var function
+syntax keyword timlException try catch finally throw
 
 syntax keyword timlConstant nil
 syntax keyword timlBoolean false true
-syn match timlFuncref "#\*" nextgroup=timlVimFunction
+syntax match timlKeyword ":\k\+"
+syntax match timlCharacter "\\\%(space\|tab\|newline\|return\|formfeed\|backspace\|.\)"
+syntax match timlNumber "\<[-+]\=0\o\+\>"
+syntax match timlNumber "\<[-+]\=0x\x\+\>"
+syntax match timlNumber "\<[-+]\=[1-9]\d*\%(\.\d\+\)\=\%([Ee]\d\+\)\=\>"
 syntax region timlString start=/"/ skip=/\\\\\|\\"/ end=/"/ contains=timlStringEscape,@Spell
 syntax match timlStringEscape "\v\\%([uU]\x{4}|[0-3]\o{2}|\o\{1,2}|[xX]\x{1,2}|[befnrt\\"]|\<[[:alnum:]-]+\>)" contained
-syn keyword timlConditional if
-syn keyword timlDefine set!
-syn keyword timlRepeat loop recur
-syn keyword timlStatement do let fn . :
-syn keyword timlException try catch finally throw
+syntax region timlRegexp start=/#"/ skip=/\\\\\|\\"/ end=/"/ contains=timlRegexpSpecial
+
+syntax match timlFuncref "\<#\*" nextgroup=timlVimFunction
+syntax match timlVarref "\<#'" nextgroup=timlSymbol
+syntax match timlQuote "'"
+syntax match timlSyntaxQuote "`"
+syntax match timlUnquote "\~@\="
+syntax match timlDeref "@"
+
+syntax region timlList matchgroup=timlGroup start="(" end=")" contains=TOP,@Spell
+syntax region timlVector matchgroup=timlGroup start="\[" end="]" contains=TOP,@Spell
+syntax region timlMap matchgroup=timlGroup start="{" end="}" contains=TOP,@Spell
+syntax region timlSet matchgroup=timlGroup start="#{" end="}" contains=TOP,@Spell
+
+syntax match timlComment "\<#_"
+syntax match timlComment ";.*$"
+syntax match timlComment "#!.*$"
+syntax match timlComment ";;.*$" contains=@Spell
 
 call s:syn_keyword('timlVimOption', map(copy(s:options), "'&'.v:val"))
 call s:syn_keyword('timlVimOption', map(copy(s:options), "'&l:'.v:val"))
 call s:syn_keyword('timlVimOption', map(copy(s:options), "'&g:'.v:val"))
 exe 'syn match timlVimFunction contained "\%('.join(s:functions, '\|').'\)\>"'
+syntax match timlVar '\<[glabwtv]:\k\+\>'
 
 hi def link timlDefine Define
 hi def link timlSymbol Identifier
-hi def link timlBoolean Boolean
-hi def link timlConstant Constant
-hi def link timlString String
-hi def link timlStringEscape Special
-hi def link timlFuncref Special
+hi def link timlSpecialParam Special
 hi def link timlConditional Conditional
 hi def link timlRepeat Repeat
 hi def link timlStatement Statement
 hi def link timlException Exception
+hi def link timlBoolean Boolean
+hi def link timlConstant Constant
+hi def link timlKeyword Constant
+hi def link timlCharacter Character
+hi def link timlString String
+hi def link timlRegexp String
+hi def link timlStringEscape Special
+hi def link timlRegexpSpecial Special
+hi def link timlNumber Number
+hi def link timlSpecial Special
+hi def link timlFuncref Special
+hi def link timlVarref Special
+hi def link timlQuote Special
+hi def link timlSyntaxQuote Special
+hi def link timlUnquote Special
+hi def link timlDeref Special
+hi def link timlGroup Special
+hi def link timlComment Comment
 
 hi def link timlVimFunction Function
 hi def link timlVimOption Type

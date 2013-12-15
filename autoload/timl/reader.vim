@@ -60,7 +60,9 @@ let s:constants = {
       \ '\space': " ",
       \ '\tab': "\t",
       \ '\newline': "\n",
-      \ '\return': "\r"}
+      \ '\return': "\r",
+      \ '\formfeed': "\f",
+      \ '\backspace': "\b"}
 
 function! s:add_meta(data, meta) abort
   let data = a:data
