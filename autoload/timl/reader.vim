@@ -34,8 +34,8 @@ function! timl#reader#read(port, ...) abort
     elseif a:0
       return a:1
     endif
-  catch /^timl.*/
-    let error = v:exception
+  " catch /^timl.*/
+  "   let error = v:exception
   endtry
   throw error
 endfunction

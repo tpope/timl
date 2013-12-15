@@ -7,6 +7,10 @@ let g:autoloaded_timl_namespace = 1
 
 let s:type = timl#type#intern('timl.lang/Namespace')
 
+if !exists('g:timl#namespaces')
+  let g:timl#namespaces = {}
+endif
+
 function! timl#namespace#create(name) abort
   let name = timl#symbol#coerce(a:name)
   if !has_key(g:timl#namespaces, name[0])
@@ -98,13 +102,3 @@ endfunction
 function! timl#namespace#all()
   return timl#seq(values(g:timl#namespaces))
 endfunction
-
-if !exists('g:timl#namespaces')
-  let g:timl#namespaces = {
-        \ 'timl.core': timl#bless('timl.lang/Namespace', {'name': timl#symbol('timl.core'), 'referring': [], 'aliases': {}, 'mappings': {}}),
-        \ 'user':      timl#bless('timl.lang/Namespace', {'name': timl#symbol('user'), 'referring': [timl#symbol('timl.core')], 'aliases': {}, 'mappings': {}})}
-endif
-
-if !exists('g:timl#core#_STAR_ns_STAR_')
-  let g:timl#core#_STAR_ns_STAR_ = g:timl#namespaces['user']
-endif

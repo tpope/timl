@@ -36,43 +36,28 @@ function! timl#compiler#qualify(sym, ns, ...)
     return sym
   elseif sym =~# '^&\w' && exists(sym)
     return sym
-  elseif sym =~# '/.' && has_key(the_ns.aliases, matchstr(sym, '.\{-\}\ze/.'))
-    let sym = the_ns.aliases[matchstr(sym, '.\{-\}\ze/.')][0] . '/' . matchstr(sym, '.\{-\}/\zs.\+')
   endif
-  if sym =~# '/.' && exists('g:'.timl#munge(sym))
-    return sym
+  let var = timl#namespace#maybe_resolve(the_ns, a:sym)
+  if var isnot# g:timl#nil
+    return var.str
   endif
-  for ns in [the_ns.name] + the_ns.referring
-    let target = timl#str(ns).'/'.sym
-    if exists('g:'.timl#munge(target))
-      return target
-    endif
-  endfor
   if a:0
     return a:1
   endif
   throw 'timl#compiler: could not resolve '.timl#str(a:sym)
 endfunction
 
-function! timl#compiler#ns_resolve(ns, sym) abort
-  let sym = timl#compiler#qualify(a:sym, a:ns, g:timl#nil)
-  if sym is# g:timl#nil
-    return sym
-  elseif sym =~# '^[&$]'
-    return sym
-  elseif sym =~# '^\w:'
-    return timl#munge(sym)
+function! timl#compiler#resolve(sym) abort
+  let str = timl#compiler#qualify(a:sym, g:timl#core#_STAR_ns_STAR_, g:timl#nil)
+  if str is# g:timl#nil
+    throw "timl#compiler: could not resolve ".timl#str(a:sym)
+  elseif str =~# '^[&$]'
+    return str
+  elseif str =~# '^\w:'
+    return timl#munge(str)
   else
-    return timl#munge('g:'.sym)
+    return timl#munge('g:'.str)
   endif
-endfunction
-
-function! timl#compiler#resolve_or_throw(sym)
-  let var = timl#compiler#ns_resolve(g:timl#core#_STAR_ns_STAR_, a:sym)
-  if var isnot# g:timl#nil
-    return var
-  endif
-  throw "timl#compiler: could not resolve ".timl#str(a:sym)
 endfunction
 
 " Section: Macroexpand
@@ -506,7 +491,7 @@ function! s:expr_sf_set_BANG_(file, env, form) abort
   let target = timl#fnext(a:form)
   let rest = timl#nnext(a:form)
   if timl#symbol#test(target)
-    let var = timl#compiler#resolve_or_throw(target)
+    let var = timl#compiler#resolve(target)
     if rest isnot# g:timl#nil
       let val = s:expr(a:file, a:env, timl#first(rest))
       if var !~# '^[&$]'
@@ -525,7 +510,7 @@ function! s:expr_sf_set_BANG_(file, env, form) abort
     if has_key(a:env.locals, target2[0])
       let var = a:env.locals[target2[0]]
     else
-      let var = timl#compiler#resolve_or_throw(target2)
+      let var = timl#compiler#resolve(target2)
     endif
     let val = s:expr(a:file, a:env, timl#first(rest))
     call s:emitln(a:file, 'let '.var.'['.timl#compiler#serialize(key).'] = '.val)
@@ -584,7 +569,7 @@ function! s:emit(file, env, form) abort
         if has_key(a:env.locals, First[0])
           let resolved = a:env.locals[First[0]]
         else
-          let resolved = timl#compiler#resolve_or_throw(First)
+          let resolved = timl#compiler#resolve(First)
           let Fn = eval(resolved)
           if timl#type#string(Fn) == 'timl.lang/Function' && timl#truth(get(Fn, 'macro', g:timl#nil))
             let E = timl#call(Fn, [a:form, a:env] + timl#ary(timl#next(a:form)))
@@ -606,7 +591,7 @@ function! s:emit(file, env, form) abort
     if has_key(a:env.locals, a:form[0])
       let expr = a:env.locals[a:form[0]]
     else
-      let expr = timl#compiler#resolve_or_throw(a:form)
+      let expr = timl#compiler#resolve(a:form)
     endif
   elseif type(a:form) == type([]) && a:form isnot# g:timl#nil
     let expr = 'timl#array#lock(['.join(map(copy(a:form), 's:emit(a:file, s:with_context(a:env, "expr"), v:val)'), ', ').'])'
@@ -778,9 +763,12 @@ function! timl#compiler#source_file(filename)
   endtry
 endfunction
 
-call timl#require('timl.core')
+let s:core = timl#namespace#create(timl#symbol#intern('timl.core'))
 let s:user = timl#namespace#create(timl#symbol#intern('user'))
-call extend(s:user.mappings, timl#namespace#find(timl#symbol#intern('timl.core')).mappings)
+call timl#namespace#intern(s:core, timl#symbol#intern('*ns*'), s:user)
+let s:user.mappings['in-ns'] = s:core.mappings['in-ns']
+call timl#require('timl.core')
+call extend(s:user.mappings, s:core.mappings)
 
 " Section: Tests
 

@@ -28,7 +28,7 @@ function! s:implement(type, ...) abort
   endfor
 endfunction
 
-let s:ns = timl#namespace#find('timl.core')
+let s:ns = timl#namespace#create(timl#symbol#intern('timl.core'))
 function! s:define_apply(name, fn) abort
   let name = timl#symbol#intern(a:name)
   call timl#namespace#intern(s:ns, name, timl#bless('timl.lang/Function', {
