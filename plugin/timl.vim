@@ -13,10 +13,20 @@ endif
 augroup timl
   autocmd!
   autocmd BufNewFile,BufReadPost *.tim set filetype=timl
+  autocmd BufNewFile,BufReadPost *
+        \ if getline(1) =~# '^#!' && getline(2) =~# ';.*\<TL' |
+        \   set filetype=timl |
+        \ endif
   autocmd FileType timl command! -buffer -bar Wepl :update|source %|TLrepl
   autocmd FileType * call s:load_filetype(expand('<amatch>'))
   autocmd SourceCmd *.tim call timl#source_file(expand("<amatch>"))
   autocmd FuncUndefined *#* call s:autoload(expand('<amatch>'))
+  autocmd VimEnter * nested
+        \ if exists('s:source') |
+        \   redraw! |
+        \   execute 'TLsource '.s:source |
+        \   unlet! s:source |
+        \ endif
 augroup END
 
 command! -bar -nargs=?                                             TLrepl :execute s:repl(<f-args>)
@@ -29,6 +39,12 @@ command! -nargs=1 -complete=customlist,timl#reflect#input_complete TLeval
       \    let g:timl#core#_STAR_e = timl#compiler#build_exception(v:exception, v:throwpoint) |
       \    echoerr v:exception |
       \ endtry
+command! -bang -nargs=? -complete=file TLsource
+      \ if has('vim_starting') |
+      \   let s:source = <q-args> |
+      \ else |
+      \   call timl#source_file(expand(empty(<q-args>) ? '%' : <q-args>)) |
+      \ endif
 
 function! s:load_filetype(ft) abort
   let ft = split(a:ft)[0]
