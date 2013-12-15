@@ -12,7 +12,11 @@ endif
 let s:symbol = timl#keyword('#timl.lang/Symbol')
 function! timl#symbol#intern(str)
   if !has_key(s:symbols, a:str)
-    let s:symbols[a:str] = timl#bless(s:symbol, {'0': a:str})
+    let s:symbols[a:str] = timl#bless(s:symbol, {
+          \ '0': a:str,
+          \ 'str': a:str,
+          \ 'namespace': matchstr(a:str, '^[^/]*\ze/.'),
+          \ 'name': matchstr(a:str, '[^/]*.$')})
     lockvar s:symbols[a:str]
   endif
   return s:symbols[a:str]
