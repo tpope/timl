@@ -401,7 +401,7 @@ function! s:expr_sf_try(file, env, form) abort
 endfunction
 
 function! timl#compiler#build_exception(exception, throwpoint)
-  let dict = {"exception": a:exception}
+  let dict = {"exception": a:exception, "throwpoint": a:throwpoint}
   let dict.line = +matchstr(a:throwpoint, '\d\+$')
   let dict.qflist = []
   if a:throwpoint !~# '^function '
@@ -426,7 +426,7 @@ function! timl#compiler#build_exception(exception, throwpoint)
       endif
     endif
   endfor
-  return dict
+  return timl#type#bless('timl.lang/Exception', dict)
 endfunction
 
 function! s:emit_sf_try(file, env, form) abort

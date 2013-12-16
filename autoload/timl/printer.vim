@@ -39,8 +39,8 @@ function! timl#printer#string(x)
   elseif type ==# 'timl.lang/Var'
     return "#'".a:x.str
 
-  elseif type == 'timl.lang/Type'
-    return timl#str(a:x.name)
+  elseif type == 'timl.lang/Exception'
+    return '#<Exception '.a:x.exception.' @ '.a:x.throwpoint.'>'
 
   elseif timl#consp(a:x)
     let acc = []
