@@ -700,24 +700,25 @@ let s:dir = (has('win32') ? '$APPCACHE/Vim' :
       \ match(system('uname'), "Darwin") > -1 ? '~/Library/Vim' :
       \ empty($XDG_CACHE_HOME) ? '~/.cache/vim' : '$XDG_CACHE_HOME/vim').'/timl'
 
-function! s:cache_filename(file)
+function! s:cache_filename(path)
   let base = expand(s:dir)
   if !isdirectory(base)
     call mkdir(base, 'p')
   endif
-  let filename = tr(substitute(fnamemodify(a:file, ':p:~'), '^\~.', '', ''), '\/:', '%%%') . '.vim'
+  let filename = tr(substitute(fnamemodify(a:path, ':~'), '^\~.', '', ''), '\/:', '%%%') . '.vim'
   return base . '/' . filename
 endfunction
 
 let s:myftime = getftime(expand('<sfile>'))
 
 function! timl#compiler#source_file(filename)
+  let path = fnamemodify(a:filename, ':p')
   let old_ns = g:timl#core#_STAR_ns_STAR_
-  let cache = s:cache_filename(a:filename)
+  let cache = s:cache_filename(path)
   try
     let g:timl#core#_STAR_ns_STAR_ = timl#namespace#find(timl#symbol('user'))
     let ftime = getftime(cache)
-    if !exists('$TIML_EXPIRE_CACHE') && ftime > getftime(a:filename) && ftime > s:myftime
+    if !exists('$TIML_EXPIRE_CACHE') && ftime > getftime(path) && ftime > s:myftime
       try
         execute 'source '.fnameescape(cache)
       catch
@@ -727,7 +728,7 @@ function! timl#compiler#source_file(filename)
         return
       endif
     endif
-    let file = timl#reader#open(a:filename)
+    let file = timl#reader#open(path)
     let strs = ["let s:d = {}"]
     let _ = {}
     let _.read = g:timl#nil
