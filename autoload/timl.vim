@@ -384,16 +384,16 @@ function! timl#ns_for_cursor(...) abort
   endif
 endfunction
 
-function! timl#eval(x, ...) abort
-  return call('timl#compiler#eval', [a:x] + a:000)
+function! timl#eval(x) abort
+  return timl#compiler#eval(a:x)
 endfunction
 
-function! timl#re(str, ...) abort
-  return call('timl#eval', [timl#reader#read_string(a:str)] + a:000)
+function! timl#re(str) abort
+  return timl#eval(timl#reader#read_string(a:str))
 endfunction
 
-function! timl#rep(...) abort
-  return timl#printer#string(call('timl#re', a:000))
+function! timl#rep(str) abort
+  return timl#printer#string(timl#re(a:str))
 endfunction
 
 function! timl#source_file(filename)

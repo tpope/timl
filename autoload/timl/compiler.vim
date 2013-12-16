@@ -668,18 +668,18 @@ augroup END
 
 " Section: Execution
 
-function! timl#compiler#build(x, context, ...) abort
+function! timl#compiler#build(x, context) abort
   let file = ['']
-  call s:emit(file, {'context': a:context, 'locals': a:0 ? a:1 : {}}, a:x)
+  call s:emit(file, {'context': a:context, 'locals': {}}, a:x)
   return join(file, "\n") . "\n"
 endfunction
 
-function! timl#compiler#eval(x, ...) abort
-  let str = timl#compiler#build(a:x, "return", a:0 > 1 ? a:2 : {})
-  return s:execute(a:x, str, a:0 > 1 ? a:2 : {})
+function! timl#compiler#eval(x) abort
+  let str = timl#compiler#build(a:x, "return")
+  return s:execute(a:x, str)
 endfunction
 
-function! s:execute(form, str, ...)
+function! s:execute(form, str)
   let s:dict = {}
   let str = "function s:dict.func(locals) abort\n"
         \ . "let locals = a:locals\n"
@@ -693,7 +693,7 @@ function! s:execute(form, str, ...)
   if !empty(meta)
     let g:timl_functions[join([s:dict.func])] = meta
   endif
-  return s:dict.func(a:0 ? a:1 : {})
+  return s:dict.func({})
 endfunction
 
 let s:dir = (has('win32') ? '$APPCACHE/Vim' :
