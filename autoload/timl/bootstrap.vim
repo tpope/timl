@@ -294,7 +294,7 @@ call s:implement('timl.lang/Cons',
       \ 'empty', 's:empty_list')
 
 call s:define_apply('list', 'timl#cons#from_array')
-call s:define_pred('list?', 'timl#cons#test')
+call s:define_pred('list?', 'timl#cons#listp')
 call s:define_call('cons', 'timl#cons#create')
 
 " Section: Empty list
