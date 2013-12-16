@@ -26,7 +26,7 @@ endfunction
 let g:timl#reader#eof = []
 
 function! timl#reader#read(port, ...) abort
-  let error = 'timl#reader: EOF'
+  let error = 'timl#reader: unexpected EOF'
   try
     let val = s:read(a:port)
     if val isnot# g:timl#reader#eof
@@ -53,7 +53,7 @@ function! s:read_until(port, char)
     lockvar 1 list
     return list
   endif
-  throw 'timl#reader: EOF'
+  throw 'timl#reader: unexpected EOF'
 endfunction
 
 let s:constants = {
