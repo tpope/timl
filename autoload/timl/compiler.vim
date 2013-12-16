@@ -756,7 +756,7 @@ let s:user = timl#namespace#create(timl#symbol#intern('user'))
 call timl#namespace#intern(s:core, timl#symbol#intern('*ns*'), s:user)
 let s:user.mappings['in-ns'] = s:core.mappings['in-ns']
 call timl#require('timl.core')
-call extend(s:user.mappings, s:core.mappings)
+call timl#namespace#refer(timl#symbol('timl.core'))
 
 " Section: Tests
 

@@ -32,7 +32,14 @@ endfunction
 function! timl#namespace#refer(name) abort
   let me = g:timl#core#_STAR_ns_STAR_
   let sym = timl#symbol#coerce(a:name)
-  call extend(me.mappings, timl#namespace#find(sym).mappings)
+  let ns = timl#namespace#find(sym)
+  let _ = {}
+  for [name, var] in items(ns.mappings)
+    let _.private = get(var.meta, 'private', g:timl#nil)
+    if var.ns is# ns && (_.private is# g:timl#false || _.private is# g:timl#nil)
+      let me.mappings[name] = var
+    endif
+  endfor
   return g:timl#nil
 endfunction
 
