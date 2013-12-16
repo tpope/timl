@@ -34,16 +34,13 @@
          (finally (set! ~(first bindings) old#))))
     `(do ~@body)))
 
-; does not nest
 (defmacro with-out-str [& body]
-  `(do
-     (try
+  `(let [tempname# (#*tempname)]
+     (execute "redraw")
+     (binding [&verbosefile tempname#]
        (set! l:TimLfn (fn [] ~@body))
-       (execute "redraw")
-       (execute "redir => g:TimLcaptured")
-       (execute "silent call timl#call(l:TimLfn, [])")
-       (finally (execute "unlet! l:TimLfn") (execute "redir END")))
-     (#*substitute g:TimLcaptured "^\n" "" "g")))
+       (execute "silent call timl#call(l:TimLfn, [])"))
+     (#*substitute (slurp tempname#) "^\n" "" "g")))
 
 (defmacro time [& body]
   `(let [reltime# (#*reltime)
