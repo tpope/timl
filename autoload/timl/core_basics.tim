@@ -7,6 +7,7 @@
 (defn eval [form] (#*timl#eval form))
 
 (defn constantly [x] (fn [& args] x))
+
 (defn partial
   ([f] f)
   ([f arg1]
@@ -18,7 +19,9 @@
   ([f arg1 arg2 arg3 & more]
    (fn [& args] (apply f arg1 arg2 arg3 (concat more args)))))
 
-(defn comp [f & fns]
-  (if fns
-    (fn [& args] (f (apply (apply comp fns) args)))
-    f))
+(defn complement [f]
+  (fn [& rest] (not (apply f rest))))
+
+(defn comp
+  ([f] f)
+  ([f & fns] (fn [& args] (f (apply (apply comp fns) args)))))
