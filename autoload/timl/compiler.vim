@@ -370,7 +370,7 @@ function! s:expr_sf_fn_STAR_(file, env, form) abort
     call s:emitln(a:file, "endif")
     call s:emitln(a:file, "endfunction")
   endif
-  let meta = s:loc_meta(a:form)
+  let meta = s:loc_meta(a:env.file, a:form)
   if !empty(meta)
     call s:emitln(a:file, 'let g:timl_functions[join(['.temp.'.apply])] = '.timl#compiler#serialize(meta))
   endif
@@ -550,9 +550,8 @@ endfunction
 let s:dot = timl#symbol('.')
 function! s:emit(file, env, form) abort
   if timl#consp(a:form)
-    if has_key(a:form, 'meta') && has_key(a:form.meta, 'file')
+    if has_key(a:form, 'meta') && has_key(a:form.meta, 'line')
       let env = copy(a:env)
-      let env.file = a:form.meta.file
       let env.line = a:form.meta.line
     else
       let env = a:env
@@ -642,10 +641,10 @@ if !exists('g:timl_functions')
   let g:timl_functions = {}
 endif
 
-function! s:loc_meta(form)
+function! s:loc_meta(file, form)
   let meta = timl#meta(a:form)
-  if type(meta) == type({}) && has_key(meta, 'file') && has_key(meta, 'line')
-    return {'file': meta.file, 'line': meta.line}
+  if type(meta) == type({}) && has_key(meta, 'line') && a:file isnot# 'NO_SOURCE_PATH'
+    return {'file': a:file, 'line': meta.line}
   else
     return {}
   endif
@@ -668,32 +667,29 @@ augroup END
 
 " Section: Execution
 
-function! timl#compiler#build(x, context) abort
+function! timl#compiler#build(x, ...) abort
+  let filename = a:0 ? a:1 : 'NO_SOURCE_PATH'
   let file = ['']
-  call s:emit(file, {'context': a:context, 'locals': {}}, a:x)
-  return join(file, "\n") . "\n"
-endfunction
-
-function! timl#compiler#eval(x) abort
-  let str = timl#compiler#build(a:x, "return")
-  return s:execute(a:x, str)
-endfunction
-
-function! s:execute(form, str)
+  call s:emit(file, {'file': filename, 'context': 'return', 'locals': {}}, a:x)
+  let body = join(file, "\n")
   let s:dict = {}
-  let str = "function s:dict.func(locals) abort\n"
-        \ . "let locals = a:locals\n"
-        \ . "let temp={}\n"
+  let str = "function s:dict.call() abort\n"
+        \ . "let locals = {}\n"
+        \ . "let temp = {}\n"
         \ . "while 1\n"
-        \ . a:str
+        \ . body
         \ . "endwhile\n"
         \ . "endfunction"
   execute str
-  let meta = s:loc_meta(a:form)
+  let meta = s:loc_meta(filename, a:x)
   if !empty(meta)
-    let g:timl_functions[join([s:dict.func])] = meta
+    let g:timl_functions[join([s:dict.call])] = meta
   endif
-  return s:dict.func({})
+  return {'body': body, 'call': s:dict.call}
+endfunction
+
+function! timl#compiler#eval(x) abort
+  return timl#compiler#build(a:x).call()
 endfunction
 
 let s:dir = (has('win32') ? '$APPCACHE/Vim' :
@@ -735,10 +731,10 @@ function! timl#compiler#source_file(filename)
     let eof = []
     while _.read isnot# eof
       let _.read = timl#reader#read(file, eof)
-      let str = timl#compiler#build(_.read, 'return')
-      call s:execute(_.read, str)
-      call add(strs, "function! s:d.f() abort\nlet locals = {}\nlet temp ={}\n".str."endfunction\n")
-      let meta = s:loc_meta(_.read)
+      let obj = timl#compiler#build(_.read, path)
+      call obj.call()
+      call add(strs, "function! s:d.f() abort\nlet locals = {}\nlet temp ={}\n".obj.body."endfunction\n")
+      let meta = s:loc_meta(path, _.read)
       if !empty(meta)
         let strs[-1] .= 'let g:timl_functions[join([s:d.f])] = '.string(meta)."\n"
       endif

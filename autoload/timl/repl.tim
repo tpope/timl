@@ -32,5 +32,6 @@
        (throw (str "timl#repl: exit help " (or ~topic (str '~sym)))))))
 
 (defmacro edit [sym]
-  `(if-let [m (meta (var ~sym))]
-    (throw (str "timl#repl: exit edit +" (:line m) " " (#*fnameescape (:file m))))))
+  `(let [m (meta (var ~sym))]
+     (if (not= (:file m "NO_SOURCE_PATH") "NO_SOURCE_PATH")
+       (throw (str "timl#repl: exit edit +" (:line m) " " (#*fnameescape (:file m)))))))

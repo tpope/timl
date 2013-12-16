@@ -81,11 +81,11 @@ function! s:read(port, ...) abort
   let wanted = a:0 ? a:1 : ''
   if token ==# '('
     let data = timl#cons#from_array(s:read_until(port, ')'))
-    if has_key(a:port, 'filename') && data isnot# g:timl#empty_list
-      unlockvar 1 data
-      let data.meta = timl#type#bless('timl.lang/HashMap', {'line': line, 'file': a:port.filename})
-      lockvar 1 data
+    unlockvar 1 data
+    if data isnot# g:timl#empty_list
+      let data.meta = timl#type#bless('timl.lang/HashMap', {'line': line})
     endif
+    lockvar 1 data
     return data
   elseif token == '['
     return timl#vec(s:read_until(port, ']'))
