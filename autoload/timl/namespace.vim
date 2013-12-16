@@ -89,7 +89,16 @@ function! timl#namespace#intern(ns, name, ...)
   let ns = timl#namespace#the(a:ns)
   let str = ns.name[0].'/'.timl#symbol#coerce(a:name)[0]
   let munged = timl#munge(str)
-  let var = timl#bless('timl.lang/Var', {'name': a:name, 'ns': ns, 'str': str, 'munged': munged, 'location': 'g:'.munged, 'meta': get(a:name, 'meta', g:timl#nil)})
+  let meta = copy(a:name.meta is# g:timl#nil ? timl#map#create([]) : a:name.meta)
+  let meta.name = a:name
+  let meta.ns = ns
+  lockvar 1 meta
+  if has_key(ns.mappings, a:name[0])
+    let var = ns.mappings[a:name[0]]
+  else
+    let var = timl#bless('timl.lang/Var', {'str': str, 'munged': munged, 'location': 'g:'.munged})
+  endif
+  let var.meta = meta
   if a:0
     unlet! g:{munged}
     let g:{munged} = a:1

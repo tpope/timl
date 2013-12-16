@@ -15,6 +15,7 @@ function! timl#symbol#intern(str) abort
     let s:symbols[a:str] = timl#bless(s:symbol, {
           \ '0': a:str,
           \ 'str': a:str,
+          \ 'meta': g:timl#nil,
           \ 'namespace': matchstr(a:str, '^[^/]*\ze/.'),
           \ 'name': matchstr(a:str, '[^/]*.$')})
     lockvar s:symbols[a:str]
