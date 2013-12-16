@@ -14,7 +14,7 @@ endif
 function! timl#namespace#create(name) abort
   let name = timl#symbol#coerce(a:name)
   if !has_key(g:timl#namespaces, name[0])
-    let g:timl#namespaces[name[0]] = timl#bless(s:type, {'name': name, 'referring': [], 'aliases': {}, 'mappings': {}})
+    let g:timl#namespaces[name[0]] = timl#bless(s:type, {'name': name, 'aliases': {}, 'mappings': {}})
   endif
   let ns = g:timl#namespaces[name[0]]
   return ns
@@ -32,9 +32,6 @@ endfunction
 function! timl#namespace#refer(name) abort
   let me = g:timl#core#_STAR_ns_STAR_
   let sym = timl#symbol#coerce(a:name)
-  if sym isnot# me.name && index(me.referring, sym) < 0
-    call insert(me.referring, sym)
-  endif
   call extend(me.mappings, timl#namespace#find(sym).mappings)
   return g:timl#nil
 endfunction
