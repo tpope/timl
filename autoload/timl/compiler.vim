@@ -29,8 +29,10 @@ function! timl#compiler#specialp(sym)
 endfunction
 
 function! timl#compiler#resolve(sym) abort
-  if a:sym[0] =~# '^\w:\|^\$' || (a:sym[0] =~# '^&\w' && exists(sym))
+  if a:sym[0] =~# '^\w:'
     return {'location': timl#munge(a:sym[0])}
+  elseif a:sym[0][0] ==# '$' || (a:sym[0] =~# '^&\w' && exists(a:sym[0]))
+    return {'location': a:sym[0]}
   endif
   let var = timl#namespace#maybe_resolve(g:timl#core#_STAR_ns_STAR_, a:sym)
   if var isnot# g:timl#nil
@@ -208,7 +210,7 @@ endfunction
 
 function! s:emit_sf_let_STAR_(file, env, form) abort
   if a:env.context ==# 'statement'
-    return s:emitln('call '.s:wrap_as_expr(a:file, a:env, a:form))
+    return s:emitln(a:file, 'call '.s:wrap_as_expr(a:file, a:env, a:form))
   endif
   let ary = timl#ary(timl#fnext(a:form))
   let env = s:copy_locals(a:env)
