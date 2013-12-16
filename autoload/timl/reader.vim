@@ -373,21 +373,21 @@ command! -nargs=1 TimLRAssert
       \  echomsg "Error:  ".<q-args>." (".v:exception.")" |
       \ endtry
 
-TimLRAssert timl#reader#read_string('foo') ==# timl#symbol('foo')
-TimLRAssert timl#reader#read_string('":)"') ==# ':)'
-TimLRAssert timl#reader#read_string('#"\(a\\\)"') ==# '\C\v\(a\\\)'
-TimLRAssert timl#reader#read_string('#"\""') ==# '\C\v"'
-TimLRAssert timl#reader#read_string('(first [1 2])') ==# timl#list(timl#symbol('first'), timl#vector(1, 2))
-TimLRAssert timl#reader#read_string('#["a" 1 "b" 2]') ==# {"a": 1, "b": 2}
-TimLRAssert timl#reader#read_string('{"a" 1 :b 2 3 "c"}') ==# timl#map#create(["a", 1, timl#keyword#intern('b'), 2, 3, "c"])
-TimLRAssert timl#reader#read_string("[1]\n; hi\n") ==# timl#vector(1)
-TimLRAssert timl#reader#read_string("'[1 2 3]") ==# timl#list(timl#symbol('quote'), timl#vector(1, 2, 3))
-TimLRAssert timl#reader#read_string("#*tr") ==# timl#list(timl#symbol('function'), timl#symbol('tr'))
-TimLRAssert timl#reader#read_string("(1 #_2 3)") ==# timl#list(1, 3)
-TimLRAssert timl#reader#read_string("^:foo ()") ==#
-      \ timl#with_meta(g:timl#empty_list, timl#map#create([timl#keyword#intern('foo'), g:timl#true]))
+TimLRAssert timl#equalp(timl#reader#read_string('foo'), timl#symbol('foo'))
+TimLRAssert timl#equalp(timl#reader#read_string('":)"'), ':)')
+TimLRAssert timl#equalp(timl#reader#read_string('#"\(a\\\)"'), '\C\v\(a\\\)')
+TimLRAssert timl#equalp(timl#reader#read_string('#"\""'), '\C\v"')
+TimLRAssert timl#equalp(timl#reader#read_string('(first [1 2])'), timl#list(timl#symbol('first'), timl#vector(1, 2)))
+TimLRAssert timl#equalp(timl#reader#read_string('#["a" 1 "b" 2]'), {"a": 1, "b": 2})
+TimLRAssert timl#equalp(timl#reader#read_string('{"a" 1 :b 2 3 "c"}'), timl#map#create(["a", 1, timl#keyword#intern('b'), 2, 3, "c"]))
+TimLRAssert timl#equalp(timl#reader#read_string("[1]\n; hi\n"), timl#vector(1))
+TimLRAssert timl#equalp(timl#reader#read_string("'[1 2 3]"), timl#list(timl#symbol('quote'), timl#vector(1, 2, 3)))
+TimLRAssert timl#equalp(timl#reader#read_string("#*tr"), timl#list(timl#symbol('function'), timl#symbol('tr')))
+TimLRAssert timl#equalp(timl#reader#read_string("(1 #_2 3)"), timl#list(1, 3))
+TimLRAssert timl#equalp(timl#reader#read_string("^:foo ()"),
+      \ timl#with_meta(g:timl#empty_list, timl#map#create([timl#keyword#intern('foo'), g:timl#true])))
 
-TimLRAssert timl#reader#read_string("~foo") ==# timl#list(s:unquote, timl#symbol('foo'))
+TimLRAssert timl#equalp(timl#reader#read_string("~foo"), timl#list(s:unquote, timl#symbol('foo')))
 TimLRAssert timl#first(timl#rest(timl#reader#read_string("`foo#")))[0] =~# '^foo__\d\+__auto__'
 
 delcommand TimLRAssert
