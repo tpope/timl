@@ -21,7 +21,7 @@ augroup timl
         \ update |
         \ execute 'TLsource %' |
         \ set filetype=timl |
-        \ redraw |
+        \ redraw! |
         \ call s:repl(timl#ns_for_cursor())
   autocmd FileType * call s:load_filetype(expand('<amatch>'))
   autocmd SourceCmd *.tim call timl#source_file(expand("<amatch>"))
