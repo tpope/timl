@@ -75,6 +75,7 @@ endfunction
 
 call timl#type#define_method('timl.core', 'meta', g:timl#nil, s:function('s:nil'))
 call s:define_call('vary-meta', 'timl#meta#vary')
+call s:define_call('alter-meta!', 'timl#meta#alter')
 
 " Section: Type Sytem
 
@@ -249,8 +250,11 @@ call s:define_call('alias', 'timl#namespace#alias')
 call s:define_call('use', 'timl#namespace#use')
 call s:define_call('intern', 'timl#namespace#intern')
 
+" Section: Var
+
 call s:implement('timl.lang/Var',
       \ 'meta', 'timl#meta#from_hidden_attribute',
+      \ 'reset-meta!', 'timl#var#reset_meta',
       \ '_invoke', 'timl#var#invoke',
       \ 'deref', 'timl#var#get')
 call s:define_call('var-get', 'timl#var#get')

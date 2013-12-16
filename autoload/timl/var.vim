@@ -22,3 +22,8 @@ function! timl#var#find(sym) abort
   let ns = empty(sym.namespace) ? g:timl#core#_STAR_ns_STAR_.name[0] : sym.namespace
   return get(timl#namespace#find(ns).mappings, sym.name, g:timl#nil)
 endfunction
+
+function! timl#var#reset_meta(var, meta) abort
+  let a:var.meta = a:meta
+  return a:var
+endfunction

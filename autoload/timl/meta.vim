@@ -9,6 +9,10 @@ function! timl#meta#vary(obj, fn, ...) abort
   return timl#with_meta(a:obj, timl#call(a:fn, [timl#meta(a:obj)] + a:000))
 endfunction
 
+function! timl#meta#alter(obj, fn, ...) abort
+  return timl#call(g:timl#core#reset_meta_BANG_, [a:obj, timl#call(a:fn, [timl#meta(a:obj)] + a:000)])
+endfunction
+
 function! timl#meta#from_hidden_attribute(obj) abort
   return get(a:obj, 'meta', g:timl#nil)
 endfunction
