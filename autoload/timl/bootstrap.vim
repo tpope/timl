@@ -231,6 +231,11 @@ call s:define_call('identity', 'timl#function#identity')
 call s:define_call('fn', 'timl#function#fn')
 call s:define_call('defn', 'timl#function#defn')
 call s:define_call('defmacro', 'timl#function#defmacro')
+for s:x in ['fn', 'defn', 'defmacro']
+  let s:y = timl#namespace#maybe_resolve(s:ns, timl#symbol#intern(s:x))
+  let s:y.meta = timl#map#create([timl#keyword#intern('macro'), g:timl#true])
+endfor
+unlet s:x s:y
 let g:timl#core#fn.macro = g:timl#true
 let g:timl#core#defn.macro = g:timl#true
 let g:timl#core#defmacro.macro = g:timl#true
