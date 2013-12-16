@@ -17,7 +17,12 @@ augroup timl
         \ if getline(1) =~# '^#!' && getline(2) =~# ';.*\<TL' |
         \   set filetype=timl |
         \ endif
-  autocmd FileType timl command! -buffer -bar Wepl :update|source %|TLrepl
+  autocmd FileType timl command! -buffer -bar Wepl
+        \ update |
+        \ execute 'TLsource %' |
+        \ set filetype=timl |
+        \ redraw |
+        \ call s:repl(timl#ns_for_cursor())
   autocmd FileType * call s:load_filetype(expand('<amatch>'))
   autocmd SourceCmd *.tim call timl#source_file(expand("<amatch>"))
   autocmd FuncUndefined *#* call s:autoload(expand('<amatch>'))
@@ -102,17 +107,22 @@ function! s:autoload(function) abort
 endfunction
 
 function! s:repl(...) abort
+  if a:0
+    let ns = g:timl#core#_STAR_ns_STAR_
+    try
+      let g:timl#core#_STAR_ns_STAR_ = timl#namespace#create(timl#symbol(a:1))
+      call timl#require(timl#symbol('timl.repl'))
+      call timl#core#refer(timl#symbol('timl.repl'))
+      return s:repl()
+    finally
+      let g:timl#core#_STAR_ns_STAR_ = ns
+    endtry
+  endif
 
   let cmpl = 'customlist,timl#reflect#input_complete'
   let more = &more
   try
     set nomore
-    let ns = timl#ns_for_cursor()
-    let g:timl#core#_STAR_ns_STAR_ = timl#namespace#the(a:0 ? a:1 : ns)
-    if g:timl#core#_STAR_ns_STAR_.name[0] ==# 'user'
-      call timl#require(timl#symbol('timl.repl'))
-      call timl#core#refer(timl#symbol('timl.repl'))
-    endif
     let input = input(g:timl#core#_STAR_ns_STAR_.name[0].'=> ', '', cmpl)
     if input =~# '^:q\%[uit]'
       return ''
