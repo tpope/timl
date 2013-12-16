@@ -1,5 +1,14 @@
 (in-ns 'timl.core)
 
+(defmacro with-cwd [dir & body]
+  `(let [has-local# (when (exists? "*haslocaldir") (nonzero? (#*haslocaldir)))
+         chdir# (if has-local# "lchdir" "chdir")
+         back# (#*getcwd)]
+     (try
+       (execute chdir# (#*fnameescape ~dir))
+       ~@body
+       (finally (execute chdir# back#)))))
+
 (defmacro include-guard [var]
   (let [string (#*timl#munge (str var))]
    `(if (exists? ~string)
