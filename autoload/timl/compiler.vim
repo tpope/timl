@@ -27,49 +27,25 @@ function! timl#compiler#specialp(sym)
   return has_key(s:specials, timl#str(a:sym))
 endfunction
 
-function! timl#compiler#qualify(sym, ns, ...)
-  let sym = type(a:sym) == type('') ? a:sym : a:sym[0]
-  let the_ns = timl#namespace#the(a:ns)
-  if timl#compiler#specialp(sym)
-    return sym
-  elseif sym =~# '^\w:\|^\$'
-    return sym
-  elseif sym =~# '^&\w' && exists(sym)
-    return sym
-  endif
-  let var = timl#namespace#maybe_resolve(the_ns, a:sym)
-  if var isnot# g:timl#nil
-    return var.str
-  endif
-  if a:0
-    return a:1
-  endif
-  throw 'timl#compiler: could not resolve '.timl#str(a:sym)
-endfunction
-
 function! timl#compiler#resolve(sym) abort
-  let str = timl#compiler#qualify(a:sym, g:timl#core#_STAR_ns_STAR_, g:timl#nil)
-  if str is# g:timl#nil
-    throw "timl#compiler: could not resolve ".timl#str(a:sym)
-  elseif str =~# '^[&$]'
-    return str
-  elseif str =~# '^\w:'
-    return timl#munge(str)
-  else
-    return timl#munge('g:'.str)
+  if a:sym[0] =~# '^\w:\|^\$' || (a:sym[0] =~# '^&\w' && exists(sym))
+    return {'location': timl#munge(a:sym[0])}
   endif
+  let var = timl#namespace#maybe_resolve(g:timl#core#_STAR_ns_STAR_, a:sym)
+  if var isnot# g:timl#nil
+    return var
+  endif
+  throw "timl#compiler: could not resolve ".timl#str(a:sym)
 endfunction
 
 " Section: Macroexpand
 
+let s:kmacro = timl#keyword#intern('macro')
 function! timl#compiler#macroexpand_1(form) abort
   if timl#consp(a:form) && timl#symbol#test(timl#first(a:form)) && !timl#compiler#specialp(timl#first(a:form))
     let var = timl#namespace#maybe_resolve(g:timl#core#_STAR_ns_STAR_, timl#first(a:form))
-    if var isnot# g:timl#nil
-      let Val = g:{var.munged}
-      if timl#truth(get(Val, 'macro', g:timl#false))
-        return timl#call(Val, [a:form, {}] + timl#ary(timl#next(a:form)))
-      endif
+    if var isnot# g:timl#nil && timl#truth(timl#get(var.meta, s:kmacro))
+      return timl#call(timl#var#get(var), [a:form, {}] + timl#ary(timl#next(a:form)))
     endif
   endif
   return a:form
@@ -509,7 +485,7 @@ function! s:expr_sf_set_BANG_(file, env, form) abort
   let target = timl#fnext(a:form)
   let rest = timl#nnext(a:form)
   if timl#symbol#test(target)
-    let var = timl#compiler#resolve(target)
+    let var = timl#compiler#resolve(target).location
     if rest isnot# g:timl#nil
       let val = s:expr(a:file, a:env, timl#first(rest))
       if var !~# '^[&$]'
@@ -528,7 +504,7 @@ function! s:expr_sf_set_BANG_(file, env, form) abort
     if has_key(a:env.locals, target2[0])
       let var = a:env.locals[target2[0]]
     else
-      let var = timl#compiler#resolve(target2)
+      let var = timl#compiler#resolve(target2).location
     endif
     let val = s:expr(a:file, a:env, timl#first(rest))
     call s:emitln(a:file, 'let '.var.'['.timl#compiler#serialize(key).'] = '.val)
@@ -583,12 +559,12 @@ function! s:emit(file, env, form) abort
         if has_key(a:env.locals, First[0])
           let resolved = a:env.locals[First[0]]
         else
-          let resolved = timl#compiler#resolve(First)
-          let Fn = eval(resolved)
-          if timl#type#string(Fn) == 'timl.lang/Function' && timl#truth(get(Fn, 'macro', g:timl#nil))
-            let E = timl#call(Fn, [a:form, a:env] + timl#ary(timl#next(a:form)))
+          let var = timl#compiler#resolve(First)
+          if has_key(var, 'meta') && timl#truth(timl#get(var.meta, s:kmacro))
+            let E = timl#call(timl#var#get(var), [a:form, a:env] + timl#ary(timl#next(a:form)))
             return s:emit(a:file, a:env, E)
           endif
+          let resolved = var.location
         endif
         let args = join(map(copy(timl#ary(timl#next(a:form))), 's:emit(a:file, s:with_context(a:env, "expr"), v:val)'), ', ')
         let expr = 'timl#call('.resolved.', ['.args.'])'
@@ -605,7 +581,7 @@ function! s:emit(file, env, form) abort
     if has_key(a:env.locals, a:form[0])
       let expr = a:env.locals[a:form[0]]
     else
-      let expr = timl#compiler#resolve(a:form)
+      let expr = timl#compiler#resolve(a:form).location
     endif
   elseif type(a:form) == type([]) && a:form isnot# g:timl#nil
     let expr = 'timl#array#lock(['.join(map(copy(a:form), 's:emit(a:file, s:with_context(a:env, "expr"), v:val)'), ', ').'])'

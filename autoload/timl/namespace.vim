@@ -89,7 +89,7 @@ function! timl#namespace#intern(ns, name, ...)
   let ns = timl#namespace#the(a:ns)
   let str = ns.name[0].'/'.timl#symbol#coerce(a:name)[0]
   let munged = timl#munge(str)
-  let var = timl#bless('timl.lang/Var', {'name': a:name, 'ns': ns, 'str': str, 'munged': munged, 'meta': get(a:name, 'meta', g:timl#nil)})
+  let var = timl#bless('timl.lang/Var', {'name': a:name, 'ns': ns, 'str': str, 'munged': munged, 'location': 'g:'.munged, 'meta': get(a:name, 'meta', g:timl#nil)})
   if a:0
     unlet! g:{munged}
     let g:{munged} = a:1
