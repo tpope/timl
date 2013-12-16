@@ -30,10 +30,10 @@ function! timl#equality#identical(_) abort
 endfunction
 
 function! timl#equality#seq(x, y) abort
-  if a:y is# g:timl#nil
-    return g:timl#false
-  elseif a:x is# a:y
+  if a:x is# a:y
     return g:timl#true
+  elseif a:y is# g:timl#nil || !timl#seqp(a:y)
+    return g:timl#false
   endif
   let _ = {'x': timl#seq(a:x), 'y': timl#seq(a:y)}
   while _.x isnot# g:timl#nil && _.y isnot# g:timl#nil

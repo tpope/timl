@@ -435,7 +435,9 @@ call s:implement('timl.lang/HashSet',
       \ 'transient', 'timl#set#transient',
       \ '_invoke', 'timl#set#lookup')
 
-call s:implement('timl.lang/HashSet',
+call s:implement('timl.lang/TransientHashSet',
+      \ 'count', 'timl#set#count',
+      \ 'lookup', 'timl#set#lookup',
       \ 'conj!', 'timl#set#conjb',
       \ 'disj!', 'timl#set#disjb',
       \ 'persistent!', 'timl#set#persistentb')
