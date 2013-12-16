@@ -13,11 +13,11 @@ function! timl#meta#alter(obj, fn, ...) abort
   return timl#call(g:timl#core#reset_meta_BANG_, [a:obj, timl#call(a:fn, [timl#meta(a:obj)] + a:000)])
 endfunction
 
-function! timl#meta#from_hidden_attribute(obj) abort
+function! timl#meta#from_attribute(obj) abort
   return get(a:obj, 'meta', g:timl#nil)
 endfunction
 
-function! timl#meta#copy_lock_with_hidden_attribute(obj, meta) abort
+function! timl#meta#copy_assign_lock(obj, meta) abort
   if !timl#equalp(get(a:obj, 'meta', g:timl#nil), a:meta)
     let obj = copy(a:obj)
     if a:meta is# g:timl#nil
@@ -31,7 +31,7 @@ function! timl#meta#copy_lock_with_hidden_attribute(obj, meta) abort
   return a:obj
 endfunction
 
-function! timl#meta#copy_with_hidden_attribute(obj, meta) abort
+function! timl#meta#copy_assign(obj, meta) abort
   if !timl#equalp(get(a:obj, 'meta', g:timl#nil), a:meta)
     let obj = copy(a:obj)
     if a:meta is# g:timl#nil

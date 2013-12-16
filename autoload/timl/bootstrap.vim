@@ -206,8 +206,8 @@ function! s:this_get(this, coll, ...) abort
 endfunction
 
 call s:implement('timl.lang/Symbol',
-      \ 'meta', 'timl#meta#from_hidden_attribute',
-      \ 'with-meta', 'timl#meta#copy_lock_with_hidden_attribute',
+      \ 'meta', 'timl#meta#from_attribute',
+      \ 'with-meta', 'timl#meta#copy_assign_lock',
       \ 'equal?', 'timl#symbol#equal',
       \ '_invoke', 's:this_get')
 
@@ -253,7 +253,7 @@ call s:define_call('intern', 'timl#namespace#intern')
 " Section: Var
 
 call s:implement('timl.lang/Var',
-      \ 'meta', 'timl#meta#from_hidden_attribute',
+      \ 'meta', 'timl#meta#from_attribute',
       \ 'reset-meta!', 'timl#var#reset_meta',
       \ '_invoke', 'timl#var#invoke',
       \ 'deref', 'timl#var#get')
@@ -288,8 +288,8 @@ call s:define_apply('vector', 'timl#vec')
 " Section: Cons
 
 call s:implement('timl.lang/Cons',
-      \ 'meta', 'timl#meta#from_hidden_attribute',
-      \ 'with-meta', 'timl#meta#copy_lock_with_hidden_attribute',
+      \ 'meta', 'timl#meta#from_attribute',
+      \ 'with-meta', 'timl#meta#copy_assign_lock',
       \ 'seq', 'timl#function#identity',
       \ 'equal?', 'timl#equality#seq',
       \ 'first', 'timl#cons#first',
@@ -309,8 +309,8 @@ if !exists('g:timl#empty_list')
 endif
 
 call s:implement('timl.lang/EmptyList',
-      \ 'meta', 'timl#meta#from_hidden_attribute',
-      \ 'with-meta', 'timl#meta#copy_lock_with_hidden_attribute',
+      \ 'meta', 'timl#meta#from_attribute',
+      \ 'with-meta', 'timl#meta#copy_assign_lock',
       \ 'seq', 's:nil',
       \ 'equal?', 'timl#equality#seq',
       \ 'first', 's:nil',
@@ -334,8 +334,8 @@ call s:define_call('reduce', 'timl#reduce')
 " Section: Array Seq
 
 call s:implement('timl.lang/ArraySeq',
-      \ 'meta', 'timl#meta#from_hidden_attribute',
-      \ 'with-meta', 'timl#meta#copy_lock_with_hidden_attribute',
+      \ 'meta', 'timl#meta#from_attribute',
+      \ 'with-meta', 'timl#meta#copy_assign_lock',
       \ 'seq', 'timl#function#identity',
       \ 'equal?', 'timl#equality#seq',
       \ 'first', 'timl#array_seq#first',
@@ -347,8 +347,8 @@ call s:implement('timl.lang/ArraySeq',
 " Section: Lazy Seq
 
 call s:implement('timl.lang/LazySeq',
-      \ 'meta', 'timl#meta#from_hidden_attribute',
-      \ 'with-meta', 'timl#meta#copy_with_hidden_attribute',
+      \ 'meta', 'timl#meta#from_attribute',
+      \ 'with-meta', 'timl#meta#copy_assign',
       \ 'seq', 'timl#lazy_seq#seq',
       \ 'equal?', 'timl#equality#seq',
       \ 'realized?', 'timl#lazy_seq#realized',
