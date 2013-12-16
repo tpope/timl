@@ -131,6 +131,12 @@ call s:define_pred('neg?', 'timl#number#negp')
 call s:define_pred('odd?', 'timl#number#oddp')
 call s:define_pred('even?', 'timl#number#evenp')
 
+call s:define_call('str2nr', 'str2nr')
+if has('float')
+  call s:define_call('str2float', 'str2float')
+  call s:define_call('float2nr', 'float2nr')
+endif
+
 " Section: String
 
 call s:implement('vim/String',
@@ -157,6 +163,9 @@ call s:define_apply('println-str', 'timl#string#println')
 call s:define_pred('symbol?', 'timl#symbol#test')
 call s:define_pred('keyword?', 'timl#keyword#test')
 call s:define_pred('string?', 'timl#string#test')
+
+call s:define_call('char2nr', 'char2nr')
+call s:define_call('nr2char', 'nr2char')
 
 " Section: Nil
 
