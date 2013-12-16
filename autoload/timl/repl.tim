@@ -24,6 +24,9 @@
   (breakadd)
   (+ 1 (* 2 3)))
 
+(defn compile [body]
+  (print (. (#*timl#compiler#build body) body)))
+
 (defmacro doc [sym]
   (let [topic (if (special-symbol? sym)
                 (str "timl-" sym)
