@@ -93,10 +93,10 @@ function! timl#namespace#intern(ns, name, ...)
   let meta.name = a:name
   let meta.ns = ns
   lockvar 1 meta
-  if has_key(ns.mappings, a:name[0])
+  if has_key(ns.mappings, a:name[0]) && ns.mappings[a:name[0]].ns is# ns
     let var = ns.mappings[a:name[0]]
   else
-    let var = timl#bless('timl.lang/Var', {'str': str, 'munged': munged, 'location': 'g:'.munged})
+    let var = timl#bless('timl.lang/Var', {'ns': ns, 'str': str, 'munged': munged, 'location': 'g:'.munged})
   endif
   let var.meta = meta
   if a:0
