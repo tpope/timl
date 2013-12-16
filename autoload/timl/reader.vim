@@ -322,7 +322,7 @@ endfunction
 
 function! timl#reader#open(filename) abort
   let str = join(readfile(a:filename), "\n")
-  return {'str': str, 'filename': a:filename, 'pos': 0, 'line': 1}
+  return {'str': str, 'filename': fnamemodify(a:filename, ':p'), 'pos': 0, 'line': 1}
 endfunction
 
 function! timl#reader#close(port)

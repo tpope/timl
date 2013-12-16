@@ -97,7 +97,7 @@ function! timl#namespace#intern(ns, name, ...)
     let g:{munged} = g:timl#nil
   endif
   let ns.mappings[a:name[0]] = var
-  return a:0 ? a:1 : g:timl#nil
+  return var
 endfunction
 
 function! timl#namespace#all()

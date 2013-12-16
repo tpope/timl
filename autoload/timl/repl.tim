@@ -29,9 +29,8 @@
                 (str "timl-" sym)
                 (resolve sym))]
     `(do
-       (throw (str "timl#repl: exit help " (or ~topic (str '~sym))))
-       (throw "timl#repl: exit"))))
+       (throw (str "timl#repl: exit help " (or ~topic (str '~sym)))))))
 
-(defn source [sym]
-  (if-let [meta (get g:timl_functions (. sym -apply))]
-    (throw (str "timl#repl: exit edit +" (get meta "line") " " (#*fnameescape (get meta "file"))))))
+(defmacro edit [sym]
+  `(if-let [m (meta (var ~sym))]
+    (throw (str "timl#repl: exit edit +" (:line m) " " (#*fnameescape (:file m))))))
