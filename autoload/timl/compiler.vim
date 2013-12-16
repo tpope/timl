@@ -374,7 +374,7 @@ function! s:expr_sf_fn_STAR_(file, env, form) abort
     call s:emitln(a:file, "endif")
     call s:emitln(a:file, "endfunction")
   endif
-  let meta = s:loc_meta(a:env.file, a:form)
+  let meta = timl#compiler#location_meta(a:env.file, a:form)
   if !empty(meta)
     call s:emitln(a:file, 'let g:timl_functions[join(['.temp.'.apply])] = '.timl#compiler#serialize(meta))
   endif
@@ -641,7 +641,7 @@ if !exists('g:timl_functions')
   let g:timl_functions = {}
 endif
 
-function! s:loc_meta(file, form)
+function! timl#compiler#location_meta(file, form)
   let meta = timl#meta(a:form)
   if type(meta) == type({}) && has_key(meta, 'line') && a:file isnot# 'NO_SOURCE_PATH'
     return {'file': a:file, 'line': meta.line}
@@ -665,7 +665,7 @@ augroup timl#compiler#fn
   autocmd CursorHold * call s:function_gc()
 augroup END
 
-" Section: Execution
+" Section: Compilation
 
 function! timl#compiler#build(x, ...) abort
   let filename = a:0 ? a:1 : 'NO_SOURCE_PATH'
@@ -681,82 +681,12 @@ function! timl#compiler#build(x, ...) abort
         \ . "endwhile\n"
         \ . "endfunction"
   execute str
-  let meta = s:loc_meta(filename, a:x)
+  let meta = timl#compiler#location_meta(filename, a:x)
   if !empty(meta)
     let g:timl_functions[join([s:dict.call])] = meta
   endif
   return {'body': body, 'call': s:dict.call}
 endfunction
-
-function! timl#compiler#eval(x) abort
-  return timl#compiler#build(a:x).call()
-endfunction
-
-let s:dir = (has('win32') ? '$APPCACHE/Vim' :
-      \ match(system('uname'), "Darwin") > -1 ? '~/Library/Vim' :
-      \ empty($XDG_CACHE_HOME) ? '~/.cache/vim' : '$XDG_CACHE_HOME/vim').'/timl'
-
-function! s:cache_filename(path)
-  let base = expand(s:dir)
-  if !isdirectory(base)
-    call mkdir(base, 'p')
-  endif
-  let filename = tr(substitute(fnamemodify(a:path, ':~'), '^\~.', '', ''), '\/:', '%%%') . '.vim'
-  return base . '/' . filename
-endfunction
-
-let s:myftime = getftime(expand('<sfile>'))
-
-function! timl#compiler#source_file(filename)
-  let path = fnamemodify(a:filename, ':p')
-  let old_ns = g:timl#core#_STAR_ns_STAR_
-  let cache = s:cache_filename(path)
-  try
-    let g:timl#core#_STAR_ns_STAR_ = timl#namespace#find(timl#symbol('user'))
-    let ftime = getftime(cache)
-    if !exists('$TIML_EXPIRE_CACHE') && ftime > getftime(path) && ftime > s:myftime
-      try
-        execute 'source '.fnameescape(cache)
-      catch
-        let error = 1
-      endtry
-      if !exists('error')
-        return
-      endif
-    endif
-    let file = timl#reader#open(path)
-    let strs = ["let s:d = {}"]
-    let _ = {}
-    let _.read = g:timl#nil
-    let eof = []
-    while _.read isnot# eof
-      let _.read = timl#reader#read(file, eof)
-      let obj = timl#compiler#build(_.read, path)
-      call obj.call()
-      call add(strs, "function! s:d.f() abort\nlet locals = {}\nlet temp = {}\n".obj.body."endfunction\n")
-      let meta = s:loc_meta(path, _.read)
-      if !empty(meta)
-        let strs[-1] .= 'let g:timl_functions[join([s:d.f])] = '.string(meta)."\n"
-      endif
-      let strs[-1] .= "call s:d.f()\n"
-    endwhile
-    call add(strs, 'unlet s:d')
-    call writefile(split(join(strs, "\n"), "\n"), cache)
-  catch /^Vim\%((\a\+)\)\=:E168/
-  finally
-    let g:timl#core#_STAR_ns_STAR_ = old_ns
-    if exists('file')
-      call timl#reader#close(file)
-    endif
-  endtry
-endfunction
-
-let s:core = timl#namespace#create(timl#symbol#intern('timl.core'))
-let s:user = timl#namespace#create(timl#symbol#intern('user'))
-call timl#namespace#intern(s:core, timl#symbol#intern('*ns*'), s:user)
-let s:user.mappings['in-ns'] = s:core.mappings['in-ns']
-call timl#require('timl.core')
-call timl#namespace#refer(timl#symbol('timl.core'))
 
 " Section: Tests
 
@@ -766,7 +696,7 @@ endif
 
 function! s:re(str)
   try
-    return timl#compiler#eval(timl#reader#read_string(a:str))
+    return timl#compiler#build(timl#reader#read_string(a:str)).call()
   endtry
 endfunction
 
@@ -786,14 +716,12 @@ TimLCAssert s:re('(if true forty-two 69)') ==# 42
 TimLCAssert s:re('(if false "boo" "yay")') ==# "yay"
 TimLCAssert s:re('(do 1 2)') ==# 2
 
-TimLCAssert empty(s:re('(set! g:timl_setq (dict))'))
+TimLCAssert empty(s:re('(set! g:timl_setq (#*timl#dictionary#create []))'))
 TimLCAssert g:timl_setq ==# {}
 let g:timl_setq = {}
 TimLCAssert !empty(s:re('(set! (. g:timl_setq key) ["a" "b"])'))
 TimLCAssert g:timl_setq ==# {"key": ["a", "b"]}
 unlet! g:timl_setq
-
-TimLCAssert s:re("((fn* [n f] (if (<= n 1) f (recur (- n 1) (* f n)))) 5 1)") ==# 120
 
 delcommand TimLCAssert
 

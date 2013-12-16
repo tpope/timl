@@ -385,7 +385,7 @@ function! timl#ns_for_cursor(...) abort
 endfunction
 
 function! timl#eval(x) abort
-  return timl#compiler#eval(a:x)
+  return timl#loader#eval(a:x)
 endfunction
 
 function! timl#re(str) abort
@@ -397,7 +397,7 @@ function! timl#rep(str) abort
 endfunction
 
 function! timl#source_file(filename)
-  return timl#compiler#source_file(a:filename)
+  return timl#loader#source(a:filename)
 endfunction
 
 function! timl#load(path) abort
