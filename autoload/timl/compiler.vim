@@ -302,7 +302,7 @@ function! s:one_fn(file, env, form, name, temp, catch_errors) abort
   call s:emitln(a:file, "let temp = {}")
   call s:emitln(a:file, "let locals = copy(self.locals)")
   if len(a:name)
-      call s:emitln(a:file, 'let '.s:localfy(a:name).' = self')
+    call s:emitln(a:file, 'let '.s:localfy(a:name).' = self')
   endif
   if a:catch_errors && !empty(positional)
     call s:emitln(a:file, 'try')
@@ -549,92 +549,88 @@ endfunction
 
 let s:dot = timl#symbol('.')
 function! s:emit(file, env, form) abort
-  if timl#consp(a:form)
-    if has_key(a:form, 'meta') && has_key(a:form.meta, 'line')
-      let env = copy(a:env)
-      let env.line = a:form.meta.line
-    else
-      let env = a:env
-    endif
-    let First = timl#first(a:form)
-    if First is# s:dot
-      let expr = s:expr_dot(a:file, env, a:form)
-    elseif timl#symbol#test(First)
-      let munged = timl#munge(First[0])
-      if env.context ==# 'expr' && exists('*s:expr_sf_'.munged)
-        let expr = s:expr_sf_{munged}(a:file, env, a:form)
-      elseif exists('*s:emit_sf_'.munged)
-        return s:emit_sf_{munged}(a:file, env, a:form)
-      elseif exists('*s:expr_sf_'.munged)
-        let expr = s:expr_sf_{munged}(a:file, env, a:form)
-      else
-        if has_key(env.locals, First[0])
-          let resolved = env.locals[First[0]]
+  let env = a:env
+  try
+    if timl#consp(a:form)
+      if has_key(a:form, 'meta') && has_key(a:form.meta, 'line')
+        let env = copy(env)
+        let env.line = a:form.meta.line
+      endif
+      let First = timl#first(a:form)
+      if First is# s:dot
+        let expr = s:expr_dot(a:file, env, a:form)
+      elseif timl#symbol#test(First)
+        let munged = timl#munge(First[0])
+        if env.context ==# 'expr' && exists('*s:expr_sf_'.munged)
+          let expr = s:expr_sf_{munged}(a:file, env, a:form)
+        elseif exists('*s:emit_sf_'.munged)
+          return s:emit_sf_{munged}(a:file, env, a:form)
+        elseif exists('*s:expr_sf_'.munged)
+          let expr = s:expr_sf_{munged}(a:file, env, a:form)
         else
-          let var = timl#compiler#resolve(First)
-          if has_key(var, 'meta') && timl#truth(timl#get(var.meta, s:kmacro))
-            let E = timl#call(timl#var#get(var), [a:form, env] + timl#ary(timl#next(a:form)))
-            return s:emit(a:file, env, E)
+          if has_key(env.locals, First[0])
+            let resolved = env.locals[First[0]]
+          else
+            let var = timl#compiler#resolve(First)
+            if has_key(var, 'meta') && timl#truth(timl#get(var.meta, s:kmacro))
+              let E = timl#call(timl#var#get(var), [a:form, env] + timl#ary(timl#next(a:form)))
+              return s:emit(a:file, env, E)
+            endif
+            let resolved = var.location
           endif
-          let resolved = var.location
+          let args = join(map(copy(timl#ary(timl#next(a:form))), 's:emit(a:file, s:with_context(env, "expr"), v:val)'), ', ')
+          let expr = 'timl#call('.resolved.', ['.args.'])'
         endif
-        let args = join(map(copy(timl#ary(timl#next(a:form))), 's:emit(a:file, s:with_context(env, "expr"), v:val)'), ', ')
-        let expr = 'timl#call('.resolved.', ['.args.'])'
-      endif
-    else
-      let args = join(map(copy(timl#ary(timl#next(a:form))), 's:emit(a:file, s:with_context(env, "expr"), v:val)'), ', ')
-      if timl#consp(First) && timl#symbol#is(timl#first(First), 'function')
-        let expr = timl#munge(timl#fnext(First)).'('.args.')'
       else
-        let expr = 'timl#call('.s:expr(a:file, env, First).', ['.args.'])'
+        let args = join(map(copy(timl#ary(timl#next(a:form))), 's:emit(a:file, s:with_context(env, "expr"), v:val)'), ', ')
+        if timl#consp(First) && timl#symbol#is(timl#first(First), 'function')
+          let expr = timl#munge(timl#fnext(First)).'('.args.')'
+        else
+          let expr = 'timl#call('.s:expr(a:file, env, First).', ['.args.'])'
+        endif
       endif
-    endif
-  elseif timl#symbol#test(a:form)
-    if has_key(a:env.locals, a:form[0])
-      let expr = a:env.locals[a:form[0]]
+    elseif timl#symbol#test(a:form)
+      if has_key(env.locals, a:form[0])
+        let expr = env.locals[a:form[0]]
+      else
+        let expr = timl#compiler#resolve(a:form).location
+      endif
+    elseif type(a:form) == type([]) && a:form isnot# g:timl#nil
+      let expr = 'timl#array#lock(['.join(map(copy(a:form), 's:emit(a:file, s:with_context(env, "expr"), v:val)'), ', ').'])'
+
+    elseif timl#vectorp(a:form)
+      let expr = 'timl#vec(['.join(map(copy(timl#ary(a:form)), 's:emit(a:file, s:with_context(env, "expr"), v:val)'), ', ').'])'
+
+    elseif timl#setp(a:form)
+      let expr = 'timl#set(['.join(map(copy(timl#ary(a:form)), 's:emit(a:file, s:with_context(env, "expr"), v:val)'), ', ').'])'
+
+    elseif timl#mapp(a:form)
+      let expr = s:expr_map(a:file, env, a:form)
+      if timl#type#string(a:form) == 'vim/Dictionary'
+        let expr = substitute(expr, '\C#map#', '#dictionary#', '')
+      endif
+
     else
-      let expr = timl#compiler#resolve(a:form).location
+      let expr = timl#compiler#serialize(a:form)
     endif
-  elseif type(a:form) == type([]) && a:form isnot# g:timl#nil
-    let expr = 'timl#array#lock(['.join(map(copy(a:form), 's:emit(a:file, s:with_context(a:env, "expr"), v:val)'), ', ').'])'
-
-  elseif timl#vectorp(a:form)
-    let expr = 'timl#vec(['.join(map(copy(timl#ary(a:form)), 's:emit(a:file, s:with_context(a:env, "expr"), v:val)'), ', ').'])'
-
-  elseif timl#setp(a:form)
-    let expr = 'timl#set(['.join(map(copy(timl#ary(a:form)), 's:emit(a:file, s:with_context(a:env, "expr"), v:val)'), ', ').'])'
-
-  elseif timl#mapp(a:form)
-    let expr = s:expr_map(a:file, a:env, a:form)
-    if timl#type#string(a:form) == 'vim/Dictionary'
-      let expr = substitute(expr, '\C#map#', '#dictionary#', '')
+    if env.context == 'return'
+      call s:emitln(a:file, 'return '.expr)
+      return ''
+    elseif env.context == 'statement'
+      if expr =~# '^[[:alnum:]_#]\+('
+        call s:emitln(a:file, 'call '.expr)
+      endif
+      return ''
+    else
+      return expr
     endif
-
-  else
-    let expr = timl#compiler#serialize(a:form)
-  endif
-  if a:env.context == 'return'
-    call s:emitln(a:file, 'return '.expr)
-    return ''
-  elseif a:env.context == 'statement'
-    if expr =~# '^[[:alnum:]_#]\+('
-      call s:emitln(a:file, 'call '.expr)
+  catch /^timl#compiler:/
+    let throw = v:exception
+    if throw !~# ' on line'
+      let throw .= ' in ' . env.file . ' on line ' .env.line
     endif
-    return ''
-  else
-    return expr
-  endif
-endfunction
-
-function! timl#compiler#emit(form) abort
-  let env = {'locals': {}, 'context': 'statement'}
-  let file = ['']
-  call s:emit(file, env, a:form)
-  return join(file, "\n")
-endfunction
-
-function! timl#compiler#re(str) abort
-  return timl#compiler#emit(timl#reader#read_string(a:str))
+    throw throw
+  endtry
 endfunction
 
 if !exists('g:timl_functions')
@@ -670,7 +666,7 @@ augroup END
 function! timl#compiler#build(x, ...) abort
   let filename = a:0 ? a:1 : 'NO_SOURCE_PATH'
   let file = ['']
-  call s:emit(file, {'file': filename, 'context': 'return', 'locals': {}}, a:x)
+  call s:emit(file, {'file': filename, 'line': 1, 'context': 'return', 'locals': {}}, a:x)
   let body = join(file, "\n")
   let s:dict = {}
   let str = "function s:dict.call() abort\n"
