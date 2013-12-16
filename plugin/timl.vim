@@ -123,6 +123,10 @@ function! s:repl(...) abort
   let more = &more
   try
     set nomore
+    call timl#require(timl#symbol('timl.repl'))
+    if g:timl#core#_STAR_ns_STAR_.name[0] ==# 'user'
+      call timl#core#refer(timl#symbol('timl.repl'))
+    endif
     let input = input(g:timl#core#_STAR_ns_STAR_.name[0].'=> ', '', cmpl)
     if input =~# '^:q\%[uit]'
       return ''
