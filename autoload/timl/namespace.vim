@@ -65,7 +65,7 @@ function! timl#namespace#the(name) abort
   throw 'timl: no such namespace '.name
 endfunction
 
-function! timl#namespace#maybe_resolve(ns, sym)
+function! timl#namespace#maybe_resolve(ns, sym, ...)
   let ns = timl#namespace#the(a:ns)
   let sym = timl#symbol#coerce(a:sym)
   if has_key(ns.mappings, sym.str)
@@ -82,7 +82,7 @@ function! timl#namespace#maybe_resolve(ns, sym)
       return g:timl#namespaces[sym.namespace].mappings[sym.name]
     endif
   endif
-  return g:timl#nil
+  return a:0 ? a:1 : g:timl#nil
 endfunction
 
 function! timl#namespace#intern(ns, name, ...)
