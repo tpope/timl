@@ -4,7 +4,9 @@
   ([] (qf *e))
   ([e]
    (#*setqflist (. e qflist))
-   (throw "timl#repl: exit copen")))
+   (execute "copen")
+   (set! w:quickfix_title (str (. e exception) " @ line " (. e line)))
+   (throw "timl#repl: exit")))
 
 (defn breakpoint-fn [env]
   (let [str (#*input (format "%s=>> " (ns-name *ns*)))]
@@ -12,7 +14,7 @@
       (newline)
       (try
         (prn (#*timl#loader#eval (read-string str) (ns-name *ns*) env))
-        (catch "" e (set! *e e) (println (:exception e))))
+        (catch "" e (set! *e e) (println (. e exception))))
       (recur env))))
 
 (defmacro breakpoint []
