@@ -96,13 +96,58 @@ if !exists('g:timl_requires')
   let g:timl_requires = {}
 endif
 
-function! timl#loader#require(ns) abort
-  let ns = timl#str(a:ns)
-  if !has_key(g:timl_requires, ns)
+function! timl#loader#require(ns, ...) abort
+  let ns = timl#symbol#coerce(a:ns).name
+  if !has_key(g:timl_requires, ns) || a:0 && a:1
     call timl#loader#relative(tr(ns, '.-', '/_'))
     let g:timl_requires[ns] = 1
   endif
+endfunction
+
+let s:k_reload = timl#keyword#intern('reload')
+let s:k_as = timl#keyword#intern('as')
+let s:k_refer = timl#keyword#intern('refer')
+let s:k_all = timl#keyword#intern('all')
+let s:k_only = timl#keyword#intern('only')
+function! timl#loader#require_all(_) abort
+  let _ = {}
+  let reload = 0
+  for option in filter(copy(a:_), 'timl#keyword#test(v:val)')
+    if option is# s:k_reload
+      let reload = 1
+    else
+      throw 'timl#loader: unsupported require option :'.option[0]
+    endif
+  endfor
+  for _.spec in a:_
+    if timl#symbol#test(_.spec)
+      call timl#loader#require(_.spec, reload)
+    elseif timl#vectorp(_.spec)
+      let _.lib = timl#first(_.spec)
+      call timl#loader#require(_.lib, reload)
+      if timl#fnext(_.spec) is# s:k_as
+        call timl#namespace#alias(timl#first(timl#nnext(_.spec)), _.lib)
+      elseif timl#fnext(_.spec) is# s:k_refer
+        let _.qualifier = timl#first(timl#nnext(_.spec))
+        if _.qualifier is# s:k_all
+          call timl#namespace#refer(_.lib)
+        else
+          call timl#namespace#refer(_.lib, s:k_only, _.qualifier)
+        endif
+      endif
+    elseif !timl#keyword#test(_.spec)
+      throw 'timl#loader: invalid loading spec type '.timl#type#string(_.spec)
+    endif
+  endfor
   return g:timl#nil
+endfunction
+
+function! timl#loader#use_all(_) abort
+  let _ = {}
+  for _.spec in a:_
+    call timl#loader#require(a:name)
+    return timl#namespace#refer(a:name)
+  endfor
 endfunction
 
 let s:core = timl#namespace#create(timl#symbol#intern('timl.core'))

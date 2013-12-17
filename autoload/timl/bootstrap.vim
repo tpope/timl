@@ -252,7 +252,8 @@ let g:timl#core#defmacro.macro = g:timl#true
 " Section: Namespace
 
 call s:define_apply('load', 'timl#loader#all_relative')
-call s:define_call('require', 'timl#require')
+call s:define_apply('require', 'timl#loader#require_all')
+call s:define_apply('use', 'timl#loader#use_all')
 call s:define_call('create-ns', 'timl#namespace#create')
 call s:define_call('find-ns', 'timl#namespace#find')
 call s:define_call('the-ns', 'timl#namespace#the')
@@ -261,7 +262,6 @@ call s:define_call('all-ns', 'timl#namespace#all')
 call s:define_call('in-ns', 'timl#namespace#select')
 call s:define_call('refer', 'timl#namespace#refer')
 call s:define_call('alias', 'timl#namespace#alias')
-call s:define_call('use', 'timl#namespace#use')
 call s:define_call('intern', 'timl#namespace#intern')
 
 " Section: Var

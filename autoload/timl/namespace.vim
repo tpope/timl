@@ -43,11 +43,6 @@ function! timl#namespace#refer(name) abort
   return g:timl#nil
 endfunction
 
-function! timl#namespace#use(name) abort
-  call timl#loader#require(a:name)
-  return timl#namespace#refer(a:name)
-endfunction
-
 function! timl#namespace#alias(alias, name) abort
   let me = g:timl#core#_STAR_ns_STAR_
   let me.aliases[timl#symbol#coerce(a:alias).name] = a:name
