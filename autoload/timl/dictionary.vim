@@ -5,6 +5,10 @@ if exists("g:autoloaded_timl_dictionary")
 endif
 let g:autoloaded_timl_dictionary = 1
 
+function! timl#dictionary#test(coll)
+  return timl#type#string(a:coll) ==# 'vim/Dictionary'
+endfunction
+
 function! timl#dictionary#create(_) abort
   let keyvals = len(a:_) == 1 ? a:_[0] : a:_
   if timl#mapp(keyvals)

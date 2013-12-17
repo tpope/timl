@@ -167,10 +167,6 @@ function! timl#setp(coll)
   return timl#type#canp(a:coll, g:timl#core#disj)
 endfunction
 
-function! timl#dictp(coll)
-  return timl#type#string(a:coll) ==# 'vim/Dictionary'
-endfunction
-
 function! timl#set(seq) abort
   return timl#set#coerce(a:seq)
 endfunction

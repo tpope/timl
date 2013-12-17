@@ -407,7 +407,7 @@ call s:implement('vim/Dictionary',
       \ 'dissoc!', 'timl#dictionary#dissocb',
       \ 'persistent!', 'timl#dictionary#persistentb')
 
-call s:define_pred('dict?', 'timl#dictp')
+call s:define_pred('dict?', 'timl#dictionary#test')
 call s:define_apply('dict', 'timl#dictionary#create')
 
 " Section: Hash Map
