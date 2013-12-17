@@ -80,7 +80,12 @@ call s:define_call('alter-meta!', 'timl#meta#alter')
 " Section: Type Sytem
 
 call s:define_call('blessing', 'timl#type#keyword')
-call s:define_pred('isa?', 'timl#type#isa?')
+call s:define_pred('isa?', 'timl#type#isap')
+call s:define_pred('can?', 'timl#type#canp')
+
+" Section: Utility
+
+call s:define_call('munge', 'timl#munge')
 
 " Section: Equality
 

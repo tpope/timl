@@ -1,7 +1,7 @@
 (in-ns 'timl.core)
 
 (defmacro defonce [name expr]
-  `(when-not (exists? (#*timl#munge (str "g:" (ns-name *ns*) "#" '~name)))
+  `(when-not (exists? (munge (str "g:" (ns-name *ns*) "#" '~name)))
      (def ~name ~expr)))
 
 (defmacro if-not

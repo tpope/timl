@@ -10,7 +10,7 @@
        (finally (execute chdir# back#)))))
 
 (defmacro include-guard [var]
-  (let [string (#*timl#munge (str var))]
+  (let [string (munge (str var))]
    `(if (exists? ~string)
      (execute "finish")
      (set! ~var 1))))
