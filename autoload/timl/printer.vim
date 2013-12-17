@@ -42,7 +42,7 @@ function! timl#printer#string(x)
   elseif type == 'timl.lang/Exception'
     return '#<Exception '.a:x.exception.' @ '.a:x.throwpoint.'>'
 
-  elseif timl#consp(a:x)
+  elseif timl#cons#test(a:x)
     let acc = []
     let _ = {'x': a:x}
     while _.x isnot# g:timl#nil

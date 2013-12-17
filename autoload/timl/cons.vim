@@ -48,10 +48,6 @@ function! timl#cons#more(this)
   return a:this.cdr
 endfunction
 
-function! timl#cons#test(cons)
-  return type(a:obj) == type({}) && get(a:obj, '#tag') is# s:type
-endfunction
-
 let s:empty_list_type = timl#type#intern('timl.lang/EmptyList')
 function! timl#cons#listp(obj)
   return type(a:obj) == type({}) && (get(a:obj, '#tag') is# s:type || get(a:obj, '#tag') is s:empty_list_type)

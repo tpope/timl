@@ -134,14 +134,6 @@ function! timl#str(val) abort
     return substitute(join([a:val]), '[{}]', '', 'g')
   elseif timl#symbol#test(a:val) || timl#keyword#test(a:val)
     return a:val[0]
-  elseif timl#consp(a:val)
-    let _ = {'val': a:val}
-    let acc = ''
-    while !empty(_.val)
-      let acc .= timl#str(timl#first(_.val)) . ','
-      let _.val = timl#next(_.val)
-    endwhile
-    return acc
   elseif type(a:val) == type([])
     return join(map(copy(a:val), 'timl#str(v:val)'), ',').','
   else
@@ -244,7 +236,7 @@ function! timl#seqp(coll) abort
 endfunction
 
 function! timl#first(coll) abort
-  if timl#consp(a:coll)
+  if timl#cons#test(a:coll)
     return a:coll.car
   elseif type(a:coll) == s:ary
     return get(a:coll, 0, g:timl#nil)
@@ -254,7 +246,7 @@ function! timl#first(coll) abort
 endfunction
 
 function! timl#rest(coll) abort
-  if timl#consp(a:coll)
+  if timl#cons#test(a:coll)
     return a:coll.cdr
   elseif timl#type#canp(a:coll, g:timl#core#more)
     return timl#type#dispatch(g:timl#core#more, a:coll)
@@ -286,10 +278,6 @@ endfunction
 
 function! timl#get(coll, key, ...) abort
   return timl#type#dispatch(g:timl#core#lookup, a:coll, a:key, a:0 ? a:1 : g:timl#nil)
-endfunction
-
-function! timl#consp(obj) abort
-  return type(a:obj) == type({}) && get(a:obj, '#tag') is# s:cons
 endfunction
 
 function! timl#list(...) abort

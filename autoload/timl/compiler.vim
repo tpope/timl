@@ -47,7 +47,7 @@ endfunction
 
 let s:kmacro = timl#keyword#intern('macro')
 function! timl#compiler#macroexpand_1(form) abort
-  if timl#consp(a:form) && timl#symbol#test(timl#first(a:form)) && !timl#compiler#specialp(timl#first(a:form))
+  if timl#cons#test(a:form) && timl#symbol#test(timl#first(a:form)) && !timl#compiler#specialp(timl#first(a:form))
     let var = timl#namespace#maybe_resolve(g:timl#core#_STAR_ns_STAR_, timl#first(a:form))
     if var isnot# g:timl#nil && timl#truth(timl#get(var.meta, s:kmacro))
       return timl#call(timl#var#get(var), [a:form, {}] + timl#ary(timl#next(a:form)))
@@ -123,7 +123,7 @@ function! timl#compiler#serialize(x)
     endwhile
     return 'timl#set#create('.timl#compiler#serialize(keyvals).')'
 
-  elseif timl#consp(a:x)
+  elseif timl#cons#test(a:x)
     return 'timl#cons#create('
           \ . timl#compiler#serialize(a:x.car).','
           \ . timl#compiler#serialize(a:x.cdr)
@@ -351,7 +351,7 @@ function! s:expr_sf_fn_STAR_(file, env, form) abort
   endif
   if timl#vectorp(timl#first(_.next))
     call s:one_fn(a:file, env, _.next, name, temp.'.apply', 1)
-  elseif timl#consp(timl#first(_.next))
+  elseif timl#cons#test(timl#first(_.next))
     let c = char2nr('a')
     let fns = {}
     while _.next isnot# g:timl#nil
@@ -442,7 +442,7 @@ function! s:emit_sf_try(file, env, form) abort
   let _.seq = timl#next(a:form)
   let body = []
   while _.seq isnot# g:timl#nil
-    if timl#consp(timl#first(_.seq))
+    if timl#cons#test(timl#first(_.seq))
       let _.sym = timl#ffirst(_.seq)
       if timl#symbol#is(_.sym, 'catch') || timl#symbol#is(_.sym, 'finally')
         break
@@ -458,7 +458,7 @@ function! s:emit_sf_try(file, env, form) abort
   endif
   while _.seq isnot# g:timl#nil
     let _.first = timl#first(_.seq)
-    if timl#consp(_.first) && timl#symbol#is(timl#first(_.first), 'catch')
+    if timl#cons#test(_.first) && timl#symbol#is(timl#first(_.first), 'catch')
       call s:emitln(a:file, 'catch /'.escape(timl#fnext(_.first), '/').'/')
       let var = timl#first(timl#nnext(_.first))
       let env = s:copy_locals(a:env)
@@ -467,7 +467,7 @@ function! s:emit_sf_try(file, env, form) abort
         call s:emitln(a:file, 'let '.env.locals[var[0]].' = timl#compiler#build_exception(v:exception, v:throwpoint)')
       endif
       call s:emit_sf_do(a:file, env, timl#cons#create(timl#symbol('do'), timl#next(timl#nnext(_.first))))
-    elseif timl#consp(_.first) && timl#symbol#is(timl#first(_.first), 'finally')
+    elseif timl#cons#test(_.first) && timl#symbol#is(timl#first(_.first), 'finally')
       call s:emitln(a:file, 'finally')
       call s:emit_sf_do(a:file, s:with_context(a:env, 'statement'), timl#cons#create(timl#symbol('do'), timl#next(_.first)))
     else
@@ -503,7 +503,7 @@ function! s:expr_sf_set_BANG_(file, env, form) abort
       call s:emitln(a:file, 'endif')
     endif
     return var
-  elseif timl#consp(target) && timl#symbol#is(timl#first(target), '.')
+  elseif timl#cons#test(target) && timl#symbol#is(timl#first(target), '.')
     let key = substitute(timl#str(timl#first(timl#nnext(target))), '^-', '', '')
     let target2 = timl#symbol#coerce(timl#fnext(target))
     if has_key(a:env.locals, target2[0])
@@ -555,7 +555,7 @@ let s:dot = timl#symbol('.')
 function! s:emit(file, env, form) abort
   let env = a:env
   try
-    if timl#consp(a:form)
+    if timl#cons#test(a:form)
       if has_key(a:form, 'meta') && has_key(a:form.meta, 'line')
         let env = copy(env)
         let env.line = a:form.meta.line
@@ -587,7 +587,7 @@ function! s:emit(file, env, form) abort
         endif
       else
         let args = join(map(copy(timl#ary(timl#next(a:form))), 's:emit(a:file, s:with_context(env, "expr"), v:val)'), ', ')
-        if timl#consp(First) && timl#symbol#is(timl#first(First), 'function')
+        if timl#cons#test(First) && timl#symbol#is(timl#first(First), 'function')
           let expr = timl#munge(timl#fnext(First)).'('.args.')'
         else
           let expr = 'timl#call('.s:expr(a:file, env, First).', ['.args.'])'
