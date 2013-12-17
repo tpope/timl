@@ -145,9 +145,12 @@ endfunction
 function! timl#loader#use_all(_) abort
   let _ = {}
   for _.spec in a:_
-    call timl#loader#require(a:name)
-    return timl#namespace#refer(a:name)
+    call timl#loader#require(_.spec)
+    return timl#namespace#refer(_.spec)
   endfor
+endfunction
+
+function! timl#loader#init() abort
 endfunction
 
 let s:core = timl#namespace#create(timl#symbol#intern('timl.core'))
