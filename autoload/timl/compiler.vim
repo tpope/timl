@@ -688,41 +688,4 @@ function! timl#compiler#build(x, ...) abort
   return {'body': body, 'call': s:dict.call}
 endfunction
 
-" Section: Tests
-
-if !$TIML_TEST
-  finish
-endif
-
-function! s:re(str)
-  try
-    return timl#compiler#build(timl#reader#read_string(a:str)).call()
-  endtry
-endfunction
-
-command! -nargs=1 TimLCAssert
-      \ try |
-      \   if !eval(<q-args>) |
-      \     echomsg "Failed: ".<q-args> |
-      \   endif |
-      \ catch /.*/ |
-      \  echomsg "Error:  ".<q-args>." (".v:exception.") @ " . v:throwpoint |
-      \ endtry
-
-TimLCAssert !empty(s:re('(let* [x 42] (def forty-two x))'))
-TimLCAssert s:re('forty-two') ==# 42
-
-TimLCAssert s:re('(if true forty-two 69)') ==# 42
-TimLCAssert s:re('(if false "boo" "yay")') ==# "yay"
-TimLCAssert s:re('(do 1 2)') ==# 2
-
-TimLCAssert empty(s:re('(set! g:timl_setq (#*timl#dictionary#create []))'))
-TimLCAssert g:timl_setq ==# {}
-let g:timl_setq = {}
-TimLCAssert !empty(s:re('(set! (. g:timl_setq key) ["a" "b"])'))
-TimLCAssert g:timl_setq ==# {"key": ["a", "b"]}
-unlet! g:timl_setq
-
-delcommand TimLCAssert
-
 " vim:set et sw=2:
