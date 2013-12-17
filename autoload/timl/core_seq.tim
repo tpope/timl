@@ -6,10 +6,14 @@
   (lazy-seq
     (loop [s (seq coll)]
       (when s
-        (let [f (first s) r (rest s)]
-          (if (pred f)
-            (cons f (filter pred r))
-            (recur (seq r))))))))
+        (if (can? s chunk-first)
+          (concat
+            (#*timl#coll#mutating_filter pred (chunk-first s))
+            (filter pred (chunk-rest s)))
+          (let [f (first s) r (rest s)]
+            (if (pred f)
+              (cons f (filter pred r))
+              (recur (seq r)))))))))
 
 (defn iterate [f x]
   (cons x (lazy-seq (iterate f (f x)))))

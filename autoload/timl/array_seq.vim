@@ -28,3 +28,17 @@ endfunction
 function! timl#array_seq#count(this) abort
   return len(a:this.array) - a:this.i
 endfunction
+
+let s:chunk_size = 32
+
+function! timl#array_seq#chunk_first(this) abort
+  return a:this.array[a:this.i : min([a:this.i+s:chunk_size, len(a:this.array)])-1]
+endfunction
+
+function! timl#array_seq#chunk_rest(this) abort
+  if len(a:this.array) - a:this.i <= s:chunk_size
+    return g:timl#empty_list
+  else
+    return timl#array_seq#create(a:this.array, a:this.i+s:chunk_size)
+  endif
+endfunction

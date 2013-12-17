@@ -373,6 +373,10 @@ call s:implement('timl.lang/ArraySeq',
       \ 'conj', 'timl#cons#conj',
       \ 'empty', 's:empty_list')
 
+call s:implement('timl.lang/ArraySeq',
+      \ 'chunk-first', 'timl#array_seq#chunk_first',
+      \ 'chunk-rest', 'timl#array_seq#chunk_rest')
+
 " Section: Lazy Seq
 
 call s:implement('timl.lang/LazySeq',

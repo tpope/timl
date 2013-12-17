@@ -57,7 +57,11 @@
 (defn map [f coll]
   (lazy-seq
     (when-let [s (seq coll)]
-      (cons (f (first s)) (map f (rest s))))))
+      (if (can? s chunk-first)
+        (concat
+          (#*timl#coll#mutating_map f (chunk-first s))
+          (map f (chunk-rest s)))
+        (cons (f (first s)) (map f (rest s)))))))
 
 (defn dorun
   ([coll]
