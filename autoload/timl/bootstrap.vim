@@ -289,7 +289,7 @@ call s:implement('vim/List',
       \ 'lookup', 'timl#array#lookup',
       \ 'nth', 'timl#array#nth',
       \ 'count', 'len',
-      \ 'conj', 'timl#array#cons',
+      \ 'conj', 'timl#array#conj',
       \ 'empty', 'timl#array#empty',
       \ '_invoke', 'timl#array#lookup')
 
