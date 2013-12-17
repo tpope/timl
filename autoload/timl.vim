@@ -150,29 +150,6 @@ endfunction
 " }}}1
 " Section: Collections {{{1
 
-function! timl#collp(coll) abort
-  return timl#type#canp(a:coll, g:timl#core#conj)
-endfunction
-
-function! timl#into(coll, seq) abort
-  let t = timl#type#string(a:coll)
-  if timl#type#canp(a:coll, g:timl#core#transient)
-    let _ = {'coll': timl#type#dispatch(g:timl#core#transient, a:coll), 'seq': timl#seq(a:seq)}
-    while _.seq isnot# g:timl#nil
-      let _.coll = timl#type#dispatch(g:timl#core#conj_BANG_, _.coll, timl#first(_.seq))
-      let _.seq = timl#next(_.seq)
-    endwhile
-    return timl#type#dispatch(g:timl#core#persistent_BANG_, _.coll)
-  else
-    let _ = {'coll': a:coll, 'seq': timl#seq(a:seq)}
-    while _.seq isnot# g:timl#nil
-      let _.coll = timl#type#dispatch(g:timl#core#conj, _.coll, timl#first(_.seq))
-      let _.seq = timl#next(_.seq)
-    endwhile
-    return _.coll
-  endif
-endfunction
-
 function! timl#count(counted) abort
   return timl#type#dispatch(g:timl#core#count, a:counted)
 endfunction
@@ -196,26 +173,6 @@ endfunction
 
 function! timl#set(seq) abort
   return timl#set#coerce(a:seq)
-endfunction
-
-function! timl#reduce(f, coll, ...) abort
-  let _ = {}
-  if a:0
-    let _.val = a:coll
-    let _.seq = timl#seq(a:1)
-  else
-    let _.seq = timl#seq(a:coll)
-    if empty(_.seq)
-      return g:timl#nil
-    endif
-    let _.val = timl#first(_.seq)
-    let _.seq = timl#rest(_.seq)
-  endif
-  while _.seq isnot# g:timl#nil
-    let _.val = timl#call(a:f, [_.val, timl#first(_.seq)])
-    let _.seq = timl#next(_.seq)
-  endwhile
-  return _.val
 endfunction
 
 " }}}1

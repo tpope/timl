@@ -283,7 +283,7 @@ function! timl#reader#syntax_quote(form, gensyms) abort
     endwhile
     return timl#list(s:hash_map, timl#cons#create(s:concat, s:sqexpandlist(keyvals, a:gensyms)))
 
-  elseif timl#collp(a:form)
+  elseif timl#coll#test(a:form)
     let first = timl#first(a:form)
     if first is# s:unquote
       return timl#first(timl#rest(a:form))
