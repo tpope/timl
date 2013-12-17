@@ -9,7 +9,7 @@ function! timl#reflect#omnicomplete(findstart, base) abort
     return col('.') - strlen(matchstr(line, '\k\+$')) - 1
   endif
   let results = []
-  let ns = timl#ns_for_file(expand('%'))
+  let ns = timl#ns_for_cursor()
   if timl#namespace#find(ns) is g:timl#nil
     let ns = 'user'
   endif

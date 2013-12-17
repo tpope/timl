@@ -353,6 +353,7 @@ function! timl#ns_for_file(file) abort
 endfunction
 
 function! timl#ns_for_cursor(...) abort
+  call timl#loader#init()
   let pattern = '\c(\%(in-\)\=ns\s\+''\=[[:alpha:]]\@='
   let line = 0
   if !a:0 || a:1
