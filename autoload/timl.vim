@@ -130,6 +130,8 @@ endfunction
 function! timl#str(val) abort
   if type(a:val) == type('')
     return a:val
+  elseif type(a:val) == type(0) || type(a:val) == 5
+    return ''.a:val
   elseif type(a:val) == type(function('tr'))
     return substitute(join([a:val]), '[{}]', '', 'g')
   elseif timl#symbol#test(a:val) || timl#keyword#test(a:val)
@@ -137,7 +139,7 @@ function! timl#str(val) abort
   elseif type(a:val) == type([])
     return join(map(copy(a:val), 'timl#str(v:val)'), ',').','
   else
-    return string(a:val)
+    return '#<'.timl#type#string(a:val).'>'
   endif
 endfunction
 
