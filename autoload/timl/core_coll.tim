@@ -8,6 +8,7 @@
 (defn keys [m] (map key m))
 (defn vals [m] (map val m))
 (defn get-in [m ks] (reduce get m ks))
+(defn associative? [c] (can? c assoc))
 
 (defn comparator [>]
   (fn [x y]

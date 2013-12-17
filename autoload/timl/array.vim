@@ -51,7 +51,7 @@ function! timl#array#lookup(this, idx, ...) abort
 endfunction
 
 function! timl#array#nth(this, idx, ...) abort
-  let idx = timl#int(a:idx)
+  let idx = timl#number#int(a:idx)
   if a:0
     return get(a:this, idx, a:1)
   else

@@ -209,6 +209,8 @@ if !exists('g:timl#false')
   lockvar 1 g:timl#false g:timl#true
 endif
 
+call s:define_pred('boolean', 'timl#truth')
+
 " Section: Symbol/Keyword
 
 function! s:this_get(this, coll, ...) abort

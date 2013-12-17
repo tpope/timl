@@ -24,7 +24,7 @@ function! timl#string#count(this) abort
 endfunction
 
 function! timl#string#join(sep_or_coll, ...) abort
-  return join(map(copy(a:0 ? a:1 : a:sep_or_coll), 'timl#str(v:val)'), a:0 ? a:sep_or_coll : '')
+  return join(map(copy(timl#array#coerce(a:0 ? a:1 : a:sep_or_coll)), 'timl#str(v:val)'), a:0 ? timl#str(a:sep_or_coll) : '')
 endfunction
 
 function! timl#string#split(s, re) abort
