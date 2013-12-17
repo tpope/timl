@@ -219,8 +219,6 @@ endfunction
 " }}}1
 " Section: Lists {{{1
 
-let s:cons = timl#type#intern('timl.lang/Cons')
-
 let s:ary = type([])
 
 function! timl#seq(coll) abort
