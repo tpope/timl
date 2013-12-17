@@ -29,12 +29,15 @@
 (defn compile [body]
   (print (. (#*timl#compiler#build body) body)))
 
-(defmacro doc [sym]
-  (let [topic (if (special-symbol? sym)
-                (str "timl-" sym)
-                (resolve sym))]
-    `(do
-       (throw (str "timl#repl: exit help " (or ~topic (str '~sym)))))))
+(defn help-topic [sym]
+  (if (special-symbol? sym)
+    (str "timl-" sym)
+    (if-let [v (resolve sym)]
+      (:help (meta v) (. v location))
+      (str sym))))
+
+(defmacro help [sym]
+  `(throw (str "timl#repl: exit help " ~(help-topic sym))))
 
 (defmacro edit [sym]
   `(let [m (meta (var ~sym))]

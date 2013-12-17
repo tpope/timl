@@ -45,8 +45,13 @@ function! s:predicate(_) dict abort
   return call(self.call, a:_, self) ? g:timl#true : g:timl#false
 endfunction
 
+let s:k_help = timl#keyword#intern('help')
 function! s:define_call(name, fn)
-  let name = timl#symbol#intern(a:name)
+  if a:fn =~# '^[a-z0-9_]\+$'
+    let name = timl#symbol#intern_with_meta(a:name, timl#map#create([s:k_help, a:fn.'()']))
+  else
+    let name = timl#symbol#intern(a:name)
+  endif
   call timl#namespace#intern(s:ns, name, timl#bless('timl.lang/Function', {
         \ 'name': name,
         \ 'ns': s:ns,
@@ -55,7 +60,11 @@ function! s:define_call(name, fn)
 endfunction
 
 function! s:define_pred(name, fn)
-  let name = timl#symbol#intern(a:name)
+  if a:fn =~# '^[a-z0-9_]\+$'
+    let name = timl#symbol#intern_with_meta(a:name, timl#map#create([s:k_help, a:fn.'()']))
+  else
+    let name = timl#symbol#intern(a:name)
+  endif
   call timl#namespace#intern(s:ns, name, timl#bless('timl.lang/Function', {
         \ 'name': name,
         \ 'ns': s:ns,
@@ -490,11 +499,6 @@ call s:define_pred('has?', 'has')
 
 call timl#type#define_method('timl.core', 'empty', g:timl#nil, s:function('s:nil'))
 
-function! s:default_equal(x, y)
-  return type(a:x) != type(a:y) || a:x !=# a:y ? g:timl#false : g:timl#true
-    return 0
-  endif
-endfunction
 call timl#type#define_method('timl.core', 'equal?', g:timl#nil, g:timl#core#identical_QMARK_)
 
 function! s:default_first(x)
