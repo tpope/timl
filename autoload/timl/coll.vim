@@ -47,3 +47,11 @@ function! timl#coll#reduce(f, coll, ...) abort
   endwhile
   return _.val
 endfunction
+
+function! timl#coll#mutating_map(f, coll) abort
+  return map(a:coll, 'timl#call(a:f, [v:val])')
+endfunction
+
+function! timl#coll#mutating_filter(pred, coll) abort
+  return filter(a:coll, 'timl#truth(timl#call(a:pred, [v:val]))')
+endfunction
