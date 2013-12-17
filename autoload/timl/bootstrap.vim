@@ -251,7 +251,7 @@ let g:timl#core#defmacro.macro = g:timl#true
 
 " Section: Namespace
 
-call s:define_apply('load', 'timl#load_all_relative')
+call s:define_apply('load', 'timl#loader#all_relative')
 call s:define_call('require', 'timl#require')
 call s:define_call('create-ns', 'timl#namespace#create')
 call s:define_call('find-ns', 'timl#namespace#find')

@@ -68,11 +68,48 @@ function! timl#loader#source(filename)
   endtry
 endfunction
 
+function! timl#loader#relative(path) abort
+  if !empty(findfile('autoload/'.a:path.'.vim', &rtp))
+    execute 'runtime! autoload/'.a:path.'.vim'
+    return g:timl#nil
+  endif
+  for file in findfile('autoload/'.a:path.'.tim', &rtp, -1)
+    call timl#loader#source(file)
+    return g:timl#nil
+  endfor
+  throw 'timl: could not load '.a:path
+endfunction
+
+function! timl#loader#all_relative(paths)
+  for path in timl#array#coerce(a:paths)
+    if path[0] ==# '/'
+      let path = path[1:-1]
+    else
+      let path = substitute(tr(g:timl#core#_STAR_ns_STAR_.name[0], '.-', '/_'), '[^/]*$', '', '') . path
+    endif
+    call timl#loader#relative(path)
+  endfor
+  return g:timl#nil
+endfunction
+
+if !exists('g:timl_requires')
+  let g:timl_requires = {}
+endif
+
+function! timl#loader#require(ns) abort
+  let ns = timl#str(a:ns)
+  if !has_key(g:timl_requires, ns)
+    call timl#loader#relative(tr(ns, '.-', '/_'))
+    let g:timl_requires[ns] = 1
+  endif
+  return g:timl#nil
+endfunction
+
 let s:core = timl#namespace#create(timl#symbol#intern('timl.core'))
 let s:user = timl#namespace#create(timl#symbol#intern('user'))
 call timl#namespace#intern(s:core, timl#symbol#intern('*ns*'), s:user)
 let s:user.mappings['in-ns'] = s:core.mappings['in-ns']
-call timl#require('timl.core')
-call timl#namespace#refer(timl#symbol('timl.core'))
+call timl#loader#require(timl#symbol#intern('timl.core'))
+call timl#namespace#refer(timl#symbol#intern('timl.core'))
 
 " vim:set et sw=2:

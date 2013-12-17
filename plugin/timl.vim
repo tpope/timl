@@ -24,7 +24,7 @@ augroup timl
         \ redraw! |
         \ call s:repl(timl#ns_for_cursor())
   autocmd FileType * call s:load_filetype(expand('<amatch>'))
-  autocmd SourceCmd *.tim call timl#source_file(expand("<amatch>"))
+  autocmd SourceCmd *.tim call timl#loader#source(expand("<amatch>"))
   autocmd FuncUndefined *#* call s:autoload(expand('<amatch>'))
   autocmd VimEnter * nested
         \ if exists('s:source') |
@@ -48,7 +48,7 @@ command! -bang -nargs=? -complete=file TLsource
       \ if has('vim_starting') |
       \   let s:source = <q-args> |
       \ else |
-      \   call timl#source_file(expand(empty(<q-args>) ? '%' : <q-args>)) |
+      \   call timl#loader#source(expand(empty(<q-args>) ? '%' : <q-args>)) |
       \ endif
 
 function! s:load_filetype(ft) abort
@@ -56,7 +56,7 @@ function! s:load_filetype(ft) abort
   for kind in ['ftplugin', 'indent']
     for file in findfile(kind.'/'.ft.'.tim', &rtp, -1)
       try
-        call timl#source_file(file)
+        call timl#loader#source(file)
       catch
         echohl WarningMSG
         echo v:exception . ' (' . v:throwpoint .')'
@@ -66,8 +66,8 @@ function! s:load_filetype(ft) abort
   endfor
 endfunction
 
-if !exists('g:timl#requires')
-  let g:timl#requires = {}
+if !exists('g:timl_requires')
+  let g:timl_requires = {}
 endif
 
 function! s:file4ns(ns) abort
@@ -85,13 +85,13 @@ function! s:autoload(function) abort
   let ns = tr(matchstr(a:function, '.*\ze#'), '#_', '.-')
   let base = tr(ns, '.-', '/_')
 
-  if !has_key(g:timl#requires, ns)
+  if !has_key(g:timl_requires, ns)
     if !empty(findfile('autoload/'.base.'.vim'))
-      let g:timl#requires[ns] = 1
+      let g:timl_requires[ns] = 1
     else
       for file in findfile('autoload/'.base.'.tim', &rtp, -1)
-        call timl#source_file(file))
-        let g:timl#requires[ns] = 1
+        call timl#loader#source(file)
+        let g:timl_requires[ns] = 1
         break
       endfor
     endif
@@ -111,8 +111,8 @@ function! s:repl(...) abort
     let ns = g:timl#core#_STAR_ns_STAR_
     try
       let g:timl#core#_STAR_ns_STAR_ = timl#namespace#create(timl#symbol(a:1))
-      call timl#require(timl#symbol('timl.repl'))
-      call timl#core#refer(timl#symbol('timl.repl'))
+      call timl#loader#require(timl#symbol('timl.repl'))
+      call timl#namespace#refer(timl#symbol('timl.repl'))
       return s:repl()
     finally
       let g:timl#core#_STAR_ns_STAR_ = ns
@@ -123,9 +123,9 @@ function! s:repl(...) abort
   let more = &more
   try
     set nomore
-    call timl#require(timl#symbol('timl.repl'))
+    call timl#loader#require(timl#symbol('timl.repl'))
     if g:timl#core#_STAR_ns_STAR_.name[0] ==# 'user'
-      call timl#core#refer(timl#symbol('timl.repl'))
+      call timl#namespace#refer(timl#symbol('timl.repl'))
     endif
     let input = input(g:timl#core#_STAR_ns_STAR_.name[0].'=> ', '', cmpl)
     if input =~# '^:q\%[uit]'

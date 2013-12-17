@@ -396,47 +396,6 @@ function! timl#rep(str) abort
   return timl#printer#string(timl#re(a:str))
 endfunction
 
-function! timl#source_file(filename)
-  return timl#loader#source(a:filename)
-endfunction
-
-function! timl#load(path) abort
-  if !empty(findfile('autoload/'.a:path.'.vim', &rtp))
-    execute 'runtime! autoload/'.a:path.'.vim'
-    return g:timl#nil
-  endif
-  for file in findfile('autoload/'.a:path.'.tim', &rtp, -1)
-    call timl#source_file(file)
-    return g:timl#nil
-  endfor
-  throw 'timl: could not load '.a:path
-endfunction
-
-function! timl#load_all_relative(paths)
-  for path in timl#array#coerce(a:paths)
-    if path[0] ==# '/'
-      let path = path[1:-1]
-    else
-      let path = substitute(tr(g:timl#core#_STAR_ns_STAR_.name[0], '.-', '/_'), '[^/]*$', '', '') . path
-    endif
-    call timl#load(path)
-  endfor
-  return g:timl#nil
-endfunction
-
-if !exists('g:timl#requires')
-  let g:timl#requires = {}
-endif
-
-function! timl#require(ns) abort
-  let ns = timl#str(a:ns)
-  if !has_key(g:timl#requires, ns)
-    call timl#load(tr(ns, '.-', '/_'))
-    let g:timl#requires[ns] = 1
-  endif
-  return g:timl#nil
-endfunction
-
 runtime! autoload/timl/bootstrap.vim
 
 " }}}1
