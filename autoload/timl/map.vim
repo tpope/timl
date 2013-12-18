@@ -30,12 +30,12 @@ function! timl#map#equal(this, that)
   elseif !timl#mapp(a:that)
     return g:timl#false
   endif
-  if timl#count(a:this) !=# timl#count(a:that)
+  if timl#coll#count(a:this) !=# timl#coll#count(a:that)
     return g:timl#false
   endif
   let _ = {'seq': timl#seq(a:this)}
   while _.seq isnot# g:timl#nil
-    let _.other = timl#get(a:that, timl#ffirst(_.seq), _)
+    let _.other = timl#coll#get(a:that, timl#ffirst(_.seq), _)
     if _.other is# _ || !timl#equalp(timl#first(timl#nfirst(_.seq)), _.other)
       return g:timl#false
     endif

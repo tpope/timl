@@ -224,9 +224,9 @@ call s:define_pred('boolean', 'timl#truth')
 
 function! s:this_get(this, coll, ...) abort
   if a:0
-    return timl#get(a:coll, a:this, a:1)
+    return timl#coll#get(a:coll, a:this, a:1)
   else
-    return timl#get(a:coll, a:this)
+    return timl#coll#get(a:coll, a:this)
   endif
 endfunction
 
@@ -488,10 +488,10 @@ call s:define_apply('hash-set', 'timl#set#coerce')
 
 call s:define_pred('coll?', 'timl#coll#test')
 call s:define_pred('chunked-seq?', 'timl#coll#chunked_seqp')
-call s:define_call('get', 'timl#get')
+call s:define_call('get', 'timl#coll#get')
 call s:define_call('into', 'timl#coll#into')
 call s:define_call('reduce', 'timl#coll#reduce')
-call s:define_pred('contains?', 'timl#containsp')
+call s:define_pred('contains?', 'timl#coll#containsp')
 
 " Section: Compiler
 

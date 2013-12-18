@@ -49,7 +49,7 @@ let s:kmacro = timl#keyword#intern('macro')
 function! timl#compiler#macroexpand_1(form) abort
   if timl#cons#test(a:form) && timl#symbol#test(timl#first(a:form)) && !timl#compiler#specialp(timl#first(a:form))
     let var = timl#namespace#maybe_resolve(g:timl#core#_STAR_ns_STAR_, timl#first(a:form))
-    if var isnot# g:timl#nil && timl#truth(timl#get(var.meta, s:kmacro))
+    if var isnot# g:timl#nil && timl#truth(timl#coll#get(var.meta, s:kmacro))
       return timl#call(timl#var#get(var), [a:form, {}] + timl#ary(timl#next(a:form)))
     endif
   endif
@@ -223,7 +223,7 @@ function! s:emit_sf_let_STAR_(file, env, form) abort
     call s:add_local(env, ary[i])
   endfor
   let body = timl#nnext(a:form)
-  if timl#count(body) == 1
+  if timl#coll#count(body) == 1
     return s:emit(a:file, env, timl#first(body))
   else
     return s:emit_sf_do(a:file, env, timl#cons#create(timl#symbol('do'), body))
@@ -323,7 +323,7 @@ function! s:one_fn(file, env, form, name, temp, catch_errors) abort
   endif
   let c = 0
   call s:emitln(a:file, "while 1")
-  if timl#count(body) == 1
+  if timl#coll#count(body) == 1
     call s:emit(a:file, s:with_context(env, 'return'), timl#first(body))
   else
     call s:emit_sf_do(a:file, s:with_context(env, 'return'), timl#cons#create(timl#symbol('do'), body))
@@ -451,7 +451,7 @@ function! s:emit_sf_try(file, env, form) abort
     call add(body, timl#first(_.seq))
     let _.seq = timl#next(_.seq)
   endwhile
-  if timl#count(body) == 1
+  if timl#coll#count(body) == 1
     call s:emit(a:file, a:env, timl#first(body))
   else
     call s:emit_sf_do(a:file, a:env, timl#cons#create(timl#symbol('do'), body))
@@ -576,7 +576,7 @@ function! s:emit(file, env, form) abort
             let resolved = env.locals[First[0]]
           else
             let var = timl#compiler#resolve(First)
-            if has_key(var, 'meta') && timl#truth(timl#get(var.meta, s:kmacro))
+            if has_key(var, 'meta') && timl#truth(timl#coll#get(var.meta, s:kmacro))
               let E = timl#call(timl#var#get(var), [a:form, env] + timl#ary(timl#next(a:form)))
               return s:emit(a:file, env, E)
             endif

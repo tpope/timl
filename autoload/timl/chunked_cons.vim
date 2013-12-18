@@ -29,7 +29,7 @@ function! timl#chunked_cons#more(this) abort
 endfunction
 
 function! timl#chunked_cons#count(this) abort
-  return len(a:this.array) - a:this.i + timl#count(a:this.rest)
+  return len(a:this.array) - a:this.i + timl#coll#count(a:this.rest)
 endfunction
 
 function! timl#chunked_cons#chunk_first(this) abort

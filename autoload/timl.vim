@@ -150,15 +150,6 @@ endfunction
 " }}}1
 " Section: Collections {{{1
 
-function! timl#count(counted) abort
-  return timl#type#dispatch(g:timl#core#count, a:counted)
-endfunction
-
-function! timl#containsp(coll, val) abort
-  let sentinel = {}
-  return timl#get(a:coll, a:val, sentinel) isnot# sentinel
-endfunction
-
 function! timl#mapp(coll)
   return timl#type#canp(a:coll, g:timl#core#dissoc)
 endfunction
@@ -227,10 +218,6 @@ endfunction
 
 function! timl#nnext(seq) abort
   return timl#next(timl#next(a:seq))
-endfunction
-
-function! timl#get(coll, key, ...) abort
-  return timl#type#dispatch(g:timl#core#lookup, a:coll, a:key, a:0 ? a:1 : g:timl#nil)
 endfunction
 
 function! timl#list(...) abort

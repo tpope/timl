@@ -62,12 +62,12 @@ function! timl#set#equal(this, that)
   elseif !timl#setp(a:that)
     return g:timl#false
   endif
-  if timl#count(a:this) !=# timl#count(a:that)
+  if timl#coll#count(a:this) !=# timl#coll#count(a:that)
     return g:timl#false
   endif
   let _ = {'seq': timl#seq(a:this)}
   while _.seq isnot# g:timl#nil
-    if timl#get(a:that, timl#first(_.seq), _) is# _
+    if timl#coll#get(a:that, timl#first(_.seq), _) is# _
       return g:timl#false
     endif
     let _.seq = timl#next(_.seq)

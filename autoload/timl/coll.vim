@@ -13,6 +13,19 @@ function! timl#coll#chunked_seqp(coll) abort
   return timl#type#canp(a:coll, g:timl#core#chunk_first)
 endfunction
 
+function! timl#coll#get(coll, key, ...) abort
+  return timl#type#dispatch(g:timl#core#lookup, a:coll, a:key, a:0 ? a:1 : g:timl#nil)
+endfunction
+
+function! timl#coll#containsp(coll, val) abort
+  let sentinel = {}
+  return timl#coll#get(a:coll, a:val, sentinel) isnot# sentinel
+endfunction
+
+function! timl#coll#count(counted) abort
+  return timl#type#dispatch(g:timl#core#count, a:counted)
+endfunction
+
 function! timl#coll#into(coll, seq) abort
   let t = timl#type#string(a:coll)
   if timl#type#canp(a:coll, g:timl#core#transient)
