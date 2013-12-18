@@ -377,6 +377,25 @@ call s:implement('timl.lang/ArraySeq',
       \ 'chunk-first', 'timl#array_seq#chunk_first',
       \ 'chunk-rest', 'timl#array_seq#chunk_rest')
 
+" Section: Chunked Cons
+
+call s:define_call('chunk-cons', 'timl#chunked_cons#create')
+
+call s:implement('timl.lang/ChunkedCons',
+      \ 'meta', 'timl#meta#from_attribute',
+      \ 'with-meta', 'timl#meta#copy_assign_lock',
+      \ 'seq', 'timl#function#identity',
+      \ 'equal?', 'timl#equality#seq',
+      \ 'first', 'timl#chunked_cons#first',
+      \ 'more', 'timl#chunked_cons#more',
+      \ 'count', 'timl#chunked_cons#count',
+      \ 'conj', 'timl#cons#conj',
+      \ 'empty', 's:empty_list')
+
+call s:implement('timl.lang/ChunkedCons',
+      \ 'chunk-first', 'timl#chunked_cons#chunk_first',
+      \ 'chunk-rest', 'timl#chunked_cons#chunk_rest')
+
 " Section: Lazy Seq
 
 call s:implement('timl.lang/LazySeq',
@@ -468,6 +487,7 @@ call s:define_apply('hash-set', 'timl#set#coerce')
 " Section: Collection
 
 call s:define_pred('coll?', 'timl#coll#test')
+call s:define_pred('chunked-seq?', 'timl#coll#chunked_seqp')
 call s:define_call('get', 'timl#get')
 call s:define_call('into', 'timl#coll#into')
 call s:define_call('reduce', 'timl#coll#reduce')

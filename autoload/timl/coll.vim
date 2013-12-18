@@ -9,6 +9,10 @@ function! timl#coll#test(coll) abort
   return timl#type#canp(a:coll, g:timl#core#conj)
 endfunction
 
+function! timl#coll#chunked_seqp(coll) abort
+  return timl#type#canp(a:coll, g:timl#core#chunk_first)
+endfunction
+
 function! timl#coll#into(coll, seq) abort
   let t = timl#type#string(a:coll)
   if timl#type#canp(a:coll, g:timl#core#transient)

@@ -6,7 +6,7 @@
   (lazy-seq
     (loop [s (seq coll)]
       (when s
-        (if (can? s chunk-first)
+        (if (chunked-seq? s)
           (concat
             (#*timl#coll#mutating_filter pred (chunk-first s))
             (filter pred (chunk-rest s)))
@@ -34,9 +34,13 @@
   ([end] (range 0 end 1))
   ([start end] (range start end 1))
   ([start end step]
-   (let [comp (if (pos? step) < >)]
+   (let [comp (if (pos? step) < >)
+         closest (if (pos? step) min max)
+         next-start (closest end (+ start (* 1024 step)))]
      (if (comp start end)
-       (cons start (lazy-seq (range (+ start step) end step)))
+       (chunk-cons
+         (#*range start (dec next-start) step)
+         (lazy-seq (range next-start end step)))
        ()))))
 
 (defn reductions [f init xs]

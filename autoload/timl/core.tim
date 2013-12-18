@@ -12,14 +12,18 @@
     (lazy-seq
       (let [s (seq x)]
         (if s
-          (cons (first s) (concat (rest s) y))
+          (if (chunked-seq? s)
+            (chunk-cons (chunk-first s) (concat (chunk-rest s) y))
+            (cons (first s) (concat (rest s) y)))
           y))))
   ([x y & zs]
      (let [cat (fn cat [xys zs]
                  (lazy-seq
                    (let [xys (seq xys)]
                      (if xys
-                       (cons (first xys) (cat (rest xys) zs))
+                       (if (chunked-seq? xys)
+                         (chunk-cons (chunk-first xys) (cat (chunk-rest xys) zs))
+                         (cons (first xys) (cat (rest xys) zs)))
                        (if zs
                          (cat (first zs) (next zs)))))))]
        (cat (concat x y) zs))))
@@ -66,7 +70,9 @@
 (defn dorun
   ([coll]
    (when (seq coll)
-     (recur (next coll))))
+     (if (chunked-seq? coll)
+       (recur (chunk-rest coll))
+       (recur (next coll)))))
   ([n coll]
    (when (and (seq coll) (pos? n))
      (recur (dec n) (next coll)))))
