@@ -58,8 +58,10 @@ function! s:load_filetype(ft) abort
       try
         call timl#loader#source(file)
       catch
+        unlet! g:timl#core#_STAR_e
+        let g:timl#core#_STAR_e = timl#compiler#build_exception(v:exception, v:throwpoint) |
         echohl WarningMSG
-        echo v:exception . ' (' . v:throwpoint .')'
+        echomsg v:exception
         echohl NONE
       endtry
     endfor
