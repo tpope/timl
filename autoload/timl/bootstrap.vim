@@ -154,6 +154,7 @@ endif
 " Section: String
 
 call s:implement('vim/String',
+      \ 'seq', 'timl#string#seq',
       \ 'lookup', 'timl#string#lookup',
       \ 'count', 'timl#string#count')
 

@@ -23,6 +23,10 @@ function! timl#string#count(this) abort
   return exists('*strchars') ? strchars(a:this) : len(substitute(a:this, '.', '.', 'g'))
 endfunction
 
+function! timl#string#seq(this) abort
+  return timl#array_seq#create(split(a:this, '\zs'))
+endfunction
+
 function! timl#string#join(sep_or_coll, ...) abort
   return join(map(copy(timl#array#coerce(a:0 ? a:1 : a:sep_or_coll)), 'timl#str(v:val)'), a:0 ? timl#str(a:sep_or_coll) : '')
 endfunction

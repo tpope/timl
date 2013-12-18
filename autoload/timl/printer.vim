@@ -27,10 +27,10 @@ function! timl#printer#string(x)
   elseif type ==# 'timl.lang/Boolean'
     return a:x.value ? 'true' : 'false'
 
-  elseif type == 'timl.lang/Function'
+  elseif type ==# 'timl.lang/Function'
     return '#<'.get(a:x, 'ns', {'name': ['...']}).name[0].'/'.get(a:x, 'name', ['...'])[0].' #*'.join([get(a:x, 'apply', '???')]).'>'
 
-  elseif type == 'timl.lang/MultiFn'
+  elseif type ==# 'timl.lang/MultiFn'
     return '#<'.get(a:x, 'ns', {'name': ['...']}).name[0].'/'.get(a:x, 'name', ['...'])[0].' multi>'
 
   elseif type ==# 'timl.lang/Namespace'
@@ -39,8 +39,11 @@ function! timl#printer#string(x)
   elseif type ==# 'timl.lang/Var'
     return "#'".a:x.str
 
-  elseif type == 'timl.lang/Exception'
+  elseif type ==# 'timl.lang/Exception'
     return '#<Exception '.a:x.exception.' @ '.a:x.throwpoint.'>'
+
+  elseif type(a:x) == type('')
+    return '"'.substitute(a:x, "[\n\r\t\"\\\\]", '\=get(s:escapes, submatch(0))', 'g').'"'
 
   elseif timl#cons#test(a:x)
     let acc = []
@@ -94,9 +97,6 @@ function! timl#printer#string(x)
 
   elseif timl#type#canp(a:x, g:timl#core#seq)
     return timl#printer#string(timl#seq(a:x))
-
-  elseif type(a:x) == type('')
-    return '"'.substitute(a:x, "[\n\r\t\"\\\\]", '\=get(s:escapes, submatch(0))', 'g').'"'
 
   elseif type(a:x) == type(function('tr'))
     return '#*'.substitute(join([a:x]), '[{}]', '', 'g')
