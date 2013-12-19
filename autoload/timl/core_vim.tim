@@ -9,6 +9,12 @@
        ~@body
        (finally (execute chdir# back#)))))
 
+(defmacro save-excursion [& body]
+  `(let [restore# (#*winsaveview)]
+     (try
+       ~@body
+       (finally (#*winrestview restore#)))))
+
 (defmacro include-guard [var]
   (let [string (munge (str var))]
    `(if (exists? ~string)
