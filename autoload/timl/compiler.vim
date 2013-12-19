@@ -149,11 +149,6 @@ endfunction
 
 " Section: Emission
 
-function! s:tempsym(...)
-  let s:id = get(s:, 'id', 0) + 1
-  return 'temp.'.(a:0 ? a:1 : '_').s:id
-endfunction
-
 function! s:emitln(file, str)
   call add(a:file, a:str)
   return a:file
@@ -175,6 +170,11 @@ function! s:copy_locals(env) abort
   return env
 endfunction
 
+function! s:tempsym(...)
+  let s:id = get(s:, 'id', 0) + 1
+  return (a:0 ? a:1 : '_').s:id
+endfunction
+
 function! s:let_tmp(file, clue, str)
   let temp = s:tempsym(a:clue)
   call s:emitln(a:file, 'let '.temp.' = '.a:str)
@@ -186,9 +186,8 @@ function! s:wrap_as_expr(file, env, form) abort
   if has_key(env, 'params')
     call remove(env, 'params')
   endif
-  let temp = s:let_tmp(a:file, 'wrap', '{"locals": copy(locals)}')
+  let temp = s:let_tmp(a:file, 'thunk', '{"locals": copy(locals)}')
   call s:emitln(a:file, "function ".temp.".call() abort")
-  call s:emitln(a:file, "let temp = {}")
   call s:emitln(a:file, "let locals = self.locals")
   call s:emit(a:file, env, a:form)
   call s:emitln(a:file, "endfunction")
@@ -296,7 +295,6 @@ function! s:one_fn(file, env, form, name, temp, catch_errors) abort
     endif
   endfor
   call s:emitln(a:file, "function ".a:temp."(_) abort")
-  call s:emitln(a:file, "let temp = {}")
   call s:emitln(a:file, "let locals = copy(self.locals)")
   if len(a:name)
     call s:emitln(a:file, 'let '.s:localfy(a:name).' = self')
@@ -675,7 +673,6 @@ function! timl#compiler#build(x, ...) abort
   let s:dict = {}
   let str = "function s:dict.call() abort\n"
         \ . "let locals = {}\n"
-        \ . "let temp = {}\n"
         \ . "while 1\n"
         \ . body
         \ . "endwhile\n"
