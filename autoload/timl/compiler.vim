@@ -154,14 +154,8 @@ function! s:tempsym(...)
   return 'temp.'.(a:0 ? a:1 : '_').s:id
 endfunction
 
-function! s:emitstr(file, str)
-  let a:file[-1] .= a:str
-  return a:file
-endfunction
-
 function! s:emitln(file, str)
-  call s:emitstr(a:file, a:str)
-  call add(a:file, '')
+  call add(a:file, a:str)
   return a:file
 endfunction
 
@@ -218,8 +212,7 @@ function! s:emit_sf_let_STAR_(file, env, form) abort
   let env = s:copy_locals(a:env)
   for i in range(0, len(ary)-1, 2)
     let expr = s:emit(a:file, s:with_context(env, 'expr'), ary[i+1])
-    call s:emitstr(a:file, 'let '.s:localfy(timl#symbol#coerce(ary[i])[0]).' = '.expr)
-    call s:emitln(a:file, '')
+    call s:emitln(a:file, 'let '.s:localfy(timl#symbol#coerce(ary[i])[0]).' = '.expr)
     call s:add_local(env, ary[i])
   endfor
   let body = timl#nnext(a:form)
@@ -676,9 +669,9 @@ augroup END
 
 function! timl#compiler#build(x, ...) abort
   let filename = a:0 ? a:1 : 'NO_SOURCE_PATH'
-  let file = ['']
+  let file = []
   call s:emit(file, {'file': filename, 'line': 1, 'context': 'return', 'locals': {}}, a:x)
-  let body = join(file, "\n")
+  let body = join(file, "\n")."\n"
   let s:dict = {}
   let str = "function s:dict.call() abort\n"
         \ . "let locals = {}\n"
