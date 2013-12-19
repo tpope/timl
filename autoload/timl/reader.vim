@@ -262,11 +262,11 @@ function! timl#reader#syntax_quote(form, gensyms) abort
       let quote = s:quote
       let x = timl#list(s:quote, a:gensyms[a:form[0]])
       return timl#list(s:quote, a:gensyms[a:form[0]])
-    elseif !timl#compiler#specialp(a:form[0]) && a:form[0] !~# ':\|/.\|^[&$]'
+    elseif !timl#compiler#specialp(a:form[0]) && a:form[0] !~# ':\|^[&$]'
       return timl#list(s:quote, timl#symbol(timl#namespace#maybe_resolve(
             \ g:timl#core#_STAR_ns_STAR_,
             \ a:form,
-            \ {'str': g:timl#core#_STAR_ns_STAR_.name[0].'/'.a:form[0]}).str))
+            \ {'str': (a:form[0] =~# '/.' ? '' : g:timl#core#_STAR_ns_STAR_.name[0].'/').a:form[0]}).str))
     else
       return timl#list(s:quote, a:form)
     endif
