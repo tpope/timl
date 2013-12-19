@@ -537,8 +537,12 @@ endfunction
 
 function! s:expr_dot(file, env, form) abort
   let val = s:expr(a:file, a:env, timl#fnext(a:form))
-  let key = timl#str(timl#first(timl#nnext(a:form)))
-  return val.'['.timl#compiler#serialize(substitute(key, '^-', '', '')).']'
+  let key = timl#first(timl#nnext(a:form))
+  if timl#seqp(key)
+    return val.'['.timl#compiler#serialize(timl#str(timl#first(key))).']('.s:expr_args(a:file, a:env, timl#next(key)).')'
+  else
+    return val.'['.timl#compiler#serialize(timl#str(key)).']'
+  endif
 endfunction
 
 function! s:expr_map(file, env, form)
@@ -549,6 +553,10 @@ function! s:expr_map(file, env, form)
     let _.seq = timl#next(_.seq)
   endwhile
   return 'timl#map#create(['.join(map(kvs, 's:emit(a:file, s:with_context(a:env, "expr"), v:val)'), ', ').'])'
+endfunction
+
+function! s:expr_args(file, env, form)
+  return join(map(copy(timl#ary(a:form)), 's:emit(a:file, s:with_context(a:env, "expr"), v:val)'), ', ')
 endfunction
 
 let s:dot = timl#symbol('.')
@@ -582,11 +590,11 @@ function! s:emit(file, env, form) abort
             endif
             let resolved = var.location
           endif
-          let args = join(map(copy(timl#ary(timl#next(a:form))), 's:emit(a:file, s:with_context(env, "expr"), v:val)'), ', ')
+          let args = s:expr_args(a:file, env, timl#next(a:form))
           let expr = 'timl#call('.resolved.', ['.args.'])'
         endif
       else
-        let args = join(map(copy(timl#ary(timl#next(a:form))), 's:emit(a:file, s:with_context(env, "expr"), v:val)'), ', ')
+        let args = s:expr_args(a:file, env, timl#next(a:form))
         if timl#cons#test(First) && timl#symbol#is(timl#first(First), 'function')
           let expr = timl#munge(timl#fnext(First)).'('.args.')'
         else
@@ -600,7 +608,7 @@ function! s:emit(file, env, form) abort
         let expr = timl#compiler#resolve(a:form).location
       endif
     elseif type(a:form) == type([]) && a:form isnot# g:timl#nil
-      let expr = 'timl#array#lock(['.join(map(copy(a:form), 's:emit(a:file, s:with_context(env, "expr"), v:val)'), ', ').'])'
+      let expr = 'timl#array#lock(['.s:expr_args(a:file, env, a:form).'])'
 
     elseif timl#vectorp(a:form)
       let expr = 'timl#vec(['.join(map(copy(timl#ary(a:form)), 's:emit(a:file, s:with_context(env, "expr"), v:val)'), ', ').'])'

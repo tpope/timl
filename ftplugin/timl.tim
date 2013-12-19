@@ -15,5 +15,5 @@
       (re-find "^#\\*" kw) (str (subs kw 2) "()")
       (re-find "^&" kw)    (str "'" (subs kw 1) "'")
       (special-symbol?     (symbol kw)) (str "timl-" kw)
-      (ns-resolve ns (symbol kw)) (. (ns-resolve ns (symbol kw)) -munged)
+      (ns-resolve ns (symbol kw)) (. (ns-resolve ns (symbol kw)) munged)
       :else                kw)))
