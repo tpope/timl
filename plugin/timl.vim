@@ -150,14 +150,10 @@ function! s:repl(...) abort
           endtry
         endwhile
         let _.val = timl#eval(timl#cons#create(timl#symbol('do'), read))
-        if type(_.val) != type(function('tr'))
-          unlet! g:timl#core#_STAR_3
-          let g:timl#core#_STAR_3 = g:timl#core#_STAR_2
-          unlet! g:timl#core#_STAR_2
-          let g:timl#core#_STAR_2 = g:timl#core#_STAR_1
-          unlet! g:timl#core#_STAR_1
-          let g:timl#core#_STAR_1 = _.val
-        endif
+        call extend(g:, {
+              \ 'timl#core#_STAR_3': g:timl#core#_STAR_2,
+              \ 'timl#core#_STAR_2': g:timl#core#_STAR_1,
+              \ 'timl#core#_STAR_1': _.val})
         echo timl#printer#string(_.val)
       catch /^timl#repl: exit/
         redraw
