@@ -1,10 +1,11 @@
 (ns timl.indent)
+(require '[timl.plugin-helper :as ph])
 
 (defmacro include-guard [& default]
   (let [param (or (first default) 'b:did-indent)]
-   `(timl.core/include-guard ~param)))
+   `(ph/include-guard ~param)))
 
 (defmacro setlocal [& opts]
   `(do
-     (execute (str "setlocal " ~(build-option-string opts)))
-     (set! b:undo-indent ~(extract-option-restore opts))))
+     (execute (str "setlocal " ~(ph/build-option-string opts)))
+     (set! b:undo-indent ~(ph/extract-option-restore opts))))

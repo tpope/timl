@@ -1,0 +1,32 @@
+(ns timl.plugin-helper)
+
+(defmacro include-guard [var]
+  (let [string (munge (str var))]
+   `(if (exists? ~string)
+     (execute "finish")
+     (set! ~var 1))))
+
+(defn build-option-string [args]
+  (subvec
+    (loop [s ""
+           x (first args)
+           more (rest args)]
+      (if (nil? x)
+        s
+        (recur
+          (if (symbol? x) (str s " " x) (str s (#*fnameescape (str x))))
+          (first more) (rest more))
+        )) 1 -1))
+
+(defn extract-option-names [args]
+  (map (fn [x] (#*matchstr (str x) #"%(inv|no)?\zs\w+")) (filter symbol? args)))
+
+(defn extract-option-restore [args]
+  (if-let [options (extract-option-names args)]
+    (str "setlocal " (#*join (vec (map str options)) "< ") "<")))
+
+(defmacro setlocal [& opts]
+  `(execute (str "setlocal " ~(build-option-string opts))))
+
+(defmacro setglobal [& opts]
+  `(execute (str "setlocal " ~(build-option-string opts))))
