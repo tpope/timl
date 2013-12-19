@@ -559,7 +559,6 @@ function! s:expr_args(file, env, form)
   return join(map(copy(timl#ary(a:form)), 's:emit(a:file, s:with_context(a:env, "expr"), v:val)'), ', ')
 endfunction
 
-let s:dot = timl#symbol('.')
 function! s:emit(file, env, form) abort
   let env = a:env
   try
@@ -569,7 +568,7 @@ function! s:emit(file, env, form) abort
         let env.line = a:form.meta.line
       endif
       let First = timl#first(a:form)
-      if First is# s:dot
+      if timl#symbol#is(First, '.')
         let expr = s:expr_dot(a:file, env, a:form)
       elseif timl#symbol#test(First)
         let munged = timl#munge(First[0])
