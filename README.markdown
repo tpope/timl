@@ -12,15 +12,13 @@ scripting language provided by the Vim text editor.  Think Clojure meets VimL.
 * The same collection types and interfaces (although currently lacking many of
   the performance guarantees).
 * Macros, including syntax quoting and the implicit `&form` and `&env`.
-* Metadata (although a lack of proper `var`s eliminates several common
-  use cases).
+* Metadata.
+* Reference types (just var so far).
 
 ## Clojure differences
 
 Too many omissions to list, but:
 
-* No reference types.  Most would be of limited use in a single threaded
-  environment.
 * Fuck `clojure.string/join`, that shit is in core.
 
 ## VimL interop
