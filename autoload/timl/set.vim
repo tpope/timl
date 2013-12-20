@@ -109,8 +109,9 @@ function! timl#set#conjb(this, ...) abort
     let key = timl#set#key(_.e)
     if empty(key)
       let found = 0
-      for _.v in a:this['#extra']
-        if timl#equalp(_.v, _.e)
+      for i in range(len(a:this['#extra']))
+        if timl#equalp(a:this['#extra'][i], _.e)
+          let a:this['#extra'][i] = _.e
           let found = 1
           break
         endif
