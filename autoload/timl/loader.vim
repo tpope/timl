@@ -97,7 +97,7 @@ if !exists('g:timl_requires')
 endif
 
 function! timl#loader#require(ns, ...) abort
-  let ns = timl#symbol#coerce(a:ns).name
+  let ns = timl#symbol#cast(a:ns).name
   if !has_key(g:timl_requires, ns) || a:0 && a:1
     call timl#loader#relative(tr(ns, '.-', '/_'))
     let g:timl_requires[ns] = 1

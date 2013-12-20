@@ -9,15 +9,15 @@ if !exists('s:symbols')
   let s:symbols = {}
 endif
 
-let s:symbol = timl#keyword('#timl.lang/Symbol')
 function! timl#symbol#intern(str) abort
   if !has_key(s:symbols, a:str)
-    let s:symbols[a:str] = timl#bless(s:symbol, {
+    let end = matchend(a:str, '^\%(&\=\w:\|\$\|&\%($\|form$\|env$\)\@!\|[^/]*/\).\@=')
+    let s:symbols[a:str] = timl#bless(s:type, {
           \ '0': a:str,
           \ 'str': a:str,
           \ 'meta': g:timl#nil,
-          \ 'namespace': matchstr(a:str, '^[^/]*\ze/.'),
-          \ 'name': matchstr(a:str, '[^/]*.$')})
+          \ 'namespace': end == -1 ? '' : a:str[0 : end-(a:str[end-1] ==# '/' ? 2 : 1)],
+          \ 'name': end == -1 ? a:str : a:str[end : -1]})
     lockvar s:symbols[a:str]
   endif
   return s:symbols[a:str]
@@ -31,16 +31,16 @@ endfunction
 
 function! timl#symbol#test(symbol)
   return type(a:symbol) == type({}) &&
-        \ get(a:symbol, '#tag') is# s:symbol
+        \ get(a:symbol, '#tag') is# s:type
 endfunction
 
 function! timl#symbol#is(symbol, ...)
   return type(a:symbol) == type({}) &&
-        \ get(a:symbol, '#tag') is# s:symbol &&
+        \ get(a:symbol, '#tag') is# s:type &&
         \ (a:0 ? a:symbol[0] ==# a:1 : 1)
 endfunction
 
-function! timl#symbol#coerce(symbol)
+function! timl#symbol#cast(symbol)
   if !timl#symbol#test(a:symbol)
     throw 'timl: symbol expected but received '.timl#type#string(a:symbol)
   endif
@@ -55,3 +55,5 @@ function! timl#symbol#gen(...)
   let s:id = get(s:, 'id', 0) + 1
   return timl#symbol((a:0 ? a:1 : 'G__').s:id)
 endfunction
+
+let s:type = timl#type#intern('timl.lang/Symbol')

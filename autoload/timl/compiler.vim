@@ -199,7 +199,7 @@ function! s:expr_sf_let_STAR_(file, env, form) abort
 endfunction
 
 function! s:add_local(env, sym) abort
-  let str = timl#symbol#coerce(a:sym)[0]
+  let str = timl#symbol#cast(a:sym)[0]
   let a:env.locals[str] = s:localfy(str)
 endfunction
 
@@ -211,7 +211,7 @@ function! s:emit_sf_let_STAR_(file, env, form) abort
   let env = s:copy_locals(a:env)
   for i in range(0, len(ary)-1, 2)
     let expr = s:emit(a:file, s:with_context(env, 'expr'), ary[i+1])
-    call s:emitln(a:file, 'let '.s:localfy(timl#symbol#coerce(ary[i])[0]).' = '.expr)
+    call s:emitln(a:file, 'let '.s:localfy(timl#symbol#cast(ary[i])[0]).' = '.expr)
     call s:add_local(env, ary[i])
   endfor
   let body = timl#nnext(a:form)
@@ -266,7 +266,7 @@ function! s:expr_sf_function(file, env, form) abort
 endfunction
 
 function! s:expr_sf_var(file, env, form) abort
-  let sym = timl#symbol#coerce(timl#fnext(a:form))
+  let sym = timl#symbol#cast(timl#fnext(a:form))
   let var = timl#namespace#maybe_resolve(g:timl#core#_STAR_ns_STAR_, sym)
   if var isnot# g:timl#nil
     return timl#compiler#serialize(var)
@@ -496,7 +496,7 @@ function! s:expr_sf_set_BANG_(file, env, form) abort
     return var
   elseif timl#cons#test(target) && timl#symbol#is(timl#first(target), '.')
     let key = substitute(timl#str(timl#first(timl#nnext(target))), '^-', '', '')
-    let target2 = timl#symbol#coerce(timl#fnext(target))
+    let target2 = timl#symbol#cast(timl#fnext(target))
     if has_key(a:env.locals, target2[0])
       let var = a:env.locals[target2[0]]
     else
@@ -514,7 +514,7 @@ let s:kline = timl#keyword#intern('line')
 let s:kfile = timl#keyword#intern('file')
 function! s:expr_sf_def(file, env, form) abort
   let rest = timl#next(a:form)
-  let var = timl#symbol#coerce(timl#first(rest))
+  let var = timl#symbol#cast(timl#first(rest))
   if has_key(a:env, 'file')
     let var = timl#meta#vary(var, g:timl#core#assoc, s:kline, a:env.line, s:kfile, a:env.file)
   endif

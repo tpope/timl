@@ -12,7 +12,7 @@ if !exists('g:timl#namespaces')
 endif
 
 function! timl#namespace#create(name) abort
-  let name = timl#symbol#coerce(a:name)
+  let name = timl#symbol#cast(a:name)
   if !has_key(g:timl#namespaces, name[0])
     let g:timl#namespaces[name[0]] = timl#bless(s:type, {'name': name, 'aliases': {}, 'mappings': {}})
   endif
@@ -31,7 +31,7 @@ endfunction
 
 function! timl#namespace#refer(name) abort
   let me = g:timl#core#_STAR_ns_STAR_
-  let sym = timl#symbol#coerce(a:name)
+  let sym = timl#symbol#cast(a:name)
   let ns = timl#namespace#find(sym)
   let _ = {}
   for [name, var] in items(ns.mappings)
@@ -45,7 +45,7 @@ endfunction
 
 function! timl#namespace#alias(alias, name) abort
   let me = g:timl#core#_STAR_ns_STAR_
-  let me.aliases[timl#symbol#coerce(a:alias).name] = a:name
+  let me.aliases[timl#symbol#cast(a:alias).name] = a:name
   return g:timl#nil
 endfunction
 
@@ -66,7 +66,7 @@ endfunction
 
 function! timl#namespace#maybe_resolve(ns, sym, ...)
   let ns = timl#namespace#the(a:ns)
-  let sym = timl#symbol#coerce(a:sym)
+  let sym = timl#symbol#cast(a:sym)
   if has_key(ns.mappings, sym.str)
     return ns.mappings[sym.str]
   endif
@@ -86,7 +86,7 @@ endfunction
 
 function! timl#namespace#intern(ns, name, ...)
   let ns = timl#namespace#the(a:ns)
-  let str = ns.name[0].'/'.timl#symbol#coerce(a:name)[0]
+  let str = ns.name[0].'/'.timl#symbol#cast(a:name)[0]
   let munged = timl#munge(str)
   let meta = copy(a:name.meta is# g:timl#nil ? timl#map#create([]) : a:name.meta)
   let meta.name = a:name

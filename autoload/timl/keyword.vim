@@ -24,7 +24,7 @@ function! timl#keyword#test(keyword)
         \ get(s:keywords, a:keyword[0], 0) is a:keyword
 endfunction
 
-function! timl#keyword#coerce(keyword)
+function! timl#keyword#cast(keyword)
   if !timl#keyword#test(a:keyword)
     throw 'timl: keyword expected but received '.timl#type#string(a:keyword)
   endif

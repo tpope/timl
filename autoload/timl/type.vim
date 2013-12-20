@@ -84,7 +84,7 @@ function! s:isap(tag, parent)
 endfunction
 
 function! timl#type#isap(tag, parent)
-  return timl#keyword#coerce(a:tag) is# timl#keyword#coerce(a:parent)
+  return timl#keyword#cast(a:tag) is# timl#keyword#cast(a:parent)
         \ || has_key(get(g:timl_hierarchy.ancestors, a:tag[0], {}), a:parent[0])
 endfunction
 
@@ -92,8 +92,8 @@ function! timl#type#derive(tag, parent)
   let tp = g:timl_hierarchy.parents
   let td = g:timl_hierarchy.descendants
   let ta = g:timl_hierarchy.ancestors
-  let tag = timl#keyword#coerce(a:tag)
-  let parent = timl#keyword#coerce(a:parent)
+  let tag = timl#keyword#cast(a:tag)
+  let parent = timl#keyword#cast(a:parent)
   if !has_key(tp, tag[0])
     let tp[tag[0]] = {}
   endif
