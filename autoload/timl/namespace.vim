@@ -29,14 +29,36 @@ function! timl#namespace#select(name) abort
   return g:timl#core#_STAR_ns_STAR_
 endfunction
 
-function! timl#namespace#refer(name) abort
+let s:k_only = timl#keyword#intern('only')
+let s:k_exclude = timl#keyword#intern('exclude')
+function! timl#namespace#refer(name, ...) abort
   let me = g:timl#core#_STAR_ns_STAR_
   let sym = timl#symbol#cast(a:name)
   let ns = timl#namespace#find(sym)
+  let i = 0
+  let only = keys(ns.mappings)
+  let exclude = []
+  while i < a:0
+    if a:000[i] is# s:k_only
+      let only = map(copy(timl#ary(get(a:000, i+1, []))), 'timl#symbol#cast(v:val).name')
+      let i += 2
+    elseif a:000[i] is# s:k_exclude
+      let exclude = map(copy(timl#ary(get(a:000, i+1, []))), 'timl#symbol#cast(v:val).name')
+      let i += 2
+    elseif timl#keyword#test(a:000[i])
+      throw 'timl#namespace: invalid option :'.a:000[i][0]
+    else
+      throw 'timl#namespace: invalid option type '.timl#type#string(a:000[i][0])
+    endif
+  endwhile
   let _ = {}
-  for [name, var] in items(ns.mappings)
+  for name in only
+    if !has_key(ns.mappings, name)
+      throw 'timl#namespace: no such mapping '.name
+    endif
+    let var = ns.mappings[name]
     let _.private = get(var.meta, 'private', g:timl#nil)
-    if var.ns is# ns && (_.private is# g:timl#false || _.private is# g:timl#nil)
+    if var.ns is# ns && (_.private is# g:timl#false || _.private is# g:timl#nil) && index(exclude, name) == -1
       let me.mappings[name] = var
     endif
   endfor
