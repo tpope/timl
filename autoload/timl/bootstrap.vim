@@ -5,6 +5,8 @@ if exists("g:autoloaded_timl_lang")
 endif
 let g:autoloaded_timl_lang = 1
 
+" Section: Util
+
 function! s:function(name) abort
   return function(substitute(a:name,'^s:',matchstr(expand('<sfile>'), '.*\zs<SNR>\d\+_'),''))
 endfunction
@@ -28,14 +30,18 @@ function! s:implement(type, ...) abort
   endfor
 endfunction
 
-let s:ns = timl#namespace#create(timl#symbol#intern('timl.core'))
-function! s:define_apply(name, fn) abort
-  let name = timl#symbol#intern(a:name)
-  call timl#namespace#intern(s:ns, name, timl#bless('timl.lang/Function', {
-        \ 'name': name,
-        \ 'ns': s:ns,
-        \ 'apply': s:function(a:fn)})
+function! s:intern_fn(name, apply, ...) abort
+  let fn = timl#bless('timl.lang/Function', {
+          \ 'name': a:name,
+          \ 'ns': s:ns,
+          \ 'apply': s:function(a:apply)})
+  if a:0
+    let fn['call'] = s:function(a:1)
+  endif
+  call timl#namespace#intern(s:ns, a:name, fn)
 endfunction
+
+let s:ns = timl#namespace#create(timl#symbol#intern('timl.core'))
 
 function! s:apply(_) dict abort
   return call(self.call, a:_, self)
@@ -52,11 +58,7 @@ function! s:define_call(name, fn)
   else
     let name = timl#symbol#intern(a:name)
   endif
-  call timl#namespace#intern(s:ns, name, timl#bless('timl.lang/Function', {
-        \ 'name': name,
-        \ 'ns': s:ns,
-        \ 'apply': s:function('s:apply'),
-        \ 'call': s:function(a:fn)}))
+  call s:intern_fn(name, 's:apply', a:fn)
 endfunction
 
 function! s:define_pred(name, fn)
@@ -65,19 +67,11 @@ function! s:define_pred(name, fn)
   else
     let name = timl#symbol#intern(a:name)
   endif
-  call timl#namespace#intern(s:ns, name, timl#bless('timl.lang/Function', {
-        \ 'name': name,
-        \ 'ns': s:ns,
-        \ 'apply': s:function('s:predicate'),
-        \ 'call': s:function(a:fn)}))
+  call s:intern_fn(name, 's:predicate', a:fn)
 endfunction
 
-function! s:define_apply(name, fn)
-  let name = timl#symbol#intern(a:name)
-  call timl#namespace#intern(s:ns, name, timl#bless('timl.lang/Function', {
-        \ 'name': name,
-        \ 'ns': s:ns,
-        \ 'apply': s:function(a:fn)}))
+function! s:define_apply(name, fn) abort
+  call s:intern_fn(timl#symbol#intern(a:name), a:fn)
 endfunction
 
 " Section: Meta
