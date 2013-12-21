@@ -46,13 +46,13 @@ endfunction
 let s:kmacro = timl#keyword#intern('macro')
 function! timl#function#defmacro(form, env, name, params, ...)
   let extra = [s:form, s:env]
-  if type(a:params) == type([])
-    let body = [extra + a:params] + a:000
+  if timl#vectorp(a:params)
+    let body = [timl#vector#claim(extra + timl#ary(a:params))] + a:000
   else
     let _ = {}
     let body = []
     for _.list in [a:params] + a:000
-      call add(body, timl#cons#create(extra + timl#first(_.list), timl#next(_.list)))
+      call add(body, timl#cons#create(timl#vector#claim(extra + timl#ary(timl#first(_.list))), timl#next(_.list)))
     endfor
   endif
   let name = copy(a:name)

@@ -58,7 +58,7 @@ function! timl#printer#string(x)
     return '('.join(acc, ' ').')'
 
   elseif type(a:x) == type([])
-    return '['.join(map(a:x[:], 'timl#printer#string(v:val)'), ' ') . ']'
+    return '#*['.join(map(a:x[:], 'timl#printer#string(v:val)'), ' ') . ']'
 
   elseif type == 'vim/Dictionary'
     let acc = []
@@ -67,6 +67,9 @@ function! timl#printer#string(x)
       unlet! V
     endfor
     return '#*{' . join(acc, ' ') . '}'
+
+  elseif timl#vectorp(a:x)
+    return '['.join(map(timl#ary(a:x), 'timl#printer#string(v:val)'), ' ') . ']'
 
   elseif timl#mapp(a:x)
     let acc = []
@@ -134,7 +137,7 @@ command! -nargs=1 TimLPAssert
 
 TimLPAssert timl#printer#string('foo') ==# '"foo"'
 TimLPAssert timl#printer#string(timl#symbol('foo')) ==# 'foo'
-TimLPAssert timl#printer#string([1,2]) ==# '[1 2]'
+TimLPAssert timl#printer#string(timl#vector(1,2)) ==# '[1 2]'
 TimLPAssert timl#printer#string({"a": 1, "b": 2}) ==# '#*{"a" 1 "b" 2}'
 
 delcommand TimLPAssert

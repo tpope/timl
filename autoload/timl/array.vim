@@ -7,20 +7,14 @@ endif
 function! timl#array#lock(array) abort
   lockvar 1 a:array
   return a:array
-  " let locked = map(copy(a:array), "islocked('v:val')")
-  " lockvar 2 a:array
-  " for i in range(len(a:array))
-  "   if !locked[i] && type(a:array[i]) =~# '^[34]$'
-  "     unlockvar 1 a:array[i]
-  "   endif
-  " endfor
-  " return a:array
 endfunction
 
 let s:type = type([])
 function! timl#array#coerce(seq) abort
   if type(a:seq) ==# s:type
     return a:seq is# g:timl#nil ? [] : a:seq
+  elseif timl#type#string(a:seq) ==# 'timl.lang/Vector'
+    return copy(a:seq.array)
   endif
   let array = []
   let _ = {'seq': timl#seq(a:seq)}
@@ -60,12 +54,7 @@ function! timl#array#nth(this, idx, ...) abort
 endfunction
 
 function! timl#array#conj(this, ...) abort
-  let this = a:this
-  let that = a:this + a:000
-  if islocked('this')
-    lockvar 1 that
-  endif
-  return that
+  return a:this + a:000
 endfunction
 
 function! timl#array#conjb(this, ...) abort
@@ -73,30 +62,9 @@ function! timl#array#conjb(this, ...) abort
 endfunction
 
 function! timl#array#empty(this) abort
-  let this = a:this
-  let empty = []
-  if islocked('this')
-    lockvar 1 empty
-  endif
-  return this
-endfunction
-
-function! timl#array#transient(this) abort
-  let this = a:this
-  return islocked('this') ? copy(this) : this
+  return []
 endfunction
 
 function! timl#array#persistentb(this) abort
-  lockvar 1 a:this
-  return a:this
-endfunction
-
-function! timl#array#sub(list, start, ...) abort
-  if a:0 && a:1 == 0
-    return []
-  elseif a:0
-    return a:list[a:start : (a:1 < 0 ? a:1 : a:1-1)]
-  else
-    return a:list[a:start :]
-  endif
+  return timl#vector#claim(a:this)
 endfunction

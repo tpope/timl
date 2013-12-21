@@ -307,11 +307,27 @@ call s:implement('vim/List',
 
 call s:implement('vim/List',
       \ 'equal?', 'timl#equality#seq',
-      \ 'transient', 'timl#array#transient',
       \ 'conj!', 'timl#array#conjb',
       \ 'persistent!', 'timl#array#persistentb')
 
-call s:define_call('subvec', 'timl#array#sub')
+" Section: Vector
+
+call s:implement('timl.lang/Vector',
+      \ 'seq', 'timl#vector#seq',
+      \ 'first', 'timl#vector#first',
+      \ 'more', 'timl#vector#rest',
+      \ 'lookup', 'timl#vector#lookup',
+      \ 'nth', 'timl#vector#nth',
+      \ 'count', 'timl#vector#count',
+      \ 'conj', 'timl#vector#conj',
+      \ 'empty', 'timl#vector#empty',
+      \ '_invoke', 'timl#vector#lookup')
+
+call s:implement('timl.lang/Vector',
+      \ 'equal?', 'timl#equality#seq',
+      \ 'transient', 'timl#vector#transient')
+
+call s:define_call('subvec', 'timl#vector#sub')
 call s:define_pred('vector?', 'timl#vectorp')
 call s:define_call('vec', 'timl#vec')
 call s:define_apply('vector', 'timl#vec')

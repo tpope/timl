@@ -88,7 +88,7 @@ function! s:read(port, ...) abort
     lockvar 1 data
     return data
   elseif token == '['
-    return timl#vec(s:read_until(port, ']'))
+    return timl#vector#claim(s:read_until(port, ']'))
   elseif token == '{'
     let list = s:read_until(port, '}')
     if len(list) % 2 != 0
@@ -149,7 +149,7 @@ function! s:read(port, ...) abort
     if timl#mapp(next)
       return timl#dictionary#create([next])
     elseif timl#vectorp(next)
-      return timl#vec(next)
+      return timl#ary(next)
     else
       return timl#list(timl#symbol('function'), next)
     endif

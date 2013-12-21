@@ -229,12 +229,7 @@ function! timl#ary(coll) abort
 endfunction
 
 function! timl#vec(coll) abort
-  if type(a:coll) == type([])
-    let vec = copy(a:coll)
-  else
-    let vec = timl#array#coerce(a:coll)
-  endif
-  return timl#array#lock(vec)
+  return timl#vector#coerce(a:coll)
 endfunction
 
 function! timl#vector(...) abort
@@ -242,7 +237,7 @@ function! timl#vector(...) abort
 endfunction
 
 function! timl#vectorp(obj) abort
-  return type(a:obj) == type([]) && a:obj isnot# g:timl#nil
+  return timl#type#canp(a:obj, g:timl#core#nth)
 endfunction
 
 " }}}1
