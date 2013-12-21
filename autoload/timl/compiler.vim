@@ -303,9 +303,12 @@ function! s:one_fn(file, env, form, name, temp, catch_errors) abort
     call s:emitln(a:file, 'try')
   endif
   if !empty(positional)
-    call s:emitln(a:file, "let [".join(positional, ', ').(exists('rest') ? '; '.rest : '')."] = a:_")
+    call s:emitln(a:file, "let [".join(positional, ', ').(exists('rest') ? '; rest' : '')."] = a:_")
+    if exists('rest')
+      call s:emitln(a:file, "let ".rest." = timl#array#seq(rest)")
+    endif
   elseif exists('rest')
-    call s:emitln(a:file, "let ".rest." = a:_")
+    call s:emitln(a:file, "let ".rest." = timl#array#seq(a:_)")
   endif
   if a:catch_errors && !empty(positional)
     call s:emitln(a:file, 'catch /^Vim(let):E68[78]:/')
