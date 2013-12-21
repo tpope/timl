@@ -82,7 +82,7 @@ function! timl#compiler#serialize(x)
     return 'timl#keyword#intern('.timl#compiler#serialize(a:x[0]).')'
 
   elseif timl#symbol#test(a:x)
-    if has_key(a:x, 'meta')
+    if a:x.meta isnot# g:timl#nil
       return 'timl#symbol#intern_with_meta('.timl#compiler#serialize(a:x[0]).', '.timl#compiler#serialize(a:x.meta).')'
     else
       return 'timl#symbol#intern('.timl#compiler#serialize(a:x[0]).')'
