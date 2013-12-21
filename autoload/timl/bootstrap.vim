@@ -33,8 +33,8 @@ endfunction
 function! s:intern_fn(name, apply, ...) abort
   let fn = timl#bless('timl.lang/Function', {
           \ 'name': a:name,
-          \ 'ns': s:ns,
-          \ 'apply': s:function(a:apply)})
+          \ 'ns': s:ns})
+  let fn['#apply'] = s:function(a:apply)
   if a:0
     let fn['call'] = s:function(a:1)
   endif

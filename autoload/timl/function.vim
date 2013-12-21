@@ -25,6 +25,10 @@ function! timl#function#invoke_self(...) dict
   return timl#call(self, a:000)
 endfunction
 
+function! timl#function#apply_self(_) dict
+  return timl#call(self, a:_)
+endfunction
+
 let s:def = timl#symbol('def')
 let s:lets = timl#symbol('let*')
 let s:fns = timl#symbol('fn*')

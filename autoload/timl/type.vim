@@ -49,6 +49,7 @@ function! timl#type#bless(class, ...) abort
   let obj = a:0 ? a:1 : {}
   let obj['#tagged'] = g:timl_tag_sentinel
   let obj['#tag'] = type(a:class) == type('') ? timl#keyword#intern('#'.a:class) : a:class
+  let obj['#apply'] = function('timl#function#apply_self')
   return obj
 endfunction
 
@@ -143,21 +144,25 @@ function! s:get_method(this, type)
   return get(a:this.cache, a:type, g:timl#nil)
 endfunction
 
-function! timl#type#dispatch(this, ...) abort
-  let type = timl#type#string(a:1)
-  if a:this.hierarchy isnot# g:timl_hierarchy
-    let a:this.cache = {}
-    let a:this.hierarchy = g:timl_hierarchy
+function! timl#type#apply(_) dict abort
+  let type = timl#type#string(a:_[0])
+  if self.hierarchy isnot# g:timl_hierarchy
+    let self.cache = {}
+    let self.hierarchy = g:timl_hierarchy
   endif
-  if has_key(a:this.cache, type)
-    let Dispatch = a:this.cache[type]
+  if has_key(self.cache, type)
+    let Dispatch = self.cache[type]
   else
-    let Dispatch = s:get_method(a:this, type)
+    let Dispatch = s:get_method(self, type)
   endif
   if Dispatch isnot# g:timl#nil
-    return timl#call(Dispatch, a:000)
+    return timl#call(Dispatch, a:_)
   endif
-  throw 'timl#type: no '.a:this.ns.name[0].'/'.a:this.name[0].' dispatch for '.type
+  throw 'timl#type: no '.self.ns.name[0].'/'.self.name[0].' dispatch for '.type
+endfunction
+
+function! timl#type#dispatch(this, ...) abort
+  return call('timl#type#apply', [a:000], a:this)
 endfunction
 
 " Section: Method Creation
@@ -168,12 +173,14 @@ function! timl#type#define_method(ns, name, type, fn) abort
     let ns = timl#namespace#find(a:ns)
     let name = timl#symbol#intern(a:name)
     unlet! g:{munged}
-    call timl#namespace#intern(ns, name, timl#bless('timl.lang/MultiFn', {
-          \ 'ns': ns,
-          \ 'name': name,
-          \ 'cache': {},
-          \ 'hierarchy': g:timl_hierarchy,
-          \ 'methods': {}}))
+    let fn = timl#bless('timl.lang/MultiFn', {
+              \ 'ns': ns,
+              \ 'name': name,
+              \ 'cache': {},
+              \ 'hierarchy': g:timl_hierarchy,
+              \ 'methods': {}})
+    let fn['#apply'] = function('timl#type#apply')
+    call timl#namespace#intern(ns, name, fn)
   endif
   let multi = g:{munged}
   let multi.methods[a:type is# g:timl#nil ? ' ' : timl#str(a:type)] = a:fn

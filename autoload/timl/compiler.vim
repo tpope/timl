@@ -297,7 +297,7 @@ function! s:one_fn(file, env, form, name, temp, catch_errors) abort
       let arity += 1
     endif
   endfor
-  call s:emitln(a:file, "function ".a:temp."(_) abort")
+  call s:emitln(a:file, "function! ".a:temp."(_) abort")
   call s:emitln(a:file, "let locals = copy(self.locals)")
   if len(a:name)
     call s:emitln(a:file, 'let '.s:localfy(a:name).' = self')
@@ -347,7 +347,7 @@ function! s:expr_sf_fn_STAR_(file, env, form) abort
     call s:emitln(a:file, 'let '.temp.'.name = timl#symbol('.string(name).')')
   endif
   if timl#vectorp(timl#first(_.next))
-    call s:one_fn(a:file, env, _.next, name, temp.'.apply', 1)
+    call s:one_fn(a:file, env, _.next, name, temp.".apply", 1)
   elseif timl#cons#test(timl#first(_.next))
     let c = char2nr('a')
     let fns = {}
@@ -356,7 +356,7 @@ function! s:expr_sf_fn_STAR_(file, env, form) abort
       let _.next = timl#next(_.next)
       let c += 1
     endwhile
-    call s:emitln(a:file, "function ".temp.".apply(_) abort")
+    call s:emitln(a:file, "function! ".temp.".apply(_) abort")
     call s:emitln(a:file, "if 0")
     for arity in sort(map(keys(fns), 'printf("%04d", v:val)'))
       if arity >= 1000
@@ -371,9 +371,10 @@ function! s:expr_sf_fn_STAR_(file, env, form) abort
     call s:emitln(a:file, "endif")
     call s:emitln(a:file, "endfunction")
   endif
+  call s:emitln(a:file, "let ".temp."['#apply'] = ".temp.".apply")
   let meta = timl#compiler#location_meta(a:env.file, a:form)
   if !empty(meta)
-    call s:emitln(a:file, 'let g:timl_functions[join(['.temp.'.apply])] = '.timl#compiler#serialize(meta))
+    call s:emitln(a:file, 'let g:timl_functions[join(['.temp."['#apply']])] = ".timl#compiler#serialize(meta))
   endif
   return temp
 endfunction
@@ -625,7 +626,7 @@ function! s:emit(file, env, form) abort
       call s:emitln(a:file, 'return '.expr)
       return ''
     elseif env.context == 'statement'
-      if expr =~# '^[[:alnum:]_#]\+('
+      if expr !~# '^["'']' && expr =~# '('
         call s:emitln(a:file, 'call '.expr)
       endif
       return ''

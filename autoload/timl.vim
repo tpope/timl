@@ -243,17 +243,11 @@ endfunction
 " }}}1
 " Section: Eval {{{1
 
-let s:function_tag = timl#keyword('#timl.lang/Function')
-let s:multifn_tag = timl#keyword('#timl.lang/MultiFn')
 function! timl#call(Func, args, ...) abort
   if type(a:Func) == type(function('tr'))
     return call(a:Func, a:args, a:0 ? a:1 : {})
-  elseif type(a:Func) == type({}) && get(a:Func, '#tag') is# s:function_tag
-    return a:Func.apply(a:args)
-  elseif type(a:Func) == type({}) && get(a:Func, '#tag') is# s:multifn_tag
-    return call('timl#type#dispatch', [a:Func] + a:args)
   else
-    return call('timl#type#dispatch', [g:timl#core#_invoke, a:Func] + (a:0 ? [a:1] : []) + a:args)
+    return a:Func['#apply'](a:args)
   endif
 endfunction
 
