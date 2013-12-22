@@ -593,6 +593,8 @@ function! s:emit(file, env, form) abort
         let args = s:expr_args(a:file, env, timl#next(a:form))
         if timl#cons#test(First) && timl#symbol#is(timl#first(First), 'function')
           let expr = timl#munge(timl#fnext(First)).'('.args.')'
+        elseif type(First) == type(function('tr'))
+          let expr = join([First]).'('.args.')'
         else
           let expr = 'timl#call('.s:expr(a:file, env, First).', ['.args.'])'
         endif
