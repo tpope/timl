@@ -229,21 +229,21 @@ call s:implement('timl.lang/Symbol',
       \ 'meta', 'timl#meta#from_attribute',
       \ 'with-meta', 'timl#meta#copy_assign_lock',
       \ 'equal?', 'timl#symbol#equal',
-      \ '_invoke', 's:this_get')
+      \ 'call', 'timl#keyword#call')
 
 call s:implement('timl.lang/Keyword',
-      \ '_invoke', 's:this_get')
+      \ 'call', 'timl#keyword#call')
 
 " Section: Function
 
 call s:implement('timl.lang/Function',
-      \ '_invoke', 'timl#function#invoke')
+      \ 'call', 'timl#function#call')
 
 call s:implement('timl.lang/MultiFn',
-      \ '_invoke', 'timl#type#invoke')
+      \ 'call', 'timl#type#dispatch')
 
 call s:implement('vim/Funcref',
-      \ '_invoke', 'call')
+      \ 'call', 'timl#funcref#call')
 
 call s:define_apply('apply', 'timl#function#apply')
 call s:define_call('identity', 'timl#function#identity')
@@ -280,7 +280,7 @@ call s:define_call('intern', 'timl#namespace#intern')
 call s:implement('timl.lang/Var',
       \ 'meta', 'timl#meta#from_attribute',
       \ 'reset-meta!', 'timl#var#reset_meta',
-      \ '_invoke', 'timl#var#invoke',
+      \ 'call', 'timl#var#call',
       \ 'deref', 'timl#var#get')
 call s:define_call('var-get', 'timl#var#get')
 call s:define_call('find-var', 'timl#var#find')
@@ -314,7 +314,7 @@ call s:implement('timl.lang/Vector',
       \ 'count', 'timl#vector#count',
       \ 'conj', 'timl#vector#conj',
       \ 'empty', 'timl#vector#empty',
-      \ '_invoke', 'timl#vector#lookup')
+      \ 'call', 'timl#vector#call')
 
 call s:implement('timl.lang/Vector',
       \ 'equal?', 'timl#equality#seq',
@@ -456,7 +456,7 @@ call s:implement('timl.lang/HashMap',
       \ 'assoc', 'timl#map#assoc',
       \ 'dissoc', 'timl#map#dissoc',
       \ 'transient', 'timl#map#transient',
-      \ 'invoke', 'timl#map#lookup')
+      \ 'call', 'timl#map#call')
 
 call s:implement('timl.lang/HashMap',
       \ 'conj!', 'timl#map#conjb',
@@ -480,7 +480,7 @@ call s:implement('timl.lang/HashSet',
 call s:implement('timl.lang/HashSet',
       \ 'disj', 'timl#set#disj',
       \ 'transient', 'timl#set#transient',
-      \ '_invoke', 'timl#set#lookup')
+      \ 'call', 'timl#set#call')
 
 call s:implement('timl.lang/TransientHashSet',
       \ 'count', 'timl#set#count',

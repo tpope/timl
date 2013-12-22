@@ -160,3 +160,7 @@ function! timl#set#persistentb(this) abort
   lockvar 1 a:this
   return a:this
 endfunction
+
+function! timl#set#call(this, _) abort
+  return call('timl#set#lookup', [a:this] + a:_)
+endfunction

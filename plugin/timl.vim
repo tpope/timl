@@ -98,7 +98,7 @@ function! s:autoload(function) abort
       endfor
     endif
   endif
-  if has_key(g:, a:function) && timl#type#canp(g:{a:function}, g:timl#core#_invoke)
+  if has_key(g:, a:function) && timl#type#canp(g:{a:function}, g:timl#core#call)
     let body = ["function ".a:function."(...)",
           \ "  return timl#call(g:".a:function.", a:000)",
           \ "endfunction"]

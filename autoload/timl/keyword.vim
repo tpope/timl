@@ -31,6 +31,13 @@ function! timl#keyword#cast(keyword)
   return a:keyword
 endfunction
 
+function! timl#keyword#call(this, _) abort
+  if len(a:_) < 1 || len(a:_) > 2
+    throw 'timl: arity error'
+  endif
+  return g:timl#core#lookup.__apply__([a:_[0], a:this] + a:_[1:-1])
+endfunction
+
 function! timl#keyword#apply(_) dict abort
-  return g:timl#core#lookup.__apply__([a:_[0], self] + a:_[1:-1])
+  return timl#keyword#call(self, a:_)
 endfunction

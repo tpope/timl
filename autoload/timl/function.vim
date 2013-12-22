@@ -5,8 +5,8 @@ if exists('g:autoloaded_timl_function')
 endif
 let g:autoloaded_timl_function = 1
 
-function! timl#function#invoke(this, ...) abort
-  return a:this.apply(a:000)
+function! timl#function#call(this, _) abort
+  return a:this.apply(a:_)
 endfunction
 
 function! timl#function#apply(_) abort

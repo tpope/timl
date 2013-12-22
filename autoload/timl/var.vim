@@ -9,8 +9,8 @@ function! timl#var#get(var) abort
   return g:{a:var.munged}
 endfunction
 
-function! timl#var#invoke(var, ...) abort
-  return timl#call(g:{a:var.munged}, a:000)
+function! timl#var#call(var, _) abort
+  return timl#call(g:{a:var.munged}, a:_)
 endfunction
 
 function! timl#var#test(this) abort

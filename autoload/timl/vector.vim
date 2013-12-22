@@ -48,7 +48,7 @@ endfunction
 
 function! timl#vector#lookup(this, idx, ...) abort
   if type(a:idx) == type(0) && a:idx >= 0
-    return get(a:this.array, a:idx, a:0 ? a:1 g:timl#nil)
+    return get(a:this.array, a:idx, a:0 ? a:1 : g:timl#nil)
   endif
   return a:0 ? a:1 : g:timl#nil
 endfunction
@@ -84,4 +84,8 @@ function! timl#vector#sub(this, start, ...) abort
   else
     return timl#vector#claim(array[a:start :])
   endif
+endfunction
+
+function! timl#vector#call(this, _) abort
+  return call('timl#vector#lookup', [a:this] + a:_)
 endfunction

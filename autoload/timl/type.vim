@@ -54,7 +54,7 @@ function! timl#type#bless(class, ...) abort
 endfunction
 
 function! timl#type#invoke_apply(_) dict
-  return g:timl#core#_invoke.__apply__([self] + a:_)
+  return g:timl#core#call.__apply__([self, a:_])
 endfunction
 
 " Section: Hierarchy
@@ -166,8 +166,8 @@ function! timl#type#apply(_) dict abort
   throw 'timl#type: no '.self.ns.name[0].'/'.self.name[0].' dispatch for '.type
 endfunction
 
-function! timl#type#invoke(this, ...) abort
-  return call('timl#type#apply', [a:000], a:this)
+function! timl#type#dispatch(this, _) abort
+  return call('timl#type#apply', [a:_], a:this)
 endfunction
 
 " Section: Method Creation

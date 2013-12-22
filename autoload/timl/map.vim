@@ -152,3 +152,7 @@ function! timl#map#persistentb(this) abort
   lockvar 1 a:this
   return a:this
 endfunction
+
+function! timl#map#call(this, _) abort
+  return call('timl#map#lookup', [a:this] + a:_)
+endfunction
