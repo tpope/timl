@@ -118,7 +118,7 @@ function! timl#str(val) abort
 endfunction
 
 function! timl#equalp(x, y) abort
-  return timl#invoke(g:timl#core#equal_QMARK_, a:x, a:y) is# g:timl#true
+  return timl#invoke(g:timl#core#equiv, a:x, a:y) is# g:timl#true
 endfunction
 
 " }}}1

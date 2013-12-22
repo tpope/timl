@@ -228,7 +228,7 @@ endfunction
 call s:implement('timl.lang/Symbol',
       \ 'meta', 'timl#meta#from_attribute',
       \ 'with-meta', 'timl#meta#copy_assign_lock',
-      \ 'equal?', 'timl#symbol#equal',
+      \ 'equiv', 'timl#symbol#equal',
       \ 'call', 'timl#keyword#call')
 
 call s:implement('timl.lang/Keyword',
@@ -299,7 +299,7 @@ call s:implement('vim/List',
       \ 'empty', 'timl#array#empty')
 
 call s:implement('vim/List',
-      \ 'equal?', 'timl#equality#seq',
+      \ 'equiv', 'timl#equality#seq',
       \ 'conj!', 'timl#array#conjb',
       \ 'persistent!', 'timl#array#persistentb')
 
@@ -317,7 +317,7 @@ call s:implement('timl.lang/Vector',
       \ 'call', 'timl#vector#call')
 
 call s:implement('timl.lang/Vector',
-      \ 'equal?', 'timl#equality#seq',
+      \ 'equiv', 'timl#equality#seq',
       \ 'transient', 'timl#vector#transient')
 
 call s:define_call('subvec', 'timl#vector#sub')
@@ -331,7 +331,7 @@ call s:implement('timl.lang/Cons',
       \ 'meta', 'timl#meta#from_attribute',
       \ 'with-meta', 'timl#meta#copy_assign_lock',
       \ 'seq', 'timl#function#identity',
-      \ 'equal?', 'timl#equality#seq',
+      \ 'equiv', 'timl#equality#seq',
       \ 'first', 'timl#cons#first',
       \ 'more', 'timl#cons#more',
       \ 'conj', 'timl#cons#conj',
@@ -352,7 +352,7 @@ call s:implement('timl.lang/EmptyList',
       \ 'meta', 'timl#meta#from_attribute',
       \ 'with-meta', 'timl#meta#copy_assign_lock',
       \ 'seq', 's:nil',
-      \ 'equal?', 'timl#equality#seq',
+      \ 'equiv', 'timl#equality#seq',
       \ 'first', 's:nil',
       \ 'more', 'timl#function#identity',
       \ 'count', 's:zero',
@@ -376,7 +376,7 @@ call s:implement('timl.lang/ArraySeq',
       \ 'meta', 'timl#meta#from_attribute',
       \ 'with-meta', 'timl#meta#copy_assign_lock',
       \ 'seq', 'timl#function#identity',
-      \ 'equal?', 'timl#equality#seq',
+      \ 'equiv', 'timl#equality#seq',
       \ 'first', 'timl#array_seq#first',
       \ 'more', 'timl#array_seq#more',
       \ 'count', 'timl#array_seq#count',
@@ -395,7 +395,7 @@ call s:implement('timl.lang/ChunkedCons',
       \ 'meta', 'timl#meta#from_attribute',
       \ 'with-meta', 'timl#meta#copy_assign_lock',
       \ 'seq', 'timl#function#identity',
-      \ 'equal?', 'timl#equality#seq',
+      \ 'equiv', 'timl#equality#seq',
       \ 'first', 'timl#chunked_cons#first',
       \ 'more', 'timl#chunked_cons#more',
       \ 'count', 'timl#chunked_cons#count',
@@ -412,7 +412,7 @@ call s:implement('timl.lang/LazySeq',
       \ 'meta', 'timl#meta#from_attribute',
       \ 'with-meta', 'timl#meta#copy_assign',
       \ 'seq', 'timl#lazy_seq#seq',
-      \ 'equal?', 'timl#equality#seq',
+      \ 'equiv', 'timl#equality#seq',
       \ 'realized?', 'timl#lazy_seq#realized',
       \ 'count', 'timl#lazy_seq#count',
       \ 'conj', 'timl#cons#conj',
@@ -426,7 +426,7 @@ call s:implement('vim/Dictionary',
       \ 'empty', 'timl#dictionary#empty',
       \ 'conj', 'timl#dictionary#conj',
       \ 'count', 'len',
-      \ 'equal?', 'timl#map#equal')
+      \ 'equiv', 'timl#map#equal')
 
 call s:implement('vim/Dictionary',
       \ 'assoc', 'timl#dictionary#assoc',
@@ -450,7 +450,7 @@ call s:implement('timl.lang/HashMap',
       \ 'empty', 'timl#map#empty',
       \ 'conj', 'timl#map#conj',
       \ 'count', 'timl#map#count',
-      \ 'equal?', 'timl#map#equal')
+      \ 'equiv', 'timl#map#equal')
 
 call s:implement('timl.lang/HashMap',
       \ 'assoc', 'timl#map#assoc',
@@ -475,7 +475,7 @@ call s:implement('timl.lang/HashSet',
       \ 'empty', 'timl#set#empty',
       \ 'conj', 'timl#set#conj',
       \ 'count', 'timl#set#count',
-      \ 'equal?', 'timl#set#equal')
+      \ 'equiv', 'timl#set#equal')
 
 call s:implement('timl.lang/HashSet',
       \ 'disj', 'timl#set#disj',
@@ -532,7 +532,7 @@ call s:define_pred('has?', 'has')
 
 call timl#type#define_method('timl.core', 'empty', g:timl#nil, s:function('s:nil'))
 
-call timl#type#define_method('timl.core', 'equal?', g:timl#nil, g:timl#core#identical_QMARK_)
+call timl#type#define_method('timl.core', 'equiv', g:timl#nil, g:timl#core#identical_QMARK_)
 
 function! s:default_first(x)
   return timl#invoke(g:timl#core#first, timl#invoke(g:timl#core#seq, a:x))
