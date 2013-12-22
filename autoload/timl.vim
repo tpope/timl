@@ -23,32 +23,6 @@ function! timl#truth(val) abort
   return a:val isnot# g:timl#nil && a:val isnot# g:timl#false
 endfunction
 
-function! timl#key(key)
-  if type(a:key) == type(0)
-    return string(a:key)
-  elseif timl#keyword#test(a:key)
-    return a:key[0]
-  elseif a:key is# g:timl#nil
-    return ' '
-  else
-    return ' '.timl#printer#string(a:key)
-  endif
-endfunction
-
-function! timl#dekey(key)
-  if a:key =~# '^#'
-    throw 'timl: invalid key '.a:key
-  elseif a:key ==# ' '
-    return g:timl#nil
-  elseif a:key =~# '^ '
-    return timl#reader#read_string(a:key[1:-1])
-  elseif a:key =~# '^[-+]\=\d'
-    return timl#reader#read_string(a:key)
-  else
-    return timl#keyword(a:key)
-  endif
-endfunction
-
 function! timl#keyword(str)
   return timl#keyword#intern(a:str)
 endfunction

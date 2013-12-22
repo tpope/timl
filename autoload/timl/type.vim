@@ -136,7 +136,7 @@ function! s:get_method(this, type)
       endif
     endfor
     if _.preferred is# g:timl#nil
-      let a:this.cache[a:type] = get(a:this.methods, timl#key(g:timl#nil), g:timl#nil)
+      let a:this.cache[a:type] = get(a:this.methods, timl#map#key(g:timl#nil), g:timl#nil)
     else
       let a:this.cache[a:type] = _.preferred[1]
     endif

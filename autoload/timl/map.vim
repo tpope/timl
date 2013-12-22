@@ -10,14 +10,40 @@ function! timl#map#create(_) abort
   let keyvals = len(a:_) == 1 ? a:_[0] : a:_
   let map = timl#bless(s:type)
   for i in range(0, len(keyvals)-1, 2)
-    let map[timl#key(keyvals[i])] = get(keyvals, i+1, g:timl#nil)
+    let map[timl#map#key(keyvals[i])] = get(keyvals, i+1, g:timl#nil)
   endfor
   lockvar 1 map
   return map
 endfunction
 
+function! timl#map#key(key) abort
+  if type(a:key) == type(0)
+    return string(a:key)
+  elseif timl#keyword#test(a:key)
+    return a:key[0]
+  elseif a:key is# g:timl#nil
+    return ' '
+  else
+    return ' '.timl#printer#string(a:key)
+  endif
+endfunction
+
+function! timl#map#dekey(key)
+  if a:key =~# '^#'
+    throw 'timl: invalid key '.a:key
+  elseif a:key ==# ' '
+    return g:timl#nil
+  elseif a:key =~# '^ '
+    return timl#reader#read_string(a:key[1:-1])
+  elseif a:key =~# '^[-+]\=\d'
+    return timl#reader#read_string(a:key)
+  else
+    return timl#keyword(a:key)
+  endif
+endfunction
+
 function! timl#map#to_array(this) abort
-  return map(filter(items(a:this), 'v:val[0][0] !=# "#"'), '[timl#dekey(v:val[0]), v:val[1]]')
+  return map(filter(items(a:this), 'v:val[0][0] !=# "#"'), '[timl#map#dekey(v:val[0]), v:val[1]]')
 endfunction
 
 function! timl#map#count(this) abort
@@ -50,7 +76,7 @@ function! timl#map#seq(this) abort
 endfunction
 
 function! timl#map#lookup(this, key, ...) abort
-  return get(a:this, timl#key(a:key), a:0 ? a:1 : g:timl#nil)
+  return get(a:this, timl#map#key(a:key), a:0 ? a:1 : g:timl#nil)
 endfunction
 
 if !exists('s:empty')
@@ -65,7 +91,7 @@ function! timl#map#conj(this, ...) abort
   let this = copy(a:this)
   let _ = {}
   for _.e in a:000
-    let this[timl#key(timl#first(_.e))] = timl#fnext(_.e)
+    let this[timl#map#key(timl#first(_.e))] = timl#fnext(_.e)
   endfor
   lockvar 1 this
   return this
@@ -74,7 +100,7 @@ endfunction
 function! timl#map#conjb(this, ...) abort
   let _ = {}
   for _.e in a:000
-    let a:this[timl#key(timl#first(_.e))] = timl#fnext(_.e)
+    let a:this[timl#map#key(timl#first(_.e))] = timl#fnext(_.e)
   endfor
   return a:this
 endfunction
@@ -82,7 +108,7 @@ endfunction
 function! timl#map#assoc(this, ...) abort
   let this = copy(a:this)
   for i in range(0, len(a:000)-2, 2)
-    let this[timl#key(a:000[i])] = a:000[i+1]
+    let this[timl#map#key(a:000[i])] = a:000[i+1]
   endfor
   lockvar 1 this
   return this
@@ -90,7 +116,7 @@ endfunction
 
 function! timl#map#assocb(this, ...) abort
   for i in range(0, len(a:000)-2, 2)
-    let a:this[timl#key(a:000[i])] = a:000[i+1]
+    let a:this[timl#map#key(a:000[i])] = a:000[i+1]
   endfor
   return a:this
 endfunction
@@ -99,7 +125,7 @@ function! timl#map#dissoc(this, ...) abort
   let _ = {}
   let this = copy(a:this)
   for _.x in a:000
-    let key = timl#key(_.x)
+    let key = timl#map#key(_.x)
     if has_key(this, key)
       call remove(this, key)
     endif
@@ -111,7 +137,7 @@ endfunction
 function! timl#map#dissocb(this, ...) abort
   let _ = {}
   for _.x in a:000
-    let key = timl#key(_.x)
+    let key = timl#map#key(_.x)
     if has_key(a:this, key)
       call remove(a:this, key)
     endif
