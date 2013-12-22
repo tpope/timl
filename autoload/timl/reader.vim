@@ -96,24 +96,6 @@ function! s:read(port, ...) abort
     else
       return timl#map#create(list)
     endif
-  elseif token == '#['
-    let list = s:read_until(port, ']')
-    if len(list) % 2 != 0
-      let error = 'timl#reader: invalid dict literal'
-    else
-      let dict = {}
-      for i in range(0, len(list)-1, 2)
-        if type(list[i]) !=# type("")
-          let error = 'timl#reader: dict keys must be strings'
-          break
-        endif
-        let dict[list[i]] = list[i+1]
-      endfor
-    endif
-    if !exists('error')
-      lockvar 1 dict
-      return dict
-    endif
   elseif token == '#{'
     return timl#set(s:read_until(port, '}'))
   elseif has_key(s:constants, token)
