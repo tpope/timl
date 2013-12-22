@@ -8,7 +8,7 @@ let g:autoloaded_timl_type = 1
 " Section: Blessing
 
 if !exists('g:timl_tag_sentinel')
-  let g:timl_tag_sentinel = timl#freeze('tagged')
+  let g:timl_tag_sentinel = timl#freeze('blessed object')
 endif
 
 function! timl#type#intern(type)
@@ -24,7 +24,7 @@ let s:types = {
       \ 5: 'vim/Float'}
 
 function! timl#type#objectp(obj) abort
-  return type(a:obj) == type({}) && get(a:obj, '__tagged__') is g:timl_tag_sentinel
+  return type(a:obj) == type({}) && get(a:obj, '__flag__') is g:timl_tag_sentinel
 endfunction
 
 function! timl#type#string(val) abort
@@ -32,7 +32,7 @@ function! timl#type#string(val) abort
   if type ==# 'vim/List' && a:val is# g:timl#nil
     return 'timl.lang/Nil'
   elseif type == 'vim/Dictionary'
-    if get(a:val, '__tagged__') is g:timl_tag_sentinel
+    if get(a:val, '__flag__') is g:timl_tag_sentinel
       return a:val['__tag__'][0][1:-1]
     elseif timl#keyword#test(a:val)
       return 'timl.lang/Keyword'
@@ -47,7 +47,7 @@ endfunction
 
 function! timl#type#bless(class, ...) abort
   let obj = a:0 ? a:1 : {}
-  let obj.__tagged__ = g:timl_tag_sentinel
+  let obj.__flag__ = g:timl_tag_sentinel
   let obj.__tag__ = type(a:class) == type('') ? timl#keyword#intern('#'.a:class) : a:class
   let obj.__apply__ = function('timl#type#invoke_apply')
   return obj
