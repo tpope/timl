@@ -24,7 +24,7 @@ let s:types = {
       \ 5: 'vim/Float'}
 
 function! timl#type#objectp(obj) abort
-  return type(a:obj) == type({}) && get(a:obj, '#tagged') is g:timl_tag_sentinel
+  return type(a:obj) == type({}) && get(a:obj, '__tagged__') is g:timl_tag_sentinel
 endfunction
 
 function! timl#type#string(val) abort
@@ -32,8 +32,8 @@ function! timl#type#string(val) abort
   if type ==# 'vim/List' && a:val is# g:timl#nil
     return 'timl.lang/Nil'
   elseif type == 'vim/Dictionary'
-    if get(a:val, '#tagged') is g:timl_tag_sentinel
-      return a:val['#tag'][0][1:-1]
+    if get(a:val, '__tagged__') is g:timl_tag_sentinel
+      return a:val['__tag__'][0][1:-1]
     elseif timl#keyword#test(a:val)
       return 'timl.lang/Keyword'
     endif
@@ -47,9 +47,9 @@ endfunction
 
 function! timl#type#bless(class, ...) abort
   let obj = a:0 ? a:1 : {}
-  let obj['#tagged'] = g:timl_tag_sentinel
-  let obj['#tag'] = type(a:class) == type('') ? timl#keyword#intern('#'.a:class) : a:class
-  let obj['#apply'] = function('timl#function#apply_self')
+  let obj.__tagged__ = g:timl_tag_sentinel
+  let obj.__tag__ = type(a:class) == type('') ? timl#keyword#intern('#'.a:class) : a:class
+  let obj.__apply__ = function('timl#function#apply_self')
   return obj
 endfunction
 
@@ -179,7 +179,7 @@ function! timl#type#define_method(ns, name, type, fn) abort
               \ 'cache': {},
               \ 'hierarchy': g:timl_hierarchy,
               \ 'methods': {}})
-    let fn['#apply'] = function('timl#type#apply')
+    let fn.__apply__ = function('timl#type#apply')
     call timl#namespace#intern(ns, name, fn)
   endif
   let multi = g:{munged}

@@ -221,7 +221,7 @@ function! timl#call(Func, args, ...) abort
   if type(a:Func) == type(function('tr'))
     return call(a:Func, a:args, a:0 ? a:1 : {})
   else
-    return a:Func['#apply'](a:args)
+    return a:Func.__apply__(a:args)
   endif
 endfunction
 

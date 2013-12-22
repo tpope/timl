@@ -28,7 +28,7 @@ function! timl#set#coerce(seq) abort
     return a:seq
   endif
   let _ = {}
-  let dict = timl#bless(s:transient_type, {'#extra': []})
+  let dict = timl#bless(s:transient_type, {'__extra': []})
   if type(a:seq) == type([])
     for _.val in a:seq
       call timl#set#conjb(dict, _.val)
@@ -44,7 +44,7 @@ function! timl#set#coerce(seq) abort
 endfunction
 
 function! timl#set#to_array(this) abort
-  return extend(map(filter(items(a:this), 'v:val[0][0] !=# "#" && v:val[0][0:1] !=# "__"'), 'v:val[1]'), a:this['#extra'])
+  return extend(map(filter(items(a:this), 'v:val[0][0:1] !=# "__"'), 'v:val[1]'), a:this.__extra)
 endfunction
 
 function! timl#set#count(this) abort
@@ -79,7 +79,7 @@ function! timl#set#lookup(this, key, ...) abort
   let _ = {}
   let key = timl#set#key(a:key)
   if empty(key)
-    for _.v in a:this['#extra']
+    for _.v in a:this.__extra
       if timl#equalp(_.v, a:key)
         return _.v
       endif
@@ -91,8 +91,8 @@ function! timl#set#lookup(this, key, ...) abort
 endfunction
 
 if !exists('s:empty')
-  let s:empty = timl#bless('timl.lang/HashSet', {'#extra': []})
-  lockvar s:empty['#extra']
+  let s:empty = timl#bless('timl.lang/HashSet', {'__extra': []})
+  lockvar s:empty.__extra
   lockvar s:empty
 endif
 function! timl#set#empty(this) abort
@@ -109,15 +109,15 @@ function! timl#set#conjb(this, ...) abort
     let key = timl#set#key(_.e)
     if empty(key)
       let found = 0
-      for i in range(len(a:this['#extra']))
-        if timl#equalp(a:this['#extra'][i], _.e)
-          let a:this['#extra'][i] = _.e
+      for i in range(len(a:this.__extra))
+        if timl#equalp(a:this.__extra[i], _.e)
+          let a:this.__extra[i] = _.e
           let found = 1
           break
         endif
       endfor
       if !found
-        call add(a:this['#extra'], _.e)
+        call add(a:this.__extra, _.e)
       endif
     else
       let a:this[key] = _.e
@@ -135,9 +135,9 @@ function! timl#set#disjb(this, ...) abort
   for _.e in a:000
     let key = timl#set#key(_.e)
     if empty(key)
-      for i in range(len(a:this['#extra']))
-        if timl#equalp(a:this['#extra'][i], _.e)
-          call remove(a:this['#extra'], i)
+      for i in range(len(a:this.__extra))
+        if timl#equalp(a:this.__extra[i], _.e)
+          call remove(a:this.__extra, i)
           break
         endif
       endfor
@@ -150,13 +150,13 @@ endfunction
 
 function! timl#set#transient(this) abort
   let that = copy(a:this)
-  let that['#extra'] = copy(a:this['#extra'])
+  let that.__extra = copy(a:this.__extra)
   return timl#type#bless(s:transient_type, that)
 endfunction
 
 function! timl#set#persistentb(this) abort
   let this = timl#bless(s:type, a:this)
-  lockvar 1 a:this['#extra']
+  lockvar 1 a:this.__extra
   lockvar 1 a:this
   return a:this
 endfunction

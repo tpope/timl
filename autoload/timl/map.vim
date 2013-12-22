@@ -18,9 +18,7 @@ function! timl#map#key(key) abort
 endfunction
 
 function! timl#map#dekey(key)
-  if a:key =~# '^#'
-    throw 'timl: invalid key '.a:key
-  elseif a:key ==# ' '
+  if a:key ==# ' '
     return g:timl#nil
   elseif a:key =~# '^ '
     return timl#reader#read_string(a:key[1:-1])
@@ -43,7 +41,7 @@ function! timl#map#create(_) abort
 endfunction
 
 function! timl#map#to_array(this) abort
-  return map(filter(items(a:this), 'v:val[0][0] !=# "#" && v:val[0][0:1] !=# "__"'), '[timl#map#dekey(v:val[0]), v:val[1]]')
+  return map(filter(items(a:this), 'v:val[0][0:1] !=# "__"'), '[timl#map#dekey(v:val[0]), v:val[1]]')
 endfunction
 
 function! timl#map#count(this) abort

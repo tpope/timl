@@ -8,7 +8,7 @@ let g:autoloaded_timl_cons = 1
 let s:type = timl#type#intern('timl.lang/Cons')
 
 function! timl#cons#test(obj) abort
-  return type(a:obj) == type({}) && get(a:obj, '#tag') is# s:type
+  return type(a:obj) == type({}) && get(a:obj, '__tag__') is# s:type
 endfunction
 
 function! timl#cons#create(car, cdr, ...) abort
@@ -50,5 +50,5 @@ endfunction
 
 let s:empty_list_type = timl#type#intern('timl.lang/EmptyList')
 function! timl#cons#listp(obj)
-  return type(a:obj) == type({}) && (get(a:obj, '#tag') is# s:type || get(a:obj, '#tag') is s:empty_list_type)
+  return type(a:obj) == type({}) && (get(a:obj, '__tag__') is# s:type || get(a:obj, '__tag__') is s:empty_list_type)
 endfunction
