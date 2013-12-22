@@ -28,7 +28,7 @@ function! timl#chunked_cons#more(this) abort
   endif
 endfunction
 
-function! timl#chunked_cons#count(this) abort
+function! timl#chunked_cons#length(this) abort
   let c = len(a:this.array) - a:this.i
   let _ = {'next': timl#seq(a:this.rest)}
   while timl#type#string(_.next) ==# 'timl.lang/ChunkedCons'

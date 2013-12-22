@@ -150,7 +150,7 @@ endif
 call s:implement('vim/String',
       \ 'seq', 'timl#string#seq',
       \ 'lookup', 'timl#string#lookup',
-      \ 'count', 'timl#string#count')
+      \ 'length', 'timl#string#length')
 
 call s:define_call('symbol', 'timl#symbol#intern')
 call s:define_call('keyword', 'timl#keyword#intern')
@@ -200,7 +200,7 @@ call s:implement('timl.lang/Nil',
       \ 'more', 's:empty_list',
       \ 'conj', 's:nil_cons',
       \ 'assoc', 's:nil_assoc',
-      \ 'count', 's:zero',
+      \ 'length', 's:zero',
       \ 'lookup', 's:nil_lookup')
 
 call s:define_pred('nil?', 's:nilp')
@@ -294,7 +294,7 @@ call s:implement('vim/List',
       \ 'more', 'timl#array#rest',
       \ 'lookup', 'timl#array#lookup',
       \ 'nth', 'timl#array#nth',
-      \ 'count', 'len',
+      \ 'length', 'len',
       \ 'conj', 'timl#array#conj',
       \ 'empty', 'timl#array#empty')
 
@@ -311,7 +311,7 @@ call s:implement('timl.lang/Vector',
       \ 'more', 'timl#vector#rest',
       \ 'lookup', 'timl#vector#lookup',
       \ 'nth', 'timl#vector#nth',
-      \ 'count', 'timl#vector#count',
+      \ 'length', 'timl#vector#length',
       \ 'conj', 'timl#vector#conj',
       \ 'empty', 'timl#vector#empty',
       \ 'call', 'timl#vector#call')
@@ -355,7 +355,7 @@ call s:implement('timl.lang/EmptyList',
       \ 'equiv', 'timl#equality#seq',
       \ 'first', 's:nil',
       \ 'more', 'timl#function#identity',
-      \ 'count', 's:zero',
+      \ 'length', 's:zero',
       \ 'conj', 'timl#cons#conj',
       \ 'empty', 'timl#function#identity')
 
@@ -379,7 +379,7 @@ call s:implement('timl.lang/ArraySeq',
       \ 'equiv', 'timl#equality#seq',
       \ 'first', 'timl#array_seq#first',
       \ 'more', 'timl#array_seq#more',
-      \ 'count', 'timl#array_seq#count',
+      \ 'length', 'timl#array_seq#length',
       \ 'conj', 'timl#cons#conj',
       \ 'empty', 's:empty_list')
 
@@ -398,7 +398,7 @@ call s:implement('timl.lang/ChunkedCons',
       \ 'equiv', 'timl#equality#seq',
       \ 'first', 'timl#chunked_cons#first',
       \ 'more', 'timl#chunked_cons#more',
-      \ 'count', 'timl#chunked_cons#count',
+      \ 'length', 'timl#chunked_cons#length',
       \ 'conj', 'timl#cons#conj',
       \ 'empty', 's:empty_list')
 
@@ -414,7 +414,6 @@ call s:implement('timl.lang/LazySeq',
       \ 'seq', 'timl#lazy_seq#seq',
       \ 'equiv', 'timl#equality#seq',
       \ 'realized?', 'timl#lazy_seq#realized',
-      \ 'count', 'timl#lazy_seq#count',
       \ 'conj', 'timl#cons#conj',
       \ 'empty', 's:empty_list')
 
@@ -425,7 +424,7 @@ call s:implement('vim/Dictionary',
       \ 'lookup', 'timl#dictionary#lookup',
       \ 'empty', 'timl#dictionary#empty',
       \ 'conj', 'timl#dictionary#conj',
-      \ 'count', 'len',
+      \ 'length', 'len',
       \ 'equiv', 'timl#map#equal')
 
 call s:implement('vim/Dictionary',
@@ -449,7 +448,7 @@ call s:implement('timl.lang/HashMap',
       \ 'lookup', 'timl#map#lookup',
       \ 'empty', 'timl#map#empty',
       \ 'conj', 'timl#map#conj',
-      \ 'count', 'timl#map#count',
+      \ 'length', 'timl#map#length',
       \ 'equiv', 'timl#map#equal')
 
 call s:implement('timl.lang/HashMap',
@@ -474,7 +473,7 @@ call s:implement('timl.lang/HashSet',
       \ 'lookup', 'timl#set#lookup',
       \ 'empty', 'timl#set#empty',
       \ 'conj', 'timl#set#conj',
-      \ 'count', 'timl#set#count',
+      \ 'length', 'timl#set#length',
       \ 'equiv', 'timl#set#equal')
 
 call s:implement('timl.lang/HashSet',
@@ -483,7 +482,7 @@ call s:implement('timl.lang/HashSet',
       \ 'call', 'timl#set#call')
 
 call s:implement('timl.lang/TransientHashSet',
-      \ 'count', 'timl#set#count',
+      \ 'length', 'timl#set#length',
       \ 'lookup', 'timl#set#lookup',
       \ 'conj!', 'timl#set#conjb',
       \ 'disj!', 'timl#set#disjb',
@@ -497,6 +496,7 @@ call s:define_apply('hash-set', 'timl#set#coerce')
 
 call s:define_pred('coll?', 'timl#coll#test')
 call s:define_pred('chunked-seq?', 'timl#coll#chunked_seqp')
+call s:define_call('count', 'timl#coll#count')
 call s:define_call('get', 'timl#coll#get')
 call s:define_call('into', 'timl#coll#into')
 call s:define_call('reduce', 'timl#coll#reduce')
@@ -538,10 +538,5 @@ function! s:default_first(x)
   return timl#invoke(g:timl#core#first, timl#invoke(g:timl#core#seq, a:x))
 endfunction
 call timl#type#define_method('timl.core', 'first', g:timl#nil, s:function('s:default_first'))
-
-function! s:default_count(x)
-  return 1 + timl#invoke(g:timl#core#count, timl#invoke(g:timl#core#more, a:x))
-endfunction
-call timl#type#define_method('timl.core', 'count', g:timl#nil, s:function('s:default_count'))
 
 " vim:set et sw=2:

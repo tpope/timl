@@ -19,7 +19,7 @@ function! timl#string#lookup(this, idx, default) abort
   return a:default
 endfunction
 
-function! timl#string#count(this) abort
+function! timl#string#length(this) abort
   return exists('*strchars') ? strchars(a:this) : len(substitute(a:this, '.', '.', 'g'))
 endfunction
 

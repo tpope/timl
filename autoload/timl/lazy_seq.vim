@@ -21,10 +21,6 @@ function! timl#lazy_seq#seq(lseq) abort
   return a:lseq.seq
 endfunction
 
-function! timl#lazy_seq#count(lseq) abort
-  return timl#invoke(g:timl#core#count, timl#lazy_seq#seq(a:lseq))
-endfunction
-
 function! timl#lazy_seq#realized(lseq) abort
   return has_key(a:lseq, 'fn') ? g:timl#false : g:timl#true
 endfunction

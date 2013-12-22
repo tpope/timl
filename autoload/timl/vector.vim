@@ -34,7 +34,7 @@ function! timl#vector#seq(this) abort
   return timl#array#seq(a:this.array)
 endfunction
 
-function! timl#vector#count(this) abort
+function! timl#vector#length(this) abort
   return len(a:this.array)
 endfunction
 

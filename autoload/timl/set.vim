@@ -47,7 +47,7 @@ function! timl#set#to_array(this) abort
   return extend(map(filter(items(a:this), 'v:val[0][0:1] !=# "__"'), 'v:val[1]'), a:this.__extra)
 endfunction
 
-function! timl#set#count(this) abort
+function! timl#set#length(this) abort
   return len(timl#set#to_array(a:this))
 endfunction
 

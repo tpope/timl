@@ -44,7 +44,7 @@ function! timl#map#to_array(this) abort
   return map(filter(items(a:this), 'v:val[0][0:1] !=# "__"'), '[timl#map#dekey(v:val[0]), v:val[1]]')
 endfunction
 
-function! timl#map#count(this) abort
+function! timl#map#length(this) abort
   return len(timl#map#to_array(a:this))
 endfunction
 

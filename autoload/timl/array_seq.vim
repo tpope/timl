@@ -25,7 +25,7 @@ function! timl#array_seq#more(seq) abort
   endif
 endfunction
 
-function! timl#array_seq#count(this) abort
+function! timl#array_seq#length(this) abort
   return len(a:this.array) - a:this.i
 endfunction
 

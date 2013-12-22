@@ -23,7 +23,16 @@ function! timl#coll#containsp(coll, val) abort
 endfunction
 
 function! timl#coll#count(counted) abort
-  return timl#invoke(g:timl#core#count, a:counted)
+  if timl#type#canp(a:counted, g:timl#core#length)
+    return timl#invoke(g:timl#core#length, a:counted)
+  endif
+  let _ = {'seq': timl#seq(a:counted)}
+  let c = 0
+  while !timl#type#canp(_.seq, g:timl#core#length)
+    let _.seq = timl#next(_.seq)
+    let c += 1
+  endwhile
+  return c + timl#invoke(g:timl#core#length, _.seq)
 endfunction
 
 function! timl#coll#into(coll, seq) abort
