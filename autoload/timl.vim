@@ -94,11 +94,11 @@ function! timl#type(val) abort
 endfunction
 
 function! timl#meta(obj) abort
-  return timl#type#dispatch(g:timl#core#meta, a:obj)
+  return timl#invoke(g:timl#core#meta, a:obj)
 endfunction
 
 function! timl#with_meta(obj, meta) abort
-  return timl#type#dispatch(g:timl#core#with_meta, a:obj, a:meta)
+  return timl#invoke(g:timl#core#with_meta, a:obj, a:meta)
 endfunction
 
 function! timl#str(val) abort
@@ -118,7 +118,7 @@ function! timl#str(val) abort
 endfunction
 
 function! timl#equalp(x, y) abort
-  return timl#type#dispatch(g:timl#core#equal_QMARK_, a:x, a:y) is# g:timl#true
+  return timl#invoke(g:timl#core#equal_QMARK_, a:x, a:y) is# g:timl#true
 endfunction
 
 " }}}1
@@ -142,7 +142,7 @@ endfunction
 let s:ary = type([])
 
 function! timl#seq(coll) abort
-  return timl#type#dispatch(g:timl#core#seq, a:coll)
+  return timl#invoke(g:timl#core#seq, a:coll)
 endfunction
 
 function! timl#emptyp(seq) abort
@@ -159,7 +159,7 @@ function! timl#first(coll) abort
   elseif type(a:coll) == s:ary
     return get(a:coll, 0, g:timl#nil)
   else
-    return timl#type#dispatch(g:timl#core#first, a:coll)
+    return timl#invoke(g:timl#core#first, a:coll)
   endif
 endfunction
 
@@ -167,9 +167,9 @@ function! timl#rest(coll) abort
   if timl#cons#test(a:coll)
     return a:coll.cdr
   elseif timl#type#canp(a:coll, g:timl#core#more)
-    return timl#type#dispatch(g:timl#core#more, a:coll)
+    return timl#invoke(g:timl#core#more, a:coll)
   else
-    return timl#type#dispatch(g:timl#core#more, timl#seq(a:coll))
+    return timl#invoke(g:timl#core#more, timl#seq(a:coll))
   endif
 endfunction
 
@@ -222,6 +222,14 @@ function! timl#call(Func, args, ...) abort
     return call(a:Func, a:args, a:0 ? a:1 : {})
   else
     return a:Func.__apply__(a:args)
+  endif
+endfunction
+
+function! timl#invoke(Func, ...) abort
+  if type(a:Func) == type(function('tr'))
+    return call(a:Func, a:000, {})
+  else
+    return a:Func.__apply__(a:000)
   endif
 endfunction
 

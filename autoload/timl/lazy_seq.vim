@@ -11,18 +11,18 @@ endfunction
 
 function! timl#lazy_seq#seq(lseq) abort
   if !has_key(a:lseq, 'seq')
-    let _ = {'seq': timl#call(a:lseq.fn, [])}
+    let _ = {'seq': timl#invoke(a:lseq.fn)}
     while !timl#type#canp(_.seq, g:timl#core#more)
-      let _.seq = timl#type#dispatch(g:timl#core#seq, _.seq)
+      let _.seq = timl#invoke(g:timl#core#seq, _.seq)
     endwhile
-    let a:lseq.seq = timl#type#dispatch(g:timl#core#seq, _.seq)
+    let a:lseq.seq = timl#invoke(g:timl#core#seq, _.seq)
     unlet a:lseq.fn
   endif
   return a:lseq.seq
 endfunction
 
 function! timl#lazy_seq#count(lseq) abort
-  return timl#type#dispatch(g:timl#core#count, timl#lazy_seq#seq(a:lseq))
+  return timl#invoke(g:timl#core#count, timl#lazy_seq#seq(a:lseq))
 endfunction
 
 function! timl#lazy_seq#realized(lseq) abort

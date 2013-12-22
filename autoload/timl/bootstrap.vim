@@ -240,7 +240,7 @@ call s:implement('timl.lang/Function',
       \ '_invoke', 'timl#function#invoke')
 
 call s:implement('timl.lang/MultiFn',
-      \ '_invoke', 'timl#type#dispatch')
+      \ '_invoke', 'timl#type#invoke')
 
 call s:implement('vim/Funcref',
       \ '_invoke', 'call')
@@ -537,12 +537,12 @@ call timl#type#define_method('timl.core', 'empty', g:timl#nil, s:function('s:nil
 call timl#type#define_method('timl.core', 'equal?', g:timl#nil, g:timl#core#identical_QMARK_)
 
 function! s:default_first(x)
-  return timl#type#dispatch(g:timl#core#first, timl#type#dispatch(g:timl#core#seq, a:x))
+  return timl#invoke(g:timl#core#first, timl#invoke(g:timl#core#seq, a:x))
 endfunction
 call timl#type#define_method('timl.core', 'first', g:timl#nil, s:function('s:default_first'))
 
 function! s:default_count(x)
-  return 1 + timl#type#dispatch(g:timl#core#count, timl#type#dispatch(g:timl#core#more, a:x))
+  return 1 + timl#invoke(g:timl#core#count, timl#invoke(g:timl#core#more, a:x))
 endfunction
 call timl#type#define_method('timl.core', 'count', g:timl#nil, s:function('s:default_count'))
 

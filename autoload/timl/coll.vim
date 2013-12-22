@@ -14,7 +14,7 @@ function! timl#coll#chunked_seqp(coll) abort
 endfunction
 
 function! timl#coll#get(coll, key, ...) abort
-  return timl#type#dispatch(g:timl#core#lookup, a:coll, a:key, a:0 ? a:1 : g:timl#nil)
+  return timl#invoke(g:timl#core#lookup, a:coll, a:key, a:0 ? a:1 : g:timl#nil)
 endfunction
 
 function! timl#coll#containsp(coll, val) abort
@@ -23,22 +23,22 @@ function! timl#coll#containsp(coll, val) abort
 endfunction
 
 function! timl#coll#count(counted) abort
-  return timl#type#dispatch(g:timl#core#count, a:counted)
+  return timl#invoke(g:timl#core#count, a:counted)
 endfunction
 
 function! timl#coll#into(coll, seq) abort
   let t = timl#type#string(a:coll)
   if timl#type#canp(a:coll, g:timl#core#transient)
-    let _ = {'coll': timl#type#dispatch(g:timl#core#transient, a:coll), 'seq': timl#seq(a:seq)}
+    let _ = {'coll': timl#invoke(g:timl#core#transient, a:coll), 'seq': timl#seq(a:seq)}
     while _.seq isnot# g:timl#nil
-      let _.coll = timl#type#dispatch(g:timl#core#conj_BANG_, _.coll, timl#first(_.seq))
+      let _.coll = timl#invoke(g:timl#core#conj_BANG_, _.coll, timl#first(_.seq))
       let _.seq = timl#next(_.seq)
     endwhile
-    return timl#type#dispatch(g:timl#core#persistent_BANG_, _.coll)
+    return timl#invoke(g:timl#core#persistent_BANG_, _.coll)
   else
     let _ = {'coll': a:coll, 'seq': timl#seq(a:seq)}
     while _.seq isnot# g:timl#nil
-      let _.coll = timl#type#dispatch(g:timl#core#conj, _.coll, timl#first(_.seq))
+      let _.coll = timl#invoke(g:timl#core#conj, _.coll, timl#first(_.seq))
       let _.seq = timl#next(_.seq)
     endwhile
     return _.coll

@@ -166,7 +166,7 @@ function! timl#type#apply(_) dict abort
   throw 'timl#type: no '.self.ns.name[0].'/'.self.name[0].' dispatch for '.type
 endfunction
 
-function! timl#type#dispatch(this, ...) abort
+function! timl#type#invoke(this, ...) abort
   return call('timl#type#apply', [a:000], a:this)
 endfunction
 
