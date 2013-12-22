@@ -11,7 +11,7 @@ endif
 
 function! timl#keyword#intern(str)
   if !has_key(s:keywords, a:str)
-    let s:keywords[a:str] = {'0': a:str}
+    let s:keywords[a:str] = {'0': a:str, '__apply__': function('timl#keyword#apply')}
     lockvar s:keywords[a:str]
   endif
   return s:keywords[a:str]
@@ -29,4 +29,8 @@ function! timl#keyword#cast(keyword)
     throw 'timl: keyword expected but received '.timl#type#string(a:keyword)
   endif
   return a:keyword
+endfunction
+
+function! timl#keyword#apply(_) dict abort
+  return g:timl#core#lookup.__apply__([a:_[0], self] + a:_[1:-1])
 endfunction
