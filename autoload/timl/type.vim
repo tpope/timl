@@ -29,9 +29,9 @@ endfunction
 
 function! timl#type#string(val) abort
   let type = get(s:types, type(a:val), 'vim/Unknown')
-  if type ==# 'vim/List' && a:val is# g:timl#nil
+  if a:val is# g:timl#nil
     return 'timl.lang/Nil'
-  elseif type == 'vim/Dictionary'
+  elseif type ==# 'vim/Dictionary'
     if get(a:val, '__flag__') is g:timl_tag_sentinel
       return a:val['__tag__'][0][1:-1]
     elseif timl#keyword#test(a:val)
