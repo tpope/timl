@@ -8,7 +8,7 @@ let g:autoloaded_timl_set = 1
 function! timl#set#key(key)
   if type(a:key) == type(0)
     return string(a:key)
-  elseif timl#keyword#test(a:key)
+  elseif timl#keyword#test(a:key) && a:key[0][0:1] !=# '__'
     return a:key[0]
   elseif timl#symbol#test(a:key)
     return "'".a:key[0]
@@ -44,7 +44,7 @@ function! timl#set#coerce(seq) abort
 endfunction
 
 function! timl#set#to_array(this) abort
-  return extend(map(filter(items(a:this), 'v:val[0][0] !=# "#"'), 'v:val[1]'), a:this['#extra'])
+  return extend(map(filter(items(a:this), 'v:val[0][0] !=# "#" && v:val[0][0:1] !=# "__"'), 'v:val[1]'), a:this['#extra'])
 endfunction
 
 function! timl#set#count(this) abort

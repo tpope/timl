@@ -5,21 +5,10 @@ if exists("g:autoloaded_timl_map")
 endif
 let g:autoloaded_timl_map = 1
 
-let s:type = timl#type#intern('timl.lang/HashMap')
-function! timl#map#create(_) abort
-  let keyvals = len(a:_) == 1 ? a:_[0] : a:_
-  let map = timl#bless(s:type)
-  for i in range(0, len(keyvals)-1, 2)
-    let map[timl#map#key(keyvals[i])] = get(keyvals, i+1, g:timl#nil)
-  endfor
-  lockvar 1 map
-  return map
-endfunction
-
 function! timl#map#key(key) abort
   if type(a:key) == type(0)
     return string(a:key)
-  elseif timl#keyword#test(a:key)
+  elseif timl#keyword#test(a:key) && a:key[0][0:1] !=# '__'
     return a:key[0]
   elseif a:key is# g:timl#nil
     return ' '
@@ -42,8 +31,19 @@ function! timl#map#dekey(key)
   endif
 endfunction
 
+let s:type = timl#type#intern('timl.lang/HashMap')
+function! timl#map#create(_) abort
+  let keyvals = len(a:_) == 1 ? a:_[0] : a:_
+  let map = timl#bless(s:type)
+  for i in range(0, len(keyvals)-1, 2)
+    let map[timl#map#key(keyvals[i])] = get(keyvals, i+1, g:timl#nil)
+  endfor
+  lockvar 1 map
+  return map
+endfunction
+
 function! timl#map#to_array(this) abort
-  return map(filter(items(a:this), 'v:val[0][0] !=# "#"'), '[timl#map#dekey(v:val[0]), v:val[1]]')
+  return map(filter(items(a:this), 'v:val[0][0] !=# "#" && v:val[0][0:1] !=# "__"'), '[timl#map#dekey(v:val[0]), v:val[1]]')
 endfunction
 
 function! timl#map#count(this) abort
