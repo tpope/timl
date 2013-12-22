@@ -148,19 +148,20 @@ function! s:get_method(this, type)
   return get(a:this.cache, a:type, g:timl#nil)
 endfunction
 
+let s:t_function = type(function('tr'))
+let s:t_dict = type({})
 function! timl#type#apply(_) dict abort
   let type = timl#type#string(a:_[0])
   if self.hierarchy isnot# g:timl_hierarchy
     let self.cache = {}
     let self.hierarchy = g:timl_hierarchy
   endif
-  if has_key(self.cache, type)
-    let Dispatch = self.cache[type]
-  else
-    let Dispatch = s:get_method(self, type)
-  endif
-  if Dispatch isnot# g:timl#nil
-    return timl#call(Dispatch, a:_)
+  let Dispatch = has_key(self.cache, type) ? self.cache[type] : s:get_method(self, type)
+  let t = type(Dispatch)
+  if t == s:t_function
+    return call(Dispatch, a:_)
+  elseif t == s:t_dict
+    return Dispatch.__apply__(a:_)
   endif
   throw 'timl#type: no '.self.ns.name[0].'/'.self.name[0].' dispatch for '.type
 endfunction
