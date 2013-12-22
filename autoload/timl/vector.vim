@@ -1,8 +1,9 @@
 " Maintainer: Tim Pope <http://tpo.pe/>
 
-if !exists('g:autoloaded_timl_vector')
-  let g:autoloaded_timl_vector = 1
+if exists('g:autoloaded_timl_vector')
+  finish
 endif
+let g:autoloaded_timl_vector = 1
 
 let s:type = timl#type#intern('timl.lang/Vector')
 function! timl#vector#claim(array) abort

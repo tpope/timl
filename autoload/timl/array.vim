@@ -1,8 +1,9 @@
 " Maintainer: Tim Pope <http://tpo.pe/>
 
-if !exists('g:autoloaded_timl_array')
-  let g:autoloaded_timl_array = 1
+if exists('g:autoloaded_timl_array')
+  finish
 endif
+let g:autoloaded_timl_array = 1
 
 function! timl#array#lock(array) abort
   lockvar 1 a:array

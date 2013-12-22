@@ -1,8 +1,9 @@
 " Maintainer: Tim Pope <http://tpo.pe/>
 
-if !exists('g:autoloaded_timl_function')
-  let g:autoloaded_timl_function = 1
+if exists('g:autoloaded_timl_function')
+  finish
 endif
+let g:autoloaded_timl_function = 1
 
 function! timl#function#invoke(this, ...) abort
   return a:this.apply(a:000)
