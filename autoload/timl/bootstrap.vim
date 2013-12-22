@@ -296,8 +296,7 @@ call s:implement('vim/List',
       \ 'nth', 'timl#array#nth',
       \ 'count', 'len',
       \ 'conj', 'timl#array#conj',
-      \ 'empty', 'timl#array#empty',
-      \ '_invoke', 'timl#array#lookup')
+      \ 'empty', 'timl#array#empty')
 
 call s:implement('vim/List',
       \ 'equal?', 'timl#equality#seq',
@@ -432,8 +431,7 @@ call s:implement('vim/Dictionary',
 call s:implement('vim/Dictionary',
       \ 'assoc', 'timl#dictionary#assoc',
       \ 'dissoc', 'timl#dictionary#dissoc',
-      \ 'transient', 'timl#dictionary#transient',
-      \ 'invoke', 'timl#dictionary#lookup')
+      \ 'transient', 'timl#dictionary#transient')
 
 call s:implement('vim/Dictionary',
       \ 'conj!', 'timl#dictionary#conjb',
