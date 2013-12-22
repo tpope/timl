@@ -75,7 +75,7 @@ function! timl#printer#string(x)
     let acc = []
     let _ = {'seq': timl#seq(a:x)}
     while _.seq isnot# g:timl#nil
-      call add(acc, timl#printer#string(timl#first(_.seq))[1:-2])
+      call add(acc, timl#printer#string(timl#first(_.seq))[3:-2])
       let _.seq = timl#next(_.seq)
     endwhile
     return '{' . join(acc, ', ') . '}'
