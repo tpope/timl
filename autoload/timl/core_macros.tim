@@ -39,7 +39,7 @@
      (execute "redraw")
      (binding [&verbosefile tempname#]
        (set! l:TimLfn (fn [] ~@body))
-       (execute "silent call timl#call(l:TimLfn, [])"))
+       (execute "silent call timl#invoke(l:TimLfn)"))
      (#*substitute (slurp tempname#) "^\n" "" "g")))
 
 (defmacro time [& body]

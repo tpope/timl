@@ -68,7 +68,7 @@ function! timl#coll#reduce(f, coll, ...) abort
     let _.seq = timl#rest(_.seq)
   endif
   while _.seq isnot# g:timl#nil
-    let _.val = timl#call(a:f, [_.val, timl#first(_.seq)])
+    let _.val = timl#invoke(a:f, _.val, timl#first(_.seq))
     let _.seq = timl#next(_.seq)
   endwhile
   return _.val
