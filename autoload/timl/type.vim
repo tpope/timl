@@ -49,8 +49,12 @@ function! timl#type#bless(class, ...) abort
   let obj = a:0 ? a:1 : {}
   let obj.__tagged__ = g:timl_tag_sentinel
   let obj.__tag__ = type(a:class) == type('') ? timl#keyword#intern('#'.a:class) : a:class
-  let obj.__apply__ = function('timl#function#apply_self')
+  let obj.__apply__ = function('timl#type#invoke_apply')
   return obj
+endfunction
+
+function! timl#type#invoke_apply(_) dict
+  return g:timl#core#_invoke.__apply__([self] + a:_)
 endfunction
 
 " Section: Hierarchy
