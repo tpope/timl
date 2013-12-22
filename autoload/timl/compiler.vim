@@ -587,7 +587,7 @@ function! s:emit(file, env, form) abort
             let resolved = var.location
           endif
           let args = s:expr_args(a:file, env, timl#next(a:form))
-          let expr = 'timl#call('.resolved.', ['.args.'])'
+          let expr = resolved.'.__apply__(['.args.'])'
         endif
       else
         let args = s:expr_args(a:file, env, timl#next(a:form))
@@ -596,7 +596,7 @@ function! s:emit(file, env, form) abort
         elseif type(First) == type(function('tr'))
           let expr = join([First]).'('.args.')'
         else
-          let expr = 'timl#call('.s:expr(a:file, env, First).', ['.args.'])'
+          let expr = s:expr(a:file, env, First).'.__apply__(['.args.'])'
         endif
       endif
     elseif timl#symbol#test(a:form)
