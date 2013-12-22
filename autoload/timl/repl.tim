@@ -9,7 +9,7 @@
    (throw "timl#repl: exit")))
 
 (defn breakpoint-fn [env]
-  (let [str (#*input (format "%s=>> " (ns-name *ns*)))]
+  (let [str (#*input (format "%s=>> " (str (ns-name *ns*))))]
     (when (#*len str)
       (newline)
       (try
