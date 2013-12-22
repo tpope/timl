@@ -305,6 +305,8 @@ call s:implement('vim/List',
       \ 'conj!', 'timl#array#conjb',
       \ 'persistent!', 'timl#array#persistentb')
 
+call s:define_apply('array', 'timl#array#coerce')
+
 " Section: Vector
 
 call s:implement('timl.lang/Vector',
