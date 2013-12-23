@@ -179,6 +179,7 @@ function! timl#number#mod(x, y)
     return a:x % a:y
   endif
 endfunction
+
 function! timl#number#bit_not(x) abort
   return invert(a:x)
 endfunction
