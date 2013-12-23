@@ -70,7 +70,7 @@ function! s:add_meta(data, meta) abort
   if _.meta is g:timl#nil
     let _.meta = a:meta
   else
-    let _.meta = timl#into(_.meta, a:meta)
+    let _.meta = timl#coll#into(_.meta, a:meta)
   endif
   return timl#with_meta(a:data, _.meta)
 endfunction
