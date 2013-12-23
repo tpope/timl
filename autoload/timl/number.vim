@@ -169,7 +169,7 @@ function! timl#number#rem(x, y) abort
 endfunction
 
 function! timl#number#quot(x, y) abort
-  return type(a:x) == 5 || type(a:y) == type(5) ? trunc(a:x/a:y) : timl#number#coerce(a:x)/a:y
+  return type(a:x) == 5 || type(a:y) == 5 ? trunc(a:x/a:y) : timl#number#coerce(a:x)/a:y
 endfunction
 
 function! timl#number#mod(x, y)
