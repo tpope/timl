@@ -56,9 +56,9 @@ endfunction
 function! timl#vector#nth(this, idx, ...) abort
   let idx = timl#number#int(a:idx)
   if a:0
-    return get(a:this, idx, a:1)
+    return get(a:this.array, idx, a:1)
   else
-    return a:this[idx]
+    return a:this.array[idx]
   endif
 endfunction
 
