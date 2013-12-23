@@ -20,47 +20,136 @@ just the same as ".vim" files.
 
 SYNTAX                                          *timl-syntax*
 
-It's Lisp.
+It's Lisp.  TimL files are just sequences of forms.  Evaluation essentially
+entails replacing symbols with their values and lists with the result of
+calling the first element as function with the remaining elements as
+arguments.  An informal summary of the various forms follows:
 
+Notation    Description ~
+;           linewise comment
+#!          linewise comment (for shebangs)
+#_          skip next form
+nil         |timl-nil|
+false       |timl-boolean|
+true        |timl-boolean|
+\d...       |timl-number| (see |expr-number|)
+\k...       |timl-symbol|
+:...        |timl-keyword|
+"..."       |timl-string| (see double quoted strings under |expr-string|)
+#"..."      |timl-regexp|
+(...)       |timl-list|
+[...]       |timl-vector|
+{...}       |timl-map|
+#{...}      |timl-set|
+#(...)      |timl-fn|
+#*symbol    |timl-funcref|
+#*[...]     |timl-array|
+#*{...}     |timl-dictionary|
+^...        |timl-metadata|
+'           |timl-quote|
+`           |timl-syntax-quote|
+~           |timl-unquote|
+~@          |timl-unquote-splicing|
+@           |g:timl#core#deref|
+
+TYPES                                           *timl-types*
+
+                                                *timl-number*
 Numbers ~
 Same as Vim. See |expr-number|.
 
+                                                *timl-strings*
 Strings ~
-Same as double quoted strings in vim.  See |expr-string|.  In lieu of single
-quoted strings,
+Same as strings in Vim.  The literal syntax is the same as the double quoted
+strings under |expr-string|.
 
+                                                *timl-regexps*
 Regular Expressions ~
-#"..." compiles down to a very magic, case sensitive regex.
+There's not a proper regexp type, but #"..." compiles down to a string of a
+very magic |/\v| case sensitive |\/C| regexp string.  Unlike with regular
+string literals, you don't need to double your backslashes.
+
+                                                *timl-arrays*
+Arrays ~
+TimL arrays are actually Vim |Lists|.  They have been rebranded arrays to
+avoid confusion with the core Lisp data structure of a singly linked list.
+Arrays participate in the expected collection abstractions, but be aware they
+mutate, and thus are best avoided except when dealing with interop.
+
+Arrays are shown as #*[...] when printed.  The reader respects this syntax,
+but it is preferrable to use |g:timl#core#array| to create a array.
+
+                                *timl-dictionary* *timl-dictionaries*
+Dictionaries ~
+TimL dictionaries are Vim |Dictionaries|.  TimL uses dictionaries in the
+implementation of its type system, so "TimL dictionary" refers to a dictionary
+that has not been blessed as any particular type.  Dictionaries can be treated
+as maps with forced string keys.
+
+Dictionaries are shown as #*{...} when printed.  The reader respects this
+syntax, but it is preferrable to use |g:timl#core#dict| to create a
+dictionary.
+
+                                                *timl-funcrefs*
+Funcrefs ~
+TimL provides a special #*symbol syntax for creating a Vim |Funcref|.
+Funcrefs can be called like any other function: (#*bufnr "%").  Vim imposes
+certain restrictions on assigning funcrefs to variables, so beware of using
+them with |timl-set!| and |timl-def|.
 
                                                 *timl-nil*
 Nil ~
-VimL has no concept of nil, so this is actually just a particular empty list.
+VimL has no concept of nil, so this is actually just a special singleton
+object.  The literal form is "nil".
+
+                                                *timl-booleans*
+Booleans ~
+Booleans are the canonical truth values.  There's a literal for each: "true"
+and "false".  Nil and false are the only false values in TimL.  Note that in
+VimL, zero is false, and built-in Vim functions return that as their false
+value.  Compose with |g:timl#core#nonzero_QMARK_| if you want to use the
+result of a built-in Vim function in a conditional.
 
                                                 *timl-symbols*
 Symbols ~
-Any sequence of identifier characters that doesn't look like a number.
-Identifier characters include alphanumeris and the special characters
+Any sequence of identifier characters that doesn't start with a number.
+Identifier characters include alphanumerics and the special characters
 "-_?!*+/<>".  ":" and "#" are reserved for internal use and can be used to
 refer to Vim variables (|b:var,| |w:var|, |t:var|, |g:var|, |v:var|).
 
+Since symbols evaluate, you'll need to |timl-quote| one if you want it as a
+value: 'symbol.
+
+                                                *timl-keywords*
+Keywords ~
+Keywords look like symbols preceded by a colon.  Unlike symbols, they evaluate
+to themselves, making them good |timl-map| keys.  Calling a keyword as a
+function tries to retrieve it from the given collection using
+|g:timl#core#get|.
+
+                                                *timl-lists*
 Lists ~
-Zero or more forms enclosed in parentheses ().
+Lists are linked lists under the hood, and have a syntax literal of zero or more forms enclosed in parentheses ().  Lists evaluate to a function
+call of the first element with the remaining elements as args.  To create a
+list value, |timl-quote| it (also prevents evaluation of elements) or use
+|g:timl#core#list|.
 
+                                                *timl-vectors*
 Vectors ~
-Zero or more forms enclosed in brackets [].
+An ordered, indexed collection intended for random access.  Created literally
+by enclosing zero or more forms in brackets.  Evaluates to a new vector of the
+evaluation of the contained elements.
 
-Hash Maps ~
-Zero or more pairs of forms enclosed in curly braces {}.
+                                                *timl-maps*
+Maps ~
+Maps are associative, unordered collections.  The syntax literal is {...}.
+The definining method of a map is |g:timl#core#dissoc|.
 
-Hash Sets ~
-Zero or more forms enclosed in curly braces preceded by pound #{}.
-
-Quoting ~
-"'" quotes a form.  "`" syntax quotes the next formm with "~" unquoting and
-"~@" unquote splicing.
-
-Comments ~
-Linewise comments with a ";". "#_" also comments out a single form.
+                                                *timl-sets*
+Sets ~
+A set is an unordered collection of values, and can be thought of as a map
+where the keys and values are the same.  The syntax literal is #{...}.  The
+defining method of a set is |g:timl#core#disj|.
 
 EVALUATION                                      *timl-evaluation*
 
@@ -92,6 +181,7 @@ Bind the given symbols lexically for the scope of the given body.
 
                                                 *timl-fn*
 (fn {name}? [{param} ...] {body} ...) ~
+#(... % %2 %3 ... %&) ~
 Create an anonymous function.
 
                                                 *timl-recur*

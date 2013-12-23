@@ -1,6 +1,9 @@
+                                                *g:timl#core#array*
+(timl.core/array & elems)       Create a |timl-array| containing elems.
+
                                                 *g:timl#core#dict*
-(timl.core/dict map)            Convert a map to a |Dictionary|
-(timl.core/dict keyvals)        Create a |Dictionary| from keyvals.
-(timl.core/dict & keyvals)      Create a |Dictionary| from keyvals.
+(timl.core/dict map)            Convert a map to a |timl-dictionary|.
+(timl.core/dict keyvals)        Create a |timl-dictionary| from keyvals.
+(timl.core/dict & keyvals)      Create a |timl-dictionary| from keyvals.
 
  vim:tw=78:sw=8:et:ft=help:norl:
