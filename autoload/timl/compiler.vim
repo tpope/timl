@@ -12,6 +12,7 @@ let s:specials = {
       \ 'do': 1,
       \ 'let*': 1,
       \ 'fn*': 1,
+      \ 'recur': 1,
       \ 'def': 1,
       \ 'set!': 1,
       \ 'execute': 1,
