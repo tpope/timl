@@ -303,6 +303,8 @@ call s:implement('vim/List',
 call s:implement('vim/List',
       \ 'equiv', 'timl#equality#seq',
       \ 'conj!', 'timl#array#conjb',
+      \ 'assoc!', 'timl#array#assocb',
+      \ 'dissoc!', 'timl#array#dissocb',
       \ 'persistent!', 'timl#array#persistentb')
 
 call s:define_apply('array', 'timl#array#coerce')

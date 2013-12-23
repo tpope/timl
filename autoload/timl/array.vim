@@ -62,6 +62,28 @@ function! timl#array#conjb(this, ...) abort
   return extend(a:this, a:000)
 endfunction
 
+function! timl#array#assocb(this, ...) abort
+  let this = a:this
+  for i in range(0, len(a:000)-2, 2)
+    if (timl#number#integerp(a:000[i]) && a:000[i] ==# len(a:this)) || islocked('this')
+      call add(this, a:000[i+1])
+    else
+      let this[a:000[i]] = a:000[i+1]
+    endif
+  endfor
+  return this
+endfunction
+
+function! timl#array#dissocb(this, ...) abort
+  let _ = {}
+  for _.key in a:000
+    if timl#number#integerp(_.key) && _.key < len(a:this) && (-_.key-1) < len(a:this)
+      call remove(a:this, _.key)
+    endif
+  endfor
+  return a:this
+endfunction
+
 function! timl#array#empty(this) abort
   return []
 endfunction
