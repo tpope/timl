@@ -34,8 +34,9 @@ augroup timl
         \ endif
 augroup END
 
-command! -bar -nargs=?                                             TLrepl :execute s:repl(<f-args>)
-command! -nargs=1 -complete=expression                          TLinspect :echo timl#printer#string(<args>)
+command! -bar -nargs=?                    TLrepl :execute s:repl(<f-args>)
+command! -bar                          TLscratch :execute s:scratch()
+command! -nargs=1 -complete=expression TLinspect :echo timl#printer#string(<args>)
 command! -nargs=1 -complete=customlist,timl#reflect#input_complete TLeval
       \ try |
       \    echo timl#rep(<q-args>) |
@@ -175,4 +176,22 @@ function! s:repl(...) abort
   endtry
 endfunction
 
-" vim:set et sw=2:
+function! s:scratch() abort
+  if exists('s:scratch') && bufnr(s:scratch) !=# -1
+    execute bufnr(s:scratch) . 'sbuffer'
+    return ''
+  elseif !exists('s:scratch')
+    let s:scratch = tempname().'.tim'
+    execute 'silent' (empty(bufname('')) && !&modified ? 'edit' : 'split') s:scratch
+  else
+    execute 'split '.s:scratch
+  endif
+  call setline(1, [
+        \ ";; This buffer is for notes you don't want to save, and for TimL evaluation.",
+        \ ";; If you want to create a file, visit that file with :edit,",
+        \ ";; then enter the text in that file's own buffer.",
+        \ ""])
+  setlocal bufhidden=hide filetype=timl nomodified
+  autocmd BufLeave <buffer> update
+  return '$'
+endfunction
