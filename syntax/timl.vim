@@ -7,6 +7,8 @@ if exists("b:current_syntax")
   finish
 endif
 
+syntax sync minlines=100
+
 if !exists('s:functions')
   let s:file = readfile(findfile('syntax/vim.vim', &rtp))
   let s:options = split(join(map(filter(copy(s:file), 'v:val =~# "^syn keyword vimOption contained\t[^in]"'), 'substitute(v:val, "^.*\t", "", "g")'), ' '), ' ')
