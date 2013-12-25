@@ -5,12 +5,12 @@
 (setlocal comments=":;,:;;;,:;;,sr:#|,mb:|,ex:|#" commentstring=";%s")
 (setlocal define="^\\s*(def\\k*")
 (setlocal formatoptions+=croql)
-(setlocal omnifunc=timl#reflect#omnicomplete)
+(setlocal omnifunc=timl#interactive#omnicomplete)
 
 (execute "nnoremap <buffer> K :execute 'help' ftplugin#timl#cursor_keyword()<CR>")
 (defn cursor-keyword []
   (let [kw (#*expand "<cword>")
-        ns (the-ns (symbol (#*timl#ns_for_cursor)))]
+        ns (the-ns (symbol (#*timl#interactive#ns_for_cursor)))]
     (cond
       (re-find "^#\\*" kw) (str (subs kw 2) "()")
       (re-find "^&" kw)    (str "'" (subs kw 1) "'")

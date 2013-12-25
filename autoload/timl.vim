@@ -7,14 +7,6 @@ let g:autoloaded_timl = 1
 
 " Section: Util {{{1
 
-function! s:funcname(name) abort
-  return substitute(a:name,'^s:',matchstr(expand('<sfile>'), '.*\zs<SNR>\d\+_'),'')
-endfunction
-
-function! s:function(name) abort
-  return function(s:funcname(a:name))
-endfunction
-
 function! timl#freeze(...) abort
   return a:000
 endfunction
@@ -215,7 +207,7 @@ function! timl#vectorp(obj) abort
 endfunction
 
 " }}}1
-" Section: Eval {{{1
+" Section: Invocation {{{1
 
 function! timl#call(Func, args, ...) abort
   if type(a:Func) == type(function('tr'))
@@ -233,56 +225,8 @@ function! timl#invoke(Func, ...) abort
   endif
 endfunction
 
-function! s:lencompare(a, b)
-  return len(a:b) - len(a:b)
-endfunction
-
-function! timl#ns_for_file(file) abort
-  let file = fnamemodify(a:file, ':p')
-  let candidates = []
-  for glob in split(&runtimepath, ',')
-    let candidates += filter(split(glob(glob), "\n"), 'file[0 : len(v:val)-1] ==# v:val && file[len(v:val)] =~# "[\\/]"')
-  endfor
-  if empty(candidates)
-    return 'user'
-  endif
-  let dir = sort(candidates, s:function('s:lencompare'))[-1]
-  let path = file[len(dir)+1 : -1]
-  return substitute(tr(fnamemodify(path, ':r:r'), '\/_', '..-'), '^\%(autoload\|plugin\|test\).', '', '')
-endfunction
-
-function! timl#ns_for_cursor(...) abort
-  call timl#loader#init()
-  let pattern = '\c(\%(in-\)\=ns\s\+''\=[[:alpha:]]\@='
-  let line = 0
-  if !a:0 || a:1
-    let line = search(pattern, 'bcnW')
-  endif
-  if !line
-    let i = 1
-    while i < line('$') && i < 100
-      if getline(i) =~# pattern
-        let line = i
-        break
-      endif
-      let i += 1
-    endwhile
-  endif
-  if line
-    let ns = matchstr(getline(line), pattern.'\zs[[:alnum:]._-]\+')
-  else
-    let ns = timl#ns_for_file(expand('%:p'))
-  endif
-  if !exists('g:autoloaded_timl_compiler')
-    runtime! autoload/timl/compiler.vim
-  endif
-  let nsobj = timl#namespace#find(timl#symbol(ns))
-  if nsobj isnot# g:timl#nil
-    return ns
-  else
-    return 'user'
-  endif
-endfunction
+" }}}1
+" Section: Evaluation {{{1
 
 function! timl#eval(x) abort
   return timl#loader#eval(a:x)
@@ -296,8 +240,8 @@ function! timl#rep(str) abort
   return timl#printer#string(timl#re(a:str))
 endfunction
 
-runtime! autoload/timl/bootstrap.vim
-
 " }}}1
+
+runtime! autoload/timl/bootstrap.vim
 
 " vim:set et sw=2:

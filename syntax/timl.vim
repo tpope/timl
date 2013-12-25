@@ -16,7 +16,7 @@ if !exists('s:functions')
 endif
 
 setl iskeyword+=?,!,#,$,%,&,*,+,.,/,<,>,:,=,45
-let b:syntax_ns_str = timl#ns_for_cursor(0)
+let b:syntax_ns_str = timl#interactive#ns_for_cursor(0)
 let b:syntax_vars = keys(timl#namespace#find(b:syntax_ns_str).mappings)
 
 let b:current_syntax = "timl"

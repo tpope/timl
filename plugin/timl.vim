@@ -22,7 +22,7 @@ augroup timl
         \ execute 'TLsource %' |
         \ set filetype=timl |
         \ redraw! |
-        \ call s:repl(timl#ns_for_cursor())
+        \ call s:repl(timl#interactive#ns_for_cursor())
   autocmd FileType * call s:load_filetype(expand('<amatch>'))
   autocmd SourceCmd *.tim call timl#loader#source(expand("<amatch>"))
   autocmd FuncUndefined *#* call s:autoload(expand('<amatch>'))
@@ -37,7 +37,7 @@ augroup END
 command! -bar -nargs=?                    TLrepl :execute s:repl(<f-args>)
 command! -bar                          TLscratch :execute s:scratch()
 command! -nargs=1 -complete=expression TLinspect :echo timl#printer#string(<args>)
-command! -nargs=1 -complete=customlist,timl#reflect#input_complete TLeval
+command! -nargs=1 -complete=customlist,timl#interactive#input_complete TLeval
       \ try |
       \    echo timl#rep(<q-args>) |
       \ catch |
@@ -122,7 +122,7 @@ function! s:repl(...) abort
     endtry
   endif
 
-  let cmpl = 'customlist,timl#reflect#input_complete'
+  let cmpl = 'customlist,timl#interactive#input_complete'
   let more = &more
   try
     set nomore
