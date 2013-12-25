@@ -344,10 +344,6 @@ function! timl#reader#read_string(str) abort
   return timl#reader#read({'str': a:str, 'pos': 0, 'line': 1})
 endfunction
 
-function! timl#reader#read_file(filename) abort
-  return timl#reader#read_string_all(join(readfile(a:filename), "\n"))
-endfunction
-
 " Section: Tests {{{1
 
 if !$TIML_TEST
