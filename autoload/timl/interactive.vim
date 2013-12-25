@@ -114,3 +114,90 @@ function! timl#interactive#input_complete(A, L, P) abort
   let keyword = a:A[strlen(prefix) : -1]
   return sort(map(timl#interactive#omnicomplete(0, keyword), 'prefix . v:val.word'))
 endfunction
+
+function! timl#interactive#repl(...) abort
+  if a:0
+    let ns = g:timl#core#_STAR_ns_STAR_
+    try
+      let g:timl#core#_STAR_ns_STAR_ = timl#namespace#create(timl#symbol(a:1))
+      call timl#loader#require(timl#symbol('timl.repl'))
+      call timl#namespace#refer(timl#symbol('timl.repl'))
+      return timl#interactive#repl()
+    finally
+      let g:timl#core#_STAR_ns_STAR_ = ns
+    endtry
+  endif
+
+  let cmpl = 'customlist,timl#interactive#input_complete'
+  let more = &more
+  try
+    set nomore
+    call timl#loader#require(timl#symbol('timl.repl'))
+    if g:timl#core#_STAR_ns_STAR_.name[0] ==# 'user'
+      call timl#namespace#refer(timl#symbol('timl.repl'))
+    endif
+    let input = input(g:timl#core#_STAR_ns_STAR_.name[0].'=> ', '', cmpl)
+    if input =~# '^:q\%[uit]'
+      return ''
+    elseif input =~# '^:'
+      return input
+    endif
+    let _ = {}
+    while !empty(input)
+      echo "\n"
+      try
+        while 1
+          try
+            let read = timl#reader#read_string_all(input)
+            break
+          catch /^timl#reader: unexpected EOF/
+            let space = repeat(' ', len(g:timl#core#_STAR_ns_STAR_.name[0])-2)
+            let input .= "\n" . input(space.'#_=> ', '', cmpl)
+            echo "\n"
+          endtry
+        endwhile
+        let _.val = timl#eval(timl#cons#create(timl#symbol('do'), read))
+        call extend(g:, {
+              \ 'timl#core#_STAR_3': g:timl#core#_STAR_2,
+              \ 'timl#core#_STAR_2': g:timl#core#_STAR_1,
+              \ 'timl#core#_STAR_1': _.val})
+        echo timl#printer#string(_.val)
+      catch /^timl#repl: exit/
+        redraw
+        return v:exception[16:-1]
+      catch /^Vim\%((\a\+)\)\=:E168/
+        return ''
+      catch
+        unlet! g:timl#core#_STAR_e
+        let g:timl#core#_STAR_e = timl#compiler#build_exception(v:exception, v:throwpoint)
+        echohl ErrorMSG
+        echo v:exception
+        echohl NONE
+      endtry
+      let input = input(g:timl#core#_STAR_ns_STAR_.name[0].'=> ', '', cmpl)
+    endwhile
+    return input
+  finally
+    let &more = more
+  endtry
+endfunction
+
+function! timl#interactive#scratch() abort
+  if exists('s:scratch') && bufnr(s:scratch) !=# -1
+    execute bufnr(s:scratch) . 'sbuffer'
+    return ''
+  elseif !exists('s:scratch')
+    let s:scratch = tempname().'.tim'
+    execute 'silent' (empty(bufname('')) && !&modified ? 'edit' : 'split') s:scratch
+  else
+    execute 'split '.s:scratch
+  endif
+  call setline(1, [
+        \ ";; This buffer is for notes you don't want to save, and for TimL evaluation.",
+        \ ";; If you want to create a file, visit that file with :edit,",
+        \ ";; then enter the text in that file's own buffer.",
+        \ ""])
+  setlocal bufhidden=hide filetype=timl nomodified
+  autocmd BufLeave <buffer> update
+  return '$'
+endfunction
