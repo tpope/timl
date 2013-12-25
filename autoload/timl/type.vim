@@ -8,7 +8,8 @@ let g:autoloaded_timl_type = 1
 " Section: Blessing
 
 if !exists('g:timl_tag_sentinel')
-  let g:timl_tag_sentinel = timl#freeze('blessed object')
+  let g:timl_tag_sentinel = ['blessed object']
+  lockvar 1 g:timl_tag_sentinel
 endif
 
 function! timl#type#intern(type)
@@ -196,7 +197,7 @@ endfunction
 " Section: Initialization
 
 if !exists('g:timl_hierarchy')
-  let g:timl_hierarchy = {'parents': timl#bless('timl.lang/HashMap'), 'descendants': timl#bless('timl.lang/HashMap'), 'ancestors': timl#bless('timl.lang/HashMap')}
+  let g:timl_hierarchy = {'parents': timl#type#bless('timl.lang/HashMap'), 'descendants': timl#type#bless('timl.lang/HashMap'), 'ancestors': timl#type#bless('timl.lang/HashMap')}
   call timl#type#derive(timl#keyword#intern('vim/Number'), timl#keyword#intern('vim/Numeric'))
   call timl#type#derive(timl#keyword#intern('vim/Float'), timl#keyword#intern('vim/Numeric'))
 endif

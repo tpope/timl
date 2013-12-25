@@ -12,7 +12,7 @@ endif
 function! timl#symbol#intern(str) abort
   if !has_key(s:symbols, a:str)
     let end = matchend(a:str, '^\%(&\=\w:\|\$\|&\%($\|form$\|env$\)\@!\|[^/]*/\).\@=')
-    let s:symbols[a:str] = timl#bless(s:type, {
+    let s:symbols[a:str] = timl#type#bless(s:type, {
           \ '0': a:str,
           \ 'str': a:str,
           \ 'meta': g:timl#nil,
