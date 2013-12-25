@@ -7,6 +7,8 @@
 (setlocal formatoptions+=croql)
 (setlocal omnifunc=timl#interactive#omnicomplete)
 
+(execute "nnoremap <silent><buffer> cp :set opfunc=timl#interactive#eval_opfunc<CR>g@")
+(execute "nnoremap <silent><buffer> cpp ^%:set opfunc=timl#interactive#eval_opfunc<CR>g@%")
 (execute "nnoremap <buffer> K :execute 'help' ftplugin#timl#cursor_keyword()<CR>")
 (defn cursor-keyword []
   (let [kw (#*expand "<cword>")

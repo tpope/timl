@@ -60,6 +60,41 @@ function! timl#interactive#ns_for_cursor(...) abort
   endif
 endfunction
 
+function! timl#interactive#eval_opfunc(type) abort
+  let selection = &selection
+  let clipboard = &clipboard
+  let reg = @@
+  try
+    set selection=inclusive clipboard=
+    if a:0
+      silent exe "normal! `<" . a:type . "`>y"
+    elseif a:type == 'line'
+      silent exe "normal! '[V']y"
+    elseif a:type == 'block'
+      silent exe "normal! `[\<C-V>`]y"
+    else
+      silent exe "normal! `[v`]y"
+    endif
+    let string = @@
+  finally
+    let &selection = selection
+    let &clipboard = clipboard
+    let @@ = reg
+  endtry
+  let port = timl#reader#open_string(string, expand('%:p'), line("'["))
+  try
+    echo timl#printer#string(timl#loader#consume(port))
+  catch //
+    echohl ErrorMsg
+    echo v:exception
+    echohl NONE
+    unlet! g:timl#core#_STAR_e
+    let g:timl#core#_STAR_e = timl#compiler#build_exception(v:exception, v:throwpoint)
+  finally
+    call timl#reader#close(port)
+  endtry
+endfunction
+
 function! timl#interactive#omnicomplete(findstart, base) abort
   if a:findstart
     let line = getline('.')[0 : col('.')-2]
