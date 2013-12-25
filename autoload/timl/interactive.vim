@@ -81,8 +81,10 @@ function! timl#interactive#eval_opfunc(type) abort
     let &clipboard = clipboard
     let @@ = reg
   endtry
+  let ns = g:timl#core#_STAR_ns_STAR_
   let port = timl#reader#open_string(string, expand('%:p'), line("'["))
   try
+    let g:timl#core#_STAR_ns_STAR_ = timl#namespace#find(timl#symbol(timl#interactive#ns_for_cursor()))
     echo timl#printer#string(timl#loader#consume(port))
   catch //
     echohl ErrorMsg
@@ -92,6 +94,7 @@ function! timl#interactive#eval_opfunc(type) abort
     let g:timl#core#_STAR_e = timl#compiler#build_exception(v:exception, v:throwpoint)
   finally
     call timl#reader#close(port)
+    let g:timl#core#_STAR_ns_STAR_ = ns
   endtry
 endfunction
 
