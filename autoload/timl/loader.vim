@@ -61,7 +61,7 @@ function! timl#loader#source(filename)
       let _.read = timl#reader#read(file, eof)
       let obj = timl#compiler#build(_.read, path)
       call obj.call()
-      call add(strs, "function! s:d.f() abort\nlet locals = {}\nlet temp = {}\n".obj.body."endfunction\n")
+      call add(strs, "function! s:d.f() abort\nlet locals = {}\n".obj.body."endfunction\n")
       let meta = timl#compiler#location_meta(path, _.read)
       if !empty(meta)
         let strs[-1] .= 'let g:timl_functions[join([s:d.f])] = '.string(meta)."\n"
