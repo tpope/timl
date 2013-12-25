@@ -5,4 +5,4 @@
      (if ~form
        true
        (echo "Failed: " (pr-str '~form)))
-     (catch "" e (echo "Error on " (pr-str '~form) ": " v:exception))))
+     (catch "" e# (echo "Error on " (pr-str '~form) ": " v:exception))))
