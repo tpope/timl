@@ -35,6 +35,10 @@ endfunction
 
 let s:myftime = getftime(expand('<sfile>'))
 
+if !exists('g:timl_functions')
+  let g:timl_functions = {}
+endif
+
 function! timl#loader#source(filename)
   let path = fnamemodify(a:filename, ':p')
   let old_ns = g:timl#core#_STAR_ns_STAR_
@@ -46,7 +50,7 @@ function! timl#loader#source(filename)
       try
         execute 'source '.fnameescape(cache)
       catch
-        let error = 1
+        let error = v:exception
       endtry
       if !exists('error')
         return
