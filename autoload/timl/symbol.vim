@@ -12,13 +12,14 @@ endif
 function! timl#symbol#intern(str) abort
   if !has_key(s:symbols, a:str)
     let end = matchend(a:str, '^\%(&\=\w:\|\$\|&\%($\|form$\|env$\)\@!\|[^/]*/\).\@=')
-    let s:symbols[a:str] = timl#type#bless(s:type, {
+    let symbol = timl#type#bless(s:type, {
           \ '0': a:str,
           \ 'str': a:str,
           \ 'meta': g:timl#nil,
           \ 'namespace': end == -1 ? '' : a:str[0 : end-(a:str[end-1] ==# '/' ? 2 : 1)],
           \ 'name': end == -1 ? a:str : a:str[end : -1]})
-    lockvar s:symbols[a:str]
+    lockvar 1 symbol
+    let s:symbols[a:str] = symbol
   endif
   return s:symbols[a:str]
 endfunction
