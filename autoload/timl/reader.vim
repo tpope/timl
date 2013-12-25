@@ -307,6 +307,14 @@ function! timl#reader#open(filename) abort
   return {'str': str, 'filename': fnamemodify(a:filename, ':p'), 'pos': 0, 'line': 1}
 endfunction
 
+function! timl#reader#open_string(string, ...) abort
+  let port = {'str': a:string, 'pos': 0, 'line': a:0 > 1 ? a:2 : 1}
+  if a:0
+    let port.filename = a:1
+  endif
+  return port
+endfunction
+
 function! timl#reader#close(port)
   return a:port
 endfunction

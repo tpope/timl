@@ -9,6 +9,17 @@ function! timl#loader#eval(x) abort
   return timl#compiler#build(a:x).call()
 endfunction
 
+function! timl#loader#consume(port)
+  let _ = {'result': g:timl#nil}
+  let eof = []
+  let _.read = timl#reader#read(a:port, eof)
+  while _.read isnot# eof
+    let _.result = timl#compiler#build(_.read, get(a:port, 'filename', 'NO_SOURCE_PATH')).call()
+    let _.read = timl#reader#read(a:port, eof)
+  endwhile
+  return _.result
+endfunction
+
 let s:dir = (has('win32') ? '$APPCACHE/Vim' :
       \ match(system('uname'), "Darwin") > -1 ? '~/Library/Vim' :
       \ empty($XDG_CACHE_HOME) ? '~/.cache/vim' : '$XDG_CACHE_HOME/vim').'/timl'
