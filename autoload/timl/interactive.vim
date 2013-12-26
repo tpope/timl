@@ -66,14 +66,31 @@ function! timl#interactive#eval_opfunc(type) abort
   let reg = @@
   try
     set selection=inclusive clipboard=
-    if a:0
-      silent exe "normal! `<" . a:type . "`>y"
-    elseif a:type == 'line'
-      silent exe "normal! '[V']y"
-    elseif a:type == 'block'
-      silent exe "normal! `[\<C-V>`]y"
-    else
+    if a:type =~# '^\d\+$'
+      let open = '[[{(]'
+      let close = '[]})]'
+      let skip = 'synIDattr(synID(line("."),col("."),1),"name") =~? "comment\\|string\\|regex\\|character"'
+      call searchpair(open, '', close, 'r', skip)
+      call setpos("']", getpos("."))
+      call searchpair(open, '', close, 'b', skip)
+      if col('.') > 2 && getline('.')[col('.')-3 : col('.')-2] ==# '#*'
+        normal! 2h
+      endif
+      while col('.') > 1 && getline('.')[col('.')-2] =~# '[#''`~@]'
+        normal! h
+      endwhile
+      call setpos("'[", getpos("."))
       silent exe "normal! `[v`]y"
+    elseif a:type =~# "[vV\C-V]"
+      silent exe "normal! `<" . a:type . "`>y"
+    elseif a:type ==# 'line'
+      silent exe "normal! '[V']y"
+    elseif a:type ==# 'block'
+      silent exe "normal! `[\<C-V>`]y"
+    elseif a:type ==# 'char'
+      silent exe "normal! `[v`]y"
+    else
+      return
     endif
     let string = @@
   finally
