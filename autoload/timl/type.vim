@@ -50,12 +50,12 @@ function! timl#type#bless(class, ...) abort
   let obj = a:0 ? a:1 : {}
   let obj.__flag__ = g:timl_tag_sentinel
   let obj.__tag__ = type(a:class) == type('') ? timl#keyword#intern('#'.a:class) : a:class
-  let obj.__apply__ = function('timl#type#invoke_apply')
+  let obj.__call__ = function('timl#type#invoke_apply')
   return obj
 endfunction
 
 function! timl#type#invoke_apply(_) dict
-  return g:timl#core#call.__apply__([self, a:_])
+  return g:timl#core#call.__call__([self, a:_])
 endfunction
 
 " Section: Hierarchy
@@ -162,7 +162,7 @@ function! timl#type#apply(_) dict abort
   if t == s:t_function
     return call(Dispatch, a:_)
   elseif t == s:t_dict
-    return Dispatch.__apply__(a:_)
+    return Dispatch.__call__(a:_)
   endif
   throw 'timl#type: no '.self.ns.name[0].'/'.self.name[0].' dispatch for '.type
 endfunction
@@ -185,7 +185,7 @@ function! timl#type#define_method(ns, name, type, fn) abort
               \ 'cache': {},
               \ 'hierarchy': g:timl_hierarchy,
               \ 'methods': {}})
-    let fn.__apply__ = function('timl#type#apply')
+    let fn.__call__ = function('timl#type#apply')
     call timl#namespace#intern(ns, name, fn)
   endif
   let multi = g:{munged}

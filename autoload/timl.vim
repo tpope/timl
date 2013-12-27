@@ -213,7 +213,7 @@ function! timl#call(Func, args, ...) abort
   if type(a:Func) == type(function('tr'))
     return call(a:Func, a:args, a:0 ? a:1 : {})
   else
-    return a:Func.__apply__(a:args)
+    return a:Func.__call__(a:args)
   endif
 endfunction
 
@@ -221,7 +221,7 @@ function! timl#invoke(Func, ...) abort
   if type(a:Func) == type(function('tr'))
     return call(a:Func, a:000, {})
   else
-    return a:Func.__apply__(a:000)
+    return a:Func.__call__(a:000)
   endif
 endfunction
 

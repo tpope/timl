@@ -6,7 +6,7 @@ endif
 let g:autoloaded_timl_function = 1
 
 function! timl#function#call(this, _) abort
-  return a:this.__apply__(a:_)
+  return a:this.__call__(a:_)
 endfunction
 
 function! timl#function#apply(_) abort
@@ -23,7 +23,7 @@ function! timl#function#identity(x) abort
 endfunction
 
 function! timl#function#invoke_self(...) dict abort
-  return self.__apply__(a:000)
+  return self.__call__(a:000)
 endfunction
 
 let s:def = timl#symbol('def')

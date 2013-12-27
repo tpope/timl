@@ -409,7 +409,7 @@ function! s:expr_sf_fn_STAR_(file, env, form) abort
     call s:emitln(a:file, 'let '.temp.'.name = timl#symbol('.string(name).')')
   endif
   if timl#vectorp(timl#first(_.next))
-    call s:one_fn(a:file, env, _.next, name, temp.".__apply__", 1)
+    call s:one_fn(a:file, env, _.next, name, temp.".__call__", 1)
   elseif timl#cons#test(timl#first(_.next))
     let c = char2nr('a')
     let fns = {}
@@ -418,7 +418,7 @@ function! s:expr_sf_fn_STAR_(file, env, form) abort
       let _.next = timl#next(_.next)
       let c += 1
     endwhile
-    call s:emitln(a:file, "function! ".temp.".__apply__(_) abort")
+    call s:emitln(a:file, "function! ".temp.".__call__(_) abort")
     call s:emitln(a:file, "if 0")
     for arity in sort(map(keys(fns), 'printf("%04d", v:val)'))
       if arity >= 1000
@@ -435,7 +435,7 @@ function! s:expr_sf_fn_STAR_(file, env, form) abort
   endif
   let meta = timl#compiler#location_meta(a:env.file, a:form)
   if !empty(meta)
-    call s:emitln(a:file, 'let g:timl_functions[join(['.temp.".__apply__])] = ".timl#compiler#serialize(meta))
+    call s:emitln(a:file, 'let g:timl_functions[join(['.temp.".__call__])] = ".timl#compiler#serialize(meta))
   endif
   return temp
 endfunction
@@ -649,7 +649,7 @@ function! s:emit(file, env, form) abort
             let resolved = var.location
           endif
           let args = s:expr_args(a:file, env, timl#next(a:form))
-          let expr = resolved.'.__apply__(['.args.'])'
+          let expr = resolved.'.__call__(['.args.'])'
         endif
       else
         let args = s:expr_args(a:file, env, timl#next(a:form))
@@ -658,7 +658,7 @@ function! s:emit(file, env, form) abort
         elseif type(First) == type(function('tr'))
           let expr = join([First]).'('.args.')'
         else
-          let expr = s:expr(a:file, env, First).'.__apply__(['.args.'])'
+          let expr = s:expr(a:file, env, First).'.__call__(['.args.'])'
         endif
       endif
     elseif timl#symbol#test(a:form)

@@ -34,7 +34,7 @@ function! s:intern_fn(name, apply, ...) abort
   let fn = timl#bless('timl.lang/Function', {
           \ 'name': a:name,
           \ 'ns': s:ns})
-  let fn.__apply__ = s:function(a:apply)
+  let fn.__call__ = s:function(a:apply)
   if a:0
     let fn.call = s:function(a:1)
   endif
