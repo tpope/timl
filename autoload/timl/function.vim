@@ -22,7 +22,7 @@ function! timl#function#identity(x) abort
   return a:x
 endfunction
 
-function! timl#function#invoke_self(...) dict
+function! timl#function#invoke_self(...) dict abort
   return self.__apply__(a:000)
 endfunction
 
@@ -36,16 +36,16 @@ let s:dot = timl#symbol('.')
 let s:form = timl#symbol('&form')
 let s:env = timl#symbol('&env')
 
-function! timl#function#fn(form, env, ...)
+function! timl#function#fn(form, env, ...) abort
   return timl#with_meta(timl#cons#from_array([s:fns] + a:000), timl#meta(a:form))
 endfunction
 
-function! timl#function#defn(form, env, name, ...)
+function! timl#function#defn(form, env, name, ...) abort
   return timl#list(s:def, a:name, timl#with_meta(timl#cons#from_array([s:fn, a:name] + a:000), timl#meta(a:form)))
 endfunction
 
 let s:kmacro = timl#keyword#intern('macro')
-function! timl#function#defmacro(form, env, name, params, ...)
+function! timl#function#defmacro(form, env, name, params, ...) abort
   let extra = [s:form, s:env]
   if timl#vectorp(a:params)
     let body = [timl#vector#claim(extra + timl#ary(a:params))] + a:000
