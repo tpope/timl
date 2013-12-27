@@ -40,6 +40,14 @@ function! timl#map#create(_) abort
   return map
 endfunction
 
+function! timl#map#soft_coerce(coll) abort
+  if timl#type#canp(a:coll, g:timl#core#more)
+    return timl#map#create(timl#ary(a:coll))
+  else
+    return a:coll
+  endif
+endfunction
+
 function! timl#map#to_array(this) abort
   return map(filter(items(a:this), 'v:val[0][0:1] !=# "__"'), '[timl#map#dekey(v:val[0]), v:val[1]]')
 endfunction

@@ -26,8 +26,8 @@ function! timl#array#coerce(seq) abort
   return array
 endfunction
 
-function! timl#array#seq(this) abort
-  return empty(a:this) ? g:timl#nil : timl#array_seq#create(a:this)
+function! timl#array#seq(this, ...) abort
+  return len(a:this) <= (a:0 ? a:1 : 0) ? g:timl#nil : timl#array_seq#create(a:this, a:0 ? a:1 : 0)
 endfunction
 
 function! timl#array#first(this) abort

@@ -207,6 +207,56 @@ function! s:add_local(env, sym) abort
   let a:env.locals[str] = s:localfy(str)
 endfunction
 
+let s:k_as = timl#keyword#intern('as')
+function! s:assign(file, env, key, val) abort
+  let _ = {}
+  if timl#symbol#test(a:key)
+    call s:emitln(a:file, 'let '.s:localfy(a:key[0]).' = '.a:val)
+    return s:add_local(a:env, a:key)
+  elseif timl#vectorp(a:key)
+    let coll = s:let_tmp(a:file, 'coll', a:val)
+    let array = s:let_tmp(a:file, 'array', 'timl#ary('.coll.')')
+    let _.seq = timl#seq(a:key)
+    let i = 0
+    while _.seq isnot g:timl#nil
+      let _.elem = timl#first(_.seq)
+      let _.seq = timl#next(_.seq)
+      if timl#symbol#is(_.elem, '&')
+        call s:assign(a:file, a:env, timl#first(_.seq), 'timl#array#seq('.array.', '.i.')')
+        let _.seq = timl#next(_.seq)
+      elseif _.elem is# s:k_as
+        call s:assign(a:file, a:env, timl#first(_.seq), coll)
+        let _.seq = timl#next(_.seq)
+      else
+        call s:assign(a:file, a:env, _.elem, 'get('.array.', '.i.', g:timl#nil)')
+      endif
+      let i += 1
+    endwhile
+  elseif timl#mapp(a:key)
+    let as = timl#coll#get(a:key, s:k_as, a:key)
+    if as isnot# a:key
+      let coll = s:localfy(timl#symbol#cast(as).name)
+      call s:emitln(a:file, 'let '.coll.' = '.a:val)
+      call s:add_local(a:env, as)
+    else
+      let coll = s:let_tmp(a:file, 'coll', a:val)
+    endif
+    let map = s:let_tmp(a:file, 'map', 'timl#map#soft_coerce('.coll.')')
+    let _.seq = timl#seq(a:key)
+    while _.seq isnot g:timl#nil
+      let _.pair = timl#first(_.seq)
+      if timl#first(_.pair) isnot# s:k_as
+        call s:assign(a:file, a:env, timl#first(_.pair), 'timl#coll#get('.map.', '.s:expr(a:file, a:env, timl#fnext(_.pair)).')')
+      endif
+      let _.seq = timl#next(_.seq)
+    endwhile
+  elseif timl#keyword#test(a:key)
+    throw 'timl: invalid binding :'.a:key[0]
+  else
+    throw 'timl: invalid binding type '.timl#type#string(a:key)
+  endif
+endfunction
+
 function! s:emit_sf_let_STAR_(file, env, form) abort
   if a:env.context ==# 'statement'
     return s:emitln(a:file, 'call '.s:wrap_as_expr(a:file, a:env, a:form))
@@ -214,9 +264,7 @@ function! s:emit_sf_let_STAR_(file, env, form) abort
   let ary = timl#ary(timl#fnext(a:form))
   let env = s:copy_locals(a:env)
   for i in range(0, len(ary)-1, 2)
-    let expr = s:emit(a:file, s:with_context(env, 'expr'), ary[i+1])
-    call s:emitln(a:file, 'let '.s:localfy(timl#symbol#cast(ary[i])[0]).' = '.expr)
-    call s:add_local(env, ary[i])
+    call s:assign(a:file, env, ary[i], s:expr(a:file, env, ary[i+1]))
   endfor
   let body = timl#nnext(a:form)
   if timl#coll#count(body) == 1
