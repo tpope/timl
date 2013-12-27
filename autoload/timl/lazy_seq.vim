@@ -6,7 +6,7 @@ endif
 let g:autoloaded_timl_lazy_seq = 1
 
 function! timl#lazy_seq#create(fn)
-  return timl#type#bless('timl.lang/LazySeq', {'fn': a:fn})
+  return timl#type#bless('timl.lang/LazySeq', {'fn': a:fn, 'meta': g:timl#nil})
 endfunction
 
 function! timl#lazy_seq#seq(lseq) abort
@@ -16,11 +16,11 @@ function! timl#lazy_seq#seq(lseq) abort
       let _.seq = timl#invoke(g:timl#core#seq, _.seq)
     endwhile
     let a:lseq.seq = timl#invoke(g:timl#core#seq, _.seq)
-    unlet a:lseq.fn
+    let a:lseq.fn = g:timl#nil
   endif
   return a:lseq.seq
 endfunction
 
 function! timl#lazy_seq#realized(lseq) abort
-  return has_key(a:lseq, 'fn') ? g:timl#false : g:timl#true
+  return a:lseq.fn is# g:timl#nil ? g:timl#true : g:timl#false
 endfunction

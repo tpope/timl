@@ -46,15 +46,17 @@ function! timl#type#keyword(val) abort
   return timl#keyword#intern(timl#type#string(a:val))
 endfunction
 
+let s:proto = {
+      \ '__call__': function('timl#type#dispatch_call'),
+      \ '__flag__': g:timl_tag_sentinel}
 function! timl#type#bless(class, ...) abort
   let obj = a:0 ? a:1 : {}
-  let obj.__flag__ = g:timl_tag_sentinel
   let obj.__tag__ = type(a:class) == type('') ? timl#keyword#intern('#'.a:class) : a:class
-  let obj.__call__ = function('timl#type#invoke_apply')
+  call extend(obj, s:proto, 'keep')
   return obj
 endfunction
 
-function! timl#type#invoke_apply(_) dict
+function! timl#type#dispatch_call(_) dict
   return g:timl#core#call.__call__([self, a:_])
 endfunction
 

@@ -11,6 +11,7 @@ function! timl#chunked_cons#create(array, rest, ...) abort
   let cc = timl#bless(s:type, {
         \ 'array': a:array,
         \ 'rest': a:rest,
+        \ 'meta': g:timl#nil,
         \ 'i': a:0 ? a:1 : 0})
   lockvar 1 cc
   return cc

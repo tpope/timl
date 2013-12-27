@@ -20,11 +20,7 @@ endfunction
 function! timl#meta#copy_assign_lock(obj, meta) abort
   if !timl#equalp(get(a:obj, 'meta', g:timl#nil), a:meta)
     let obj = copy(a:obj)
-    if a:meta is# g:timl#nil
-      call remove(obj, 'meta')
-    else
-      let obj.meta = a:meta
-    endif
+    let obj.meta = a:meta
     lockvar 1 obj
     return obj
   endif
@@ -34,11 +30,7 @@ endfunction
 function! timl#meta#copy_assign(obj, meta) abort
   if !timl#equalp(get(a:obj, 'meta', g:timl#nil), a:meta)
     let obj = copy(a:obj)
-    if a:meta is# g:timl#nil
-      call remove(obj, 'meta')
-    else
-      let obj.meta = a:meta
-    endif
+    let obj.meta = a:meta
     return obj
   endif
   return a:obj

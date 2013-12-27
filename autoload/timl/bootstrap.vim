@@ -350,7 +350,7 @@ call s:define_call('cons', 'timl#cons#create')
 " Section: Empty list
 
 if !exists('g:timl#empty_list')
-  let g:timl#empty_list = timl#bless('timl.lang/EmptyList', {'count': 0})
+  let g:timl#empty_list = timl#bless('timl.lang/EmptyList', {'meta': g:timl#nil})
   lockvar 1 g:timl#empty_list
 endif
 
