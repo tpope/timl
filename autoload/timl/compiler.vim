@@ -622,7 +622,7 @@ function! s:emit(file, env, form) abort
   let env = a:env
   try
     if timl#cons#test(a:form)
-      if has_key(a:form, 'meta') && has_key(a:form.meta, 'line')
+      if get(a:form, 'meta', g:timl#nil) isnot# g:timl#nil && has_key(a:form.meta, 'line')
         let env = copy(env)
         let env.line = a:form.meta.line
       endif
@@ -642,7 +642,7 @@ function! s:emit(file, env, form) abort
             let resolved = env.locals[First[0]]
           else
             let var = timl#compiler#resolve(First)
-            if has_key(var, 'meta') && timl#truth(timl#coll#get(var.meta, s:kmacro))
+            if get(var, 'meta', g:timl#nil) isnot# g:timl#nil && timl#truth(timl#coll#get(var.meta, s:kmacro))
               let E = timl#call(timl#var#get(var), [a:form, env] + timl#ary(timl#next(a:form)))
               return s:emit(a:file, env, E)
             endif
