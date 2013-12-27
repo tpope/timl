@@ -27,7 +27,7 @@ function! timl#function#invoke_self(...) dict abort
 endfunction
 
 let s:def = timl#symbol('def')
-let s:lets = timl#symbol('let*')
+let s:let = timl#symbol('timl.core/let')
 let s:fns = timl#symbol('fn*')
 let s:fn = timl#symbol('timl.core/fn')
 let s:defn = timl#symbol('timl.core/defn')
@@ -36,8 +36,46 @@ let s:dot = timl#symbol('.')
 let s:form = timl#symbol('&form')
 let s:env = timl#symbol('&env')
 
+function! timl#function#destructure(params, body)
+  let lets = []
+  let params = []
+  let _ = {}
+  for _.param in timl#ary(a:params)
+    if timl#symbol#test(_.param)
+      call add(params, _.param)
+    else
+      call add(params, timl#symbol#gen("p__"))
+      call extend(lets, [_.param, params[-1]])
+    endif
+  endfor
+  if empty(lets)
+    return timl#cons#create(timl#vector#claim(params), a:body)
+  else
+    return timl#list(timl#vector#claim(params), timl#cons#create(s:let, timl#cons#create(timl#vector#claim(lets), a:body)))
+  endif
+endfunction
+
 function! timl#function#fn(form, env, ...) abort
-  return timl#with_meta(timl#cons#from_array([s:fns] + a:000), timl#meta(a:form))
+  let _ = {}
+  let _.sigs = timl#cons#from_array(a:000)
+  if timl#symbol#test(a:000[0])
+    let name = a:000[0]
+    let _.sigs = timl#next(_.sigs)
+  endif
+  if timl#vectorp(timl#first(_.sigs))
+    let _.sigs = timl#function#destructure(timl#first(_.sigs), timl#next(_.sigs))
+  else
+    let sigs = []
+    while _.sigs isnot# g:timl#nil
+      call add(sigs, timl#function#destructure(timl#ffirst(_.sigs), timl#nfirst(_.sigs)))
+      let _.sigs = timl#next(_.sigs)
+    endwhile
+    let _.sigs = timl#cons#from_array(sigs)
+  endif
+  if exists('name')
+    let _.sigs = timl#cons#create(name, _.sigs)
+  endif
+  return timl#with_meta(timl#cons#create(s:fns, _.sigs), timl#meta(a:form))
 endfunction
 
 function! timl#function#defn(form, env, name, ...) abort
