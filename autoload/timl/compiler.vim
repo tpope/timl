@@ -208,6 +208,8 @@ function! s:add_local(env, sym) abort
 endfunction
 
 let s:k_as = timl#keyword#intern('as')
+let s:k_or = timl#keyword#intern('or')
+
 function! s:assign(file, env, key, val) abort
   let _ = {}
   if timl#symbol#test(a:key)
@@ -232,6 +234,7 @@ function! s:assign(file, env, key, val) abort
       endif
       let i += 1
     endwhile
+
   elseif timl#mapp(a:key)
     let as = timl#coll#get(a:key, s:k_as, a:key)
     if as isnot# a:key
@@ -241,15 +244,25 @@ function! s:assign(file, env, key, val) abort
     else
       let coll = s:let_tmp(a:file, 'coll', a:val)
     endif
+    let or = timl#coll#get(a:key, s:k_or)
+
     let map = s:let_tmp(a:file, 'map', 'timl#map#soft_coerce('.coll.')')
     let _.seq = timl#seq(a:key)
     while _.seq isnot g:timl#nil
       let _.pair = timl#first(_.seq)
-      if timl#first(_.pair) isnot# s:k_as
-        call s:assign(a:file, a:env, timl#first(_.pair), 'timl#coll#get('.map.', '.s:expr(a:file, a:env, timl#fnext(_.pair)).')')
+      let _.var = timl#first(_.pair)
+      if _.var isnot# s:k_as && _.var isnot# s:k_or
+        if timl#coll#get(or, _.var, or) isnot# or
+          call s:assign(a:file, a:env, timl#first(_.pair), 'timl#coll#get('.map
+                \ . ', ' . s:expr(a:file, a:env, timl#fnext(_.pair))
+                \ . ', ' . s:expr(a:file, a:env, timl#coll#get(or, _.var)).')')
+        else
+          call s:assign(a:file, a:env, _.var, 'timl#coll#get('.map.', '.s:expr(a:file, a:env, timl#fnext(_.pair)).')')
+        endif
       endif
       let _.seq = timl#next(_.seq)
     endwhile
+
   elseif timl#keyword#test(a:key)
     throw 'timl: invalid binding :'.a:key[0]
   else
