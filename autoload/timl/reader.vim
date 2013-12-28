@@ -80,8 +80,8 @@ function! s:read(port, ...) abort
   let [token, pos, line] = s:read_token(a:port)
   let wanted = a:0 ? a:1 : ''
   if token ==# '('
-    let data = timl#cons#from_array(s:read_until(port, ')'))
     let meta = timl#type#bless('timl.lang/HashMap', {'line': line})
+    let data = timl#list#create(s:read_until(port, ')'))
     if timl#list#emptyp(data)
       let data = timl#list#with_meta(data, meta)
     else
@@ -155,7 +155,7 @@ function! s:read(port, ...) abort
       if rest
         call add(args, a:port.argsyms['%&'])
       endif
-      return timl#list(timl#symbol('fn*'), args, timl#cons#from_array(list))
+      return timl#list(timl#symbol('fn*'), args, timl#list#create(list))
     finally
       unlet! a:port.argsyms
     endtry

@@ -20,14 +20,6 @@ function! timl#cons#create(car, cdr, ...) abort
   throw 'timl: not seqable'
 endfunction
 
-function! timl#cons#from_array(array) abort
-  let _ = {'cdr': g:timl#empty_list}
-  for i in range(len(a:array)-1, 0, -1)
-    let _.cdr = timl#cons#create(a:array[i], _.cdr)
-  endfor
-  return _.cdr
-endfunction
-
 function! timl#cons#conj(this, ...) abort
   let head = a:this
   let _ = {}
@@ -43,9 +35,4 @@ endfunction
 
 function! timl#cons#more(this)
   return a:this.cdr
-endfunction
-
-let s:empty_list_type = timl#type#intern('timl.lang/EmptyList')
-function! timl#cons#listp(obj)
-  return type(a:obj) == type({}) && (get(a:obj, '__tag__') is# s:type || get(a:obj, '__tag__') is# s:empty_list_type)
 endfunction

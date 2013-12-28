@@ -57,7 +57,7 @@ endfunction
 
 function! timl#function#fn(form, env, ...) abort
   let _ = {}
-  let _.sigs = timl#cons#from_array(a:000)
+  let _.sigs = timl#list#create(a:000)
   if timl#symbol#test(a:000[0])
     let name = a:000[0]
     let _.sigs = timl#next(_.sigs)
@@ -70,7 +70,7 @@ function! timl#function#fn(form, env, ...) abort
       call add(sigs, timl#function#destructure(timl#ffirst(_.sigs), timl#nfirst(_.sigs)))
       let _.sigs = timl#next(_.sigs)
     endwhile
-    let _.sigs = timl#cons#from_array(sigs)
+    let _.sigs = timl#list#create(sigs)
   endif
   if exists('name')
     let _.sigs = timl#cons#create(name, _.sigs)
@@ -79,7 +79,7 @@ function! timl#function#fn(form, env, ...) abort
 endfunction
 
 function! timl#function#defn(form, env, name, ...) abort
-  return timl#list(s:def, a:name, timl#with_meta(timl#cons#from_array([s:fn, a:name] + a:000), timl#meta(a:form)))
+  return timl#list(s:def, a:name, timl#with_meta(timl#list#create([s:fn, a:name] + a:000), timl#meta(a:form)))
 endfunction
 
 let s:kmacro = timl#keyword#intern('macro')
@@ -97,5 +97,5 @@ function! timl#function#defmacro(form, env, name, params, ...) abort
   let name = copy(a:name)
   let name.meta = timl#invoke(g:timl#core#assoc, get(a:name, 'meta', g:timl#nil), s:kmacro, g:timl#true)
   let fn = timl#symbol#gen('fn')
-  return timl#cons#from_array([s:defn, name] + body)
+  return timl#list#create([s:defn, name] + body)
 endfunction

@@ -187,7 +187,7 @@ function! timl#nnext(seq) abort
 endfunction
 
 function! timl#list(...) abort
-  return timl#cons#from_array(a:000)
+  return timl#list#create(a:000)
 endfunction
 
 function! timl#ary(coll) abort
