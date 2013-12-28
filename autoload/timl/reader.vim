@@ -81,15 +81,7 @@ function! s:read(port, ...) abort
   let wanted = a:0 ? a:1 : ''
   if token ==# '('
     let meta = timl#type#bless('timl.lang/HashMap', {'line': line})
-    let data = timl#list#create(s:read_until(port, ')'))
-    if timl#list#emptyp(data)
-      let data = timl#list#with_meta(data, meta)
-    else
-      unlockvar 1 data
-      let data.meta = meta
-      lockvar 1 data
-    endif
-    return data
+    return timl#list#create(s:read_until(port, ')'), meta)
   elseif token == '['
     return timl#vector#claim(s:read_until(port, ']'))
   elseif token == '{'
