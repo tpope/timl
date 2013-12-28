@@ -178,13 +178,9 @@ function! s:copy_locals(env) abort
   return env
 endfunction
 
-function! s:tempsym(...)
-  let s:id = get(s:, 'id', 0) + 1
-  return (a:0 ? a:1 : '_').s:id
-endfunction
-
 function! s:let_tmp(file, env, clue, str)
-  let temp = s:tempsym(a:clue)
+  let a:env.id = get(a:env, 'id', 0) + 1
+  let temp = a:clue . a:env.id
   call s:emitln(a:file, 'let '.temp.' = '.a:str)
   return temp
 endfunction
