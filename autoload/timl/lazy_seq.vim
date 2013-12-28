@@ -5,18 +5,33 @@ if exists("g:autoloaded_timl_lazy_seq")
 endif
 let g:autoloaded_timl_lazy_seq = 1
 
-function! timl#lazy_seq#create(fn)
-  return timl#type#bless('timl.lang/LazySeq', {'fn': a:fn, 'meta': g:timl#nil})
+let s:placeholder = {}
+let s:type = timl#type#intern('timl.lang/LazySeq')
+function! timl#lazy_seq#create(fn) abort
+  return timl#type#bless(s:type, {'fn': a:fn, 'val': g:timl#nil, 'seq': s:placeholder, 'meta': g:timl#nil})
+endfunction
+
+function! timl#lazy_seq#with_meta(this, meta) abort
+  return timl#type#bless(s:type, {'fn': g:timl#nil, 'val': s:val(a:this), 'seq': a:this.seq, 'meta': a:meta})
+endfunction
+
+function! s:val(lseq) abort
+  if a:lseq.fn isnot# g:timl#nil
+    let a:lseq.val = timl#call(a:lseq.fn, [])
+    let a:lseq.fn = g:timl#nil
+  endif
+  return a:lseq.val
 endfunction
 
 function! timl#lazy_seq#seq(lseq) abort
-  if !has_key(a:lseq, 'seq')
-    let _ = {'seq': timl#invoke(a:lseq.fn)}
-    while !timl#type#canp(_.seq, g:timl#core#more)
-      let _.seq = timl#invoke(g:timl#core#seq, _.seq)
+  if a:lseq.seq is# s:placeholder
+    let _ = {'seq': a:lseq}
+    let i = 0
+    while timl#type#string(_.seq) ==# 'timl.lang/LazySeq'
+      let i += 1
+      let _.seq = s:val(_.seq)
     endwhile
     let a:lseq.seq = timl#invoke(g:timl#core#seq, _.seq)
-    let a:lseq.fn = g:timl#nil
   endif
   return a:lseq.seq
 endfunction

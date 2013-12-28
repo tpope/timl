@@ -416,7 +416,7 @@ call s:implement('timl.lang/ChunkedCons',
 
 call s:implement('timl.lang/LazySeq',
       \ 'meta', 'timl#meta#from_attribute',
-      \ 'with-meta', 'timl#meta#copy_assign',
+      \ 'with-meta', 'timl#lazy_seq#with_meta',
       \ 'seq', 'timl#lazy_seq#seq',
       \ 'equiv', 'timl#equality#seq',
       \ 'realized?', 'timl#lazy_seq#realized',
