@@ -179,8 +179,8 @@ function! s:copy_locals(env) abort
 endfunction
 
 function! s:let_tmp(file, env, clue, str)
-  let a:env.id = get(a:env, 'id', 0) + 1
-  let temp = a:clue . a:env.id
+  let a:env.temp[a:clue] = get(a:env.temp, a:clue, 0) + 1
+  let temp = a:clue . a:env.temp[a:clue]
   call s:emitln(a:file, 'let '.temp.' = '.a:str)
   return temp
 endfunction
@@ -706,7 +706,7 @@ augroup END
 function! timl#compiler#build(x, ...) abort
   let filename = a:0 ? a:1 : 'NO_SOURCE_PATH'
   let file = []
-  call s:emit(file, {'file': filename, 'line': 1, 'context': 'return', 'locals': {}}, a:x)
+  call s:emit(file, {'file': filename, 'line': 1, 'context': 'return', 'locals': {}, 'temp': {}}, a:x)
   let body = join(file, "\n")."\n"
   let s:dict = {}
   let str = "function s:dict.call() abort\n"
