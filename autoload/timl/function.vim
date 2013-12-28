@@ -5,6 +5,20 @@ if exists('g:autoloaded_timl_function')
 endif
 let g:autoloaded_timl_function = 1
 
+let s:type = timl#type#intern('timl.lang/Function')
+
+function! timl#function#unimplemented(...) abort
+  throw 'timl: unimplemented'
+endfunction
+
+function! timl#function#birth(locals, ...) abort
+  return timl#type#bless(s:type, {
+        \ 'ns': g:timl#core#_STAR_ns_STAR_,
+        \ 'name': a:0 ? a:1 : g:timl#nil,
+        \ 'locals': a:locals,
+        \ '__call__': function('timl#function#unimplemented')})
+endfunction
+
 function! timl#function#call(this, _) abort
   return a:this.__call__(a:_)
 endfunction
