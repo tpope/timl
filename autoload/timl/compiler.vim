@@ -183,7 +183,7 @@ function! s:tempsym(...)
   return (a:0 ? a:1 : '_').s:id
 endfunction
 
-function! s:let_tmp(file, clue, str)
+function! s:let_tmp(file, env, clue, str)
   let temp = s:tempsym(a:clue)
   call s:emitln(a:file, 'let '.temp.' = '.a:str)
   return temp
@@ -194,7 +194,7 @@ function! s:wrap_as_expr(file, env, form) abort
   if has_key(env, 'params')
     call remove(env, 'params')
   endif
-  let temp = s:let_tmp(a:file, 'thunk', '{"locals": copy(locals)}')
+  let temp = s:let_tmp(a:file, env, 'thunk', '{"locals": copy(locals)}')
   call s:emitln(a:file, "function ".temp.".call() abort")
   call s:emitln(a:file, "let locals = self.locals")
   call s:emit(a:file, env, a:form)
@@ -220,8 +220,8 @@ function! s:assign(file, env, key, val) abort
     call s:emitln(a:file, 'let '.s:localfy(a:key[0]).' = '.a:val)
     return s:add_local(a:env, a:key)
   elseif timl#vectorp(a:key)
-    let coll = s:let_tmp(a:file, 'coll', a:val)
-    let array = s:let_tmp(a:file, 'array', 'timl#ary('.coll.')')
+    let coll = s:let_tmp(a:file, a:env, 'coll', a:val)
+    let array = s:let_tmp(a:file, a:env, 'array', 'timl#ary('.coll.')')
     let _.seq = timl#seq(a:key)
     let i = 0
     while _.seq isnot g:timl#nil
@@ -246,11 +246,11 @@ function! s:assign(file, env, key, val) abort
       call s:emitln(a:file, 'let '.coll.' = '.a:val)
       call s:add_local(a:env, as)
     else
-      let coll = s:let_tmp(a:file, 'coll', a:val)
+      let coll = s:let_tmp(a:file, a:env, 'coll', a:val)
     endif
     let or = timl#coll#get(a:key, s:k_or)
 
-    let map = s:let_tmp(a:file, 'map', 'timl#map#soft_coerce('.coll.')')
+    let map = s:let_tmp(a:file, a:env, 'map', 'timl#map#soft_coerce('.coll.')')
     let _.seq = timl#seq(a:key)
     while _.seq isnot g:timl#nil
       let _.pair = timl#first(_.seq)
@@ -408,7 +408,7 @@ function! s:expr_sf_fn_STAR_(file, env, form) abort
   else
     let name = ''
   endif
-  let temp = s:let_tmp(a:file, 'fn', 'timl#function#birth(copy(locals)' . (empty(name) ? '' : ', timl#symbol#intern('.string(name).')').')')
+  let temp = s:let_tmp(a:file, a:env, 'fn', 'timl#function#birth(copy(locals)' . (empty(name) ? '' : ', timl#symbol#intern('.string(name).')').')')
   if timl#vectorp(timl#first(_.next))
     call s:one_fn(a:file, env, _.next, name, temp.".__call__", 1)
   elseif timl#cons#test(timl#first(_.next))
