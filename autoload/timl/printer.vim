@@ -28,10 +28,16 @@ function! timl#printer#string(x)
     return a:x.value ? 'true' : 'false'
 
   elseif type ==# 'timl.lang/Function'
-    return '#<'.get(a:x, 'ns', {'name': ['...']}).name[0].'/'.get(a:x, 'name', ['...'])[0].' #*'.join([get(a:x, 'apply', '???')]).'>'
+    return '#<'
+          \ . get(a:x, 'ns', {'name': ['...']}).name[0] . '/'
+          \ . (get(a:x, 'name', g:timl#nil) is g:timl#nil ? '...' : a:x.name.name)
+          \ . ' #*'.join([get(a:x, '__call__', '???')]).'>'
 
   elseif type ==# 'timl.lang/MultiFn'
-    return '#<'.get(a:x, 'ns', {'name': ['...']}).name[0].'/'.get(a:x, 'name', ['...'])[0].' multi>'
+    return '#<'
+          \ . get(a:x, 'ns', {'name': ['...']}).name[0] . '/'
+          \ . (get(a:x, 'name', g:timl#nil) is g:timl#nil ? '...' : a:x.name.name)
+          \ . ' multi>'
 
   elseif type ==# 'timl.lang/Namespace'
     return '#<Namespace '.get(a:x, 'name', '')[0].'>'
