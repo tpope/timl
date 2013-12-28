@@ -6,7 +6,7 @@ endif
 let g:autoloaded_timl_array_seq = 1
 
 function! timl#array_seq#create(array, ...) abort
-  let cc = timl#bless('timl.lang/ArraySeq', {
+  let cc = timl#type#bless('timl.lang/ArraySeq', {
         \ 'array': a:array,
         \ 'meta': g:timl#nil,
         \ 'i': a:0 ? a:1 : 0})

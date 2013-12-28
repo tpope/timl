@@ -91,7 +91,7 @@ function! timl#set#lookup(this, key, ...) abort
 endfunction
 
 if !exists('s:empty')
-  let s:empty = timl#bless('timl.lang/HashSet', {'__extra': []})
+  let s:empty = timl#type#bless(s:type, {'__extra': []})
   lockvar s:empty.__extra
   lockvar s:empty
 endif
@@ -155,7 +155,7 @@ function! timl#set#transient(this) abort
 endfunction
 
 function! timl#set#persistentb(this) abort
-  let this = timl#bless(s:type, a:this)
+  let this = timl#type#bless(s:type, a:this)
   lockvar 1 a:this.__extra
   lockvar 1 a:this
   return a:this

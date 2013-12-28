@@ -181,7 +181,7 @@ function! timl#type#define_method(ns, name, type, fn) abort
     let ns = timl#namespace#find(a:ns)
     let name = timl#symbol#intern(a:name)
     unlet! g:{munged}
-    let fn = timl#bless('timl.lang/MultiFn', {
+    let fn = timl#type#bless('timl.lang/MultiFn', {
               \ 'ns': ns,
               \ 'name': name,
               \ 'cache': {},

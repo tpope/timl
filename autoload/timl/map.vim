@@ -87,7 +87,7 @@ function! timl#map#lookup(this, key, ...) abort
 endfunction
 
 if !exists('s:empty')
-  let s:empty = timl#bless('timl.lang/HashMap')
+  let s:empty = timl#type#bless(s:type)
   lockvar s:empty
 endif
 function! timl#map#empty(this) abort

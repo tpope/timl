@@ -8,7 +8,7 @@ let g:autoloaded_timl_chunked_cons = 1
 let s:type = timl#type#intern('timl.lang/ChunkedCons')
 function! timl#chunked_cons#create(array, rest, ...) abort
   lockvar 1 a:array
-  let cc = timl#bless(s:type, {
+  let cc = timl#type#bless(s:type, {
         \ 'array': a:array,
         \ 'rest': a:rest,
         \ 'meta': g:timl#nil,

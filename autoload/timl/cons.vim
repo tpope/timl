@@ -13,7 +13,7 @@ endfunction
 
 function! timl#cons#create(car, cdr, ...) abort
   if timl#type#canp(a:cdr, g:timl#core#seq)
-    let cons = timl#bless(s:type, {'car': a:car, 'cdr': a:cdr is# g:timl#nil ? g:timl#empty_list : a:cdr, 'meta': a:0 ? a:1 : g:timl#nil})
+    let cons = timl#type#bless(s:type, {'car': a:car, 'cdr': a:cdr is# g:timl#nil ? g:timl#empty_list : a:cdr, 'meta': a:0 ? a:1 : g:timl#nil})
     lockvar 1 cons
     return cons
   endif

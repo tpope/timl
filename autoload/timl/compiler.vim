@@ -408,7 +408,7 @@ function! s:expr_sf_fn_STAR_(file, env, form) abort
   else
     let name = ''
   endif
-  let temp = s:let_tmp(a:file, 'fn', 'timl#bless("timl.lang/Function", {"ns": g:timl#core#_STAR_ns_STAR_, "locals": copy(locals)})')
+  let temp = s:let_tmp(a:file, 'fn', 'timl#type#bless("timl.lang/Function", {"ns": g:timl#core#_STAR_ns_STAR_, "locals": copy(locals)})')
   if !empty(name)
     call s:emitln(a:file, 'let '.temp.'.name = timl#symbol('.string(name).')')
   endif

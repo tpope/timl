@@ -27,7 +27,7 @@ function! s:implement(type, ...) abort
 endfunction
 
 function! s:intern_fn(name, apply, ...) abort
-  let fn = timl#bless('timl.lang/Function', {
+  let fn = timl#type#bless('timl.lang/Function', {
           \ 'name': a:name,
           \ 'ns': s:ns})
   let fn.__call__ = s:function(a:apply)
@@ -204,8 +204,8 @@ call s:define_pred('nil?', 's:nilp')
 " Section: Boolean
 
 if !exists('g:timl#false')
-  let g:timl#false = timl#bless('timl.lang/Boolean', {'value': 0})
-  let g:timl#true = timl#bless('timl.lang/Boolean', {'value': 1})
+  let g:timl#false = timl#type#bless('timl.lang/Boolean', {'value': 0})
+  let g:timl#true = timl#type#bless('timl.lang/Boolean', {'value': 1})
   lockvar 1 g:timl#false g:timl#true
 endif
 

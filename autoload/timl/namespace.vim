@@ -14,7 +14,7 @@ endif
 function! timl#namespace#create(name) abort
   let name = timl#symbol#cast(a:name)
   if !has_key(g:timl#namespaces, name[0])
-    let g:timl#namespaces[name[0]] = timl#bless(s:type, {'name': name, 'aliases': {}, 'mappings': {}})
+    let g:timl#namespaces[name[0]] = timl#type#bless(s:type, {'name': name, 'aliases': {}, 'mappings': {}})
   endif
   let ns = g:timl#namespaces[name[0]]
   return ns
@@ -117,7 +117,7 @@ function! timl#namespace#intern(ns, name, ...)
   if has_key(ns.mappings, a:name[0]) && ns.mappings[a:name[0]].ns is# ns
     let var = ns.mappings[a:name[0]]
   else
-    let var = timl#bless('timl.lang/Var', {'ns': ns, 'str': str, 'munged': munged, 'location': 'g:'.munged})
+    let var = timl#type#bless('timl.lang/Var', {'ns': ns, 'str': str, 'munged': munged, 'location': 'g:'.munged})
   endif
   let var.meta = meta
   if a:0
