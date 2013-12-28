@@ -1,9 +1,9 @@
 " Maintainer: Tim Pope <http://tpo.pe>
 
-if exists("g:autoloaded_timl_lang")
+if exists("g:autoloaded_timl_bootstrap")
   finish
 endif
-let g:autoloaded_timl_lang = 1
+let g:autoloaded_timl_bootstrap = 1
 
 " Section: Util
 
@@ -13,10 +13,6 @@ endfunction
 
 function! s:nil(...)
   return g:timl#nil
-endfunction
-
-function! s:empty_list(...)
-  return g:timl#empty_list
 endfunction
 
 function! s:zero(...)
@@ -187,7 +183,7 @@ function! s:nil_lookup(this, key, default) abort
 endfunction
 
 function! s:nil_cons(this, ...) abort
-  return call('timl#cons#conj', [g:timl#empty_list] + a:000)
+  return call('timl#cons#conj', [timl#list#empty()] + a:000)
 endfunction
 
 function! s:nil_assoc(this, ...) abort
@@ -197,7 +193,7 @@ endfunction
 call s:implement('timl.lang/Nil',
       \ 'seq', 's:nil',
       \ 'first', 's:nil',
-      \ 'more', 's:empty_list',
+      \ 'more', 'timl#list#empty',
       \ 'conj', 's:nil_cons',
       \ 'assoc', 's:nil_assoc',
       \ 'length', 's:zero',
@@ -341,7 +337,7 @@ call s:implement('timl.lang/Cons',
       \ 'first', 'timl#cons#first',
       \ 'more', 'timl#cons#more',
       \ 'conj', 'timl#cons#conj',
-      \ 'empty', 's:empty_list')
+      \ 'empty', 'timl#list#empty')
 
 call s:define_apply('list', 'timl#cons#from_array')
 call s:define_pred('list?', 'timl#cons#listp')
@@ -349,14 +345,12 @@ call s:define_call('cons', 'timl#cons#create')
 
 " Section: Empty list
 
-if !exists('g:timl#empty_list')
-  let g:timl#empty_list = timl#bless('timl.lang/EmptyList', {'meta': g:timl#nil})
-  lockvar 1 g:timl#empty_list
-endif
+let g:timl#empty_list = timl#list#empty()
+lockvar 1 g:timl#empty_list
 
 call s:implement('timl.lang/EmptyList',
       \ 'meta', 'timl#meta#from_attribute',
-      \ 'with-meta', 'timl#meta#copy_assign_lock',
+      \ 'with-meta', 'timl#list#with_meta',
       \ 'seq', 's:nil',
       \ 'equiv', 'timl#equality#seq',
       \ 'first', 's:nil',
@@ -387,7 +381,7 @@ call s:implement('timl.lang/ArraySeq',
       \ 'more', 'timl#array_seq#more',
       \ 'length', 'timl#array_seq#length',
       \ 'conj', 'timl#cons#conj',
-      \ 'empty', 's:empty_list')
+      \ 'empty', 'timl#list#empty')
 
 call s:implement('timl.lang/ArraySeq',
       \ 'chunk-first', 'timl#array_seq#chunk_first',
@@ -406,7 +400,7 @@ call s:implement('timl.lang/ChunkedCons',
       \ 'more', 'timl#chunked_cons#more',
       \ 'length', 'timl#chunked_cons#length',
       \ 'conj', 'timl#cons#conj',
-      \ 'empty', 's:empty_list')
+      \ 'empty', 'timl#list#empty')
 
 call s:implement('timl.lang/ChunkedCons',
       \ 'chunk-first', 'timl#chunked_cons#chunk_first',
@@ -421,7 +415,7 @@ call s:implement('timl.lang/LazySeq',
       \ 'equiv', 'timl#equality#seq',
       \ 'realized?', 'timl#lazy_seq#realized',
       \ 'conj', 'timl#cons#conj',
-      \ 'empty', 's:empty_list')
+      \ 'empty', 'timl#list#empty')
 
 " Section: Dictionary
 

@@ -98,8 +98,12 @@ function! timl#compiler#serialize(x)
   elseif a:x is# g:timl#true
     return 'g:timl#true'
 
-  elseif a:x is# g:timl#empty_list
-    return 'g:timl#empty_list'
+  elseif timl#list#emptyp(a:x)
+    if a:x.meta isnot# g:timl#nil
+      return 'timl#with_meta(g:timl#empty_list, '.timl#compiler#serialize(a:x.meta).')'
+    else
+      return 'g:timl#empty_list'
+    endif
 
   elseif type(a:x) == type([])
     return '['.join(map(copy(a:x), 'timl#compiler#serialize(v:val)'), ', ').']'
@@ -130,8 +134,8 @@ function! timl#compiler#serialize(x)
   elseif timl#cons#test(a:x)
     return 'timl#cons#create('
           \ . timl#compiler#serialize(a:x.car).','
-          \ . timl#compiler#serialize(a:x.cdr)
-          \ . (has_key(a:x, 'meta') ? ',' . timl#compiler#serialize(a:x.meta) : '').')'
+          \ . timl#compiler#serialize(a:x.cdr).','
+          \ . timl#compiler#serialize(a:x.meta).')'
 
   elseif timl#var#test(a:x)
     return 'timl#var#find('.timl#compiler#serialize(timl#symbol#intern(a:x.str)).')'

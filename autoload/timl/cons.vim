@@ -47,5 +47,5 @@ endfunction
 
 let s:empty_list_type = timl#type#intern('timl.lang/EmptyList')
 function! timl#cons#listp(obj)
-  return type(a:obj) == type({}) && (get(a:obj, '__tag__') is# s:type || get(a:obj, '__tag__') is s:empty_list_type)
+  return type(a:obj) == type({}) && (get(a:obj, '__tag__') is# s:type || get(a:obj, '__tag__') is# s:empty_list_type)
 endfunction
