@@ -32,10 +32,11 @@ endfunction
 let s:type = timl#type#intern('timl.lang/HashMap')
 function! timl#map#create(_) abort
   let keyvals = len(a:_) == 1 ? a:_[0] : a:_
-  let map = timl#bless(s:type)
+  let map = {}
   for i in range(0, len(keyvals)-1, 2)
     let map[timl#map#key(keyvals[i])] = get(keyvals, i+1, g:timl#nil)
   endfor
+  call timl#type#bless(s:type, map)
   lockvar 1 map
   return map
 endfunction

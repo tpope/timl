@@ -28,7 +28,7 @@ function! timl#set#coerce(seq) abort
     return a:seq
   endif
   let _ = {}
-  let dict = timl#bless(s:transient_type, {'__extra': []})
+  let dict = timl#type#bless(s:transient_type, {'__extra': []})
   if type(a:seq) == type([])
     for _.val in a:seq
       call timl#set#conjb(dict, _.val)
