@@ -29,7 +29,7 @@ endfunction
 function! s:intern_fn(name, apply, ...) abort
   let fn = {'name': a:name, 'ns': s:ns}
   if a:0
-    let fn.__invoke__ = s:function(a:1)
+    call extend(fn, a:1)
   endif
   call timl#type#bless('timl.lang/Function', fn)
   let fn.__call__ = s:function(a:apply)
@@ -39,11 +39,11 @@ endfunction
 let s:ns = timl#namespace#create(timl#symbol#intern('timl.core'))
 
 function! s:apply(_) dict abort
-  return call(self.__invoke__, a:_, self)
+  return call(self.invoke, a:_, self)
 endfunction
 
 function! s:predicate(_) dict abort
-  return call(self.__invoke__, a:_, self) ? g:timl#true : g:timl#false
+  return call(self.test, a:_, self) ? g:timl#true : g:timl#false
 endfunction
 
 let s:k_help = timl#keyword#intern('help')
@@ -53,7 +53,7 @@ function! s:define_call(name, fn)
   else
     let name = timl#symbol#intern(a:name)
   endif
-  call s:intern_fn(name, 's:apply', a:fn)
+  call s:intern_fn(name, 's:apply', {'invoke': s:function(a:fn)})
 endfunction
 
 function! s:define_pred(name, fn)
@@ -62,7 +62,7 @@ function! s:define_pred(name, fn)
   else
     let name = timl#symbol#intern(a:name)
   endif
-  call s:intern_fn(name, 's:predicate', a:fn)
+  call s:intern_fn(name, 's:predicate', {'test': s:function(a:fn)})
 endfunction
 
 function! s:define_apply(name, fn) abort
