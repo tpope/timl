@@ -199,7 +199,7 @@ endfunction
 " Section: Initialization
 
 if !exists('g:timl_hierarchy')
-  let g:timl_hierarchy = {'parents': timl#type#bless('timl.lang/HashMap'), 'descendants': timl#type#bless('timl.lang/HashMap'), 'ancestors': timl#type#bless('timl.lang/HashMap')}
+  let g:timl_hierarchy = {'parents': {}, 'descendants': {}, 'ancestors': {}}
   call timl#type#derive(timl#keyword#intern('vim/Number'), timl#keyword#intern('vim/Numeric'))
   call timl#type#derive(timl#keyword#intern('vim/Float'), timl#keyword#intern('vim/Numeric'))
 endif
