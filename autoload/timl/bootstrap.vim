@@ -140,9 +140,10 @@ if has('float')
   call s:define_call('float2nr', 'float2nr')
 endif
 
-" Section: String
+" Section: Strin
 
 call s:implement('vim/String',
+      \ 'funcref', 'function',
       \ 'seq', 'timl#string#seq',
       \ 'lookup', 'timl#string#lookup',
       \ 'length', 'timl#string#length')
@@ -238,6 +239,7 @@ call s:implement('timl.lang/MultiFn',
       \ 'call', 'timl#type#dispatch')
 
 call s:implement('vim/Funcref',
+      \ 'funcref', 'timl#function#identity',
       \ 'call', 'timl#funcref#call')
 
 call s:define_pred('funcref?', 'timl#funcref#test')
@@ -275,6 +277,7 @@ call s:implement('timl.lang/Var',
       \ 'meta', 'timl#meta#from_attribute',
       \ 'reset-meta!', 'timl#var#reset_meta',
       \ 'call', 'timl#var#call',
+      \ 'funcref', 'timl#var#funcref',
       \ 'deref', 'timl#var#get')
 call s:define_call('var-get', 'timl#var#get')
 call s:define_call('find-var', 'timl#var#find')

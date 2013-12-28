@@ -23,6 +23,10 @@ function! timl#var#find(sym) abort
   return get(timl#namespace#find(ns).mappings, sym.name, g:timl#nil)
 endfunction
 
+function! timl#var#funcref(var) abort
+  return function(a:var.munged)
+endfunction
+
 function! timl#var#reset_meta(var, meta) abort
   let a:var.meta = a:meta
   return a:var
