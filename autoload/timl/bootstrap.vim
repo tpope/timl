@@ -27,24 +27,23 @@ function! s:implement(type, ...) abort
 endfunction
 
 function! s:intern_fn(name, apply, ...) abort
-  let fn = timl#type#bless('timl.lang/Function', {
-          \ 'name': a:name,
-          \ 'ns': s:ns})
-  let fn.__call__ = s:function(a:apply)
+  let fn = {'name': a:name, 'ns': s:ns}
   if a:0
-    let fn.call = s:function(a:1)
+    let fn.__invoke__ = s:function(a:1)
   endif
+  call timl#type#bless('timl.lang/Function', fn)
+  let fn.__call__ = s:function(a:apply)
   call timl#namespace#intern(s:ns, a:name, fn)
 endfunction
 
 let s:ns = timl#namespace#create(timl#symbol#intern('timl.core'))
 
 function! s:apply(_) dict abort
-  return call(self.call, a:_, self)
+  return call(self.__invoke__, a:_, self)
 endfunction
 
 function! s:predicate(_) dict abort
-  return call(self.call, a:_, self) ? g:timl#true : g:timl#false
+  return call(self.__invoke__, a:_, self) ? g:timl#true : g:timl#false
 endfunction
 
 let s:k_help = timl#keyword#intern('help')
@@ -254,9 +253,6 @@ for s:x in ['fn', 'defn', 'defmacro']
   let s:y.meta = timl#map#create([timl#keyword#intern('macro'), g:timl#true])
 endfor
 unlet s:x s:y
-let g:timl#core#fn.macro = g:timl#true
-let g:timl#core#defn.macro = g:timl#true
-let g:timl#core#defmacro.macro = g:timl#true
 
 " Section: Namespace
 
