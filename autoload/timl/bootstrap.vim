@@ -340,11 +340,11 @@ call s:implement('timl.lang/Cons',
       \ 'empty', 'timl#list#empty')
 
 call s:define_call('cons', 'timl#cons#create')
+call s:define_apply('list*', 'timl#cons#spread')
 
 " Section: List
 
 let g:timl#empty_list = timl#list#empty()
-lockvar 1 g:timl#empty_list
 
 call s:implement('timl.lang/EmptyList',
       \ 'meta', 'timl#meta#from_attribute',

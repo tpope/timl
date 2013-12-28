@@ -20,6 +20,19 @@ function! timl#cons#create(car, cdr, ...) abort
   throw 'timl: not seqable'
 endfunction
 
+function! timl#cons#spread(array) abort
+  if empty(a:array)
+    throw 'timl: arity error'
+  elseif !timl#seqp(a:array[-1])
+    throw 'timl: seq required'
+  endif
+  let _ = {'cdr': a:array[-1]}
+  for i in range(len(a:array)-2, 0, -1)
+    let _.cdr = timl#cons#create(a:array[i], _.cdr)
+  endfor
+  return _.cdr
+endfunction
+
 function! timl#cons#conj(this, ...) abort
   let head = a:this
   let _ = {}
