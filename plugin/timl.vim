@@ -42,7 +42,7 @@ command! -nargs=1 -complete=customlist,timl#interactive#input_complete TLeval
       \    echo timl#rep(<q-args>) |
       \ catch |
       \    unlet! g:timl#core#_STAR_e |
-      \    let g:timl#core#_STAR_e = timl#compiler#build_exception(v:exception, v:throwpoint) |
+      \    let g:timl#core#_STAR_e = timl#exception#build(v:exception, v:throwpoint) |
       \    echoerr v:exception |
       \ endtry
 command! -bang -nargs=? -complete=file TLsource
@@ -60,7 +60,7 @@ function! s:load_filetype(ft) abort
         call timl#loader#source(file)
       catch
         unlet! g:timl#core#_STAR_e
-        let g:timl#core#_STAR_e = timl#compiler#build_exception(v:exception, v:throwpoint) |
+        let g:timl#core#_STAR_e = timl#exception#build(v:exception, v:throwpoint) |
         echohl WarningMSG
         echomsg v:exception
         echohl NONE

@@ -108,7 +108,7 @@ function! timl#interactive#eval_opfunc(type) abort
     echo v:exception
     echohl NONE
     unlet! g:timl#core#_STAR_e
-    let g:timl#core#_STAR_e = timl#compiler#build_exception(v:exception, v:throwpoint)
+    let g:timl#core#_STAR_e = timl#exception#build(v:exception, v:throwpoint)
   finally
     call timl#reader#close(port)
     let g:timl#core#_STAR_ns_STAR_ = ns
@@ -189,7 +189,7 @@ function! timl#interactive#repl(...) abort
         return ''
       catch
         unlet! g:timl#core#_STAR_e
-        let g:timl#core#_STAR_e = timl#compiler#build_exception(v:exception, v:throwpoint)
+        let g:timl#core#_STAR_e = timl#exception#build(v:exception, v:throwpoint)
         echohl ErrorMSG
         echo v:exception
         echohl NONE
