@@ -221,3 +221,11 @@ function! timl#interactive#scratch() abort
   autocmd BufLeave <buffer> update
   return '$'
 endfunction
+
+function! timl#interactive#copen(error) abort
+  if !empty(a:error)
+    call setqflist(a:error.qflist)
+    copen
+    let w:quickfix_title = a:error.exception . " @ line " . a:error.line
+  endif
+endfunction

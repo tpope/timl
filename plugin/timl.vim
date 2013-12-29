@@ -45,6 +45,7 @@ command! -nargs=1 -complete=customlist,timl#interactive#input_complete TLeval
       \    let g:timl#core#_STAR_e = timl#exception#build(v:exception, v:throwpoint) |
       \    echoerr v:exception |
       \ endtry
+command! -bar TLcopen :call timl#interactive#copen(get(g:, 'timl#core#_STAR_e', []))
 command! -bang -nargs=? -complete=file TLsource
       \ if has('vim_starting') |
       \   let s:source = <q-args> |

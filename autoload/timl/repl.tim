@@ -3,9 +3,7 @@
 (defn qf
   ([] (qf *e))
   ([e]
-   (#*setqflist (. e qflist))
-   (execute "copen")
-   (set! w:quickfix_title (str (. e exception) " @ line " (. e line)))
+   (#*timl#interactive#copen e)
    (throw "timl#repl: exit")))
 
 (defn breakpoint-fn [env]
