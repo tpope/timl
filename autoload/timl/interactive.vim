@@ -214,8 +214,8 @@ function! timl#interactive#scratch() abort
   endif
   call setline(1, [
         \ ";; This buffer is for notes you don't want to save, and for TimL evaluation.",
-        \ ";; If you want to create a file, visit that file with :edit,",
-        \ ";; then enter the text in that file's own buffer.",
+        \ ";; Use cpp to evaluate the top level form under the cursor,",
+        \ ";; or cp{motion} to evaluate an arbitrary selection.",
         \ ""])
   setlocal bufhidden=hide filetype=timl nomodified
   autocmd BufLeave <buffer> update
