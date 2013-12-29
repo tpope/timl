@@ -3,7 +3,7 @@
 if exists('g:autoloaded_timl_loader')
   finish
 endif
-unlet! g:autoloaded_timl_loader
+let g:autoloaded_timl_loader = 1
 
 function! timl#loader#eval(x) abort
   return timl#compiler#build(a:x).call()
