@@ -68,16 +68,20 @@ function! timl#interactive#eval_opfunc(type) abort
       let open = '[[{(]'
       let close = '[]})]'
       let skip = 'synIDattr(synID(line("."),col("."),1),"name") =~? s:skip'
-      call searchpair(open, '', close, 'r', skip)
+      call searchpair(open, '', close, 'rc', skip)
       call setpos("']", getpos("."))
-      call searchpair(open, '', close, 'b', skip)
-      if col('.') > 2 && getline('.')[col('.')-3 : col('.')-2] ==# '#*'
-        normal! 2h
+      if searchpair(open, '', close, 'b', skip)
+        if col('.') > 2 && getline('.')[col('.')-3 : col('.')-2] ==# '#*'
+          normal! 2h
+        endif
+        while col('.') > 1 && getline('.')[col('.')-2] =~# '[#''`~@]'
+          normal! h
+        endwhile
+        call setpos("'[", getpos("."))
+      else
+        call setpos("'[", [0, line("."), 1, 0])
+        call setpos("']", [0, line("."), col("$"), 0])
       endif
-      while col('.') > 1 && getline('.')[col('.')-2] =~# '[#''`~@]'
-        normal! h
-      endwhile
-      call setpos("'[", getpos("."))
       silent exe "normal! `[v`]y"
     elseif a:type =~# "[vV\C-V]"
       silent exe "normal! `<" . a:type . "`>y"
