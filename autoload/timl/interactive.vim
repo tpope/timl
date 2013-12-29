@@ -49,9 +49,6 @@ function! timl#interactive#ns_for_cursor(...) abort
   else
     let ns = timl#interactive#ns_for_file(expand('%:p'))
   endif
-  if !exists('g:autoloaded_timl_loader')
-    runtime! autoload/timl/loader.vim
-  endif
   let nsobj = timl#namespace#find(timl#symbol(ns))
   if nsobj isnot# g:timl#nil
     return ns
@@ -218,6 +215,7 @@ function! timl#interactive#scratch() abort
         \ ";; or cp{motion} to evaluate an arbitrary selection.",
         \ ""])
   setlocal bufhidden=hide filetype=timl nomodified
+  let &l:statusline = '#<Namespace %{timl#interactive#ns_for_cursor()}>%='.get(split(&statusline, '%='), 1, '')
   autocmd BufLeave <buffer> update
   return '$'
 endfunction
