@@ -57,6 +57,7 @@ function! timl#interactive#ns_for_cursor(...) abort
   endif
 endfunction
 
+let s:skip = "comment\\|string\\|regex\\|character"
 function! timl#interactive#eval_opfunc(type) abort
   let selection = &selection
   let clipboard = &clipboard
@@ -66,7 +67,7 @@ function! timl#interactive#eval_opfunc(type) abort
     if a:type =~# '^\d\+$'
       let open = '[[{(]'
       let close = '[]})]'
-      let skip = 'synIDattr(synID(line("."),col("."),1),"name") =~? "comment\\|string\\|regex\\|character"'
+      let skip = 'synIDattr(synID(line("."),col("."),1),"name") =~? s:skip'
       call searchpair(open, '', close, 'r', skip)
       call setpos("']", getpos("."))
       call searchpair(open, '', close, 'b', skip)
@@ -89,14 +90,14 @@ function! timl#interactive#eval_opfunc(type) abort
     else
       return
     endif
-    let string = @@
+    let string = repeat("\n", line("'[")-1) . repeat(" ", col("'[")-1) . @@
   finally
     let &selection = selection
     let &clipboard = clipboard
     let @@ = reg
   endtry
   let ns = g:timl#core#_STAR_ns_STAR_
-  let port = timl#reader#open_string(string, expand('%:p'), line("'["))
+  let port = timl#reader#open_string(string, expand('%:p'))
   try
     let g:timl#core#_STAR_ns_STAR_ = timl#namespace#find(timl#symbol(timl#interactive#ns_for_cursor()))
     echo timl#printer#string(timl#loader#consume(port))
