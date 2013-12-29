@@ -2,9 +2,9 @@
 (use 'timl.ftplugin)
 (include-guard)
 
-(setlocal comments=":;,:;;;,:;;,sr:#|,mb:|,ex:|#" commentstring=";%s")
+(setlocal comments=":; ,:;;; ,:;; " commentstring="; %s")
 (setlocal define="^\\s*(def\\k*")
-(setlocal formatoptions+=croql)
+(setlocal formatoptions+=cql)
 (setlocal omnifunc=timl#interactive#omnicomplete)
 
 (execute "nnoremap <silent><buffer> cp :set opfunc=timl#interactive#eval_opfunc<CR>g@")
