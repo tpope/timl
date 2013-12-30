@@ -58,6 +58,24 @@ function! timl#interactive#ns_for_cursor(...) abort
 endfunction
 
 let s:skip = "comment\\|string\\|regex\\|character"
+function! s:beginning_of_sexp()
+  let open = '[[{(]'
+  let close = '[]})]'
+  let skip = 'synIDattr(synID(line("."),col("."),1),"name") =~? s:skip'
+  let pos = searchpairpos(open, '', close, 'bn', skip)
+  if pos[0]
+    if pos[1] > 2 && getline(pos[0])[pos[1]-3 : pos[1]-2] ==# '#*'
+      let pos[1] -= 2
+    endif
+    while pos[1] > 1 && getline(pos[0])[pos[1]-2] =~# '[#''`~@]'
+      let pos[1] -= 1
+    endwhile
+    return [0] + pos + [0]
+  else
+    return [0, line('.'), 1, 0]
+  endif
+endfunction
+
 function! timl#interactive#eval_opfunc(type) abort
   let selection = &selection
   let clipboard = &clipboard
@@ -68,16 +86,9 @@ function! timl#interactive#eval_opfunc(type) abort
       let open = '[[{(]'
       let close = '[]})]'
       let skip = 'synIDattr(synID(line("."),col("."),1),"name") =~? s:skip'
-      call searchpair(open, '', close, 'rc', skip)
-      call setpos("']", getpos("."))
-      if searchpair(open, '', close, 'b', skip)
-        if col('.') > 2 && getline('.')[col('.')-3 : col('.')-2] ==# '#*'
-          normal! 2h
-        endif
-        while col('.') > 1 && getline('.')[col('.')-2] =~# '[#''`~@]'
-          normal! h
-        endwhile
-        call setpos("'[", getpos("."))
+      if searchpair(open, '', close, 'rc', skip)
+        call setpos("']", getpos("."))
+        call setpos("'[", s:beginning_of_sexp())
       else
         call setpos("'[", [0, line("."), 1, 0])
         call setpos("']", [0, line("."), col("$"), 0])
@@ -105,6 +116,7 @@ function! timl#interactive#eval_opfunc(type) abort
   try
     let g:timl#core#_STAR_ns_STAR_ = timl#namespace#find(timl#symbol(timl#interactive#ns_for_cursor()))
     echo timl#printer#string(timl#loader#consume(port))
+    let &syntax = &syntax
   catch //
     echohl ErrorMsg
     echo v:exception
@@ -115,6 +127,43 @@ function! timl#interactive#eval_opfunc(type) abort
     call timl#reader#close(port)
     let g:timl#core#_STAR_ns_STAR_ = ns
   endtry
+endfunction
+
+function! timl#interactive#return() abort
+  if !empty(getline('.')[col('.')]) || synIDattr(synID(line('.'), col('.')-1, 1), 'name') =~? s:skip
+    return "\<CR>"
+  endif
+  let beg = s:beginning_of_sexp()
+  let end = getpos(".")
+  if beg[1] == end[1]
+    let string = getline(beg[1])[beg[2]-1 : end[2]-1]
+  else
+    let string = getline(beg[1])[beg[2]-1 : -1] . "\n"
+          \ . join(map(getline(beg[1]+1, end[1]-1), 'v:val . "\n"'))
+          \ . getline(end[1])[0 : end[2]-1]
+  endif
+  let string = repeat("\n", beg[1]-1) . repeat(" ", beg[2]-1) . string
+  let ns = g:timl#core#_STAR_ns_STAR_
+  let port = timl#reader#open_string(string, expand('%:p'))
+  try
+    let g:timl#core#_STAR_ns_STAR_ = timl#namespace#find(timl#symbol(timl#interactive#ns_for_cursor()))
+    let body = ";=" . timl#printer#string(timl#loader#consume(port))
+    call setloclist(0, [])
+    let &syntax = &syntax
+  catch //
+    unlet! g:timl#core#_STAR_e
+    let g:timl#core#_STAR_e = timl#exception#build(v:exception, v:throwpoint)
+    call setloclist(0, g:timl#core#_STAR_e.qflist)
+    let body = ";!" . timl#printer#string(g:timl#core#_STAR_e)
+  finally
+    call timl#reader#close(port)
+    let g:timl#core#_STAR_ns_STAR_ = ns
+  endtry
+  if len(substitute(body.getline('.'), '.', '.', 'g')) < 80
+    return " ".body."\<CR>"
+  else
+    return "\<CR>".body."\<CR>"
+  endif
 endfunction
 
 function! timl#interactive#omnicomplete(findstart, base) abort
@@ -222,6 +271,7 @@ function! timl#interactive#scratch() abort
   setlocal bufhidden=hide filetype=timl nomodified
   let &l:statusline = '#<Namespace %{timl#interactive#ns_for_cursor()}>%='.get(split(&statusline, '%='), 1, '')
   autocmd BufLeave <buffer> update
+  inoremap <buffer><silent> <CR> <C-r>=timl#interactive#return()<CR>
   return '$'
 endfunction
 
