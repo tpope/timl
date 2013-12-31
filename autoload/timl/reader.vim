@@ -101,6 +101,12 @@ function! s:read(port, ...) abort
     return g:timl#false
   elseif token ==# 'true'
     return g:timl#true
+  elseif token ==# 'Infinity' || token ==# '+Infinity'
+    return 1/(0.0)
+  elseif token ==# '-Infinity'
+    return -1/(0.0)
+  elseif token ==# 'NaN'
+    return 0/(0.0)
   elseif token =~# '^\d\+e\d\+$'
     return eval(substitute(token, 'e', '.0e', ''))
   elseif token =~# '^\.\d'

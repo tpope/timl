@@ -44,6 +44,7 @@ syntax match timlCharacter "\\\%(space\|tab\|newline\|return\|formfeed\|backspac
 syntax match timlNumber "\<[-+]\=0\o\+\>"
 syntax match timlNumber "\<[-+]\=0x\x\+\>"
 syntax match timlNumber "\<[-+]\=\%([1-9]\d*\|0\)\%(\.\d\+\)\=\%([Ee]\d\+\)\=\>"
+syntax keyword timlNumber Infinity -Infinity +Infinity NaN
 syntax region timlString start=/"/ skip=/\\\\\|\\"/ end=/"/ contains=timlStringEscape,@Spell
 syntax match timlStringEscape "\v\\%([uU]\x{4}|[0-3]\o{2}|\o\{1,2}|[xX]\x{1,2}|[befnrt\\"]|\<[[:alnum:]-]+\>)" contained
 syntax region timlRegexp start=/#"/ skip=/\\\\\|\\"/ end=/"/ contains=timlRegexpSpecial

@@ -150,6 +150,14 @@ function! timl#compiler#serialize(x)
 
   elseif type(a:x) == type('')
     return '"'.substitute(a:x, "[\001-\037\"\\\\]", '\=get(s:escapes, submatch(0), printf("\\%03o", char2nr(submatch(0))))', 'g').'"'
+  elseif type(a:x) == 5 && string(a:x) =~# 'n'
+    if string(a:x) ==# 'inf'
+      return '(1/0.0)'
+    elseif string(a:x) ==# '-inf'
+      return '(-1/0.0)'
+    else
+      return '(0/0.0)'
+    endif
   else
     return string(a:x)
   endif

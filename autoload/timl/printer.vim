@@ -110,6 +110,15 @@ function! timl#printer#string(x)
   elseif type(a:x) == type(function('tr'))
     return '#*'.substitute(join([a:x]), '[{}]', '', 'g')
 
+  elseif type ==# 'vim/Float' && string(a:x) =~# 'n'
+    if string(a:x) ==# 'inf'
+      return 'Infinity'
+    elseif string(a:x) ==# '-inf'
+      return '-Infinity'
+    else
+      return 'NaN'
+    endif
+
   elseif type =~# '^vim/'
     return string(a:x)
 

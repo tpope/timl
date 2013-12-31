@@ -30,17 +30,19 @@
    :else false))
 
 (defn range
-  ([] (range 0 (/ 1 0) 1))
+  ([] (range 0 Infinity 1))
   ([end] (range 0 end 1))
   ([start end] (range start end 1))
   ([start end step]
    (let [comp (if (pos? step) < >)
-         closest (if (pos? step) min max)
+         closest #(if (comp % %2) % %2)
          next-start (closest end (+ start (* 1024 step)))]
      (if (comp start end)
-       (chunk-cons
-         (#*range start (dec next-start) step)
-         (lazy-seq (range next-start end step)))
+       (if (integer? next-start)
+         (chunk-cons
+           (#*range start (dec next-start) step)
+           (lazy-seq (range next-start end step)))
+         (cons start (range (+ start step) end step)))
        ()))))
 
 (defn reductions [f init xs]
