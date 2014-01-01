@@ -81,10 +81,6 @@ function! timl#bless(class, ...) abort
   return timl#type#bless(a:class, a:0 ? a:1 : {})
 endfunction
 
-function! timl#type(val) abort
-  return timl#type#string(a:val)
-endfunction
-
 function! timl#meta(obj) abort
   return timl#invoke(g:timl#core#meta, a:obj)
 endfunction

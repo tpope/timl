@@ -123,7 +123,7 @@ endfunction
 " Section: Dispatch
 
 function! timl#type#canp(obj, this)
-  return s:get_method(a:this, timl#type(a:obj)) isnot# g:timl#nil
+  return s:get_method(a:this, timl#type#string(a:obj)) isnot# g:timl#nil
 endfunction
 
 function! s:get_method(this, type)
