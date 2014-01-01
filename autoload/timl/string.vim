@@ -32,7 +32,7 @@ function! timl#string#join(sep_or_coll, ...) abort
 endfunction
 
 function! timl#string#split(s, re) abort
-  return timl#vec(split(a:s, '\C'.a:re))
+  return timl#vector#claim(split(a:s, '\C'.a:re))
 endfunction
 
 function! timl#string#replace(s, re, repl) abort
@@ -49,7 +49,7 @@ endfunction
 
 function! timl#string#re_find(re, s)
   let result = matchlist(a:s, '\C'.a:re)
-  return empty(result) ? g:timl#nil : timl#vec(result)
+  return empty(result) ? g:timl#nil : timl#vector#claim(result)
 endfunction
 
 function! timl#string#sub(str, start, ...) abort

@@ -323,8 +323,8 @@ call s:implement('timl.lang/Vector',
 
 call s:define_call('subvec', 'timl#vector#sub')
 call s:define_pred('vector?', 'timl#vector#test')
-call s:define_call('vec', 'timl#vec')
-call s:define_apply('vector', 'timl#vec')
+call s:define_call('vec', 'timl#vector#coerce')
+call s:define_apply('vector', 'timl#vector#coerce')
 
 " Section: Cons
 

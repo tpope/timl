@@ -175,14 +175,6 @@ function! timl#ary(coll) abort
   return timl#array#coerce(a:coll)
 endfunction
 
-function! timl#vec(coll) abort
-  return timl#vector#coerce(a:coll)
-endfunction
-
-function! timl#vector(...) abort
-  return timl#vec(a:000)
-endfunction
-
 " }}}1
 " Section: Invocation {{{1
 
