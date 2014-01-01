@@ -114,21 +114,6 @@ function! timl#equalp(x, y) abort
 endfunction
 
 " }}}1
-" Section: Collections {{{1
-
-function! timl#mapp(coll)
-  return timl#type#canp(a:coll, g:timl#core#dissoc)
-endfunction
-
-function! timl#setp(coll)
-  return timl#type#canp(a:coll, g:timl#core#disj)
-endfunction
-
-function! timl#set(seq) abort
-  return timl#set#coerce(a:seq)
-endfunction
-
-" }}}1
 " Section: Lists {{{1
 
 let s:ary = type([])
@@ -200,10 +185,6 @@ endfunction
 
 function! timl#vector(...) abort
   return timl#vec(a:000)
-endfunction
-
-function! timl#vectorp(obj) abort
-  return timl#type#canp(a:obj, g:timl#core#nth)
 endfunction
 
 " }}}1

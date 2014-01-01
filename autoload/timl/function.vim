@@ -76,7 +76,7 @@ function! timl#function#fn(form, env, ...) abort
     let name = a:000[0]
     let _.sigs = timl#next(_.sigs)
   endif
-  if timl#vectorp(timl#first(_.sigs))
+  if timl#vector#test(timl#first(_.sigs))
     let _.sigs = timl#function#destructure(timl#first(_.sigs), timl#next(_.sigs))
   else
     let sigs = []
@@ -99,7 +99,7 @@ endfunction
 let s:kmacro = timl#keyword#intern('macro')
 function! timl#function#defmacro(form, env, name, params, ...) abort
   let extra = [s:form, s:env]
-  if timl#vectorp(a:params)
+  if timl#vector#test(a:params)
     let body = [timl#vector#claim(extra + timl#ary(a:params))] + a:000
   else
     let _ = {}

@@ -5,6 +5,10 @@ if exists("g:autoloaded_timl_set")
 endif
 let g:autoloaded_timl_set = 1
 
+function! timl#set#test(coll)
+  return timl#type#canp(a:coll, g:timl#core#disj)
+endfunction
+
 function! timl#set#key(key)
   if type(a:key) == type(0)
     return string(a:key)
@@ -24,7 +28,7 @@ endfunction
 let s:type = timl#type#intern('timl.lang/HashSet')
 let s:transient_type = timl#type#intern('timl.lang/TransientHashSet')
 function! timl#set#coerce(seq) abort
-  if timl#setp(a:seq)
+  if timl#set#test(a:seq)
     return a:seq
   endif
   let _ = {}
@@ -59,7 +63,7 @@ endfunction
 function! timl#set#equal(this, that)
   if a:this is# a:that
     return g:timl#true
-  elseif !timl#setp(a:that)
+  elseif !timl#set#test(a:that)
     return g:timl#false
   endif
   if timl#coll#count(a:this) !=# timl#coll#count(a:that)

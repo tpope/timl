@@ -74,10 +74,10 @@ function! timl#printer#string(x)
     endfor
     return '#*{' . join(acc, ' ') . '}'
 
-  elseif timl#vectorp(a:x)
+  elseif timl#vector#test(a:x)
     return '['.join(map(timl#ary(a:x), 'timl#printer#string(v:val)'), ' ') . ']'
 
-  elseif timl#mapp(a:x)
+  elseif timl#map#test(a:x)
     let acc = []
     let _ = {'seq': timl#seq(a:x)}
     while _.seq isnot# g:timl#nil
@@ -86,7 +86,7 @@ function! timl#printer#string(x)
     endwhile
     return '{' . join(acc, ', ') . '}'
 
-  elseif timl#setp(a:x)
+  elseif timl#set#test(a:x)
     let acc = []
     let _ = {'seq': timl#seq(a:x)}
     while _.seq isnot# g:timl#nil

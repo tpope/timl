@@ -137,7 +137,7 @@ function! timl#loader#require_all(_) abort
   for _.spec in a:_
     if timl#symbol#test(_.spec)
       call timl#loader#require(_.spec, reload)
-    elseif timl#vectorp(_.spec)
+    elseif timl#vector#test(_.spec)
       let _.lib = timl#first(_.spec)
       call timl#loader#require(_.lib, reload)
       if timl#fnext(_.spec) is# s:k_as

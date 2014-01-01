@@ -11,7 +11,7 @@ endfunction
 
 function! timl#dictionary#create(_) abort
   let keyvals = len(a:_) == 1 ? a:_[0] : a:_
-  if timl#mapp(keyvals)
+  if timl#map#test(keyvals)
     let _ = {'seq': timl#seq(keyvals)}
     let dict = {}
     while _.seq isnot# g:timl#nil

@@ -108,10 +108,10 @@ function! timl#compiler#serialize(x)
   elseif type(a:x) == type([])
     return '['.join(map(copy(a:x), 'timl#compiler#serialize(v:val)'), ', ').']'
 
-  elseif timl#vectorp(a:x)
+  elseif timl#vector#test(a:x)
     return 'timl#vector#claim(['.join(map(timl#ary(a:x), 'timl#compiler#serialize(v:val)'), ', ').'])'
 
-  elseif timl#mapp(a:x) && timl#type(a:x) !=# 'vim/Dictionary'
+  elseif timl#map#test(a:x) && timl#type(a:x) !=# 'vim/Dictionary'
     let _ = {}
     let keyvals = []
     let _.seq = timl#seq(a:x)
@@ -121,7 +121,7 @@ function! timl#compiler#serialize(x)
     endwhile
     return 'timl#map#create('.timl#compiler#serialize(keyvals).')'
 
-  elseif timl#setp(a:x)
+  elseif timl#set#test(a:x)
     let _ = {}
     let keyvals = []
     let _.seq = timl#seq(a:x)
@@ -223,7 +223,7 @@ function! s:assign(file, env, key, val) abort
   if timl#symbol#test(a:key)
     call s:emitln(a:file, 'let '.s:localfy(a:key[0]).' = '.a:val)
     return s:add_local(a:env, a:key)
-  elseif timl#vectorp(a:key)
+  elseif timl#vector#test(a:key)
     let coll = s:let_tmp(a:file, a:env, 'coll', a:val)
     let array = s:let_tmp(a:file, a:env, 'array', 'timl#ary('.coll.')')
     let _.seq = timl#seq(a:key)
@@ -243,7 +243,7 @@ function! s:assign(file, env, key, val) abort
       let i += 1
     endwhile
 
-  elseif timl#mapp(a:key)
+  elseif timl#map#test(a:key)
     let as = timl#coll#get(a:key, s:k_as, a:key)
     if as isnot# a:key
       let coll = s:localfy(timl#symbol#cast(as).name)
@@ -413,7 +413,7 @@ function! s:expr_sf_fn_STAR_(file, env, form) abort
     let name = ''
   endif
   let temp = s:let_tmp(a:file, a:env, 'fn', 'timl#function#birth(copy(locals)' . (empty(name) ? '' : ', timl#symbol#intern('.string(name).')').')')
-  if timl#vectorp(timl#first(_.next))
+  if timl#vector#test(timl#first(_.next))
     call s:one_fn(a:file, env, _.next, name, temp.".__call__", 1)
   elseif timl#cons#test(timl#first(_.next))
     let c = char2nr('a')
@@ -646,13 +646,13 @@ function! s:emit(file, env, form) abort
     elseif type(a:form) == type([]) && a:form isnot# g:timl#nil
       let expr = 'timl#function#identity(['.s:expr_args(a:file, env, a:form).'])'
 
-    elseif timl#vectorp(a:form)
+    elseif timl#vector#test(a:form)
       let expr = 'timl#vector#claim(['.join(map(copy(timl#ary(a:form)), 's:emit(a:file, s:with_context(env, "expr"), v:val)'), ', ').'])'
 
-    elseif timl#setp(a:form)
-      let expr = 'timl#set(['.join(map(copy(timl#ary(a:form)), 's:emit(a:file, s:with_context(env, "expr"), v:val)'), ', ').'])'
+    elseif timl#set#test(a:form)
+      let expr = 'timl#set#coerce(['.join(map(copy(timl#ary(a:form)), 's:emit(a:file, s:with_context(env, "expr"), v:val)'), ', ').'])'
 
-    elseif timl#mapp(a:form)
+    elseif timl#map#test(a:form)
       let expr = s:expr_map(a:file, env, a:form)
       if timl#type#string(a:form) == 'vim/Dictionary'
         let expr = substitute(expr, '\C#map#', '#dictionary#', '')

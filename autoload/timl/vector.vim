@@ -5,6 +5,10 @@ if exists('g:autoloaded_timl_vector')
 endif
 let g:autoloaded_timl_vector = 1
 
+function! timl#vector#test(obj) abort
+  return timl#type#canp(a:obj, g:timl#core#nth)
+endfunction
+
 let s:type = timl#type#intern('timl.lang/Vector')
 function! timl#vector#claim(array) abort
   lockvar 1 a:array

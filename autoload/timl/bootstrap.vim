@@ -322,7 +322,7 @@ call s:implement('timl.lang/Vector',
       \ 'transient', 'timl#vector#transient')
 
 call s:define_call('subvec', 'timl#vector#sub')
-call s:define_pred('vector?', 'timl#vectorp')
+call s:define_pred('vector?', 'timl#vector#test')
 call s:define_call('vec', 'timl#vec')
 call s:define_apply('vector', 'timl#vec')
 
@@ -463,7 +463,7 @@ call s:implement('timl.lang/HashMap',
       \ 'dissoc!', 'timl#map#dissocb',
       \ 'persistent!', 'timl#map#persistentb')
 
-call s:define_pred('map?', 'timl#mapp')
+call s:define_pred('map?', 'timl#map#test')
 call s:define_apply('hash-map', 'timl#map#create')
 
 " Section: Hash Set
@@ -488,7 +488,7 @@ call s:implement('timl.lang/TransientHashSet',
       \ 'disj!', 'timl#set#disjb',
       \ 'persistent!', 'timl#set#persistentb')
 
-call s:define_pred('set?', 'timl#setp')
+call s:define_pred('set?', 'timl#set#test')
 call s:define_call('set', 'timl#set#coerce')
 call s:define_apply('hash-set', 'timl#set#coerce')
 

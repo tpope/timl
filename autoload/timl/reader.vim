@@ -92,7 +92,7 @@ function! s:read(port, ...) abort
       return timl#map#create(list)
     endif
   elseif token == '#{'
-    return timl#set(s:read_until(port, '}'))
+    return timl#set#coerce(s:read_until(port, '}'))
   elseif has_key(s:constants, token)
     return s:constants[token]
   elseif token ==# 'nil'
@@ -129,9 +129,9 @@ function! s:read(port, ...) abort
     return timl#list(timl#symbol('var'), s:read_bang(port))
   elseif token ==# '#*'
     let next = s:read_bang(port)
-    if timl#mapp(next)
+    if timl#map#test(next)
       return timl#dictionary#create([next])
-    elseif timl#vectorp(next)
+    elseif timl#vector#test(next)
       return timl#ary(next)
     else
       return timl#list(timl#symbol('function'), next)
@@ -196,7 +196,7 @@ function! s:read(port, ...) abort
       let meta = timl#map#create([_meta, g:timl#true])
     elseif timl#symbol#test(_meta) || type(_meta) == type('')
       let meta = timl#map#create([timl#keyword#intern('tag'), _meta])
-    elseif timl#mapp(_meta)
+    elseif timl#map#test(_meta)
       let meta = _meta
     else
       throw 'timl#reader: metadata must be symbol, string, keyword, or map'
@@ -253,11 +253,11 @@ function! timl#reader#syntax_quote(form, gensyms) abort
     else
       return timl#list(s:quote, a:form)
     endif
-  elseif timl#vectorp(a:form)
+  elseif timl#vector#test(a:form)
     return timl#list(s:vec, timl#cons#create(s:concat, s:sqexpandlist(a:form, a:gensyms)))
-  elseif timl#setp(a:form)
+  elseif timl#set#test(a:form)
     return timl#list(s:set, timl#cons#create(s:concat, s:sqexpandlist(a:form, a:gensyms)))
-  elseif timl#mapp(a:form)
+  elseif timl#map#test(a:form)
     let _ = {'seq': timl#seq(a:form)}
     let keyvals = []
     while _.seq isnot# g:timl#nil
