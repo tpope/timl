@@ -12,8 +12,16 @@ if !exists('g:timl_tag_sentinel')
   lockvar 1 g:timl_tag_sentinel
 endif
 
+if !exists('s:types')
+  let s:types = {}
+endif
+
 function! timl#type#intern(type) abort
-  return timl#keyword#intern('#'.a:type)
+  if !has_key(s:types, a:type)
+    let s:types[a:type] = [a:type]
+    lockvar 1 s:types[a:type]
+  endif
+  return s:types[a:type]
 endfunction
 
 function! timl#type#constructor(_) dict abort
@@ -53,9 +61,7 @@ function! timl#type#string(val) abort
     return 'timl.lang/Nil'
   elseif type ==# 'vim/Dictionary'
     if get(a:val, '__flag__') is g:timl_tag_sentinel
-      return a:val['__tag__'][0][1:-1]
-    elseif timl#keyword#test(a:val)
-      return 'timl.lang/Keyword'
+      return a:val['__tag__'][0]
     endif
   endif
   return type
