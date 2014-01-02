@@ -123,10 +123,6 @@ function! timl#list(...) abort
   return timl#list#create(a:000)
 endfunction
 
-function! timl#ary(coll) abort
-  return timl#array#coerce(a:coll)
-endfunction
-
 " }}}1
 " Section: Invocation {{{1
 

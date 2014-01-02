@@ -133,7 +133,7 @@ function! s:read(port, ...) abort
     if timl#map#test(next)
       return timl#dictionary#create([next])
     elseif timl#vector#test(next)
-      return timl#ary(next)
+      return timl#array#coerce(next)
     else
       return timl#list(timl#symbol('function'), next)
     endif
@@ -262,7 +262,7 @@ function! timl#reader#syntax_quote(form, gensyms) abort
     let _ = {'seq': timl#coll#seq(a:form)}
     let keyvals = []
     while _.seq isnot# g:timl#nil
-      call extend(keyvals, timl#ary(timl#coll#first(_.seq)))
+      call extend(keyvals, timl#array#coerce(timl#coll#first(_.seq)))
       let _.seq = timl#coll#next(_.seq)
     endwhile
     return timl#list(s:hash_map, timl#cons#create(s:concat, s:sqexpandlist(keyvals, a:gensyms)))

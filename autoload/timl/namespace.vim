@@ -42,10 +42,10 @@ function! timl#namespace#refer(name, ...) abort
   endif
   while i < a:0
     if a:000[i] is# s:k_only
-      let only = map(copy(timl#ary(get(a:000, i+1, []))), 'timl#symbol#cast(v:val).name')
+      let only = map(copy(timl#array#coerce(get(a:000, i+1, []))), 'timl#symbol#cast(v:val).name')
       let i += 2
     elseif a:000[i] is# s:k_exclude
-      let exclude = map(copy(timl#ary(get(a:000, i+1, []))), 'timl#symbol#cast(v:val).name')
+      let exclude = map(copy(timl#array#coerce(get(a:000, i+1, []))), 'timl#symbol#cast(v:val).name')
       let i += 2
     elseif timl#keyword#test(a:000[i])
       throw 'timl#namespace: invalid option :'.a:000[i][0]

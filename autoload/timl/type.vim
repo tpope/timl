@@ -70,7 +70,7 @@ let s:type_type = {"blessing": timl#type#intern('timl.lang/Type'), "str": "timl.
 function! timl#type#define(ns, var, slots) abort
   let str = timl#namespace#name(a:ns).name . '/' . timl#symbol#cast(a:var).name
   let type = timl#type#bless(s:type_type, {
-        \ 'slots': a:slots is# g:timl#nil ? g:timl#nil : map(timl#ary(a:slots), 'timl#symbol#cast(v:val).name'),
+        \ 'slots': a:slots is# g:timl#nil ? g:timl#nil : map(timl#array#coerce(a:slots), 'timl#symbol#cast(v:val).name'),
         \ 'str': str,
         \ 'blessing': timl#type#intern(str),
         \ '__call__': function('timl#type#constructor')})

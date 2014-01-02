@@ -58,7 +58,7 @@ endfunction
 
 function! timl#map#soft_coerce(coll) abort
   if timl#type#canp(a:coll, g:timl#core#more)
-    return timl#map#create(timl#ary(a:coll))
+    return timl#map#create(timl#array#coerce(a:coll))
   else
     return a:coll
   endif

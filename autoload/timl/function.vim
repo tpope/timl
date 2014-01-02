@@ -54,7 +54,7 @@ function! timl#function#destructure(params, body)
   let lets = []
   let params = []
   let _ = {}
-  for _.param in timl#ary(a:params)
+  for _.param in timl#array#coerce(a:params)
     if timl#symbol#test(_.param)
       call add(params, _.param)
     else
@@ -100,12 +100,12 @@ let s:kmacro = timl#keyword#intern('macro')
 function! timl#function#defmacro(form, env, name, params, ...) abort
   let extra = [s:form, s:env]
   if timl#vector#test(a:params)
-    let body = [timl#vector#claim(extra + timl#ary(a:params))] + a:000
+    let body = [timl#vector#claim(extra + timl#array#coerce(a:params))] + a:000
   else
     let _ = {}
     let body = []
     for _.list in [a:params] + a:000
-      call add(body, timl#cons#create(timl#vector#claim(extra + timl#ary(timl#coll#first(_.list))), timl#coll#next(_.list)))
+      call add(body, timl#cons#create(timl#vector#claim(extra + timl#array#coerce(timl#coll#first(_.list))), timl#coll#next(_.list)))
     endfor
   endif
   let name = copy(a:name)

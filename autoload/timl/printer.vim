@@ -66,7 +66,7 @@ function! timl#printer#string(x)
     return a:x.str
 
   elseif timl#vector#test(a:x)
-    return '['.join(map(timl#ary(a:x), 'timl#printer#string(v:val)'), ' ') . ']'
+    return '['.join(map(timl#array#coerce(a:x), 'timl#printer#string(v:val)'), ' ') . ']'
 
   elseif timl#map#test(a:x)
     let acc = []
