@@ -31,7 +31,7 @@ call s:syn_keyword('timlDefine', filter(copy(b:syntax_vars), 'v:val =~# "^def\\%
 syntax keyword timlSpecialParam & &form &env
 
 syntax keyword timlConditional if
-syntax keyword timlDefine def set! declare
+syntax keyword timlDefine def deftype* set! declare
 syntax keyword timlRepeat loop recur
 syntax keyword timlStatement do let fn . execute
 syntax keyword timlSpecial let* fn* var function
