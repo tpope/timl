@@ -42,9 +42,9 @@ if !exists('s:empty')
 endif
 
 function! timl#list#emptyp(obj) abort
-  return type(a:obj) == type({}) && get(a:obj, '__tag__') is# s:empty_type
+  return type(a:obj) == type({}) && get(a:obj, '__tag__') is# s:empty_type.blessing
 endfunction
 
 function! timl#list#test(obj)
-  return type(a:obj) == type({}) && (get(a:obj, '__tag__') is# s:cons_type || get(a:obj, '__tag__') is# s:empty_type)
+  return type(a:obj) == type({}) && (get(a:obj, '__tag__') is# s:cons_type.blessing || get(a:obj, '__tag__') is# s:empty_type.blessing)
 endfunction

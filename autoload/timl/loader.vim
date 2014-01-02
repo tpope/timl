@@ -44,7 +44,7 @@ function! timl#loader#source(filename)
   let old_ns = g:timl#core#_STAR_ns_STAR_
   let cache = s:cache_filename(path)
   try
-    let g:timl#core#_STAR_ns_STAR_ = timl#namespace#find(timl#symbol('user'))
+    let g:timl#core#_STAR_ns_STAR_ = timl#namespace#find(timl#symbol#intern('user'))
     let ftime = getftime(cache)
     if !exists('$TIML_EXPIRE_CACHE') && ftime > getftime(path) && ftime > s:myftime
       try

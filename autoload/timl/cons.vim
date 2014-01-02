@@ -8,7 +8,7 @@ let g:autoloaded_timl_cons = 1
 let s:type = timl#type#core_create('Cons', ['car', 'cdr', 'meta'])
 
 function! timl#cons#test(obj) abort
-  return type(a:obj) == type({}) && get(a:obj, '__tag__') is# s:type
+  return type(a:obj) == type({}) && get(a:obj, '__tag__') is# s:type.blessing
 endfunction
 
 function! timl#cons#create(car, cdr, ...) abort

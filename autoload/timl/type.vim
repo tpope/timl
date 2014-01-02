@@ -27,26 +27,33 @@ endfunction
 function! timl#type#core_create(name, ...) abort
   let name = 'timl.lang/' . a:name
   let blessing = timl#type#intern(name)
-  return blessing
+  let obj = {"blessing": blessing, "str": name}
+  if a:0
+    let obj.slots = a:1
+  endif
+  return timl#type#bless(s:type_type, obj)
 endfunction
 
 function! timl#type#constructor(_) dict abort
+  if get(self, 'slots') is# 0
+    throw 'timl: constructor not implemented'
+  endif
   if len(a:_) != len(self.slots)
     throw 'timl: arity error'
   endif
   let object = {}
   for i in range(len(a:_))
-    let object[self.slots[i].name] = a:_[i]
+    let object[self.slots[i]] = a:_[i]
   endfor
-  return timl#type#bless(self.blessing, object)
+  return timl#type#bless(self, object)
 endfunction
 
-let s:type_type = timl#type#intern('timl.lang/Type')
+let s:type_type = {"blessing": timl#type#intern('timl.lang/Type'), "str": "timl.lang/Type"}
 function! timl#type#define(ns, var, slots) abort
   let str = timl#namespace#name(a:ns).name . '/' . timl#symbol#cast(a:var).name
   let type = timl#type#bless(s:type_type, {
-        \ 'slots': a:slots,
-        \ 'name': timl#symbol#intern(str),
+        \ 'slots': map(timl#ary(a:slots), 'timl#symbol#cast(v:val).name'),
+        \ 'str': str,
         \ 'blessing': timl#type#intern(str),
         \ '__call__': function('timl#type#constructor')})
   return timl#namespace#intern(a:ns, a:var, type)
@@ -86,13 +93,15 @@ let s:proto = {
 function! timl#type#bless(tag, ...) abort
   let obj = a:0 ? a:1 : {}
   call extend(obj, s:proto, 'keep')
-  let obj.__tag__ = a:tag
+  let obj.__tag__ = a:tag.blessing
   return obj
 endfunction
 
 function! timl#type#dispatch_call(_) dict
   return g:timl#core#call.__call__([self, a:_])
 endfunction
+
+call timl#type#bless(s:type_type, s:type_type)
 
 " Section: Hierarchy
 " Cribbed from clojure.core
@@ -209,7 +218,6 @@ endfunction
 
 " Section: Method Creation
 
-let s:multifn_type = timl#type#core_create('MultiFn')
 function! timl#type#define_method(ns, name, type, fn) abort
   let var = timl#namespace#maybe_resolve(a:ns, timl#symbol#cast(a:name))
   if var is# g:timl#nil || timl#type#string(g:{var.munged}) isnot# 'timl.lang/MultiFn'
@@ -227,17 +235,16 @@ function! timl#type#define_method(ns, name, type, fn) abort
     let var = timl#namespace#intern(a:ns, a:name, fn)
   endif
   let multi = g:{var.munged}
-  let multi.methods[a:type is# g:timl#nil ? ' ' : timl#str(a:type)] = a:fn
+  let multi.methods[a:type is# g:timl#nil ? ' ' : a:type.str] = a:fn
   let multi.cache = {}
   return var
 endfunction
+let s:multifn_type = timl#type#core_create('MultiFn')
 
 " Section: Initialization
 
 if !exists('g:timl_hierarchy')
   let g:timl_hierarchy = {'parents': {}, 'descendants': {}, 'ancestors': {}}
-  call timl#type#derive(timl#keyword#intern('vim/Number'), timl#keyword#intern('vim/Numeric'))
-  call timl#type#derive(timl#keyword#intern('vim/Float'), timl#keyword#intern('vim/Numeric'))
 endif
 
 " vim:set et sw=2:

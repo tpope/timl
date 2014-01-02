@@ -227,7 +227,7 @@ function! timl#interactive#repl(...) abort
             echo "\n"
           endtry
         endwhile
-        let _.val = timl#eval(timl#cons#create(timl#symbol#intern('do'), read))
+        let _.val = timl#loader#eval(timl#cons#create(timl#symbol#intern('do'), read))
         call extend(g:, {
               \ 'timl#core#_STAR_3': g:timl#core#_STAR_2,
               \ 'timl#core#_STAR_2': g:timl#core#_STAR_1,

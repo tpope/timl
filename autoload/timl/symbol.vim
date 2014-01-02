@@ -32,12 +32,12 @@ endfunction
 
 function! timl#symbol#test(symbol)
   return type(a:symbol) == type({}) &&
-        \ get(a:symbol, '__tag__') is# s:type
+        \ get(a:symbol, '__tag__') is# s:type.blessing
 endfunction
 
 function! timl#symbol#is(symbol, ...)
   return type(a:symbol) == type({}) &&
-        \ get(a:symbol, '__tag__') is# s:type &&
+        \ get(a:symbol, '__tag__') is# s:type.blessing &&
         \ (a:0 ? a:symbol[0] ==# a:1 : 1)
 endfunction
 

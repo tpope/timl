@@ -29,8 +29,6 @@ function! timl#namespace#select(name) abort
   return g:timl#core#_STAR_ns_STAR_
 endfunction
 
-let s:k_only = timl#keyword#intern('only')
-let s:k_exclude = timl#keyword#intern('exclude')
 function! timl#namespace#refer(name, ...) abort
   let me = g:timl#core#_STAR_ns_STAR_
   let sym = timl#symbol#cast(a:name)
@@ -38,6 +36,10 @@ function! timl#namespace#refer(name, ...) abort
   let i = 0
   let only = keys(ns.mappings)
   let exclude = []
+  if !exists('s:k_only')
+    let s:k_only = timl#keyword#intern('only')
+    let s:k_exclude = timl#keyword#intern('exclude')
+  endif
   while i < a:0
     if a:000[i] is# s:k_only
       let only = map(copy(timl#ary(get(a:000, i+1, []))), 'timl#symbol#cast(v:val).name')

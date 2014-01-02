@@ -25,7 +25,7 @@ function! timl#keyword#intern(str) abort
 endfunction
 
 function! timl#keyword#test(keyword) abort
-  return type(a:keyword) == type({}) && get(a:keyword, '__tag__') is# s:type
+  return type(a:keyword) == type({}) && get(a:keyword, '__tag__') is# s:type.blessing
 endfunction
 
 function! timl#keyword#cast(keyword) abort
