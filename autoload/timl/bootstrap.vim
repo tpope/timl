@@ -91,6 +91,9 @@ call s:define_apply('identical?', 'timl#equality#identical')
 call s:define_apply('=', 'timl#equality#all')
 call s:define_apply('not=', 'timl#equality#not')
 
+call s:implement('timl.lang/Type',
+      \ 'call', 'timl#function#call')
+
 " Section: Number
 
 call s:define_call('num', 'timl#num#coerce')

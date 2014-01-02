@@ -12,8 +12,27 @@ if !exists('g:timl_tag_sentinel')
   lockvar 1 g:timl_tag_sentinel
 endif
 
-function! timl#type#intern(type)
+function! timl#type#intern(type) abort
   return timl#keyword#intern('#'.a:type)
+endfunction
+
+function! timl#type#constructor(_) dict abort
+  if len(a:_) != len(self.slots)
+    throw 'timl: arity error'
+  endif
+  let object = {}
+  for i in range(len(a:_))
+    let object[self.slots[i].name] = a:_[i]
+  endfor
+  return timl#type#bless(self.name.str, object)
+endfunction
+
+function! timl#type#define(ns, var, slots) abort
+  let type = timl#type#bless('timl.lang/Type', {
+        \ 'slots': a:slots,
+        \ 'name': timl#symbol(g:timl#core#_STAR_ns_STAR_.name.name . '/' . a:var.name),
+        \ '__call__': function('timl#type#constructor')})
+  return timl#namespace#intern(a:ns, a:var, type)
 endfunction
 
 let s:types = {
@@ -51,8 +70,8 @@ let s:proto = {
       \ '__flag__': g:timl_tag_sentinel}
 function! timl#type#bless(class, ...) abort
   let obj = a:0 ? a:1 : {}
-  let obj.__tag__ = type(a:class) == type('') ? timl#keyword#intern('#'.a:class) : a:class
   call extend(obj, s:proto, 'keep')
+  let obj.__tag__ = type(a:class) == type('') ? timl#type#intern(a:class) : a:class
   return obj
 endfunction
 

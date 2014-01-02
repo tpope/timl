@@ -14,6 +14,7 @@ let s:specials = {
       \ 'fn*': 1,
       \ 'recur': 1,
       \ 'def': 1,
+      \ 'deftype*': 1,
       \ 'set!': 1,
       \ 'execute': 1,
       \ '.': 1,
@@ -568,6 +569,16 @@ function! s:expr_sf_def(file, env, form) abort
   else
     return 'timl#namespace#intern(g:timl#core#_STAR_ns_STAR_, '.timl#compiler#serialize(var).')'
   endif
+endfunction
+
+function! s:expr_sf_deftype_STAR_(file, env, form) abort
+  let rest = timl#coll#next(a:form)
+  let var = timl#symbol#cast(timl#coll#first(rest))
+  let slots = timl#ary(timl#coll#fnext(rest))
+  if has_key(a:env, 'file')
+    let var = timl#meta#vary(var, g:timl#core#assoc, s:kline, a:env.line, s:kfile, a:env.file)
+  endif
+  return 'timl#type#define(g:timl#core#_STAR_ns_STAR_, '.timl#compiler#serialize(var).', '.timl#compiler#serialize(slots).')'
 endfunction
 
 function! s:expr_dot(file, env, form) abort

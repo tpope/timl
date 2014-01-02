@@ -31,6 +31,10 @@
 (defmacro defn- [name & fdecl]
   `(defn ~(with-meta name (assoc (meta name) :private true)) ~@fdecl))
 
+(defmacro deftype [name slots & more]
+  `(let [type (deftype* ~name ~slots)]
+     type))
+
 (defmacro when [test & body]
   `(if ~test (do ~@body)))
 

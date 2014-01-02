@@ -74,6 +74,9 @@ function! timl#printer#string(x)
     endfor
     return '#*{' . join(acc, ' ') . '}'
 
+  elseif type == 'timl.lang/Type'
+    return a:x.name.str
+
   elseif timl#vector#test(a:x)
     return '['.join(map(timl#ary(a:x), 'timl#printer#string(v:val)'), ' ') . ']'
 
