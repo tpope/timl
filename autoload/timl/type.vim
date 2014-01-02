@@ -39,7 +39,7 @@ let s:type_type = timl#type#intern('timl.lang/Type')
 function! timl#type#define(ns, var, slots) abort
   let type = timl#type#bless(s:type_type, {
         \ 'slots': a:slots,
-        \ 'name': timl#symbol(g:timl#core#_STAR_ns_STAR_.name.name . '/' . a:var.name),
+        \ 'name': timl#symbol(a:ns.name.name . '/' . a:var.name),
         \ '__call__': function('timl#type#constructor')})
   return timl#namespace#intern(a:ns, a:var, type)
 endfunction
