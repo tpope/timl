@@ -125,7 +125,7 @@ function! timl#printer#string(x)
   else
     let acc = []
     for [k, V] in items(a:x)
-      if k[0] !=# '#'
+      if k !~# '^__'
         call add(acc, k . '=' . timl#printer#string(V))
       endif
       unlet! V
