@@ -496,26 +496,6 @@ call s:define_call('zipmap', 'timl#map#zip')
 
 " Section: Hash Set
 
-call s:implement('timl.lang/HashSet',
-      \ 'seq', 'timl#set#seq',
-      \ 'lookup', 'timl#set#lookup',
-      \ 'empty', 'timl#set#empty',
-      \ 'conj', 'timl#set#conj',
-      \ 'length', 'timl#set#length',
-      \ 'equiv', 'timl#set#equal')
-
-call s:implement('timl.lang/HashSet',
-      \ 'disj', 'timl#set#disj',
-      \ 'transient', 'timl#set#transient',
-      \ 'call', 'timl#set#call')
-
-call s:implement('timl.lang/TransientHashSet',
-      \ 'length', 'timl#set#length',
-      \ 'lookup', 'timl#set#lookup',
-      \ 'conj!', 'timl#set#conjb',
-      \ 'disj!', 'timl#set#disjb',
-      \ 'persistent!', 'timl#set#persistentb')
-
 call s:define_pred('set?', 'timl#set#test')
 call s:define_call('set', 'timl#set#coerce')
 call s:define_apply('hash-set', 'timl#set#coerce')

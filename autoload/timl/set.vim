@@ -25,8 +25,6 @@ function! timl#set#key(key)
   endif
 endfunction
 
-let s:type = timl#type#core_create('HashSet')
-let s:transient_type = timl#type#core_create('TransientHashSet')
 function! timl#set#coerce(seq) abort
   if timl#set#test(a:seq)
     return a:seq
@@ -94,11 +92,6 @@ function! timl#set#lookup(this, key, ...) abort
   endif
 endfunction
 
-if !exists('s:empty')
-  let s:empty = timl#type#bless(s:type, {'__extra': []})
-  lockvar s:empty.__extra
-  lockvar s:empty
-endif
 function! timl#set#empty(this) abort
   return s:empty
 endfunction
@@ -168,3 +161,27 @@ endfunction
 function! timl#set#call(this, _) abort
   return call('timl#set#lookup', [a:this] + a:_)
 endfunction
+
+let s:type = timl#type#core_define('HashSet', g:timl#nil, {
+      \ 'seq': 'timl#set#seq',
+      \ 'lookup': 'timl#set#lookup',
+      \ 'empty': 'timl#set#empty',
+      \ 'conj': 'timl#set#conj',
+      \ 'length': 'timl#set#length',
+      \ 'equiv': 'timl#set#equal',
+      \ 'disj': 'timl#set#disj',
+      \ 'transient': 'timl#set#transient',
+      \ 'call': 'timl#set#call'})
+
+let s:transient_type = timl#type#core_define('TransientHashSet', g:timl#nil, {
+      \ 'length': 'timl#set#length',
+      \ 'lookup': 'timl#set#lookup',
+      \ 'conj!': 'timl#set#conjb',
+      \ 'disj!': 'timl#set#disjb',
+      \ 'persistent!': 'timl#set#persistentb'})
+
+if !exists('s:empty')
+  let s:empty = timl#type#bless(s:type, {'__extra': []})
+  lockvar 1 s:empty.__extra
+  lockvar 1 s:empty
+endif
