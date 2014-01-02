@@ -67,7 +67,11 @@ function! timl#coll#chunked_seqp(coll) abort
 endfunction
 
 function! timl#coll#get(coll, key, ...) abort
-  return timl#invoke(g:timl#core#lookup, a:coll, a:key, a:0 ? a:1 : g:timl#nil)
+  if timl#type#canp(a:coll, g:timl#core#lookup)
+    return timl#invoke(g:timl#core#lookup, a:coll, a:key, a:0 ? a:1 : g:timl#nil)
+  else
+    return a:0 ? a:1 : g:timl#nil
+  endif
 endfunction
 
 function! timl#coll#containsp(coll, val) abort
