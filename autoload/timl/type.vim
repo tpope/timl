@@ -32,14 +32,16 @@ function! timl#type#constructor(_) dict abort
   for i in range(len(a:_))
     let object[self.slots[i].name] = a:_[i]
   endfor
-  return timl#type#bless(self.name.str, object)
+  return timl#type#bless(self.blessing, object)
 endfunction
 
 let s:type_type = timl#type#intern('timl.lang/Type')
 function! timl#type#define(ns, var, slots) abort
+  let str = a:ns.name.name . '/' . a:var.name
   let type = timl#type#bless(s:type_type, {
         \ 'slots': a:slots,
-        \ 'name': timl#symbol(a:ns.name.name . '/' . a:var.name),
+        \ 'name': timl#symbol#intern(str),
+        \ 'blessing': timl#type#intern(str),
         \ '__call__': function('timl#type#constructor')})
   return timl#namespace#intern(a:ns, a:var, type)
 endfunction
