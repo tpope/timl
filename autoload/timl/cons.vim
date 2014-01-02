@@ -5,8 +5,6 @@ if exists("g:autoloaded_timl_cons")
 endif
 let g:autoloaded_timl_cons = 1
 
-let s:type = timl#type#core_create('Cons', ['car', 'cdr', 'meta'])
-
 function! timl#cons#test(obj) abort
   return type(a:obj) == type({}) && get(a:obj, '__tag__') is# s:type.blessing
 endfunction
@@ -17,7 +15,7 @@ function! timl#cons#create(car, cdr, ...) abort
     lockvar 1 cons
     return cons
   endif
-  throw 'timl: not seqable'
+  throw 'timl: not seqable: '.timl#type#string(a:cdr)
 endfunction
 
 function! timl#cons#spread(array) abort
@@ -49,3 +47,13 @@ endfunction
 function! timl#cons#more(this)
   return a:this.cdr
 endfunction
+
+let s:type = timl#type#core_define('Cons', ['car', 'cdr', 'meta'], {
+      \ 'meta': 'timl#meta#from_attribute',
+      \ 'with-meta': 'timl#meta#copy_assign_lock',
+      \ 'seq': 'timl#function#identity',
+      \ 'equiv': 'timl#equality#seq',
+      \ 'first': 'timl#cons#first',
+      \ 'more': 'timl#cons#more',
+      \ 'conj': 'timl#cons#conj',
+      \ 'empty': 'timl#list#empty'})

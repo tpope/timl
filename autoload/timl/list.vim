@@ -35,12 +35,6 @@ function! timl#list#empty() abort
   return s:empty
 endfunction
 
-let s:empty_type = timl#type#core_create('EmptyList', ['meta'])
-if !exists('s:empty')
-  let s:empty = timl#type#bless(s:empty_type, {'meta': g:timl#nil})
-  lockvar 1 s:empty
-endif
-
 function! timl#list#emptyp(obj) abort
   return type(a:obj) == type({}) && get(a:obj, '__tag__') is# s:empty_type.blessing
 endfunction
@@ -48,3 +42,19 @@ endfunction
 function! timl#list#test(obj)
   return type(a:obj) == type({}) && (get(a:obj, '__tag__') is# s:cons_type.blessing || get(a:obj, '__tag__') is# s:empty_type.blessing)
 endfunction
+
+let s:empty_type = timl#type#core_define('EmptyList', ['meta'], {
+      \ 'meta': 'timl#meta#from_attribute',
+      \ 'with-meta': 'timl#list#with_meta',
+      \ 'seq': 'timl#nil#identity',
+      \ 'equiv': 'timl#equality#seq',
+      \ 'first': 'timl#nil#identity',
+      \ 'more': 'timl#function#identity',
+      \ 'length': 'timl#nil#length',
+      \ 'conj': 'timl#cons#conj',
+      \ 'empty': 'timl#function#identity'})
+
+if !exists('s:empty')
+  let s:empty = timl#type#bless(s:empty_type, {'meta': g:timl#nil})
+  lockvar 1 s:empty
+endif

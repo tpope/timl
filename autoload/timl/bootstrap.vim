@@ -11,14 +11,6 @@ function! s:function(name) abort
   return function(substitute(a:name,'^s:',matchstr(expand('<sfile>'), '.*\zs<SNR>\d\+_'),''))
 endfunction
 
-function! s:nil(...)
-  return g:timl#nil
-endfunction
-
-function! s:zero(...)
-  return 0
-endfunction
-
 function! s:implement(type, ...) abort
   let type = timl#symbol#intern(a:type)
   for i in range(0, a:0-1, 2)
@@ -111,7 +103,7 @@ call s:define_pred('can?', 'timl#type#canp')
 
 " Section: Meta
 
-call timl#type#define_method(s:ns, timl#symbol#intern('meta'), g:timl#nil, s:function('s:nil'))
+call timl#type#define_method(s:ns, timl#symbol#intern('meta'), g:timl#nil, s:function('timl#nil#identity'))
 call s:define_call('vary-meta', 'timl#meta#vary')
 call s:define_call('alter-meta!', 'timl#meta#alter')
 
@@ -158,34 +150,8 @@ call s:implement('timl.lang/Type',
 
 " Section: Nil
 
-call timl#type#define(s:langns, timl#symbol('Nil'), g:timl#nil)
-
-function! s:nilp(this) abort
-  return a:this is g:timl#nil
-endfunction
-
-function! s:nil_lookup(this, key, default) abort
-  return a:default
-endfunction
-
-function! s:nil_cons(this, ...) abort
-  return call('timl#cons#conj', [timl#list#empty()] + a:000)
-endfunction
-
-function! s:nil_assoc(this, ...) abort
-  return timl#map#create(a:000)
-endfunction
-
-call s:implement('timl.lang/Nil',
-      \ 'seq', 's:nil',
-      \ 'first', 's:nil',
-      \ 'more', 'timl#list#empty',
-      \ 'conj', 's:nil_cons',
-      \ 'assoc', 's:nil_assoc',
-      \ 'length', 's:zero',
-      \ 'lookup', 's:nil_lookup')
-
-call s:define_pred('nil?', 's:nilp')
+call s:define_pred('nil?', 'timl#nil#test')
+call timl#nil#identity()
 
 " Section: Number
 
@@ -354,33 +320,12 @@ call s:define_apply('vector', 'timl#vector#coerce')
 
 " Section: Cons
 
-call s:implement('timl.lang/Cons',
-      \ 'meta', 'timl#meta#from_attribute',
-      \ 'with-meta', 'timl#meta#copy_assign_lock',
-      \ 'seq', 'timl#function#identity',
-      \ 'equiv', 'timl#equality#seq',
-      \ 'first', 'timl#cons#first',
-      \ 'more', 'timl#cons#more',
-      \ 'conj', 'timl#cons#conj',
-      \ 'empty', 'timl#list#empty')
-
 call s:define_call('cons', 'timl#cons#create')
 call s:define_apply('list*', 'timl#cons#spread')
 
 " Section: List
 
 let g:timl#empty_list = timl#list#empty()
-
-call s:implement('timl.lang/EmptyList',
-      \ 'meta', 'timl#meta#from_attribute',
-      \ 'with-meta', 'timl#list#with_meta',
-      \ 'seq', 's:nil',
-      \ 'equiv', 'timl#equality#seq',
-      \ 'first', 's:nil',
-      \ 'more', 'timl#function#identity',
-      \ 'length', 's:zero',
-      \ 'conj', 'timl#cons#conj',
-      \ 'empty', 'timl#function#identity')
 
 call s:define_apply('list', 'timl#list#create')
 call s:define_pred('list?', 'timl#list#test')
@@ -396,52 +341,9 @@ call s:define_call('nfirst', 'timl#coll#nfirst')
 call s:define_call('nnext', 'timl#coll#nnext')
 call s:define_call('second', 'timl#coll#fnext')
 
-" Section: Array Seq
-
-call s:implement('timl.lang/ArraySeq',
-      \ 'meta', 'timl#meta#from_attribute',
-      \ 'with-meta', 'timl#meta#copy_assign_lock',
-      \ 'seq', 'timl#function#identity',
-      \ 'equiv', 'timl#equality#seq',
-      \ 'first', 'timl#array_seq#first',
-      \ 'more', 'timl#array_seq#more',
-      \ 'length', 'timl#array_seq#length',
-      \ 'conj', 'timl#cons#conj',
-      \ 'empty', 'timl#list#empty')
-
-call s:implement('timl.lang/ArraySeq',
-      \ 'chunk-first', 'timl#array_seq#chunk_first',
-      \ 'chunk-rest', 'timl#array_seq#chunk_rest')
-
 " Section: Chunked Cons
 
 call s:define_call('chunk-cons', 'timl#chunked_cons#create')
-
-call s:implement('timl.lang/ChunkedCons',
-      \ 'meta', 'timl#meta#from_attribute',
-      \ 'with-meta', 'timl#meta#copy_assign_lock',
-      \ 'seq', 'timl#function#identity',
-      \ 'equiv', 'timl#equality#seq',
-      \ 'first', 'timl#chunked_cons#first',
-      \ 'more', 'timl#chunked_cons#more',
-      \ 'length', 'timl#chunked_cons#length',
-      \ 'conj', 'timl#cons#conj',
-      \ 'empty', 'timl#list#empty')
-
-call s:implement('timl.lang/ChunkedCons',
-      \ 'chunk-first', 'timl#chunked_cons#chunk_first',
-      \ 'chunk-rest', 'timl#chunked_cons#chunk_rest')
-
-" Section: Lazy Seq
-
-call s:implement('timl.lang/LazySeq',
-      \ 'meta', 'timl#meta#from_attribute',
-      \ 'with-meta', 'timl#lazy_seq#with_meta',
-      \ 'seq', 'timl#lazy_seq#seq',
-      \ 'equiv', 'timl#equality#seq',
-      \ 'realized?', 'timl#lazy_seq#realized',
-      \ 'conj', 'timl#cons#conj',
-      \ 'empty', 'timl#list#empty')
 
 " Section: Dictionary
 
@@ -540,7 +442,7 @@ call s:define_pred('has?', 'has')
 
 " Section: Defaults
 
-call timl#type#define_method(s:ns, timl#symbol#intern('empty'), g:timl#nil, s:function('s:nil'))
+call timl#type#define_method(s:ns, timl#symbol#intern('empty'), g:timl#nil, s:function('timl#nil#identity'))
 
 call timl#type#define_method(s:ns, timl#symbol#intern('equiv'), g:timl#nil, g:timl#core#identical_QMARK_)
 

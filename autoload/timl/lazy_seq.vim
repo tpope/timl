@@ -6,7 +6,6 @@ endif
 let g:autoloaded_timl_lazy_seq = 1
 
 let s:placeholder = {}
-let s:type = timl#type#core_create('LazySeq', ['fn', 'val', 'seq', 'meta'])
 function! timl#lazy_seq#create(fn) abort
   return timl#type#bless(s:type, {'fn': a:fn, 'val': g:timl#nil, 'seq': s:placeholder, 'meta': g:timl#nil})
 endfunction
@@ -39,3 +38,12 @@ endfunction
 function! timl#lazy_seq#realized(lseq) abort
   return a:lseq.fn is# g:timl#nil ? g:timl#true : g:timl#false
 endfunction
+
+let s:type = timl#type#core_define('LazySeq', ['fn', 'val', 'seq', 'meta'], {
+      \ 'meta': 'timl#meta#from_attribute',
+      \ 'with-meta': 'timl#lazy_seq#with_meta',
+      \ 'seq': 'timl#lazy_seq#seq',
+      \ 'equiv': 'timl#equality#seq',
+      \ 'realized?': 'timl#lazy_seq#realized',
+      \ 'conj': 'timl#cons#conj',
+      \ 'empty': 'timl#list#empty'})

@@ -5,7 +5,6 @@ if exists("g:autoloaded_timl_chunked_cons")
 endif
 let g:autoloaded_timl_chunked_cons = 1
 
-let s:type = timl#type#core_create('ChunkedCons', ['array', 'rest', 'i', 'meta'])
 function! timl#chunked_cons#create(array, rest, ...) abort
   lockvar 1 a:array
   let cc = timl#type#bless(s:type, {
@@ -46,3 +45,16 @@ endfunction
 function! timl#chunked_cons#chunk_rest(this) abort
   return a:this.rest
 endfunction
+
+let s:type = timl#type#core_define('ChunkedCons', ['array', 'rest', 'i', 'meta'], {
+      \ 'meta': 'timl#meta#from_attribute',
+      \ 'with-meta': 'timl#meta#copy_assign_lock',
+      \ 'seq': 'timl#function#identity',
+      \ 'equiv': 'timl#equality#seq',
+      \ 'first': 'timl#chunked_cons#first',
+      \ 'more': 'timl#chunked_cons#more',
+      \ 'length': 'timl#chunked_cons#length',
+      \ 'conj': 'timl#cons#conj',
+      \ 'empty': 'timl#list#empty',
+      \ 'chunk-first': 'timl#chunked_cons#chunk_first',
+      \ 'chunk-rest': 'timl#chunked_cons#chunk_rest'})

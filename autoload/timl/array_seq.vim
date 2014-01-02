@@ -5,7 +5,6 @@ if exists("g:autoloaded_timl_array_seq")
 endif
 let g:autoloaded_timl_array_seq = 1
 
-let s:type = timl#type#core_create('ArraySeq', ['array', 'i', 'meta'])
 function! timl#array_seq#create(array, ...) abort
   let cc = timl#type#bless(s:type, {
         \ 'array': a:array,
@@ -44,3 +43,16 @@ function! timl#array_seq#chunk_rest(this) abort
     return timl#array_seq#create(a:this.array, a:this.i+s:chunk_size)
   endif
 endfunction
+
+let s:type = timl#type#core_define('ArraySeq', ['array', 'i', 'meta'], {
+      \ 'meta': 'timl#meta#from_attribute',
+      \ 'with-meta': 'timl#meta#copy_assign_lock',
+      \ 'seq': 'timl#function#identity',
+      \ 'equiv': 'timl#equality#seq',
+      \ 'first': 'timl#array_seq#first',
+      \ 'more': 'timl#array_seq#more',
+      \ 'length': 'timl#array_seq#length',
+      \ 'conj': 'timl#cons#conj',
+      \ 'empty': 'timl#list#empty',
+      \ 'chunk-first': 'timl#array_seq#chunk_first',
+      \ 'chunk-rest': 'timl#array_seq#chunk_rest'})
