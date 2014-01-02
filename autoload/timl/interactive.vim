@@ -49,7 +49,7 @@ function! timl#interactive#ns_for_cursor(...) abort
   else
     let ns = timl#interactive#ns_for_file(expand('%:p'))
   endif
-  let nsobj = timl#namespace#find(timl#symbol(ns))
+  let nsobj = timl#namespace#find(timl#symbol#intern(ns))
   if nsobj isnot# g:timl#nil
     return ns
   else
@@ -114,7 +114,7 @@ function! timl#interactive#eval_opfunc(type) abort
   let ns = g:timl#core#_STAR_ns_STAR_
   let port = timl#reader#open_string(string, expand('%:p'))
   try
-    let g:timl#core#_STAR_ns_STAR_ = timl#namespace#find(timl#symbol(timl#interactive#ns_for_cursor()))
+    let g:timl#core#_STAR_ns_STAR_ = timl#namespace#find(timl#symbol#intern(timl#interactive#ns_for_cursor()))
     echo timl#printer#string(timl#loader#consume(port))
     let &syntax = &syntax
   catch //
@@ -146,7 +146,7 @@ function! timl#interactive#return() abort
   let ns = g:timl#core#_STAR_ns_STAR_
   let port = timl#reader#open_string(string, expand('%:p'))
   try
-    let g:timl#core#_STAR_ns_STAR_ = timl#namespace#find(timl#symbol(timl#interactive#ns_for_cursor()))
+    let g:timl#core#_STAR_ns_STAR_ = timl#namespace#find(timl#symbol#intern(timl#interactive#ns_for_cursor()))
     let body = ";=" . timl#printer#string(timl#loader#consume(port))
     call setloclist(0, [])
     let &syntax = &syntax
@@ -190,9 +190,9 @@ function! timl#interactive#repl(...) abort
   if a:0
     let ns = g:timl#core#_STAR_ns_STAR_
     try
-      let g:timl#core#_STAR_ns_STAR_ = timl#namespace#create(timl#symbol(a:1))
-      call timl#loader#require(timl#symbol('timl.repl'))
-      call timl#namespace#refer(timl#symbol('timl.repl'))
+      let g:timl#core#_STAR_ns_STAR_ = timl#namespace#create(timl#symbol#intern(a:1))
+      call timl#loader#require(timl#symbol#intern('timl.repl'))
+      call timl#namespace#refer(timl#symbol#intern('timl.repl'))
       return timl#interactive#repl()
     finally
       let g:timl#core#_STAR_ns_STAR_ = ns
@@ -203,9 +203,9 @@ function! timl#interactive#repl(...) abort
   let more = &more
   try
     set nomore
-    call timl#loader#require(timl#symbol('timl.repl'))
+    call timl#loader#require(timl#symbol#intern('timl.repl'))
     if g:timl#core#_STAR_ns_STAR_.name[0] ==# 'user'
-      call timl#namespace#refer(timl#symbol('timl.repl'))
+      call timl#namespace#refer(timl#symbol#intern('timl.repl'))
     endif
     let input = input(g:timl#core#_STAR_ns_STAR_.name[0].'=> ', '', cmpl)
     if input =~# '^:q\%[uit]'
@@ -227,7 +227,7 @@ function! timl#interactive#repl(...) abort
             echo "\n"
           endtry
         endwhile
-        let _.val = timl#eval(timl#cons#create(timl#symbol('do'), read))
+        let _.val = timl#eval(timl#cons#create(timl#symbol#intern('do'), read))
         call extend(g:, {
               \ 'timl#core#_STAR_3': g:timl#core#_STAR_2,
               \ 'timl#core#_STAR_2': g:timl#core#_STAR_1,
