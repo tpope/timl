@@ -7,10 +7,6 @@ let g:autoloaded_timl = 1
 
 " Section: Util {{{1
 
-function! timl#freeze(...) abort
-  return a:000
-endfunction
-
 function! timl#truth(val) abort
   return a:val isnot# g:timl#nil && a:val isnot# g:timl#false
 endfunction
@@ -71,11 +67,6 @@ endfunction
 
 " }}}1
 " Section: Type System {{{1
-
-if !exists('g:timl#nil')
-  let g:timl#nil = timl#freeze()
-  lockvar 1 g:timl#nil
-endif
 
 function! timl#bless(class, ...) abort
   return timl#type#bless(a:class, a:0 ? a:1 : {})

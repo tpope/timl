@@ -5,7 +5,7 @@ if exists("g:autoloaded_timl_bootstrap")
 endif
 let g:autoloaded_timl_bootstrap = 1
 
-" Section: Util
+" Section: Setup
 
 function! s:function(name) abort
   return function(substitute(a:name,'^s:',matchstr(expand('<sfile>'), '.*\zs<SNR>\d\+_'),''))
@@ -20,7 +20,7 @@ function! s:zero(...)
 endfunction
 
 function! s:implement(type, ...) abort
-  let type = timl#keyword#intern(a:type)
+  let type = timl#symbol#intern(a:type)
   for i in range(0, a:0-1, 2)
     call timl#type#define_method(s:ns, timl#symbol#intern(a:000[i]), type, s:function(a:000[i+1]))
   endfor
@@ -38,6 +38,8 @@ function! s:intern_fn(name, apply, ...) abort
 endfunction
 
 let s:ns = timl#namespace#create(timl#symbol#intern('timl.core'))
+let s:langns = timl#namespace#create(timl#symbol#intern('timl.lang'))
+let s:vimns = timl#namespace#create(timl#symbol#intern('vim'))
 
 function! s:apply(_) dict abort
   return call(self.invoke, a:_, self)
@@ -70,17 +72,76 @@ function! s:define_apply(name, fn) abort
   call s:intern_fn(timl#symbol#intern(a:name), a:fn)
 endfunction
 
-" Section: Meta
+" Section: Namespace
 
-call timl#type#define_method(s:ns, timl#symbol#intern('meta'), g:timl#nil, s:function('s:nil'))
-call s:define_call('vary-meta', 'timl#meta#vary')
-call s:define_call('alter-meta!', 'timl#meta#alter')
+call timl#namespace#intern(s:langns, timl#symbol#intern('Namespace'), g:timl#lang#Namespace)
+
+call s:define_apply('load', 'timl#loader#all_relative')
+call s:define_apply('require', 'timl#loader#require_all')
+call s:define_apply('use', 'timl#loader#use_all')
+call s:define_call('create-ns', 'timl#namespace#create')
+call s:define_call('find-ns', 'timl#namespace#find')
+call s:define_call('the-ns', 'timl#namespace#the')
+call s:define_call('ns-name', 'timl#namespace#name')
+call s:define_call('all-ns', 'timl#namespace#all')
+call s:define_call('in-ns', 'timl#namespace#select')
+call s:define_call('refer', 'timl#namespace#refer')
+call s:define_call('alias', 'timl#namespace#alias')
+call s:define_call('intern', 'timl#namespace#intern')
+
+" Section: Var
+
+call timl#namespace#intern(s:langns, timl#symbol#intern('Var'), g:timl#lang#Var)
+
+call s:implement('timl.lang/Var',
+      \ 'meta', 'timl#meta#from_attribute',
+      \ 'reset-meta!', 'timl#var#reset_meta',
+      \ 'call', 'timl#var#call',
+      \ 'funcref', 'timl#var#funcref',
+      \ 'deref', 'timl#var#get')
+call s:define_call('var-get', 'timl#var#get')
+call s:define_call('find-var', 'timl#var#find')
+call s:define_pred('var?', 'timl#var#test')
 
 " Section: Type Sytem
 
 call s:define_call('blessing', 'timl#type#keyword')
 call s:define_pred('isa?', 'timl#type#isap')
 call s:define_pred('can?', 'timl#type#canp')
+
+" Section: Meta
+
+call timl#type#define_method(s:ns, timl#symbol#intern('meta'), g:timl#nil, s:function('s:nil'))
+call s:define_call('vary-meta', 'timl#meta#vary')
+call s:define_call('alter-meta!', 'timl#meta#alter')
+
+" Section: Symbol/Keyword
+
+function! s:this_get(this, coll, ...) abort
+  if a:0
+    return timl#coll#get(a:coll, a:this, a:1)
+  else
+    return timl#coll#get(a:coll, a:this)
+  endif
+endfunction
+
+call s:define_call('symbol', 'timl#symbol#intern')
+call s:define_call('keyword', 'timl#keyword#intern')
+call s:define_call('gensym', 'timl#symbol#gen')
+call s:define_pred('symbol?', 'timl#symbol#test')
+call s:define_pred('keyword?', 'timl#keyword#test')
+
+call s:implement('timl.lang/Symbol',
+      \ 'meta', 'timl#meta#from_attribute',
+      \ 'with-meta', 'timl#meta#copy_assign_lock',
+      \ 'equiv', 'timl#symbol#equal',
+      \ 'call', 'timl#keyword#call')
+
+call s:implement('timl.lang/Keyword',
+      \ 'call', 'timl#keyword#call')
+
+call timl#namespace#intern(s:langns, timl#symbol#intern('Symbol'), g:timl#lang#Symbol)
+call timl#namespace#intern(s:langns, timl#symbol#intern('Keyword'), g:timl#lang#Keyword)
 
 " Section: Utility
 
@@ -95,7 +156,40 @@ call s:define_apply('not=', 'timl#equality#not')
 call s:implement('timl.lang/Type',
       \ 'call', 'timl#function#call')
 
+" Section: Nil
+
+call timl#type#define(s:langns, timl#symbol('Nil'), g:timl#nil)
+
+function! s:nilp(this) abort
+  return a:this is g:timl#nil
+endfunction
+
+function! s:nil_lookup(this, key, default) abort
+  return a:default
+endfunction
+
+function! s:nil_cons(this, ...) abort
+  return call('timl#cons#conj', [timl#list#empty()] + a:000)
+endfunction
+
+function! s:nil_assoc(this, ...) abort
+  return timl#map#create(a:000)
+endfunction
+
+call s:implement('timl.lang/Nil',
+      \ 'seq', 's:nil',
+      \ 'first', 's:nil',
+      \ 'more', 'timl#list#empty',
+      \ 'conj', 's:nil_cons',
+      \ 'assoc', 's:nil_assoc',
+      \ 'length', 's:zero',
+      \ 'lookup', 's:nil_lookup')
+
+call s:define_pred('nil?', 's:nilp')
+
 " Section: Number
+
+call timl#type#define(s:vimns, timl#symbol('Number'), g:timl#nil)
 
 call s:define_call('num', 'timl#num#coerce')
 call s:define_call('int', 'timl#number#int')
@@ -140,11 +234,14 @@ call s:define_pred('even?', 'timl#number#evenp')
 
 call s:define_call('str2nr', 'str2nr')
 if has('float')
+  call timl#type#define(s:vimns, timl#symbol('Float'), g:timl#nil)
   call s:define_call('str2float', 'str2float')
   call s:define_call('float2nr', 'float2nr')
 endif
 
-" Section: Strin
+" Section: String
+
+call timl#type#define(s:vimns, timl#symbol('String'), g:timl#nil)
 
 call s:implement('vim/String',
       \ 'funcref', 'function',
@@ -152,9 +249,6 @@ call s:implement('vim/String',
       \ 'lookup', 'timl#string#lookup',
       \ 'length', 'timl#string#length')
 
-call s:define_call('symbol', 'timl#symbol#intern')
-call s:define_call('keyword', 'timl#keyword#intern')
-call s:define_call('gensym', 'timl#symbol#gen')
 call s:define_call('format', 'printf')
 call s:define_apply('str', 'timl#string#join')
 call s:define_call('join', 'timl#string#join')
@@ -169,73 +263,26 @@ call s:define_apply('prn-str', 'timl#string#prn')
 call s:define_apply('print-str', 'timl#string#print')
 call s:define_apply('println-str', 'timl#string#println')
 
-call s:define_pred('symbol?', 'timl#symbol#test')
-call s:define_pred('keyword?', 'timl#keyword#test')
 call s:define_pred('string?', 'timl#string#test')
 
 call s:define_call('char2nr', 'char2nr')
 call s:define_call('nr2char', 'nr2char')
 
-" Section: Nil
-
-function! s:nilp(this) abort
-  return a:this is g:timl#nil
-endfunction
-
-function! s:nil_lookup(this, key, default) abort
-  return a:default
-endfunction
-
-function! s:nil_cons(this, ...) abort
-  return call('timl#cons#conj', [timl#list#empty()] + a:000)
-endfunction
-
-function! s:nil_assoc(this, ...) abort
-  return timl#map#create(a:000)
-endfunction
-
-call s:implement('timl.lang/Nil',
-      \ 'seq', 's:nil',
-      \ 'first', 's:nil',
-      \ 'more', 'timl#list#empty',
-      \ 'conj', 's:nil_cons',
-      \ 'assoc', 's:nil_assoc',
-      \ 'length', 's:zero',
-      \ 'lookup', 's:nil_lookup')
-
-call s:define_pred('nil?', 's:nilp')
-
 " Section: Boolean
 
-let s:boolean_type = timl#type#core_create('Boolean')
+call timl#type#define(s:langns, timl#symbol('Boolean'), g:timl#nil)
+
 if !exists('g:timl#false')
-  let g:timl#false = timl#type#bless(s:boolean_type, {'value': 0})
-  let g:timl#true = timl#type#bless(s:boolean_type, {'value': 1})
+  let g:timl#false = timl#type#bless(g:timl#lang#Boolean, {'value': 0})
+  let g:timl#true = timl#type#bless(g:timl#lang#Boolean, {'value': 1})
   lockvar 1 g:timl#false g:timl#true
 endif
 
 call s:define_pred('boolean', 'timl#truth')
 
-" Section: Symbol/Keyword
-
-function! s:this_get(this, coll, ...) abort
-  if a:0
-    return timl#coll#get(a:coll, a:this, a:1)
-  else
-    return timl#coll#get(a:coll, a:this)
-  endif
-endfunction
-
-call s:implement('timl.lang/Symbol',
-      \ 'meta', 'timl#meta#from_attribute',
-      \ 'with-meta', 'timl#meta#copy_assign_lock',
-      \ 'equiv', 'timl#symbol#equal',
-      \ 'call', 'timl#keyword#call')
-
-call s:implement('timl.lang/Keyword',
-      \ 'call', 'timl#keyword#call')
-
 " Section: Function
+
+call timl#type#define(s:vimns, timl#symbol('Funcref'), g:timl#nil)
 
 call s:implement('timl.lang/Function',
       \ 'call', 'timl#function#call')
@@ -261,35 +308,9 @@ for s:x in ['fn', 'defn', 'defmacro']
 endfor
 unlet s:x s:y
 
-" Section: Namespace
-
-call s:define_apply('load', 'timl#loader#all_relative')
-call s:define_apply('require', 'timl#loader#require_all')
-call s:define_apply('use', 'timl#loader#use_all')
-call s:define_call('create-ns', 'timl#namespace#create')
-call s:define_call('find-ns', 'timl#namespace#find')
-call s:define_call('the-ns', 'timl#namespace#the')
-call s:define_call('ns-name', 'timl#namespace#name')
-call s:define_call('all-ns', 'timl#namespace#all')
-call s:define_call('in-ns', 'timl#namespace#select')
-call s:define_call('refer', 'timl#namespace#refer')
-call s:define_call('alias', 'timl#namespace#alias')
-call s:define_call('intern', 'timl#namespace#intern')
-
-" Section: Var
-
-call s:implement('timl.lang/Var',
-      \ 'meta', 'timl#meta#from_attribute',
-      \ 'reset-meta!', 'timl#var#reset_meta',
-      \ 'call', 'timl#var#call',
-      \ 'funcref', 'timl#var#funcref',
-      \ 'deref', 'timl#var#get')
-call s:define_call('var-get', 'timl#var#get')
-call s:define_call('find-var', 'timl#var#find')
-call s:define_pred('var?', 'timl#var#test')
-
 " Section: Array (Vim List)
 
+call timl#type#define(s:vimns, timl#symbol('List'), g:timl#nil)
 call s:implement('vim/List',
       \ 'seq', 'timl#array#seq',
       \ 'first', 'timl#array#first',
@@ -424,6 +445,7 @@ call s:implement('timl.lang/LazySeq',
 
 " Section: Dictionary
 
+call timl#type#define(s:vimns, timl#symbol('Dictionary'), g:timl#nil)
 call s:implement('vim/Dictionary',
       \ 'seq', 'timl#dictionary#seq',
       \ 'lookup', 'timl#dictionary#lookup',

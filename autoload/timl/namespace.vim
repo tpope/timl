@@ -5,7 +5,7 @@ if exists("g:autoloaded_timl_namespace")
 endif
 let g:autoloaded_timl_namespace = 1
 
-let s:type = timl#type#core_create('Namespace')
+let g:timl#lang#Namespace = timl#type#core_create('Namespace')
 
 if !exists('g:timl#namespaces')
   let g:timl#namespaces = {}
@@ -14,7 +14,7 @@ endif
 function! timl#namespace#create(name) abort
   let name = timl#symbol#cast(a:name)
   if !has_key(g:timl#namespaces, name[0])
-    let g:timl#namespaces[name[0]] = timl#type#bless(s:type, {'name': name, 'aliases': {}, 'mappings': {}})
+    let g:timl#namespaces[name[0]] = timl#type#bless(g:timl#lang#Namespace, {'name': name, 'aliases': {}, 'mappings': {}})
   endif
   let ns = g:timl#namespaces[name[0]]
   return ns
@@ -108,7 +108,7 @@ function! timl#namespace#maybe_resolve(ns, sym, ...)
   return a:0 ? a:1 : g:timl#nil
 endfunction
 
-let s:var_type = timl#type#core_create('Var')
+let g:timl#lang#Var = timl#type#core_create('Var')
 function! timl#namespace#intern(ns, name, ...)
   let ns = timl#namespace#the(a:ns)
   let str = ns.name[0].'/'.timl#symbol#cast(a:name)[0]
@@ -121,7 +121,7 @@ function! timl#namespace#intern(ns, name, ...)
     let var = ns.mappings[a:name[0]]
     let var.meta = meta
   else
-    let var = timl#type#bless(s:type, {'ns': ns, 'str': str, 'munged': munged, 'location': 'g:'.munged, 'meta': meta})
+    let var = timl#type#bless(g:timl#lang#Namespace, {'ns': ns, 'str': str, 'munged': munged, 'location': 'g:'.munged, 'meta': meta})
   endif
   if a:0
     unlet! g:{munged}

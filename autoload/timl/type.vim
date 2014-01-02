@@ -5,10 +5,19 @@ if exists("g:autoloaded_timl_type")
 endif
 let g:autoloaded_timl_type = 1
 
+function! s:freeze(...) abort
+  return a:000
+endfunction
+
+if !exists('g:timl#nil')
+  let g:timl#nil = s:freeze()
+  lockvar 1 g:timl#nil
+endif
+
 " Section: Blessing
 
 if !exists('g:timl_tag_sentinel')
-  let g:timl_tag_sentinel = ['blessed object']
+  let g:timl_tag_sentinel = s:freeze('blessed object')
   lockvar 1 g:timl_tag_sentinel
 endif
 
@@ -28,14 +37,12 @@ function! timl#type#core_create(name, ...) abort
   let name = 'timl.lang/' . a:name
   let blessing = timl#type#intern(name)
   let obj = {"blessing": blessing, "str": name}
-  if a:0
-    let obj.slots = a:1
-  endif
+  let obj.slots = a:0 ? a:1 : g:timl#nil
   return timl#type#bless(s:type_type, obj)
 endfunction
 
 function! timl#type#constructor(_) dict abort
-  if get(self, 'slots') is# 0
+  if get(self, 'slots') is# g:timl#nil
     throw 'timl: constructor not implemented'
   endif
   if len(a:_) != len(self.slots)
@@ -48,11 +55,11 @@ function! timl#type#constructor(_) dict abort
   return timl#type#bless(self, object)
 endfunction
 
-let s:type_type = {"blessing": timl#type#intern('timl.lang/Type'), "str": "timl.lang/Type"}
+let s:type_type = {"blessing": timl#type#intern('timl.lang/Type'), "str": "timl.lang/Type", "slots": g:timl#nil}
 function! timl#type#define(ns, var, slots) abort
   let str = timl#namespace#name(a:ns).name . '/' . timl#symbol#cast(a:var).name
   let type = timl#type#bless(s:type_type, {
-        \ 'slots': map(timl#ary(a:slots), 'timl#symbol#cast(v:val).name'),
+        \ 'slots': a:slots is# g:timl#nil ? g:timl#nil : map(timl#ary(a:slots), 'timl#symbol#cast(v:val).name'),
         \ 'str': str,
         \ 'blessing': timl#type#intern(str),
         \ '__call__': function('timl#type#constructor')})

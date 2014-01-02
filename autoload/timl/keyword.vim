@@ -9,11 +9,11 @@ if !exists('s:keywords')
   let s:keywords = {}
 endif
 
-let s:type = timl#type#core_create('Keyword')
+let g:timl#lang#Keyword = timl#type#core_create('Keyword')
 function! timl#keyword#intern(str) abort
   if !has_key(s:keywords, a:str)
     let end = matchend(a:str, '^\%(&\=\w:\|\$\|&\%($\|form$\|env$\)\@!\|[^/]*/\).\@=')
-    let keyword = timl#type#bless(s:type, {
+    let keyword = timl#type#bless(g:timl#lang#Keyword, {
           \ '0': a:str,
           \ 'str': a:str,
           \ 'namespace': end == -1 ? '' : a:str[0 : end-(a:str[end-1] ==# '/' ? 2 : 1)],
@@ -25,7 +25,7 @@ function! timl#keyword#intern(str) abort
 endfunction
 
 function! timl#keyword#test(keyword) abort
-  return type(a:keyword) == type({}) && get(a:keyword, '__tag__') is# s:type.blessing
+  return type(a:keyword) == type({}) && get(a:keyword, '__tag__') is# g:timl#lang#Keyword.blessing
 endfunction
 
 function! timl#keyword#cast(keyword) abort
