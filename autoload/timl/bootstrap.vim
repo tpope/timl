@@ -465,6 +465,7 @@ call s:implement('timl.lang/HashMap',
 
 call s:define_pred('map?', 'timl#map#test')
 call s:define_apply('hash-map', 'timl#map#create')
+call s:define_call('zipmap', 'timl#map#zip')
 
 " Section: Hash Set
 

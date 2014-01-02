@@ -45,6 +45,17 @@ function! timl#map#create(_) abort
   return map
 endfunction
 
+function! timl#map#zip(keys, vals) abort
+  let _ = {}
+  let args = []
+  let [_.keys, _.vals] = [timl#coll#seq(a:keys), timl#coll#seq(a:vals)]
+  while _.keys isnot# g:timl#nil && _.vals isnot# g:timl#nil
+    call extend(args, [timl#coll#first(_.keys), timl#coll#first(_.vals)])
+    let [_.keys, _.vals] = [timl#coll#next(_.keys), timl#coll#next(_.vals)]
+  endwhile
+  return timl#map#create(args)
+endfunction
+
 function! timl#map#soft_coerce(coll) abort
   if timl#type#canp(a:coll, g:timl#core#more)
     return timl#map#create(timl#ary(a:coll))
