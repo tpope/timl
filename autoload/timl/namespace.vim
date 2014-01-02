@@ -74,14 +74,14 @@ function! timl#namespace#alias(alias, name) abort
 endfunction
 
 function! timl#namespace#find(name) abort
-  return get(g:timl#namespaces, timl#str(a:name), g:timl#nil)
+  return get(g:timl#namespaces, type(a:name) == type('') ? a:name : a:name.name, g:timl#nil)
 endfunction
 
 function! timl#namespace#the(name) abort
   if timl#type#string(a:name) ==# 'timl.lang/Namespace'
     return a:name
   endif
-  let name = timl#str(a:name)
+  let name = type(a:name) == type('') ? a:name : a:name.name
   if has_key(g:timl#namespaces, name)
     return g:timl#namespaces[name]
   endif
