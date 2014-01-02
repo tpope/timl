@@ -501,6 +501,7 @@ call s:define_apply('hash-set', 'timl#set#coerce')
 " Section: Collection
 
 call s:define_pred('coll?', 'timl#coll#test')
+call s:define_pred('seq?', 'timl#coll#seqp')
 call s:define_pred('sequential?', 'timl#coll#sequentialp')
 call s:define_pred('chunked-seq?', 'timl#coll#chunked_seqp')
 call s:define_call('count', 'timl#coll#count')

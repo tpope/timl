@@ -51,18 +51,6 @@ function! timl#printer#string(x)
   elseif type(a:x) == type('')
     return '"'.substitute(a:x, "[\n\r\t\"\\\\]", '\=get(s:escapes, submatch(0))', 'g').'"'
 
-  elseif timl#cons#test(a:x)
-    let acc = []
-    let _ = {'x': a:x}
-    while _.x isnot# g:timl#nil
-      call add(acc, timl#printer#string(timl#coll#first(_.x)))
-      let _.x = timl#coll#next(_.x)
-    endwhile
-    if _.x isnot# g:timl#nil
-      call extend(acc, ['.', timl#printer#string(_.x)])
-    endif
-    return '('.join(acc, ' ').')'
-
   elseif type(a:x) == type([])
     return '#*['.join(map(a:x[:], 'timl#printer#string(v:val)'), ' ') . ']'
 
@@ -98,7 +86,7 @@ function! timl#printer#string(x)
     endwhile
     return '#{' . join(acc, ' ') . '}'
 
-  elseif timl#type#canp(a:x, g:timl#core#more)
+  elseif timl#coll#seqp(a:x)
     let _ = {'seq': timl#coll#seq(a:x)}
     let output = []
     while _.seq isnot# g:timl#nil
@@ -106,9 +94,6 @@ function! timl#printer#string(x)
       let _.seq = timl#coll#next(_.seq)
     endwhile
     return '('.join(output, ' ').')'
-
-  elseif timl#type#canp(a:x, g:timl#core#seq)
-    return timl#printer#string(timl#coll#seq(a:x))
 
   elseif type(a:x) == type(function('tr'))
     return '#*'.substitute(join([a:x]), '[{}]', '', 'g')

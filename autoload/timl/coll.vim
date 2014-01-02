@@ -21,6 +21,11 @@ function! timl#coll#sequentialp(coll) abort
   return a:coll isnot# g:timl#nil && timl#type#canp(a:coll, g:timl#core#more)
 endfunction
 
+function! timl#coll#seqp(obj) abort
+  return timl#type#string(a:obj) =~# '^timl\.lang/\%(Cons\|EmptyList\)$' ||
+        \ (timl#type#canp(a:obj, g:timl#core#more) && !timl#vector#test(a:obj))
+endfunction
+
 function! timl#coll#first(coll) abort
   if timl#cons#test(a:coll)
     return a:coll.car

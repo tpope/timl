@@ -49,7 +49,7 @@ endfunction
 
 let s:kmacro = timl#keyword#intern('macro')
 function! timl#compiler#macroexpand_1(form) abort
-  if timl#cons#test(a:form) && timl#symbol#test(timl#coll#first(a:form)) && !timl#compiler#specialp(timl#coll#first(a:form))
+  if timl#coll#seqp(a:form) && timl#symbol#test(timl#coll#first(a:form)) && !timl#compiler#specialp(timl#coll#first(a:form))
     let var = timl#namespace#maybe_resolve(g:timl#core#_STAR_ns_STAR_, timl#coll#first(a:form))
     if var isnot# g:timl#nil && timl#truth(timl#coll#get(var.meta, s:kmacro))
       return timl#call(timl#var#get(var), [a:form, {}] + timl#ary(timl#coll#next(a:form)))
@@ -132,7 +132,7 @@ function! timl#compiler#serialize(x)
     endwhile
     return 'timl#set#create('.timl#compiler#serialize(keyvals).')'
 
-  elseif timl#cons#test(a:x)
+  elseif timl#type#string(a:x) ==# 'timl.lang/Cons'
     return 'timl#cons#create('
           \ . timl#compiler#serialize(a:x.car).','
           \ . timl#compiler#serialize(a:x.cdr).','
@@ -416,7 +416,7 @@ function! s:expr_sf_fn_STAR_(file, env, form) abort
   let temp = s:let_tmp(a:file, a:env, 'fn', 'timl#function#birth(copy(locals)' . (empty(name) ? '' : ', timl#symbol#intern('.string(name).')').')')
   if timl#vector#test(timl#coll#first(_.next))
     call s:one_fn(a:file, env, _.next, name, temp.".__call__", 1)
-  elseif timl#cons#test(timl#coll#first(_.next))
+  elseif timl#coll#sequentialp(timl#coll#first(_.next))
     let c = char2nr('a')
     let fns = {}
     while _.next isnot# g:timl#nil
@@ -478,7 +478,7 @@ function! s:emit_sf_try(file, env, form) abort
   let _.seq = timl#coll#next(a:form)
   let body = []
   while _.seq isnot# g:timl#nil
-    if timl#cons#test(timl#coll#first(_.seq))
+    if timl#coll#seqp(timl#coll#first(_.seq))
       let _.sym = timl#coll#ffirst(_.seq)
       if timl#symbol#is(_.sym, 'catch') || timl#symbol#is(_.sym, 'finally')
         break
@@ -494,7 +494,7 @@ function! s:emit_sf_try(file, env, form) abort
   endif
   while _.seq isnot# g:timl#nil
     let _.first = timl#coll#first(_.seq)
-    if timl#cons#test(_.first) && timl#symbol#is(timl#coll#first(_.first), 'catch')
+    if timl#coll#seqp(_.first) && timl#symbol#is(timl#coll#first(_.first), 'catch')
       call s:emitln(a:file, 'catch /'.escape(timl#coll#fnext(_.first), '/').'/')
       let var = timl#coll#first(timl#coll#nnext(_.first))
       let env = s:copy_locals(a:env)
@@ -503,7 +503,7 @@ function! s:emit_sf_try(file, env, form) abort
         call s:emitln(a:file, 'let '.env.locals[var[0]].' = timl#exception#build(v:exception, v:throwpoint)')
       endif
       call s:emit_sf_do(a:file, env, timl#cons#create(timl#symbol('do'), timl#coll#next(timl#coll#nnext(_.first))))
-    elseif timl#cons#test(_.first) && timl#symbol#is(timl#coll#first(_.first), 'finally')
+    elseif timl#coll#seqp(_.first) && timl#symbol#is(timl#coll#first(_.first), 'finally')
       call s:emitln(a:file, 'finally')
       call s:emit_sf_do(a:file, s:with_context(a:env, 'statement'), timl#cons#create(timl#symbol('do'), timl#coll#next(_.first)))
     else
@@ -539,7 +539,7 @@ function! s:expr_sf_set_BANG_(file, env, form) abort
       call s:emitln(a:file, 'endif')
     endif
     return var
-  elseif timl#cons#test(target) && timl#symbol#is(timl#coll#first(target), '.')
+  elseif timl#coll#seqp(target) && timl#symbol#is(timl#coll#first(target), '.')
     let key = substitute(timl#str(timl#coll#first(timl#coll#nnext(target))), '^-', '', '')
     let target2 = timl#symbol#cast(timl#coll#fnext(target))
     if has_key(a:env.locals, target2[0])
@@ -608,7 +608,7 @@ endfunction
 function! s:emit(file, env, form) abort
   let env = a:env
   try
-    if timl#cons#test(a:form)
+    if timl#coll#seqp(a:form)
       if get(a:form, 'meta', g:timl#nil) isnot# g:timl#nil && has_key(a:form.meta, 'line')
         let env = copy(env)
         let env.line = a:form.meta.line
@@ -638,9 +638,11 @@ function! s:emit(file, env, form) abort
           let args = s:expr_args(a:file, env, timl#coll#next(a:form))
           let expr = resolved.'.__call__(['.args.'])'
         endif
+      elseif First is# g:timl#nil && timl#coll#count(a:form) ==# 0
+        let expr = timl#compiler#serialize(a:form)
       else
         let args = s:expr_args(a:file, env, timl#coll#next(a:form))
-        if timl#cons#test(First) && timl#symbol#is(timl#coll#first(First), 'function')
+        if timl#coll#seqp(First) && timl#symbol#is(timl#coll#first(First), 'function')
           let expr = timl#munge(timl#coll#fnext(First)).'('.args.')'
         elseif type(First) == type(function('tr'))
           let expr = join([First]).'('.args.')'

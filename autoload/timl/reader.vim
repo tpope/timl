@@ -288,7 +288,7 @@ function! s:sqexpandlist(seq, gensyms) abort
   let _ = {'seq': timl#coll#seq(a:seq)}
   while _.seq isnot# g:timl#nil
     let _.this = timl#coll#first(_.seq)
-    if timl#cons#test(_.this)
+    if timl#coll#seqp(_.this)
       if timl#coll#first(_.this) is# s:unquote
         call add(result, timl#list(s:list, timl#coll#first(timl#coll#rest(_.this))))
       elseif timl#coll#first(_.this) is# s:unquote_splicing
