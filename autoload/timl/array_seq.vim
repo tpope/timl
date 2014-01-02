@@ -5,8 +5,9 @@ if exists("g:autoloaded_timl_array_seq")
 endif
 let g:autoloaded_timl_array_seq = 1
 
+let s:type = timl#type#intern('timl.lang/ArraySeq')
 function! timl#array_seq#create(array, ...) abort
-  let cc = timl#type#bless('timl.lang/ArraySeq', {
+  let cc = timl#type#bless(s:type, {
         \ 'array': a:array,
         \ 'meta': g:timl#nil,
         \ 'i': a:0 ? a:1 : 0})

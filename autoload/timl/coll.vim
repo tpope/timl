@@ -17,8 +17,8 @@ function! timl#coll#emptyp(seq) abort
   return timl#coll#seq(a:seq) is# g:timl#nil
 endfunction
 
-function! timl#coll#seqp(coll) abort
-  return timl#type#canp(a:coll, g:timl#core#seq)
+function! timl#coll#sequentialp(coll) abort
+  return a:coll isnot# g:timl#nil && timl#type#canp(a:coll, g:timl#core#more)
 endfunction
 
 function! timl#coll#first(coll) abort

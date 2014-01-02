@@ -584,7 +584,7 @@ endfunction
 function! s:expr_dot(file, env, form) abort
   let val = s:expr(a:file, a:env, timl#coll#fnext(a:form))
   let key = timl#coll#first(timl#coll#nnext(a:form))
-  if timl#coll#seqp(key)
+  if timl#coll#sequentialp(key)
     return val.'['.timl#compiler#serialize(timl#str(timl#coll#first(key))).']('.s:expr_args(a:file, a:env, timl#coll#next(key)).')'
   else
     return val.'['.timl#compiler#serialize(timl#str(key)).']'

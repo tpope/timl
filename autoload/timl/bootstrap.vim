@@ -26,12 +26,13 @@ function! s:implement(type, ...) abort
   endfor
 endfunction
 
+let s:fn_type = timl#type#intern('timl.lang/Function')
 function! s:intern_fn(name, apply, ...) abort
   let fn = {'name': a:name, 'ns': s:ns}
   if a:0
     call extend(fn, a:1)
   endif
-  call timl#type#bless('timl.lang/Function', fn)
+  call timl#type#bless(s:fn_type, fn)
   let fn.__call__ = s:function(a:apply)
   call timl#namespace#intern(s:ns, a:name, fn)
 endfunction
@@ -206,9 +207,10 @@ call s:define_pred('nil?', 's:nilp')
 
 " Section: Boolean
 
+let s:boolean_type = timl#type#intern('timl.lang/Boolean')
 if !exists('g:timl#false')
-  let g:timl#false = timl#type#bless('timl.lang/Boolean', {'value': 0})
-  let g:timl#true = timl#type#bless('timl.lang/Boolean', {'value': 1})
+  let g:timl#false = timl#type#bless(s:boolean_type, {'value': 0})
+  let g:timl#true = timl#type#bless(s:boolean_type, {'value': 1})
   lockvar 1 g:timl#false g:timl#true
 endif
 
@@ -499,6 +501,7 @@ call s:define_apply('hash-set', 'timl#set#coerce')
 " Section: Collection
 
 call s:define_pred('coll?', 'timl#coll#test')
+call s:define_pred('sequential?', 'timl#coll#sequentialp')
 call s:define_pred('chunked-seq?', 'timl#coll#chunked_seqp')
 call s:define_call('count', 'timl#coll#count')
 call s:define_call('get', 'timl#coll#get')

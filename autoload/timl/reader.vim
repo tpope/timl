@@ -75,12 +75,13 @@ function! s:add_meta(data, meta) abort
   return timl#with_meta(a:data, _.meta)
 endfunction
 
+let s:map_type = timl#type#intern('timl.lang/HashMap')
 function! s:read(port, ...) abort
   let port = a:port
   let [token, pos, line] = s:read_token(a:port)
   let wanted = a:0 ? a:1 : ''
   if token ==# '('
-    let meta = timl#type#bless('timl.lang/HashMap', {'line': line})
+    let meta = timl#type#bless(s:map_type, {'line': line})
     return timl#list#create(s:read_until(port, ')'), meta)
   elseif token == '['
     return timl#vector#claim(s:read_until(port, ']'))

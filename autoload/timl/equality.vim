@@ -32,7 +32,7 @@ endfunction
 function! timl#equality#seq(x, y) abort
   if a:x is# a:y
     return g:timl#true
-  elseif a:y is# g:timl#nil || !timl#coll#seqp(a:y)
+  elseif !timl#coll#sequentialp(a:y)
     return g:timl#false
   endif
   let _ = {'x': timl#coll#seq(a:x), 'y': timl#coll#seq(a:y)}

@@ -106,6 +106,7 @@ function! timl#namespace#maybe_resolve(ns, sym, ...)
   return a:0 ? a:1 : g:timl#nil
 endfunction
 
+let s:var_type = timl#type#intern('timl.lang/Var')
 function! timl#namespace#intern(ns, name, ...)
   let ns = timl#namespace#the(a:ns)
   let str = ns.name[0].'/'.timl#symbol#cast(a:name)[0]
@@ -118,7 +119,7 @@ function! timl#namespace#intern(ns, name, ...)
     let var = ns.mappings[a:name[0]]
     let var.meta = meta
   else
-    let var = timl#type#bless('timl.lang/Var', {'ns': ns, 'str': str, 'munged': munged, 'location': 'g:'.munged, 'meta': meta})
+    let var = timl#type#bless(s:type, {'ns': ns, 'str': str, 'munged': munged, 'location': 'g:'.munged, 'meta': meta})
   endif
   if a:0
     unlet! g:{munged}

@@ -116,10 +116,6 @@ function! timl#seq(coll) abort
   return timl#coll#seq(a:coll)
 endfunction
 
-function! timl#seqp(coll) abort
-  return timl#coll#seqp(a:coll)
-endfunction
-
 function! timl#first(coll) abort
   return timl#coll#first(a:coll)
 endfunction

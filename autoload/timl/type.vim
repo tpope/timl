@@ -35,8 +35,9 @@ function! timl#type#constructor(_) dict abort
   return timl#type#bless(self.name.str, object)
 endfunction
 
+let s:type_type = timl#type#intern('timl.lang/Type')
 function! timl#type#define(ns, var, slots) abort
-  let type = timl#type#bless('timl.lang/Type', {
+  let type = timl#type#bless(s:type_type, {
         \ 'slots': a:slots,
         \ 'name': timl#symbol(g:timl#core#_STAR_ns_STAR_.name.name . '/' . a:var.name),
         \ '__call__': function('timl#type#constructor')})
@@ -74,10 +75,10 @@ endfunction
 let s:proto = {
       \ '__call__': function('timl#type#dispatch_call'),
       \ '__flag__': g:timl_tag_sentinel}
-function! timl#type#bless(class, ...) abort
+function! timl#type#bless(tag, ...) abort
   let obj = a:0 ? a:1 : {}
   call extend(obj, s:proto, 'keep')
-  let obj.__tag__ = type(a:class) == type('') ? timl#type#intern(a:class) : a:class
+  let obj.__tag__ = a:tag
   return obj
 endfunction
 
@@ -200,6 +201,7 @@ endfunction
 
 " Section: Method Creation
 
+let s:multifn_type = timl#type#intern('timl.lang/MultiFn')
 function! timl#type#define_method(ns, name, type, fn) abort
   let var = timl#namespace#maybe_resolve(a:ns, timl#symbol#cast(a:name))
   if var is# g:timl#nil || timl#type#string(g:{var.munged}) isnot# 'timl.lang/MultiFn'
@@ -207,7 +209,7 @@ function! timl#type#define_method(ns, name, type, fn) abort
     if !empty(a:name.namespace)
       throw "timl: no such method ".a:name.str
     endif
-    let fn = timl#type#bless('timl.lang/MultiFn', {
+    let fn = timl#type#bless(s:multifn_type, {
           \ '__call__': function('timl#type#apply'),
           \ 'ns': a:ns,
           \ 'name': a:name,
