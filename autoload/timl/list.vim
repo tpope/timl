@@ -36,11 +36,11 @@ function! timl#list#empty() abort
 endfunction
 
 function! timl#list#emptyp(obj) abort
-  return type(a:obj) == type({}) && get(a:obj, '__tag__') is# s:empty_type.blessing
+  return type(a:obj) == type({}) && get(a:obj, '__type__') is# s:empty_type
 endfunction
 
 function! timl#list#test(obj)
-  return type(a:obj) == type({}) && (get(a:obj, '__tag__') is# s:cons_type.blessing || get(a:obj, '__tag__') is# s:empty_type.blessing)
+  return type(a:obj) == type({}) && (get(a:obj, '__type__') is# s:cons_type || get(a:obj, '__type__') is# s:empty_type)
 endfunction
 
 let s:empty_type = timl#type#core_define('EmptyList', ['meta'], {

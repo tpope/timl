@@ -97,7 +97,6 @@ call s:define_pred('var?', 'timl#var#test')
 
 " Section: Type Sytem
 
-call s:define_call('blessing', 'timl#type#keyword')
 call s:define_pred('isa?', 'timl#type#isap')
 call s:define_pred('can?', 'timl#type#canp')
 

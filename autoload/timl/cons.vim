@@ -6,7 +6,7 @@ endif
 let g:autoloaded_timl_cons = 1
 
 function! timl#cons#test(obj) abort
-  return type(a:obj) == type({}) && get(a:obj, '__tag__') is# s:type.blessing
+  return type(a:obj) == type({}) && get(a:obj, '__type__') is# s:type
 endfunction
 
 function! timl#cons#create(car, cdr, ...) abort

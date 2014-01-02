@@ -25,20 +25,19 @@ if !exists('s:types')
   let s:types = {}
 endif
 
-function! timl#type#intern(type) abort
-  if !has_key(s:types, a:type)
-    let s:types[a:type] = [a:type]
-    lockvar 1 s:types[a:type]
+function! timl#type#create(name, ...) abort
+  if !has_key(s:types, a:name)
+    let s:types[a:name] = timl#type#bless(s:type_type, {
+          \ 'str': a:name,
+          \ 'slots': g:timl#nil,
+          \ '__call__': function('timl#type#constructor')})
   endif
-  return s:types[a:type]
+  let s:types[a:name].slots = a:0 ? a:1 : g:timl#nil
+  return s:types[a:name]
 endfunction
 
 function! timl#type#core_create(name, ...) abort
-  let name = 'timl.lang/' . a:name
-  let blessing = timl#type#intern(name)
-  let obj = {"blessing": blessing, "str": name}
-  let obj.slots = a:0 ? a:1 : g:timl#nil
-  return timl#type#bless(s:type_type, obj)
+  return timl#type#create('timl.lang/'.a:name, a:0 ? a:1 : g:timl#nil)
 endfunction
 
 function! timl#type#core_define(name, slots, methods) abort
@@ -66,15 +65,14 @@ function! timl#type#constructor(_) dict abort
   return timl#type#bless(self, object)
 endfunction
 
-let s:type_type = {"blessing": timl#type#intern('timl.lang/Type'), "str": "timl.lang/Type", "slots": g:timl#nil}
+let s:type_type = {'str': 'timl.lang/Type', 'slots': g:timl#nil, '__call__': function('timl#type#constructor')}
 function! timl#type#define(ns, var, slots) abort
   let str = timl#namespace#name(a:ns).name . '/' . timl#symbol#cast(a:var).name
-  let type = timl#type#bless(s:type_type, {
-        \ 'slots': a:slots is# g:timl#nil ? g:timl#nil : map(timl#array#coerce(a:slots), 'timl#symbol#cast(v:val).name'),
-        \ 'str': str,
-        \ 'blessing': timl#type#intern(str),
-        \ '__call__': function('timl#type#constructor')})
-  return timl#namespace#intern(a:ns, a:var, type)
+  let type = timl#type#create(str)
+  if a:slots isnot# g:timl#nil
+    let s:types[str].slots = map(timl#array#coerce(a:slots), 'timl#symbol#cast(v:val).name')
+  endif
+  return timl#namespace#intern(a:ns, a:var, s:types[str])
 endfunction
 
 let s:types = {
@@ -95,23 +93,19 @@ function! timl#type#string(val) abort
     return 'timl.lang/Nil'
   elseif type ==# 'vim/Dictionary'
     if get(a:val, '__flag__') is g:timl_tag_sentinel
-      return a:val.__tag__[0]
+      return a:val.__type__.str
     endif
   endif
   return type
 endfunction
 
-function! timl#type#keyword(val) abort
-  return timl#keyword#intern(timl#type#string(a:val))
-endfunction
-
 let s:proto = {
       \ '__call__': function('timl#type#dispatch_call'),
       \ '__flag__': g:timl_tag_sentinel}
-function! timl#type#bless(tag, ...) abort
+function! timl#type#bless(type, ...) abort
   let obj = a:0 ? a:1 : {}
   call extend(obj, s:proto, 'keep')
-  let obj.__tag__ = a:tag.blessing
+  let obj.__type__ = a:type
   return obj
 endfunction
 
