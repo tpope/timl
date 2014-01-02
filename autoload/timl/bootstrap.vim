@@ -298,6 +298,8 @@ call s:define_apply('array', 'timl#array#coerce')
 
 " Section: Vector
 
+call timl#type#define(s:langns, timl#symbol('Vector'), g:timl#nil)
+
 call s:implement('timl.lang/Vector',
       \ 'seq', 'timl#vector#seq',
       \ 'first', 'timl#vector#first',
@@ -371,6 +373,8 @@ call s:define_pred('dict?', 'timl#dictionary#test')
 call s:define_apply('dict', 'timl#dictionary#create')
 
 " Section: Hash Map
+
+call timl#type#define(s:langns, timl#symbol('HashMap'), g:timl#nil)
 
 call s:implement('timl.lang/HashMap',
       \ 'seq', 'timl#map#seq',
