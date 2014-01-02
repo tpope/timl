@@ -5,7 +5,7 @@ if exists('g:autoloaded_timl_exception')
 endif
 let g:autoloaded_timl_exception = 1
 
-let s:type = timl#type#intern('timl.lang/Exception')
+let s:type = timl#type#core_create('Exception')
 function! timl#exception#build(exception, throwpoint)
   let dict = {"exception": a:exception, "throwpoint": a:throwpoint}
   let dict.line = +matchstr(a:throwpoint, '\d\+$')

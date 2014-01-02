@@ -5,7 +5,7 @@ if exists("g:autoloaded_timl_cons")
 endif
 let g:autoloaded_timl_cons = 1
 
-let s:type = timl#type#intern('timl.lang/Cons')
+let s:type = timl#type#core_create('Cons', ['car', 'cdr', 'meta'])
 
 function! timl#cons#test(obj) abort
   return type(a:obj) == type({}) && get(a:obj, '__tag__') is# s:type

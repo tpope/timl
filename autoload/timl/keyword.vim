@@ -9,7 +9,7 @@ if !exists('s:keywords')
   let s:keywords = {}
 endif
 
-let s:type = timl#type#intern('timl.lang/Keyword')
+let s:type = timl#type#core_create('Keyword')
 function! timl#keyword#intern(str) abort
   if !has_key(s:keywords, a:str)
     let end = matchend(a:str, '^\%(&\=\w:\|\$\|&\%($\|form$\|env$\)\@!\|[^/]*/\).\@=')

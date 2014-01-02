@@ -24,6 +24,12 @@ function! timl#type#intern(type) abort
   return s:types[a:type]
 endfunction
 
+function! timl#type#core_create(name, ...) abort
+  let name = 'timl.lang/' . a:name
+  let blessing = timl#type#intern(name)
+  return blessing
+endfunction
+
 function! timl#type#constructor(_) dict abort
   if len(a:_) != len(self.slots)
     throw 'timl: arity error'
@@ -37,7 +43,7 @@ endfunction
 
 let s:type_type = timl#type#intern('timl.lang/Type')
 function! timl#type#define(ns, var, slots) abort
-  let str = a:ns.name.name . '/' . a:var.name
+  let str = timl#namespace#name(a:ns).name . '/' . timl#symbol#cast(a:var).name
   let type = timl#type#bless(s:type_type, {
         \ 'slots': a:slots,
         \ 'name': timl#symbol#intern(str),
@@ -203,7 +209,7 @@ endfunction
 
 " Section: Method Creation
 
-let s:multifn_type = timl#type#intern('timl.lang/MultiFn')
+let s:multifn_type = timl#type#core_create('MultiFn')
 function! timl#type#define_method(ns, name, type, fn) abort
   let var = timl#namespace#maybe_resolve(a:ns, timl#symbol#cast(a:name))
   if var is# g:timl#nil || timl#type#string(g:{var.munged}) isnot# 'timl.lang/MultiFn'

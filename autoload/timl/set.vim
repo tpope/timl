@@ -25,8 +25,8 @@ function! timl#set#key(key)
   endif
 endfunction
 
-let s:type = timl#type#intern('timl.lang/HashSet')
-let s:transient_type = timl#type#intern('timl.lang/TransientHashSet')
+let s:type = timl#type#core_create('HashSet')
+let s:transient_type = timl#type#core_create('TransientHashSet')
 function! timl#set#coerce(seq) abort
   if timl#set#test(a:seq)
     return a:seq

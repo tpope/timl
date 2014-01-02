@@ -5,7 +5,7 @@ if exists('g:autoloaded_timl_function')
 endif
 let g:autoloaded_timl_function = 1
 
-let s:type = timl#type#intern('timl.lang/Function')
+let s:type = timl#type#core_create('Function')
 
 function! timl#function#unimplemented(...) abort
   throw 'timl: unimplemented'

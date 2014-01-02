@@ -9,7 +9,7 @@ function! timl#vector#test(obj) abort
   return timl#type#canp(a:obj, g:timl#core#nth)
 endfunction
 
-let s:type = timl#type#intern('timl.lang/Vector')
+let s:type = timl#type#core_create('Vector')
 function! timl#vector#claim(array) abort
   lockvar 1 a:array
   let vector = timl#type#bless(s:type, {'array': a:array})

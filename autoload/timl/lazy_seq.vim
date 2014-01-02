@@ -6,7 +6,7 @@ endif
 let g:autoloaded_timl_lazy_seq = 1
 
 let s:placeholder = {}
-let s:type = timl#type#intern('timl.lang/LazySeq')
+let s:type = timl#type#core_create('LazySeq', ['fn', 'val', 'seq', 'meta'])
 function! timl#lazy_seq#create(fn) abort
   return timl#type#bless(s:type, {'fn': a:fn, 'val': g:timl#nil, 'seq': s:placeholder, 'meta': g:timl#nil})
 endfunction

@@ -75,7 +75,7 @@ function! s:add_meta(data, meta) abort
   return timl#with_meta(a:data, _.meta)
 endfunction
 
-let s:map_type = timl#type#intern('timl.lang/HashMap')
+let s:map_type = timl#type#core_create('HashMap')
 function! s:read(port, ...) abort
   let port = a:port
   let [token, pos, line] = s:read_token(a:port)

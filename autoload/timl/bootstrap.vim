@@ -26,7 +26,7 @@ function! s:implement(type, ...) abort
   endfor
 endfunction
 
-let s:fn_type = timl#type#intern('timl.lang/Function')
+let s:fn_type = timl#type#core_create('Function')
 function! s:intern_fn(name, apply, ...) abort
   let fn = {'name': a:name, 'ns': s:ns}
   if a:0
@@ -207,7 +207,7 @@ call s:define_pred('nil?', 's:nilp')
 
 " Section: Boolean
 
-let s:boolean_type = timl#type#intern('timl.lang/Boolean')
+let s:boolean_type = timl#type#core_create('Boolean')
 if !exists('g:timl#false')
   let g:timl#false = timl#type#bless(s:boolean_type, {'value': 0})
   let g:timl#true = timl#type#bless(s:boolean_type, {'value': 1})

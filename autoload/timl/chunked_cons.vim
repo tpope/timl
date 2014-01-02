@@ -5,7 +5,7 @@ if exists("g:autoloaded_timl_chunked_cons")
 endif
 let g:autoloaded_timl_chunked_cons = 1
 
-let s:type = timl#type#intern('timl.lang/ChunkedCons')
+let s:type = timl#type#core_create('ChunkedCons', ['array', 'rest', 'i', 'meta'])
 function! timl#chunked_cons#create(array, rest, ...) abort
   lockvar 1 a:array
   let cc = timl#type#bless(s:type, {

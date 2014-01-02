@@ -5,7 +5,7 @@ if exists("g:autoloaded_timl_list")
 endif
 let g:autoloaded_timl_list = 1
 
-let s:cons_type = timl#type#intern('timl.lang/Cons')
+let s:cons_type = timl#type#core_create('Cons', ['car', 'cdr', 'meta'])
 
 function! timl#list#create(array, ...) abort
   if a:0 && empty(a:array)
@@ -35,7 +35,7 @@ function! timl#list#empty() abort
   return s:empty
 endfunction
 
-let s:empty_type = timl#type#intern('timl.lang/EmptyList')
+let s:empty_type = timl#type#core_create('EmptyList', ['meta'])
 if !exists('s:empty')
   let s:empty = timl#type#bless(s:empty_type, {'meta': g:timl#nil})
   lockvar 1 s:empty

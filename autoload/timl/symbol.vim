@@ -57,4 +57,4 @@ function! timl#symbol#gen(...)
   return timl#symbol((a:0 ? a:1 : 'G__').s:id)
 endfunction
 
-let s:type = timl#type#intern('timl.lang/Symbol')
+let s:type = timl#type#core_create('Symbol')

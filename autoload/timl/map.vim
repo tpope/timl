@@ -33,7 +33,7 @@ function! timl#map#dekey(key)
   endif
 endfunction
 
-let s:type = timl#type#intern('timl.lang/HashMap')
+let s:type = timl#type#core_create('HashMap')
 function! timl#map#create(_) abort
   let keyvals = len(a:_) == 1 ? a:_[0] : a:_
   let map = {}

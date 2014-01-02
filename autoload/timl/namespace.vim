@@ -5,7 +5,7 @@ if exists("g:autoloaded_timl_namespace")
 endif
 let g:autoloaded_timl_namespace = 1
 
-let s:type = timl#type#intern('timl.lang/Namespace')
+let s:type = timl#type#core_create('Namespace')
 
 if !exists('g:timl#namespaces')
   let g:timl#namespaces = {}
@@ -106,7 +106,7 @@ function! timl#namespace#maybe_resolve(ns, sym, ...)
   return a:0 ? a:1 : g:timl#nil
 endfunction
 
-let s:var_type = timl#type#intern('timl.lang/Var')
+let s:var_type = timl#type#core_create('Var')
 function! timl#namespace#intern(ns, name, ...)
   let ns = timl#namespace#the(a:ns)
   let str = ns.name[0].'/'.timl#symbol#cast(a:name)[0]
