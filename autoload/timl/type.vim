@@ -62,7 +62,7 @@ function! timl#type#string(val) abort
     return 'timl.lang/Nil'
   elseif type ==# 'vim/Dictionary'
     if get(a:val, '__flag__') is g:timl_tag_sentinel
-      return a:val['__tag__'][0]
+      return a:val.__tag__[0]
     endif
   endif
   return type
