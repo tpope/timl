@@ -32,16 +32,16 @@ endfunction
 function! timl#equality#seq(x, y) abort
   if a:x is# a:y
     return g:timl#true
-  elseif a:y is# g:timl#nil || !timl#seqp(a:y)
+  elseif a:y is# g:timl#nil || !timl#coll#seqp(a:y)
     return g:timl#false
   endif
-  let _ = {'x': timl#seq(a:x), 'y': timl#seq(a:y)}
+  let _ = {'x': timl#coll#seq(a:x), 'y': timl#coll#seq(a:y)}
   while _.x isnot# g:timl#nil && _.y isnot# g:timl#nil
-    if !timl#equalp(timl#first(_.x), timl#first(_.y))
+    if !timl#equalp(timl#coll#first(_.x), timl#coll#first(_.y))
       return g:timl#false
     endif
-    let _.x = timl#next(_.x)
-    let _.y = timl#next(_.y)
+    let _.x = timl#coll#next(_.x)
+    let _.y = timl#coll#next(_.y)
   endwhile
   return _.x is# g:timl#nil && _.y is# g:timl#nil ? g:timl#true : g:timl#false
 endfunction

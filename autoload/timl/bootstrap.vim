@@ -361,14 +361,14 @@ call s:define_pred('list?', 'timl#list#test')
 
 " Section: Seq
 
-call s:define_call('next', 'timl#next')
-call s:define_call('rest', 'timl#rest')
-call s:define_pred('empty?', 'timl#emptyp')
-call s:define_call('ffirst', 'timl#ffirst')
-call s:define_call('fnext', 'timl#fnext')
-call s:define_call('nfirst', 'timl#nfirst')
-call s:define_call('nnext', 'timl#nnext')
-call s:define_call('second', 'timl#fnext')
+call s:define_call('next', 'timl#coll#next')
+call s:define_call('rest', 'timl#coll#rest')
+call s:define_pred('empty?', 'timl#coll#emptyp')
+call s:define_call('ffirst', 'timl#coll#ffirst')
+call s:define_call('fnext', 'timl#coll#fnext')
+call s:define_call('nfirst', 'timl#coll#nfirst')
+call s:define_call('nnext', 'timl#coll#nnext')
+call s:define_call('second', 'timl#coll#fnext')
 
 " Section: Array Seq
 

@@ -38,10 +38,10 @@ function! timl#set#coerce(seq) abort
       call timl#set#conjb(dict, _.val)
     endfor
   else
-    let _.seq = timl#seq(a:seq)
+    let _.seq = timl#coll#seq(a:seq)
     while _.seq isnot# g:timl#nil
-      call timl#set#conjb(dict, timl#first(_.seq))
-      let _.seq = timl#next(_.seq)
+      call timl#set#conjb(dict, timl#coll#first(_.seq))
+      let _.seq = timl#coll#next(_.seq)
     endwhile
   endif
   return timl#set#persistentb(dict)
@@ -69,12 +69,12 @@ function! timl#set#equal(this, that)
   if timl#coll#count(a:this) !=# timl#coll#count(a:that)
     return g:timl#false
   endif
-  let _ = {'seq': timl#seq(a:this)}
+  let _ = {'seq': timl#coll#seq(a:this)}
   while _.seq isnot# g:timl#nil
-    if timl#coll#get(a:that, timl#first(_.seq), _) is# _
+    if timl#coll#get(a:that, timl#coll#first(_.seq), _) is# _
       return g:timl#false
     endif
-    let _.seq = timl#next(_.seq)
+    let _.seq = timl#coll#next(_.seq)
   endwhile
   return g:timl#true
 endfunction

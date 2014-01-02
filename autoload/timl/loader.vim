@@ -138,12 +138,12 @@ function! timl#loader#require_all(_) abort
     if timl#symbol#test(_.spec)
       call timl#loader#require(_.spec, reload)
     elseif timl#vector#test(_.spec)
-      let _.lib = timl#first(_.spec)
+      let _.lib = timl#coll#first(_.spec)
       call timl#loader#require(_.lib, reload)
-      if timl#fnext(_.spec) is# s:k_as
-        call timl#namespace#alias(timl#first(timl#nnext(_.spec)), _.lib)
-      elseif timl#fnext(_.spec) is# s:k_refer
-        let _.qualifier = timl#first(timl#nnext(_.spec))
+      if timl#coll#fnext(_.spec) is# s:k_as
+        call timl#namespace#alias(timl#coll#first(timl#coll#nnext(_.spec)), _.lib)
+      elseif timl#coll#fnext(_.spec) is# s:k_refer
+        let _.qualifier = timl#coll#first(timl#coll#nnext(_.spec))
         if _.qualifier is# s:k_all
           call timl#namespace#refer(_.lib)
         else

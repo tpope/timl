@@ -131,5 +131,5 @@ function! timl#namespace#intern(ns, name, ...)
 endfunction
 
 function! timl#namespace#all()
-  return timl#seq(values(g:timl#namespaces))
+  return timl#coll#seq(values(g:timl#namespaces))
 endfunction

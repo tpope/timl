@@ -31,10 +31,10 @@ endfunction
 
 function! timl#chunked_cons#length(this) abort
   let c = len(a:this.array) - a:this.i
-  let _ = {'next': timl#seq(a:this.rest)}
+  let _ = {'next': timl#coll#seq(a:this.rest)}
   while timl#type#string(_.next) ==# 'timl.lang/ChunkedCons'
     let c += len(_.next.array) - _.next.i
-    let _.next = timl#seq(timl#chunked_cons#chunk_rest(_.next))
+    let _.next = timl#coll#seq(timl#chunked_cons#chunk_rest(_.next))
   endwhile
   return c + timl#coll#count(_.next)
 endfunction

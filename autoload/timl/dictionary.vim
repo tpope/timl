@@ -12,12 +12,12 @@ endfunction
 function! timl#dictionary#create(_) abort
   let keyvals = len(a:_) == 1 ? a:_[0] : a:_
   if timl#map#test(keyvals)
-    let _ = {'seq': timl#seq(keyvals)}
+    let _ = {'seq': timl#coll#seq(keyvals)}
     let dict = {}
     while _.seq isnot# g:timl#nil
-      let _.first = timl#first(_.seq)
+      let _.first = timl#coll#first(_.seq)
       let dict[timl#str(_.first[0])] = _.first[1]
-      let _.seq = timl#next(_.seq)
+      let _.seq = timl#coll#next(_.seq)
     endwhile
     return dict
   endif
@@ -46,7 +46,7 @@ function! timl#dictionary#conj(this, ...) abort
   let this = copy(a:this)
   let _ = {}
   for _.e in a:000
-    let this[timl#str(timl#first(_.e))] = timl#fnext(_.e)
+    let this[timl#str(timl#coll#first(_.e))] = timl#coll#fnext(_.e)
   endfor
   if islocked('orig')
     lockvar 1 this
@@ -57,7 +57,7 @@ endfunction
 function! timl#dictionary#conjb(this, ...) abort
   let _ = {}
   for _.e in a:000
-    let a:this[timl#str(timl#first(_.e))] = timl#fnext(_.e)
+    let a:this[timl#str(timl#coll#first(_.e))] = timl#coll#fnext(_.e)
   endfor
   return a:this
 endfunction

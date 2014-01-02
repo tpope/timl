@@ -74,15 +74,15 @@ function! timl#function#fn(form, env, ...) abort
   let _.sigs = timl#list#create(a:000)
   if timl#symbol#test(a:000[0])
     let name = a:000[0]
-    let _.sigs = timl#next(_.sigs)
+    let _.sigs = timl#coll#next(_.sigs)
   endif
-  if timl#vector#test(timl#first(_.sigs))
-    let _.sigs = timl#function#destructure(timl#first(_.sigs), timl#next(_.sigs))
+  if timl#vector#test(timl#coll#first(_.sigs))
+    let _.sigs = timl#function#destructure(timl#coll#first(_.sigs), timl#coll#next(_.sigs))
   else
     let sigs = []
     while _.sigs isnot# g:timl#nil
-      call add(sigs, timl#function#destructure(timl#ffirst(_.sigs), timl#nfirst(_.sigs)))
-      let _.sigs = timl#next(_.sigs)
+      call add(sigs, timl#function#destructure(timl#coll#ffirst(_.sigs), timl#coll#nfirst(_.sigs)))
+      let _.sigs = timl#coll#next(_.sigs)
     endwhile
     let _.sigs = timl#list#create(sigs)
   endif
@@ -105,7 +105,7 @@ function! timl#function#defmacro(form, env, name, params, ...) abort
     let _ = {}
     let body = []
     for _.list in [a:params] + a:000
-      call add(body, timl#cons#create(timl#vector#claim(extra + timl#ary(timl#first(_.list))), timl#next(_.list)))
+      call add(body, timl#cons#create(timl#vector#claim(extra + timl#ary(timl#coll#first(_.list))), timl#coll#next(_.list)))
     endfor
   endif
   let name = copy(a:name)

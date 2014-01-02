@@ -26,10 +26,10 @@ function! timl#vector#coerce(seq) abort
     return a:seq
   endif
   let array = []
-  let _ = {'seq': timl#seq(a:seq)}
+  let _ = {'seq': timl#coll#seq(a:seq)}
   while _.seq isnot# g:timl#nil
-    call add(array, timl#first(_.seq))
-    let _.seq = timl#next(_.seq)
+    call add(array, timl#coll#first(_.seq))
+    let _.seq = timl#coll#next(_.seq)
   endwhile
   return timl#vector#claim(array)
 endfunction

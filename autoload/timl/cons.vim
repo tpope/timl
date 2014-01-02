@@ -23,7 +23,7 @@ endfunction
 function! timl#cons#spread(array) abort
   if empty(a:array)
     throw 'timl: arity error'
-  elseif !timl#seqp(a:array[-1])
+  elseif !timl#coll#seqp(a:array[-1])
     throw 'timl: seq required'
   endif
   let _ = {'cdr': a:array[-1]}

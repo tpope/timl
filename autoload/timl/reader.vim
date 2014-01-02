@@ -258,18 +258,18 @@ function! timl#reader#syntax_quote(form, gensyms) abort
   elseif timl#set#test(a:form)
     return timl#list(s:set, timl#cons#create(s:concat, s:sqexpandlist(a:form, a:gensyms)))
   elseif timl#map#test(a:form)
-    let _ = {'seq': timl#seq(a:form)}
+    let _ = {'seq': timl#coll#seq(a:form)}
     let keyvals = []
     while _.seq isnot# g:timl#nil
-      call extend(keyvals, timl#ary(timl#first(_.seq)))
-      let _.seq = timl#next(_.seq)
+      call extend(keyvals, timl#ary(timl#coll#first(_.seq)))
+      let _.seq = timl#coll#next(_.seq)
     endwhile
     return timl#list(s:hash_map, timl#cons#create(s:concat, s:sqexpandlist(keyvals, a:gensyms)))
 
   elseif timl#coll#test(a:form)
-    let first = timl#first(a:form)
+    let first = timl#coll#first(a:form)
     if first is# s:unquote
-      return timl#first(timl#rest(a:form))
+      return timl#coll#first(timl#coll#rest(a:form))
     elseif first is# s:unquote_splicing
       throw 'timl#reader: unquote-splicing used outside of list'
     elseif first is# s:function
@@ -284,21 +284,21 @@ endfunction
 
 function! s:sqexpandlist(seq, gensyms) abort
   let result = []
-  let _ = {'seq': timl#seq(a:seq)}
+  let _ = {'seq': timl#coll#seq(a:seq)}
   while _.seq isnot# g:timl#nil
-    let _.this = timl#first(_.seq)
+    let _.this = timl#coll#first(_.seq)
     if timl#cons#test(_.this)
-      if timl#first(_.this) is# s:unquote
-        call add(result, timl#list(s:list, timl#first(timl#rest(_.this))))
-      elseif timl#first(_.this) is# s:unquote_splicing
-        call add(result, timl#first(timl#rest(_.this)))
+      if timl#coll#first(_.this) is# s:unquote
+        call add(result, timl#list(s:list, timl#coll#first(timl#coll#rest(_.this))))
+      elseif timl#coll#first(_.this) is# s:unquote_splicing
+        call add(result, timl#coll#first(timl#coll#rest(_.this)))
       else
         call add(result, timl#list(s:list, timl#reader#syntax_quote(_.this, a:gensyms)))
       endif
     else
       call add(result, timl#list(s:list, timl#reader#syntax_quote(_.this, a:gensyms)))
     endif
-    let _.seq = timl#next(_.seq)
+    let _.seq = timl#coll#next(_.seq)
   endwhile
   return result
 endfunction
@@ -364,18 +364,18 @@ TimLRAssert timl#equalp(timl#reader#read_string('foo'), timl#symbol('foo'))
 TimLRAssert timl#equalp(timl#reader#read_string('":)"'), ':)')
 TimLRAssert timl#equalp(timl#reader#read_string('#"\(a\\\)"'), '\C\v\(a\\\)')
 TimLRAssert timl#equalp(timl#reader#read_string('#"\""'), '\C\v"')
-TimLRAssert timl#equalp(timl#reader#read_string('(first [1 2])'), timl#list(timl#symbol('first'), timl#vector(1, 2)))
+TimLRAssert timl#equalp(timl#reader#read_string('(first [1 2])'), timl#list(timl#symbol('first'), timl#vector#claim([1, 2])))
 TimLRAssert timl#equalp(timl#reader#read_string('#*{"a" 1 "b" 2}'), {"a": 1, "b": 2})
 TimLRAssert timl#equalp(timl#reader#read_string('{"a" 1 :b 2 3 "c"}'), timl#map#create(["a", 1, timl#keyword#intern('b'), 2, 3, "c"]))
-TimLRAssert timl#equalp(timl#reader#read_string("[1]\n; hi\n"), timl#vector(1))
-TimLRAssert timl#equalp(timl#reader#read_string("'[1 2 3]"), timl#list(timl#symbol('quote'), timl#vector(1, 2, 3)))
+TimLRAssert timl#equalp(timl#reader#read_string("[1]\n; hi\n"), timl#vector#claim([1]))
+TimLRAssert timl#equalp(timl#reader#read_string("'[1 2 3]"), timl#list(timl#symbol('quote'), timl#vector#claim([1, 2, 3])))
 TimLRAssert timl#equalp(timl#reader#read_string("#*tr"), timl#list(timl#symbol('function'), timl#symbol('tr')))
 TimLRAssert timl#equalp(timl#reader#read_string("(1 #_2 3)"), timl#list(1, 3))
 TimLRAssert timl#equalp(timl#reader#read_string("^:foo ()"),
       \ timl#with_meta(g:timl#empty_list, timl#map#create([timl#keyword#intern('foo'), g:timl#true])))
 
 TimLRAssert timl#equalp(timl#reader#read_string("~foo"), timl#list(s:unquote, timl#symbol('foo')))
-TimLRAssert timl#first(timl#rest(timl#reader#read_string("`foo#")))[0] =~# '^foo__\d\+__auto__'
+TimLRAssert timl#coll#first(timl#coll#rest(timl#reader#read_string("`foo#")))[0] =~# '^foo__\d\+__auto__'
 
 delcommand TimLRAssert
 

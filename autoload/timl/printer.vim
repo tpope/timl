@@ -55,8 +55,8 @@ function! timl#printer#string(x)
     let acc = []
     let _ = {'x': a:x}
     while _.x isnot# g:timl#nil
-      call add(acc, timl#printer#string(timl#first(_.x)))
-      let _.x = timl#next(_.x)
+      call add(acc, timl#printer#string(timl#coll#first(_.x)))
+      let _.x = timl#coll#next(_.x)
     endwhile
     if _.x isnot# g:timl#nil
       call extend(acc, ['.', timl#printer#string(_.x)])
@@ -79,33 +79,33 @@ function! timl#printer#string(x)
 
   elseif timl#map#test(a:x)
     let acc = []
-    let _ = {'seq': timl#seq(a:x)}
+    let _ = {'seq': timl#coll#seq(a:x)}
     while _.seq isnot# g:timl#nil
-      call add(acc, timl#printer#string(timl#first(_.seq))[3:-2])
-      let _.seq = timl#next(_.seq)
+      call add(acc, timl#printer#string(timl#coll#first(_.seq))[3:-2])
+      let _.seq = timl#coll#next(_.seq)
     endwhile
     return '{' . join(acc, ', ') . '}'
 
   elseif timl#set#test(a:x)
     let acc = []
-    let _ = {'seq': timl#seq(a:x)}
+    let _ = {'seq': timl#coll#seq(a:x)}
     while _.seq isnot# g:timl#nil
-      call add(acc, timl#printer#string(timl#first(_.seq)))
-      let _.seq = timl#next(_.seq)
+      call add(acc, timl#printer#string(timl#coll#first(_.seq)))
+      let _.seq = timl#coll#next(_.seq)
     endwhile
     return '#{' . join(acc, ' ') . '}'
 
   elseif timl#type#canp(a:x, g:timl#core#more)
-    let _ = {'seq': timl#seq(a:x)}
+    let _ = {'seq': timl#coll#seq(a:x)}
     let output = []
     while _.seq isnot# g:timl#nil
-      call add(output, timl#printer#string(timl#first(_.seq)))
-      let _.seq = timl#next(_.seq)
+      call add(output, timl#printer#string(timl#coll#first(_.seq)))
+      let _.seq = timl#coll#next(_.seq)
     endwhile
     return '('.join(output, ' ').')'
 
   elseif timl#type#canp(a:x, g:timl#core#seq)
-    return timl#printer#string(timl#seq(a:x))
+    return timl#printer#string(timl#coll#seq(a:x))
 
   elseif type(a:x) == type(function('tr'))
     return '#*'.substitute(join([a:x]), '[{}]', '', 'g')
@@ -152,7 +152,7 @@ command! -nargs=1 TimLPAssert
 
 TimLPAssert timl#printer#string('foo') ==# '"foo"'
 TimLPAssert timl#printer#string(timl#symbol('foo')) ==# 'foo'
-TimLPAssert timl#printer#string(timl#vector(1,2)) ==# '[1 2]'
+TimLPAssert timl#printer#string(timl#vector#claim([1,2])) ==# '[1 2]'
 TimLPAssert timl#printer#string({"a": 1, "b": 2}) ==# '#*{"a" 1 "b" 2}'
 
 delcommand TimLPAssert
