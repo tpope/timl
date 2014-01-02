@@ -10,6 +10,22 @@ function! timl#string#test(str) abort
   return type(a:str) == s:type
 endfunction
 
+function! timl#string#coerce(val) abort
+  if type(a:val) == type('')
+    return a:val
+  elseif type(a:val) == type(0) || type(a:val) == 5
+    return ''.a:val
+  elseif type(a:val) == type(function('tr'))
+    return substitute(join([a:val]), '[{}]', '', 'g')
+  elseif timl#symbol#test(a:val) || timl#keyword#test(a:val)
+    return a:val.str
+  elseif type(a:val) == type([])
+    return join(map(copy(a:val), 'timl#string#coerce(v:val)'), ',').','
+  else
+    return '#<'.timl#type#string(a:val).'>'
+  endif
+endfunction
+
 " Characters, not bytes
 function! timl#string#lookup(this, idx, default) abort
   if type(a:idx) == type(0)
@@ -28,7 +44,9 @@ function! timl#string#seq(this) abort
 endfunction
 
 function! timl#string#join(sep_or_coll, ...) abort
-  return join(map(copy(timl#array#coerce(a:0 ? a:1 : a:sep_or_coll)), 'timl#str(v:val)'), a:0 ? timl#str(a:sep_or_coll) : '')
+  return join(
+        \ map(copy(timl#array#coerce(a:0 ? a:1 : a:sep_or_coll)), 'timl#string#coerce(v:val)'),
+        \ a:0 ? timl#string#coerce(a:sep_or_coll) : '')
 endfunction
 
 function! timl#string#split(s, re) abort
@@ -71,9 +89,9 @@ function! timl#string#prn(_) abort
 endfunction
 
 function! timl#string#print(_) abort
-  return join(map(copy(a:_), 'timl#str(v:val)'), ' ')
+  return join(map(copy(a:_), 'timl#string#coerce(v:val)'), ' ')
 endfunction
 
 function! timl#string#println(_) abort
-  return join(map(copy(a:_), 'timl#str(v:val)'), ' ')."\n"
+  return join(map(copy(a:_), 'timl#string#coerce(v:val)'), ' ')."\n"
 endfunction

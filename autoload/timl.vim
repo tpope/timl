@@ -80,22 +80,6 @@ function! timl#with_meta(obj, meta) abort
   return timl#invoke(g:timl#core#with_meta, a:obj, a:meta)
 endfunction
 
-function! timl#str(val) abort
-  if type(a:val) == type('')
-    return a:val
-  elseif type(a:val) == type(0) || type(a:val) == 5
-    return ''.a:val
-  elseif type(a:val) == type(function('tr'))
-    return substitute(join([a:val]), '[{}]', '', 'g')
-  elseif timl#symbol#test(a:val) || timl#keyword#test(a:val)
-    return a:val[0]
-  elseif type(a:val) == type([])
-    return join(map(copy(a:val), 'timl#str(v:val)'), ',').','
-  else
-    return '#<'.timl#type#string(a:val).'>'
-  endif
-endfunction
-
 function! timl#equalp(x, y) abort
   return timl#invoke(g:timl#core#equiv, a:x, a:y) is# g:timl#true
 endfunction

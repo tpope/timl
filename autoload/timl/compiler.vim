@@ -27,7 +27,7 @@ let s:specials = {
       \ 'finally': 1}
 
 function! timl#compiler#specialp(sym)
-  return has_key(s:specials, timl#str(a:sym))
+  return has_key(s:specials, timl#string#coerce(a:sym))
 endfunction
 
 function! timl#compiler#resolve(sym) abort
@@ -42,7 +42,7 @@ function! timl#compiler#resolve(sym) abort
   if var isnot# g:timl#nil
     return var
   endif
-  throw "timl#compiler: could not resolve ".timl#str(a:sym)
+  throw "timl#compiler: could not resolve ".timl#string#coerce(a:sym)
 endfunction
 
 " Section: Macroexpand
@@ -336,7 +336,7 @@ function! s:expr_sf_quote(file, env, form) abort
 endfunction
 
 function! s:expr_sf_function(file, env, form) abort
-  return "function(".timl#compiler#serialize(timl#str(timl#coll#fnext(a:form))).")"
+  return "function(".timl#compiler#serialize(timl#string#coerce(timl#coll#fnext(a:form))).")"
 endfunction
 
 function! s:expr_sf_var(file, env, form) abort
@@ -345,7 +345,7 @@ function! s:expr_sf_var(file, env, form) abort
   if var isnot# g:timl#nil
     return timl#compiler#serialize(var)
   endif
-  throw "timl#compiler: could not resolve ".timl#str(sym)
+  throw "timl#compiler: could not resolve ".timl#string#coerce(sym)
 endfunction
 
 function! s:one_fn(file, env, form, name, temp, catch_errors) abort
@@ -540,7 +540,7 @@ function! s:expr_sf_set_BANG_(file, env, form) abort
     endif
     return var
   elseif timl#coll#seqp(target) && timl#symbol#is(timl#coll#first(target), '.')
-    let key = substitute(timl#str(timl#coll#first(timl#coll#nnext(target))), '^-', '', '')
+    let key = substitute(timl#string#coerce(timl#coll#first(timl#coll#nnext(target))), '^-', '', '')
     let target2 = timl#symbol#cast(timl#coll#fnext(target))
     if has_key(a:env.locals, target2[0])
       let var = a:env.locals[target2[0]]
@@ -585,9 +585,9 @@ function! s:expr_dot(file, env, form) abort
   let val = s:expr(a:file, a:env, timl#coll#fnext(a:form))
   let key = timl#coll#first(timl#coll#nnext(a:form))
   if timl#coll#sequentialp(key)
-    return val.'['.timl#compiler#serialize(timl#str(timl#coll#first(key))).']('.s:expr_args(a:file, a:env, timl#coll#next(key)).')'
+    return val.'['.timl#compiler#serialize(timl#string#coerce(timl#coll#first(key))).']('.s:expr_args(a:file, a:env, timl#coll#next(key)).')'
   else
-    return val.'['.timl#compiler#serialize(timl#str(key)).']'
+    return val.'['.timl#compiler#serialize(timl#string#coerce(key)).']'
   endif
 endfunction
 

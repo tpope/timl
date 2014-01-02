@@ -125,15 +125,15 @@ call timl#type#bless(s:type_type, s:type_type)
 " Cribbed from clojure.core
 
 function! timl#type#parents(key)
-  return timl#set#coerce(values(get(g:timl_hierarchy.parents, timl#str(a:key), {})))
+  return timl#set#coerce(values(get(g:timl_hierarchy.parents, timl#string#coerce(a:key), {})))
 endfunction
 
 function! timl#type#ancestors(key)
-  return timl#set#coerce(values(get(g:timl_hierarchy.ancestors, timl#str(a:key), {})))
+  return timl#set#coerce(values(get(g:timl_hierarchy.ancestors, timl#string#coerce(a:key), {})))
 endfunction
 
 function! timl#type#descendants(key)
-  return timl#set#coerce(values(get(g:timl_hierarchy.descendants, timl#str(a:key), {})))
+  return timl#set#coerce(values(get(g:timl_hierarchy.descendants, timl#string#coerce(a:key), {})))
 endfunction
 
 function! s:tf(m, source, sources, target, targets)

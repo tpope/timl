@@ -6,22 +6,22 @@ endif
 let g:autoloaded_timl_io = 1
 
 function! timl#io#echon(_) abort
-  echon join(map(copy(a:_), 'timl#str(v:val)'), ' ')
+  echon join(map(copy(a:_), 'timl#string#coerce(v:val)'), ' ')
   return g:timl#nil
 endfunction
 
 function! timl#io#echo(_) abort
-  echo join(map(copy(a:_), 'timl#str(v:val)'), ' ')
+  echo join(map(copy(a:_), 'timl#string#coerce(v:val)'), ' ')
   return g:timl#nil
 endfunction
 
 function! timl#io#echomsg(_) abort
-  echomsg join(map(copy(a:_), 'timl#str(v:val)'), ' ')
+  echomsg join(map(copy(a:_), 'timl#string#coerce(v:val)'), ' ')
   return g:timl#nil
 endfunction
 
 function! timl#io#println(_) abort
-  echon join(map(copy(a:_), 'timl#str(v:val)'), ' ')."\n"
+  echon join(map(copy(a:_), 'timl#string#coerce(v:val)'), ' ')."\n"
   return g:timl#nil
 endfunction
 
@@ -31,7 +31,7 @@ function! timl#io#newline() abort
 endfunction
 
 function! timl#io#printf(fmt, ...) abort
-  echon call('printf', [timl#str(a:fmt)] + a:000)."\n"
+  echon call('printf', [timl#string#coerce(a:fmt)] + a:000)."\n"
   return g:timl#nil
 endfunction
 
