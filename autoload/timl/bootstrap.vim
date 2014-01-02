@@ -22,7 +22,7 @@ endfunction
 function! s:implement(type, ...) abort
   let type = timl#keyword#intern(a:type)
   for i in range(0, a:0-1, 2)
-    call timl#type#define_method('timl.core', a:000[i], type, s:function(a:000[i+1]))
+    call timl#type#define_method(s:ns, timl#symbol#intern(a:000[i]), type, s:function(a:000[i+1]))
   endfor
 endfunction
 
@@ -71,7 +71,7 @@ endfunction
 
 " Section: Meta
 
-call timl#type#define_method('timl.core', 'meta', g:timl#nil, s:function('s:nil'))
+call timl#type#define_method(s:ns, timl#symbol#intern('meta'), g:timl#nil, s:function('s:nil'))
 call s:define_call('vary-meta', 'timl#meta#vary')
 call s:define_call('alter-meta!', 'timl#meta#alter')
 
@@ -534,13 +534,13 @@ call s:define_pred('has?', 'has')
 
 " Section: Defaults
 
-call timl#type#define_method('timl.core', 'empty', g:timl#nil, s:function('s:nil'))
+call timl#type#define_method(s:ns, timl#symbol#intern('empty'), g:timl#nil, s:function('s:nil'))
 
-call timl#type#define_method('timl.core', 'equiv', g:timl#nil, g:timl#core#identical_QMARK_)
+call timl#type#define_method(s:ns, timl#symbol#intern('equiv'), g:timl#nil, g:timl#core#identical_QMARK_)
 
 function! s:default_first(x)
   return timl#invoke(g:timl#core#first, timl#invoke(g:timl#core#seq, a:x))
 endfunction
-call timl#type#define_method('timl.core', 'first', g:timl#nil, s:function('s:default_first'))
+call timl#type#define_method(s:ns, timl#symbol#intern('first'), g:timl#nil, s:function('s:default_first'))
 
 " vim:set et sw=2:

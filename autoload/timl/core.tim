@@ -139,6 +139,9 @@
   ([sym] (ns-resolve *ns* sym))
   ([env sym] (ns-resolve *ns* env sym)))
 
+(defmacro defmethod [name type & body]
+  `(#*timl#type#define_method *ns* '~name ~(. (resolve type) str) (fn ~@body)))
+
 (load "core_macros")
 (load "core_basics")
 (load "core_seq")

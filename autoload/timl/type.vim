@@ -195,24 +195,25 @@ endfunction
 " Section: Method Creation
 
 function! timl#type#define_method(ns, name, type, fn) abort
-  let munged = timl#munge(a:ns.'#'.a:name)
-  if !exists('g:'.munged) || timl#type#string(g:{munged}) isnot# 'timl.lang/MultiFn'
-    let ns = timl#namespace#find(a:ns)
-    let name = timl#symbol#intern(a:name)
-    unlet! g:{munged}
+  let var = timl#namespace#maybe_resolve(a:ns, timl#symbol#cast(a:name))
+  if var is# g:timl#nil || timl#type#string(g:{var.munged}) isnot# 'timl.lang/MultiFn'
+    unlet var
+    if !empty(a:name.namespace)
+      throw "timl: no such method ".a:name.str
+    endif
     let fn = timl#type#bless('timl.lang/MultiFn', {
-              \ 'ns': ns,
-              \ 'name': name,
-              \ 'cache': {},
-              \ 'hierarchy': g:timl_hierarchy,
-              \ 'methods': {}})
-    let fn.__call__ = function('timl#type#apply')
-    call timl#namespace#intern(ns, name, fn)
+          \ '__call__': function('timl#type#apply'),
+          \ 'ns': a:ns,
+          \ 'name': a:name,
+          \ 'cache': {},
+          \ 'hierarchy': g:timl_hierarchy,
+          \ 'methods': {}})
+    let var = timl#namespace#intern(a:ns, a:name, fn)
   endif
-  let multi = g:{munged}
+  let multi = g:{var.munged}
   let multi.methods[a:type is# g:timl#nil ? ' ' : timl#str(a:type)] = a:fn
   let multi.cache = {}
-  return multi
+  return var
 endfunction
 
 " Section: Initialization
