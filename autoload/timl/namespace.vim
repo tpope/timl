@@ -136,3 +136,17 @@ endfunction
 
 let g:timl#lang#Namespace = timl#type#core_create('Namespace')
 let g:timl#lang#Var = timl#type#core_create('Var')
+
+call timl#type#core_define('Namespace', g:timl#nil, {})
+call timl#type#core_define('Var', g:timl#nil, {
+      \ 'meta': 'timl#meta#from_attribute',
+      \ 'reset-meta!': 'timl#var#reset_meta',
+      \ 'call': 'timl#var#call',
+      \ 'funcref': 'timl#var#funcref',
+      \ 'deref': 'timl#var#get'})
+call timl#type#core_define('Symbol', g:timl#nil, {
+      \ 'meta': 'timl#meta#from_attribute',
+      \ 'with-meta': 'timl#meta#copy_assign_lock',
+      \ 'equiv': 'timl#symbol#equal',
+      \ 'call': 'timl#keyword#call'})
+call timl#type#core_define('Keyword', g:timl#nil, {'call': 'timl#keyword#call'})

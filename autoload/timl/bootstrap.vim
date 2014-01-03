@@ -66,8 +66,6 @@ endfunction
 
 " Section: Namespace
 
-call timl#namespace#intern(s:langns, timl#symbol#intern('Namespace'), g:timl#lang#Namespace)
-
 call s:define_apply('load', 'timl#loader#all_relative')
 call s:define_apply('require', 'timl#loader#require_all')
 call s:define_apply('use', 'timl#loader#use_all')
@@ -83,14 +81,6 @@ call s:define_call('intern', 'timl#namespace#intern')
 
 " Section: Var
 
-call timl#namespace#intern(s:langns, timl#symbol#intern('Var'), g:timl#lang#Var)
-
-call s:implement('timl.lang/Var',
-      \ 'meta', 'timl#meta#from_attribute',
-      \ 'reset-meta!', 'timl#var#reset_meta',
-      \ 'call', 'timl#var#call',
-      \ 'funcref', 'timl#var#funcref',
-      \ 'deref', 'timl#var#get')
 call s:define_call('var-get', 'timl#var#get')
 call s:define_call('find-var', 'timl#var#find')
 call s:define_pred('var?', 'timl#var#test')
@@ -108,31 +98,11 @@ call s:define_call('alter-meta!', 'timl#meta#alter')
 
 " Section: Symbol/Keyword
 
-function! s:this_get(this, coll, ...) abort
-  if a:0
-    return timl#coll#get(a:coll, a:this, a:1)
-  else
-    return timl#coll#get(a:coll, a:this)
-  endif
-endfunction
-
 call s:define_call('symbol', 'timl#symbol#intern')
 call s:define_call('keyword', 'timl#keyword#intern')
 call s:define_call('gensym', 'timl#symbol#gen')
 call s:define_pred('symbol?', 'timl#symbol#test')
 call s:define_pred('keyword?', 'timl#keyword#test')
-
-call s:implement('timl.lang/Symbol',
-      \ 'meta', 'timl#meta#from_attribute',
-      \ 'with-meta', 'timl#meta#copy_assign_lock',
-      \ 'equiv', 'timl#symbol#equal',
-      \ 'call', 'timl#keyword#call')
-
-call s:implement('timl.lang/Keyword',
-      \ 'call', 'timl#keyword#call')
-
-call timl#namespace#intern(s:langns, timl#symbol#intern('Symbol'), g:timl#lang#Symbol)
-call timl#namespace#intern(s:langns, timl#symbol#intern('Keyword'), g:timl#lang#Keyword)
 
 " Section: Utility
 

@@ -70,12 +70,12 @@ function! timl#type#define(ns, var, slots) abort
   let str = timl#namespace#name(a:ns).name . '/' . timl#symbol#cast(a:var).name
   let type = timl#type#create(str)
   if a:slots isnot# g:timl#nil
-    let s:types[str].slots = map(timl#array#coerce(a:slots), 'timl#symbol#cast(v:val).name')
+    let type.slots = map(timl#array#coerce(a:slots), 'timl#symbol#cast(v:val).name')
   endif
-  return timl#namespace#intern(a:ns, a:var, s:types[str])
+  return timl#namespace#intern(a:ns, a:var, type)
 endfunction
 
-let s:types = {
+let s:builtins = {
       \ 0: 'vim/Number',
       \ 1: 'vim/String',
       \ 2: 'vim/Funcref',
@@ -88,7 +88,7 @@ function! timl#type#objectp(obj) abort
 endfunction
 
 function! timl#type#string(val) abort
-  let type = get(s:types, type(a:val), 'vim/Unknown')
+  let type = get(s:builtins, type(a:val), 'vim/Unknown')
   if a:val is# g:timl#nil
     return 'timl.lang/Nil'
   elseif type ==# 'vim/Dictionary'
@@ -97,6 +97,9 @@ function! timl#type#string(val) abort
     endif
   endif
   return type
+catch
+  throw "FUUUUCK".string(a:val.__type__)
+endtry
 endfunction
 
 let s:proto = {
