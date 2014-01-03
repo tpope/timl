@@ -14,28 +14,16 @@ if !exists('g:timl#nil')
   lockvar 1 g:timl#nil
 endif
 
-function! timl#nil#identity(...)
+function! timl#nil#identity(...) abort
   return g:timl#nil
 endfunction
 
-function! timl#nil#length(...)
+function! timl#nil#length(...) abort
   return 0
 endfunction
 
 function! timl#nil#test(this) abort
-  return a:this is g:timl#nil
-endfunction
-
-function! timl#nil#lookup(this, key, default) abort
-  return a:default
-endfunction
-
-function! timl#nil#cons(this, ...) abort
-  return call('timl#cons#conj', [timl#list#empty()] + a:000)
-endfunction
-
-function! timl#nil#assoc(this, ...) abort
-  return timl#map#create(a:000)
+  return a:this is# g:timl#nil
 endfunction
 
 function! timl#nil#lookup(this, key, default) abort
