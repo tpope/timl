@@ -40,7 +40,7 @@ function! timl#lazy_seq#realized(lseq) abort
 endfunction
 
 let s:type = timl#type#core_define('LazySeq', ['fn', 'val', 'seq', 'meta'], {
-      \ 'meta': 'timl#meta#from_attribute',
+      \ 'get-meta': 'timl#meta#from_attribute',
       \ 'with-meta': 'timl#lazy_seq#with_meta',
       \ 'seq': 'timl#lazy_seq#seq',
       \ 'equiv': 'timl#equality#seq',

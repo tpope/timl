@@ -66,15 +66,6 @@ function! timl#demunge(var) abort
 endfunction
 
 " }}}1
-" Section: Type System {{{1
-
-function! timl#meta(obj) abort
-  return timl#invoke(g:timl#core#meta, a:obj)
-endfunction
-
-function! timl#with_meta(obj, meta) abort
-  return timl#invoke(g:timl#core#with_meta, a:obj, a:meta)
-endfunction
 
 " }}}1
 " Section: Lists {{{1

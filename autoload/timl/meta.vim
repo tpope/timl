@@ -5,12 +5,23 @@ if exists('g:autoloaded_timl_meta')
 endif
 let g:autoloaded_timl_meta = 1
 
+function! timl#meta#get(obj) abort
+  if !timl#type#canp(a:obj, g:timl#core#get_meta)
+    return g:timl#nil
+  endif
+  return timl#invoke(g:timl#core#get_meta, a:obj)
+endfunction
+
+function! timl#meta#with(obj, meta) abort
+  return timl#invoke(g:timl#core#with_meta, a:obj, a:meta)
+endfunction
+
 function! timl#meta#vary(obj, fn, ...) abort
-  return timl#with_meta(a:obj, timl#call(a:fn, [timl#meta(a:obj)] + a:000))
+  return timl#meta#with(a:obj, timl#call(a:fn, [timl#meta#get(a:obj)] + a:000))
 endfunction
 
 function! timl#meta#alter(obj, fn, ...) abort
-  return timl#call(g:timl#core#reset_meta_BANG_, [a:obj, timl#call(a:fn, [timl#meta(a:obj)] + a:000)])
+  return timl#call(g:timl#core#reset_meta_BANG_, [a:obj, timl#call(a:fn, [timl#meta#get(a:obj)] + a:000)])
 endfunction
 
 function! timl#meta#from_attribute(obj) abort

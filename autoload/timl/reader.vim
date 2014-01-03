@@ -66,13 +66,13 @@ let s:constants = {
 
 function! s:add_meta(data, meta) abort
   let _ = {}
-  let _.meta = timl#meta(a:data)
+  let _.meta = timl#meta#get(a:data)
   if _.meta is g:timl#nil
     let _.meta = a:meta
   else
     let _.meta = timl#coll#into(_.meta, a:meta)
   endif
-  return timl#with_meta(a:data, _.meta)
+  return timl#meta#with(a:data, _.meta)
 endfunction
 
 let s:map_type = timl#type#core_create('HashMap')
@@ -373,7 +373,7 @@ TimLRAssert timl#equality#test(timl#reader#read_string("'[1 2 3]"), timl#list(ti
 TimLRAssert timl#equality#test(timl#reader#read_string("#*tr"), timl#list(timl#symbol('function'), timl#symbol('tr')))
 TimLRAssert timl#equality#test(timl#reader#read_string("(1 #_2 3)"), timl#list(1, 3))
 TimLRAssert timl#equality#test(timl#reader#read_string("^:foo ()"),
-      \ timl#with_meta(g:timl#empty_list, timl#map#create([timl#keyword#intern('foo'), g:timl#true])))
+      \ timl#meta#with(g:timl#empty_list, timl#map#create([timl#keyword#intern('foo'), g:timl#true])))
 
 TimLRAssert timl#equality#test(timl#reader#read_string("~foo"), timl#list(s:unquote, timl#symbol('foo')))
 TimLRAssert timl#coll#first(timl#coll#rest(timl#reader#read_string("`foo#")))[0] =~# '^foo__\d\+__auto__'

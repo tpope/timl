@@ -101,7 +101,7 @@ function! timl#compiler#serialize(x)
 
   elseif timl#list#emptyp(a:x)
     if a:x.meta isnot# g:timl#nil
-      return 'timl#with_meta(g:timl#empty_list, '.timl#compiler#serialize(a:x.meta).')'
+      return 'timl#meta#with(g:timl#empty_list, '.timl#compiler#serialize(a:x.meta).')'
     else
       return 'g:timl#empty_list'
     endif
@@ -699,7 +699,7 @@ if !exists('g:timl_functions')
 endif
 
 function! timl#compiler#location_meta(file, form)
-  let meta = timl#meta(a:form)
+  let meta = timl#meta#get(a:form)
   if type(meta) == type({}) && has_key(meta, 'line') && a:file isnot# 'NO_SOURCE_PATH'
     return {'file': a:file, 'line': meta.line}
   else

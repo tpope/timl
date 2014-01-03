@@ -89,11 +89,11 @@ function! timl#function#fn(form, env, ...) abort
   if exists('name')
     let _.sigs = timl#cons#create(name, _.sigs)
   endif
-  return timl#with_meta(timl#cons#create(s:fns, _.sigs), timl#meta(a:form))
+  return timl#cons#create(s:fns, _.sigs, timl#meta#get(a:form))
 endfunction
 
 function! timl#function#defn(form, env, name, ...) abort
-  return timl#list(s:def, a:name, timl#with_meta(timl#list#create([s:fn, a:name] + a:000), timl#meta(a:form)))
+  return timl#list#create([s:def, a:name, timl#meta#with(timl#list#create([s:fn, a:name] + a:000), timl#meta#get(a:form))])
 endfunction
 
 let s:kmacro = timl#keyword#intern('macro')

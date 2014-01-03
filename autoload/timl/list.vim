@@ -44,7 +44,7 @@ function! timl#list#test(obj)
 endfunction
 
 let s:empty_type = timl#type#core_define('EmptyList', ['meta'], {
-      \ 'meta': 'timl#meta#from_attribute',
+      \ 'get-meta': 'timl#meta#from_attribute',
       \ 'with-meta': 'timl#list#with_meta',
       \ 'seq': 'timl#nil#identity',
       \ 'equiv': 'timl#equality#seq',

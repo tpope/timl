@@ -47,7 +47,7 @@ function! timl#chunked_cons#chunk_rest(this) abort
 endfunction
 
 let s:type = timl#type#core_define('ChunkedCons', ['array', 'rest', 'i', 'meta'], {
-      \ 'meta': 'timl#meta#from_attribute',
+      \ 'get-meta': 'timl#meta#from_attribute',
       \ 'with-meta': 'timl#meta#copy_assign_lock',
       \ 'seq': 'timl#function#identity',
       \ 'equiv': 'timl#equality#seq',

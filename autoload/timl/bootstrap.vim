@@ -1,4 +1,4 @@
-" Maintainer: Tim Pope <http://tpo.pe>
+" Maintainer: Tim Pope <http://tpo.pe/>
 
 if exists("g:autoloaded_timl_bootstrap")
   finish
@@ -92,7 +92,7 @@ call s:define_pred('can?', 'timl#type#canp')
 
 " Section: Meta
 
-call timl#type#define_method(s:ns, timl#symbol#intern('meta'), g:timl#nil, s:function('timl#nil#identity'))
+call s:define_call('meta', 'timl#meta#get')
 call s:define_call('vary-meta', 'timl#meta#vary')
 call s:define_call('alter-meta!', 'timl#meta#alter')
 

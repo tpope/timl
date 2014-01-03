@@ -45,7 +45,7 @@ function! timl#array_seq#chunk_rest(this) abort
 endfunction
 
 let s:type = timl#type#core_define('ArraySeq', ['array', 'i', 'meta'], {
-      \ 'meta': 'timl#meta#from_attribute',
+      \ 'get-meta': 'timl#meta#from_attribute',
       \ 'with-meta': 'timl#meta#copy_assign_lock',
       \ 'seq': 'timl#function#identity',
       \ 'equiv': 'timl#equality#seq',
