@@ -30,11 +30,11 @@ function! timl#array#seq(this, ...) abort
   return len(a:this) <= (a:0 ? a:1 : 0) ? g:timl#nil : timl#array_seq#create(a:this, a:0 ? a:1 : 0)
 endfunction
 
-function! timl#array#first(this) abort
+function! timl#array#car(this) abort
   return get(a:this, 0, g:timl#nil)
 endfunction
 
-function! timl#array#rest(this) abort
+function! timl#array#cdr(this) abort
   return len(a:this) <= 1 ? g:timl#empty_list : timl#array_seq#create(a:this, 1)
 endfunction
 

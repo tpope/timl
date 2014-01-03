@@ -48,8 +48,8 @@ let s:empty_type = timl#type#core_define('EmptyList', ['meta'], {
       \ 'with-meta': 'timl#list#with_meta',
       \ 'seq': 'timl#nil#identity',
       \ 'equiv': 'timl#equality#seq',
-      \ 'first': 'timl#nil#identity',
-      \ 'more': 'timl#function#identity',
+      \ 'car': 'timl#nil#identity',
+      \ 'cdr': 'timl#function#identity',
       \ 'length': 'timl#nil#length',
       \ 'conj': 'timl#cons#conj',
       \ 'empty': 'timl#function#identity'})

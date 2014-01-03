@@ -42,11 +42,11 @@ function! timl#vector#length(this) abort
   return len(a:this.array)
 endfunction
 
-function! timl#vector#first(this) abort
+function! timl#vector#car(this) abort
   return get(a:this.array, 0, g:timl#nil)
 endfunction
 
-function! timl#vector#rest(this) abort
+function! timl#vector#cdr(this) abort
   return len(a:this.array) <= 1 ? g:timl#empty_list : timl#array_seq#create(a:this.array, 1)
 endfunction
 

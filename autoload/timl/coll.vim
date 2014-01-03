@@ -18,12 +18,12 @@ function! timl#coll#emptyp(seq) abort
 endfunction
 
 function! timl#coll#sequentialp(coll) abort
-  return a:coll isnot# g:timl#nil && timl#type#canp(a:coll, g:timl#core#more)
+  return a:coll isnot# g:timl#nil && timl#type#canp(a:coll, g:timl#core#car)
 endfunction
 
 function! timl#coll#seqp(obj) abort
   return timl#type#string(a:obj) =~# '^timl\.lang/\%(Cons\|EmptyList\)$' ||
-        \ (timl#type#canp(a:obj, g:timl#core#more) && !timl#vector#test(a:obj))
+        \ (timl#type#canp(a:obj, g:timl#core#car) && !timl#vector#test(a:obj))
 endfunction
 
 function! timl#coll#first(coll) abort
@@ -31,18 +31,20 @@ function! timl#coll#first(coll) abort
     return a:coll.car
   elseif type(a:coll) == type([])
     return get(a:coll, 0, g:timl#nil)
+  elseif timl#type#canp(a:coll, g:timl#core#car)
+    return timl#invoke(g:timl#core#car, a:coll)
   else
-    return timl#invoke(g:timl#core#first, a:coll)
+    return timl#invoke(g:timl#core#car, timl#coll#seq(a:coll))
   endif
 endfunction
 
 function! timl#coll#rest(coll) abort
   if timl#cons#test(a:coll)
     return a:coll.cdr
-  elseif timl#type#canp(a:coll, g:timl#core#more)
-    return timl#invoke(g:timl#core#more, a:coll)
+  elseif timl#type#canp(a:coll, g:timl#core#cdr)
+    return timl#invoke(g:timl#core#cdr, a:coll)
   else
-    return timl#invoke(g:timl#core#more, timl#coll#seq(a:coll))
+    return timl#invoke(g:timl#core#cdr, timl#coll#seq(a:coll))
   endif
 endfunction
 

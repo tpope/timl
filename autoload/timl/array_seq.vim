@@ -14,11 +14,11 @@ function! timl#array_seq#create(array, ...) abort
   return cc
 endfunction
 
-function! timl#array_seq#first(seq) abort
+function! timl#array_seq#car(seq) abort
   return get(a:seq.array, a:seq.i, g:timl#nil)
 endfunction
 
-function! timl#array_seq#more(seq) abort
+function! timl#array_seq#cdr(seq) abort
   if len(a:seq.array) - a:seq.i <= 1
     return g:timl#empty_list
   else
@@ -49,8 +49,8 @@ let s:type = timl#type#core_define('ArraySeq', ['array', 'i', 'meta'], {
       \ 'with-meta': 'timl#meta#copy_assign_lock',
       \ 'seq': 'timl#function#identity',
       \ 'equiv': 'timl#equality#seq',
-      \ 'first': 'timl#array_seq#first',
-      \ 'more': 'timl#array_seq#more',
+      \ 'car': 'timl#array_seq#car',
+      \ 'cdr': 'timl#array_seq#cdr',
       \ 'length': 'timl#array_seq#length',
       \ 'conj': 'timl#cons#conj',
       \ 'empty': 'timl#list#empty',

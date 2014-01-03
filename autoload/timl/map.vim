@@ -57,7 +57,7 @@ function! timl#map#zip(keys, vals) abort
 endfunction
 
 function! timl#map#soft_coerce(coll) abort
-  if timl#type#canp(a:coll, g:timl#core#more)
+  if timl#coll#sequentialp(a:coll)
     return timl#map#create(timl#array#coerce(a:coll))
   else
     return a:coll

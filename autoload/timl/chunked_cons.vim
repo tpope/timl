@@ -16,11 +16,11 @@ function! timl#chunked_cons#create(array, rest, ...) abort
   return cc
 endfunction
 
-function! timl#chunked_cons#first(this) abort
+function! timl#chunked_cons#car(this) abort
   return get(a:this.array, a:this.i, g:timl#nil)
 endfunction
 
-function! timl#chunked_cons#more(this) abort
+function! timl#chunked_cons#cdr(this) abort
   if len(a:this.array) - a:this.i <= 1
     return a:this.rest
   else
@@ -51,8 +51,8 @@ let s:type = timl#type#core_define('ChunkedCons', ['array', 'rest', 'i', 'meta']
       \ 'with-meta': 'timl#meta#copy_assign_lock',
       \ 'seq': 'timl#function#identity',
       \ 'equiv': 'timl#equality#seq',
-      \ 'first': 'timl#chunked_cons#first',
-      \ 'more': 'timl#chunked_cons#more',
+      \ 'car': 'timl#chunked_cons#car',
+      \ 'cdr': 'timl#chunked_cons#cdr',
       \ 'length': 'timl#chunked_cons#length',
       \ 'conj': 'timl#cons#conj',
       \ 'empty': 'timl#list#empty',

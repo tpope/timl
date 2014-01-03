@@ -248,8 +248,8 @@ unlet s:x s:y
 call timl#type#define(s:vimns, timl#symbol('List'), g:timl#nil)
 call s:implement('vim/List',
       \ 'seq', 'timl#array#seq',
-      \ 'first', 'timl#array#first',
-      \ 'more', 'timl#array#rest',
+      \ 'car', 'timl#array#car',
+      \ 'cdr', 'timl#array#cdr',
       \ 'lookup', 'timl#array#lookup',
       \ 'nth', 'timl#array#nth',
       \ 'length', 'len',
@@ -271,8 +271,8 @@ call timl#type#define(s:langns, timl#symbol('Vector'), g:timl#nil)
 
 call s:implement('timl.lang/Vector',
       \ 'seq', 'timl#vector#seq',
-      \ 'first', 'timl#vector#first',
-      \ 'more', 'timl#vector#rest',
+      \ 'car', 'timl#vector#car',
+      \ 'cdr', 'timl#vector#cdr',
       \ 'lookup', 'timl#vector#lookup',
       \ 'nth', 'timl#vector#nth',
       \ 'length', 'timl#vector#length',
@@ -303,6 +303,7 @@ call s:define_pred('list?', 'timl#list#test')
 
 " Section: Seq
 
+call s:define_call('first', 'timl#coll#first')
 call s:define_call('next', 'timl#coll#next')
 call s:define_call('rest', 'timl#coll#rest')
 call s:define_pred('empty?', 'timl#coll#emptyp')
@@ -416,10 +417,5 @@ call s:define_pred('has?', 'has')
 " Section: Defaults
 
 call timl#type#define_method(s:ns, timl#symbol#intern('equiv'), g:timl#nil, g:timl#core#identical_QMARK_)
-
-function! s:default_first(x)
-  return timl#invoke(g:timl#core#first, timl#invoke(g:timl#core#seq, a:x))
-endfunction
-call timl#type#define_method(s:ns, timl#symbol#intern('first'), g:timl#nil, s:function('s:default_first'))
 
 " vim:set et sw=2:

@@ -40,11 +40,11 @@ function! timl#cons#conj(this, ...) abort
   return head
 endfunction
 
-function! timl#cons#first(this)
+function! timl#cons#car(this)
   return a:this.car
 endfunction
 
-function! timl#cons#more(this)
+function! timl#cons#cdr(this)
   return a:this.cdr
 endfunction
 
@@ -53,7 +53,7 @@ let s:type = timl#type#core_define('Cons', ['car', 'cdr', 'meta'], {
       \ 'with-meta': 'timl#meta#copy_assign_lock',
       \ 'seq': 'timl#function#identity',
       \ 'equiv': 'timl#equality#seq',
-      \ 'first': 'timl#cons#first',
-      \ 'more': 'timl#cons#more',
+      \ 'car': 'timl#cons#car',
+      \ 'cdr': 'timl#cons#cdr',
       \ 'conj': 'timl#cons#conj',
       \ 'empty': 'timl#list#empty'})
