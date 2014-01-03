@@ -138,16 +138,11 @@ function! timl#compiler#serialize(x)
           \ . timl#compiler#serialize(a:x.cdr).','
           \ . timl#compiler#serialize(a:x.meta).')'
 
+  elseif timl#type#string(a:x) ==# 'timl.lang/Type'
+    return 'timl#type#find('.timl#compiler#serialize(timl#symbol#intern(a:x.str)).')'
+
   elseif timl#var#test(a:x)
     return 'timl#var#find('.timl#compiler#serialize(timl#symbol#intern(a:x.str)).')'
-
-  elseif type(a:x) == type({})
-    let acc = []
-    for [k, V] in items(a:x)
-      call add(acc, timl#compiler#serialize(k) . ': ' . timl#compiler#serialize(V))
-      unlet! V
-    endfor
-    return '{' . join(acc, ', ') . '}'
 
   elseif type(a:x) == type('')
     return '"'.substitute(a:x, "[\001-\037\"\\\\]", '\=get(s:escapes, submatch(0), printf("\\%03o", char2nr(submatch(0))))', 'g').'"'
@@ -159,8 +154,20 @@ function! timl#compiler#serialize(x)
     else
       return '(0/0.0)'
     endif
-  else
+  elseif type(a:x) != type({})
     return string(a:x)
+
+  elseif timl#type#objectp(a:x)
+    return 'timl#type#bless('.timl#compiler#serialize(a:x.__type__) . ', ' . timl#compiler#serialize(filter(copy(a:x), 'v:key !~# "^__.*__$"')).')'
+
+  else
+    let acc = []
+    for [k, V] in items(a:x)
+      call add(acc, timl#compiler#serialize(k) . ': ' . timl#compiler#serialize(V))
+      unlet! V
+    endfor
+    return '{' . join(acc, ', ') . '}'
+
   endif
 endfunction
 

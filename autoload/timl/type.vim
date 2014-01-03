@@ -25,6 +25,10 @@ if !exists('s:types')
   let s:types = {}
 endif
 
+function! timl#type#find(name) abort
+  return get(s:types, timl#string#coerce(a:name), g:timl#nil)
+endfunction
+
 function! timl#type#create(name, ...) abort
   if !has_key(s:types, a:name)
     let s:types[a:name] = timl#type#bless(s:type_type, {
