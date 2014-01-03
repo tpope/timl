@@ -68,10 +68,6 @@ endfunction
 " }}}1
 " Section: Type System {{{1
 
-function! timl#bless(class, ...) abort
-  return timl#type#bless(a:class, a:0 ? a:1 : {})
-endfunction
-
 function! timl#meta(obj) abort
   return timl#invoke(g:timl#core#meta, a:obj)
 endfunction

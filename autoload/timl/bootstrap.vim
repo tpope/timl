@@ -414,8 +414,4 @@ call s:define_call('read-string', 'timl#reader#read_string')
 call s:define_pred('exists?', 'exists')
 call s:define_pred('has?', 'has')
 
-" Section: Defaults
-
-call timl#type#define_method(s:ns, timl#symbol#intern('equiv'), g:timl#nil, g:timl#core#identical_QMARK_)
-
 " vim:set et sw=2:
