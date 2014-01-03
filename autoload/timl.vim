@@ -80,10 +80,6 @@ function! timl#with_meta(obj, meta) abort
   return timl#invoke(g:timl#core#with_meta, a:obj, a:meta)
 endfunction
 
-function! timl#equalp(x, y) abort
-  return timl#invoke(g:timl#core#equiv, a:x, a:y) is# g:timl#true
-endfunction
-
 " }}}1
 " Section: Lists {{{1
 

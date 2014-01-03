@@ -82,7 +82,7 @@ function! timl#set#lookup(this, key, ...) abort
   let key = timl#set#key(a:key)
   if empty(key)
     for _.v in a:this.__extra
-      if timl#equalp(_.v, a:key)
+      if timl#equality#test(_.v, a:key)
         return _.v
       endif
     endfor
@@ -107,7 +107,7 @@ function! timl#set#conjb(this, ...) abort
     if empty(key)
       let found = 0
       for i in range(len(a:this.__extra))
-        if timl#equalp(a:this.__extra[i], _.e)
+        if timl#equality#test(a:this.__extra[i], _.e)
           let a:this.__extra[i] = _.e
           let found = 1
           break
@@ -133,7 +133,7 @@ function! timl#set#disjb(this, ...) abort
     let key = timl#set#key(_.e)
     if empty(key)
       for i in range(len(a:this.__extra))
-        if timl#equalp(a:this.__extra[i], _.e)
+        if timl#equality#test(a:this.__extra[i], _.e)
           call remove(a:this.__extra, i)
           break
         endif

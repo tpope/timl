@@ -22,7 +22,7 @@ function! timl#list#create(array, ...) abort
 endfunction
 
 function! timl#list#with_meta(this, meta) abort
-  if timl#equalp(a:this.meta, a:meta)
+  if a:this.meta is# a:meta
     return a:this
   endif
   let this = copy(a:this)

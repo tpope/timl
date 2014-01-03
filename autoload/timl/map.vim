@@ -84,7 +84,7 @@ function! timl#map#equal(this, that)
   let _ = {'seq': timl#coll#seq(a:this)}
   while _.seq isnot# g:timl#nil
     let _.other = timl#coll#get(a:that, timl#coll#ffirst(_.seq), _)
-    if _.other is# _ || !timl#equalp(timl#coll#first(timl#coll#nfirst(_.seq)), _.other)
+    if _.other is# _ || !timl#equality#test(timl#coll#first(timl#coll#nfirst(_.seq)), _.other)
       return g:timl#false
     endif
     let _.seq = timl#coll#next(_.seq)

@@ -5,10 +5,14 @@ if exists('g:autoloaded_timl_equality')
 endif
 let g:autoloaded_timl_equality = 1
 
+function! timl#equality#test(x, y) abort
+  return timl#invoke(g:timl#core#equiv, a:x, a:y) is# g:timl#true
+endfunction
+
 function! timl#equality#all(_) abort
   let _ = {}
   for _.y in a:_[1:-1]
-    if !timl#equalp(a:_[0], _.y)
+    if !timl#equality#test(a:_[0], _.y)
       return g:timl#false
     endif
   endfor
@@ -37,7 +41,7 @@ function! timl#equality#seq(x, y) abort
   endif
   let _ = {'x': timl#coll#seq(a:x), 'y': timl#coll#seq(a:y)}
   while _.x isnot# g:timl#nil && _.y isnot# g:timl#nil
-    if !timl#equalp(timl#coll#first(_.x), timl#coll#first(_.y))
+    if !timl#equality#test(timl#coll#first(_.x), timl#coll#first(_.y))
       return g:timl#false
     endif
     let _.x = timl#coll#next(_.x)

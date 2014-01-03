@@ -18,7 +18,7 @@ function! timl#meta#from_attribute(obj) abort
 endfunction
 
 function! timl#meta#copy_assign_lock(obj, meta) abort
-  if !timl#equalp(get(a:obj, 'meta', g:timl#nil), a:meta)
+  if a:obj.meta isnot# a:meta
     let obj = copy(a:obj)
     let obj.meta = a:meta
     lockvar 1 obj
@@ -28,7 +28,7 @@ function! timl#meta#copy_assign_lock(obj, meta) abort
 endfunction
 
 function! timl#meta#copy_assign(obj, meta) abort
-  if !timl#equalp(get(a:obj, 'meta', g:timl#nil), a:meta)
+  if a:obj.meta isnot# a:meta
     let obj = copy(a:obj)
     let obj.meta = a:meta
     return obj
