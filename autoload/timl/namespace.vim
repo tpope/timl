@@ -121,7 +121,7 @@ function! timl#namespace#intern(ns, name, ...)
     let var = ns.mappings[a:name[0]]
     let var.meta = meta
   else
-    let var = timl#type#bless(g:timl#lang#Namespace, {'ns': ns, 'str': str, 'munged': munged, 'location': 'g:'.munged, 'meta': meta})
+    let var = timl#type#bless(g:timl#lang#Var, {'ns': ns, 'str': str, 'munged': munged, 'location': 'g:'.munged, 'meta': meta})
   endif
   if a:0
     unlet! g:{munged}
