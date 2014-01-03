@@ -65,7 +65,10 @@ function! timl#type#constructor(_) dict abort
   return timl#type#bless(self, object)
 endfunction
 
-let s:type_type = {'str': 'timl.lang/Type', 'slots': g:timl#nil, '__call__': function('timl#type#constructor')}
+if !has_key(s:types, 'timl.lang/Type')
+  let s:types['timl.lang/Type'] = {'str': 'timl.lang/Type', 'slots': g:timl#nil, '__call__': function('timl#type#constructor')}
+endif
+let s:type_type = s:types['timl.lang/Type']
 function! timl#type#define(ns, var, slots) abort
   let str = timl#namespace#name(a:ns).name . '/' . timl#symbol#cast(a:var).name
   let type = timl#type#create(str)

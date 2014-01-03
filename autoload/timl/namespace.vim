@@ -137,6 +137,7 @@ endfunction
 let g:timl#lang#Namespace = timl#type#core_create('Namespace')
 let g:timl#lang#Var = timl#type#core_create('Var')
 
+call timl#type#core_define('Type', g:timl#nil, {})
 call timl#type#core_define('Namespace', g:timl#nil, {})
 call timl#type#core_define('Var', g:timl#nil, {
       \ 'meta': 'timl#meta#from_attribute',
