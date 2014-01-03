@@ -52,6 +52,7 @@ endfunction
 
 call timl#type#core_define('Nil', g:timl#nil, {
       \ 'seq': 'timl#nil#identity',
+      \ 'empty': 'timl#nil#identity',
       \ 'first': 'timl#nil#identity',
       \ 'more': 'timl#list#empty',
       \ 'conj': 'timl#nil#cons',

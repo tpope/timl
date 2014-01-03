@@ -415,8 +415,6 @@ call s:define_pred('has?', 'has')
 
 " Section: Defaults
 
-call timl#type#define_method(s:ns, timl#symbol#intern('empty'), g:timl#nil, s:function('timl#nil#identity'))
-
 call timl#type#define_method(s:ns, timl#symbol#intern('equiv'), g:timl#nil, g:timl#core#identical_QMARK_)
 
 function! s:default_first(x)
