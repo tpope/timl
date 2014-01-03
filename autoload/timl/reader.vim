@@ -171,10 +171,13 @@ function! s:read(port, ...) abort
     if token !~# '[/.]'
       let token = 'timl.lang/'.token
     endif
-    if type(next) == type({})
-      return timl#type#bless(token, next)
+    let munged = timl#munge(token)
+    if timl#map#test(next) && exists("g:".substitute(munged, '.*\zs#', '#map__GT_', ''))
+      return timl#invoke(g:{substitute(munged, '.*\zs#', '#map__GT_', '')}, next)
+    elseif timl#vector#test(next) && exists("g:".substitute(munged, '.*\zs#', '#__GT_', ''))
+      return timl#call(g:{substitute(munged, '.*\zs#', '#__GT_', '')}, timl#array#coerce(next))
     else
-      return timl#type#bless(token, {'value': next})
+      throw 'timl#reader: invalid tag ' . token . ' on ' . timl#type#string(next)
     endif
   elseif token =~# '^::.\+/.'
     let alias = matchstr(token[2:-1], '.*\ze/.')
