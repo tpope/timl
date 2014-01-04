@@ -1,0 +1,11 @@
+(in-ns 'timl.core)
+
+(defn atom
+  ([state] (#*timl#atom#create state nil nil))
+  ([state & {v :validator m :meta}] (#*timl#atom#create state m v)))
+
+(defmacro delay [& body] `(#*timl#delay#create (fn [] ~@body)))
+
+(defmacro future [& body] `(future-call (fn [] ~@body)))
+
+(defn sleep [msec] (execute "sleep" (str msec "m")))

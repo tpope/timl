@@ -155,4 +155,5 @@
 (load "core_basics")
 (load "core_seq")
 (load "core_coll")
+(load "core_ref")
 (load "core_vim")

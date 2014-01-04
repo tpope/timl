@@ -42,12 +42,6 @@
        (execute "silent call timl#invoke(l:TimLfn)"))
      (#*substitute (slurp tempname#) "^\n" "" "g")))
 
-(defmacro delay [& body] `(#*timl#delay#create (fn [] ~@body)))
-
-(defmacro future [& body] `(future-call (fn [] ~@body)))
-
-(defn sleep [msec] (execute "sleep" (str msec "m")))
-
 (defmacro time [& body]
   `(let [reltime# (#*reltime)
         result# (do ~@body)]
