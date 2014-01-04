@@ -6,7 +6,10 @@ endif
 let g:autoloaded_timl_atom = 1
 
 function! timl#atom#create(state, meta, validator) abort
-  return s:type.__call__([a:state, a:meta, a:validator, g:timl#nil])
+  if a:validator is# g:timl#nil || timl#truth(timl#invoke(a:validator, a:state))
+    return s:type.__call__([a:state, a:meta, a:validator, g:timl#nil])
+  endif
+  throw 'timl: invalid state'
 endfunction
 
 function! timl#atom#deref(this) abort
@@ -36,8 +39,11 @@ function! timl#atom#reset_meta(this, meta) abort
 endfunction
 
 function! timl#atom#set_validator(this, validator) abort
-  let a:this.validator = a:validator
-  return a:this
+  if a:validator is g:timl#nil || timl#truth(timl#invoke(a:validator, a:this.state))
+    let a:this.validator = a:validator
+    return a:this
+  endif
+  throw 'timl: invalid state'
 endfunction
 
 function! timl#atom#get_validator(this) abort
