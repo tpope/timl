@@ -35,6 +35,14 @@ function! timl#lazy_seq#seq(lseq) abort
   return a:lseq.seq
 endfunction
 
+function! timl#lazy_seq#car(lseq) abort
+  return timl#coll#first(timl#lazy_seq#seq(a:lseq))
+endfunction
+
+function! timl#lazy_seq#cdr(lseq) abort
+  return timl#coll#rest(timl#lazy_seq#seq(a:lseq))
+endfunction
+
 function! timl#lazy_seq#realized(lseq) abort
   return a:lseq.fn is# g:timl#nil ? g:timl#true : g:timl#false
 endfunction
@@ -43,6 +51,8 @@ let s:type = timl#type#core_define('LazySeq', ['fn', 'val', 'seq', 'meta'], {
       \ 'get-meta': 'timl#meta#from_attribute',
       \ 'with-meta': 'timl#lazy_seq#with_meta',
       \ 'seq': 'timl#lazy_seq#seq',
+      \ 'car': 'timl#lazy_seq#car',
+      \ 'cdr': 'timl#lazy_seq#cdr',
       \ 'equiv': 'timl#equality#seq',
       \ 'realized?': 'timl#lazy_seq#realized',
       \ 'conj': 'timl#cons#conj',
