@@ -12,7 +12,7 @@ endif
 function! timl#symbol#intern(str) abort
   if !has_key(s:symbols, a:str)
     let end = matchend(a:str, '^\%(&\=\w:\|\$\|&\%($\|form$\|env$\)\@!\|[^/]*/\).\@=')
-    let symbol = timl#type#bless(g:timl#lang#Symbol, {
+    let symbol = timl#type#bless(s:type, {
           \ '0': a:str,
           \ 'str': a:str,
           \ 'meta': g:timl#nil,
@@ -32,12 +32,12 @@ endfunction
 
 function! timl#symbol#test(symbol)
   return type(a:symbol) == type({}) &&
-        \ get(a:symbol, '__type__') is# g:timl#lang#Symbol
+        \ get(a:symbol, '__type__') is# s:type
 endfunction
 
 function! timl#symbol#is(symbol, ...)
   return type(a:symbol) == type({}) &&
-        \ get(a:symbol, '__type__') is# g:timl#lang#Symbol &&
+        \ get(a:symbol, '__type__') is# s:type &&
         \ (a:0 ? a:symbol[0] ==# a:1 : 1)
 endfunction
 
@@ -57,4 +57,4 @@ function! timl#symbol#gen(...)
   return timl#symbol((a:0 ? a:1 : 'G__').s:id)
 endfunction
 
-let g:timl#lang#Symbol = timl#type#core_create('Symbol')
+let s:type = timl#type#core_create('Symbol')

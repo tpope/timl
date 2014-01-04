@@ -205,11 +205,11 @@ call s:define_call('nr2char', 'nr2char')
 
 " Section: Boolean
 
-call timl#type#define(s:langns, timl#symbol('Boolean'), g:timl#nil)
+let s:boolean = timl#type#define(s:langns, timl#symbol('Boolean'), g:timl#nil)
 
 if !exists('g:timl#false')
-  let g:timl#false = timl#type#bless(g:timl#lang#Boolean, {'value': 0})
-  let g:timl#true = timl#type#bless(g:timl#lang#Boolean, {'value': 1})
+  let g:timl#false = timl#type#bless(s:boolean, {'value': 0})
+  let g:timl#true = timl#type#bless(s:boolean, {'value': 1})
   lockvar 1 g:timl#false g:timl#true
 endif
 

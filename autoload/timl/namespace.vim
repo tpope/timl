@@ -12,7 +12,7 @@ endif
 function! timl#namespace#create(name) abort
   let name = timl#symbol#cast(a:name)
   if !has_key(g:timl#namespaces, name[0])
-    let g:timl#namespaces[name[0]] = timl#type#bless(g:timl#lang#Namespace, {'name': name, 'aliases': {}, 'mappings': {}})
+    let g:timl#namespaces[name[0]] = timl#type#bless(s:type, {'name': name, 'aliases': {}, 'mappings': {}})
   endif
   let ns = g:timl#namespaces[name[0]]
   return ns
@@ -122,7 +122,7 @@ function! timl#namespace#intern(ns, name, ...)
     let var = ns.mappings[a:name[0]]
     let var.meta = meta
   else
-    let var = timl#type#bless(g:timl#lang#Var, {'ns': ns, 'str': str, 'munged': munged, 'location': 'g:'.munged, 'meta': meta})
+    let var = timl#type#bless(s:var_type, {'ns': ns, 'str': str, 'munged': munged, 'location': 'g:'.munged, 'meta': meta})
   endif
   if a:0
     unlet! g:{munged}
@@ -134,8 +134,8 @@ function! timl#namespace#intern(ns, name, ...)
   return var
 endfunction
 
-let g:timl#lang#Namespace = timl#type#core_create('Namespace')
-let g:timl#lang#Var = timl#type#core_create('Var')
+let s:type = timl#type#core_create('Namespace')
+let s:var_type = timl#type#core_create('Var')
 
 call timl#type#core_define('Type', g:timl#nil, {})
 call timl#type#core_define('Namespace', g:timl#nil, {})
