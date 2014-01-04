@@ -104,9 +104,6 @@ function! timl#type#string(val) abort
     endif
   endif
   return type
-catch
-  throw "FUUUUCK".string(a:val.__type__)
-endtry
 endfunction
 
 let s:proto = {
