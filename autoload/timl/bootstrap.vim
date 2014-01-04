@@ -412,6 +412,7 @@ call s:define_call('read-string', 'timl#reader#read_string')
 " Section: Reference types
 
 call s:define_call('force', 'timl#delay#force')
+call s:define_call('future-call', 'timl#future#call')
 
 " Section: Vim Interop
 

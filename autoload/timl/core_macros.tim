@@ -44,6 +44,8 @@
 
 (defmacro delay [& body] `(#*timl#delay#create (fn [] ~@body)))
 
+(defmacro future [& body] `(future-call (fn [] ~@body)))
+
 (defn sleep [msec] (execute "sleep" (str msec "m")))
 
 (defmacro time [& body]
