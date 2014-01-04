@@ -47,7 +47,7 @@ endfunction
 function! timl#type#core_define(name, slots, methods) abort
   let ns = timl#namespace#create(timl#symbol#intern('timl.core'))
   let langns = timl#namespace#create(timl#symbol#intern('timl.lang'))
-  let type = timl#type#core_create(a:name)
+  let type = timl#type#core_create(a:name, a:slots)
   call timl#namespace#intern(langns, timl#symbol#intern(a:name), type)
   for [k, v] in items(a:methods)
     call timl#type#define_method(ns, timl#symbol#intern(k), type, function(v))
