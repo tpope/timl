@@ -25,7 +25,7 @@ function! timl#printer#string(x)
     return 'nil'
 
   elseif type ==# 'timl.lang/Boolean'
-    return a:x.value ? 'true' : 'false'
+    return get(a:x, 'val') ? 'true' : 'false'
 
   elseif type ==# 'timl.lang/Function'
     return '#<'

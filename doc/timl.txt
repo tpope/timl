@@ -166,10 +166,7 @@ SPECIAL FORMS                                   *timl-special-forms*
 
                                                 *timl-if*
 (if {cond} {then} {else}?) ~
-If {cond} is true, evaluate {then}, else evaluate {else}.  In a compromise
-between sanity and VimL compatibility (which lacks true Booleans), 0 and
-|empty()| expressions (including nil) are treated as false, and everything
-else is treated as true.
+If {cond} is true, evaluate {then}, else evaluate {else}.
 
                                                 *timl-do*
 (do {form} ...) ~

@@ -205,15 +205,16 @@ call s:define_call('nr2char', 'nr2char')
 
 " Section: Boolean
 
-let s:boolean = timl#type#define(s:langns, timl#symbol('Boolean'), g:timl#nil)
+let s:boolean = timl#type#core_define('Boolean', g:timl#nil, {})
 
 if !exists('g:timl#false')
-  let g:timl#false = timl#type#bless(s:boolean, {'value': 0})
-  let g:timl#true = timl#type#bless(s:boolean, {'value': 1})
-  lockvar 1 g:timl#false g:timl#true
+  call timl#false#identity()
+  call timl#true#identity()
 endif
 
 call s:define_pred('boolean', 'timl#truth')
+call s:define_pred('false?', 'timl#false#test')
+call s:define_pred('true?', 'timl#true#test')
 
 " Section: Function
 
