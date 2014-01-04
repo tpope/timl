@@ -1,5 +1,8 @@
 (in-ns 'timl.core)
 
+(defn stacklist []
+  (drop 1 (#*timl#exception#loclist (#*expand "<sfile>"))))
+
 (defmacro with-cwd [dir & body]
   `(let [has-local# (when (exists? "*haslocaldir") (nonzero? (#*haslocaldir)))
          chdir# (if has-local# "lchdir" "chdir")
@@ -7,7 +10,7 @@
      (try
        (execute chdir# (#*fnameescape ~dir))
        ~@body
-       (finally (execute chdir# back#)))))
+       (finally (execute chdir# (#*fnameescape back#))))))
 
 (defmacro save-excursion [& body]
   `(let [restore# (#*winsaveview)]
