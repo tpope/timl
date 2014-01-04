@@ -100,6 +100,15 @@
       (when-let [s (seq coll)]
         (cons (first s) (take (dec n) (rest s)))))))
 
+(defn drop
+  [n coll]
+  (let [step (fn [n coll]
+              (if-let [s (seq coll)]
+                (if (pos? n)
+                  (recur (dec n) (rest s))
+                  s)))]
+    (lazy-seq (step n coll))))
+
 (defn partition
   ([n coll]
    (partition n n coll))
