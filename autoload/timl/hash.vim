@@ -166,20 +166,3 @@ function! s:dissoc(node, hash, key, level) abort
     endif
   endif
 endfunction
-
-let s:m1 = 0x55555555
-let s:m2 = 0x33333333
-let s:m4 = 0x0f0f0f0f
-let s:m8 = 0x00ff00ff
-let s:m16 =0x0000ffff
-function! timl#hash#hamming_weight(x) abort
-  if a:x < 0
-    return 1 + timl#hash#hamming_weight(and(a:x, 0x7fffffff))
-  endif
-  let x = and(a:x,s:m1)+ and(a:x/2, s:m1)
-  let x = and(x, s:m2) + and(x/4, s:m2)
-  let x = and(x, s:m4) + and(x/16, s:m4)
-  let x = and(x, s:m8) + and(x/256, s:m8)
-  let x = and(x,s:m16) + and(x/65536, s:m16)
-  return x
-endfunction
