@@ -98,6 +98,9 @@ function! timl#printer#string(x)
   elseif type(a:x) == type(function('tr'))
     return '#*'.substitute(join([a:x]), '[{}]', '', 'g')
 
+  elseif type ==# 'timl.lang/Instant'
+    return '#inst "'.timl#inst#to_string(a:x).'"'
+
   elseif type ==# 'vim/Float' && string(a:x) =~# 'n'
     if string(a:x) ==# 'inf'
       return 'Infinity'

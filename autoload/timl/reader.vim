@@ -164,6 +164,13 @@ function! s:read(port, ...) abort
       let port.argsyms[token] = timl#symbol#gen('p1__')
     endif
     return port.argsyms[token]
+
+  elseif token ==# '#uuid'
+    return tolower(s:read(port))
+
+  elseif token ==# '#inst'
+    return timl#inst#parse(s:read(port))
+
   elseif token =~# '^#\a'
     let next = s:read(port)
     unlockvar 1 next

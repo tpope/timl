@@ -421,6 +421,11 @@ call s:define_call('force', 'timl#delay#force')
 call s:define_call('future-call', 'timl#future#call')
 runtime! autoload/timl/atom.vim
 
+" Section: Time
+
+call s:define_call('inst', 'timl#inst#create')
+call s:define_call('sleep', 'timl#inst#sleep')
+
 " Section: Vim Interop
 
 call s:define_pred('exists?', 'exists')
