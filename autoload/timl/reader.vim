@@ -81,7 +81,7 @@ function! s:read(port, ...) abort
   let [token, pos, line] = s:read_token(a:port)
   let wanted = a:0 ? a:1 : ''
   if token ==# '('
-    let meta = timl#type#bless(s:map_type, {'line': line})
+    let meta = timl#type#bless(s:map_type, {'line': line, '__length': 1, '__root': {}})
     return timl#list#create(s:read_until(port, ')'), meta)
   elseif token == '['
     return timl#vector#claim(s:read_until(port, ']'))

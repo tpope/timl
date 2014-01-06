@@ -40,6 +40,10 @@ function! timl#function#invoke_self(...) dict abort
   return self.__call__(a:000)
 endfunction
 
+function! timl#function#hash(fn) abort
+  return timl#hash#string(string(a:fn.__call__))
+endfunction
+
 let s:def = timl#symbol('def')
 let s:let = timl#symbol('timl.core/let')
 let s:fns = timl#symbol('fn*')

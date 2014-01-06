@@ -140,6 +140,7 @@ let s:var_type = timl#type#core_create('Var')
 call timl#type#core_define('Type', g:timl#nil, {})
 call timl#type#core_define('Namespace', g:timl#nil, {})
 call timl#type#core_define('Var', g:timl#nil, {
+      \ 'hash': 'timl#hash#str_attribute',
       \ 'get-meta': 'timl#meta#from_attribute',
       \ 'reset-meta!': 'timl#var#reset_meta',
       \ 'call': 'timl#var#call',
@@ -149,12 +150,14 @@ call timl#type#core_define('Symbol', g:timl#nil, {
       \ 'get-meta': 'timl#meta#from_attribute',
       \ 'with-meta': 'timl#meta#copy_assign_lock',
       \ 'equiv': 'timl#symbol#equal',
+      \ 'hash': 'timl#hash#str_attribute',
       \ 'to-string': 'timl#keyword#to_string',
       \ 'name': 'timl#keyword#name',
       \ 'namespace': 'timl#keyword#namespace',
       \ 'call': 'timl#keyword#call'})
 call timl#type#core_define('Keyword', g:timl#nil, {
       \ 'to-string': 'timl#keyword#to_string',
+      \ 'hash': 'timl#hash#str_attribute',
       \ 'name': 'timl#keyword#name',
       \ 'namespace': 'timl#keyword#namespace',
       \ 'call': 'timl#keyword#call'})

@@ -90,6 +90,10 @@ call s:define_pred('var?', 'timl#var#test')
 call s:define_pred('isa?', 'timl#type#isap')
 call s:define_pred('can?', 'timl#type#canp')
 
+call s:implement('timl.lang/Type',
+      \ 'hash', 'timl#hash#str_attribute',
+      \ 'call', 'timl#function#call')
+
 " Section: Meta
 
 call s:define_call('meta', 'timl#meta#get')
@@ -114,9 +118,6 @@ call s:define_apply('identical?', 'timl#equality#identical')
 call s:define_apply('=', 'timl#equality#all')
 call s:define_apply('not=', 'timl#equality#not')
 
-call s:implement('timl.lang/Type',
-      \ 'call', 'timl#function#call')
-
 " Section: Nil
 
 call s:define_pred('nil?', 'timl#nil#test')
@@ -126,6 +127,7 @@ call timl#nil#identity()
 
 call timl#type#define(s:vimns, timl#symbol('Number'), g:timl#nil)
 call s:implement('vim/Number',
+      \ 'hash', 'timl#function#identity',
       \ 'to-string', 'string')
 
 call s:define_call('num', 'timl#num#coerce')
@@ -184,6 +186,7 @@ call timl#type#define(s:vimns, timl#symbol('String'), g:timl#nil)
 
 call s:implement('vim/String',
       \ 'to-string', 'timl#function#identity',
+      \ 'hash', 'timl#hash#string',
       \ 'funcref', 'function',
       \ 'seq', 'timl#string#seq',
       \ 'lookup', 'timl#string#lookup',
@@ -210,7 +213,8 @@ call s:define_call('nr2char', 'nr2char')
 
 " Section: Boolean
 
-let s:boolean = timl#type#core_define('Boolean', g:timl#nil, {})
+let s:boolean = timl#type#core_define('Boolean', g:timl#nil, {
+      \ 'hash': 'len'})
 
 if !exists('g:timl#false')
   call timl#false#identity()
@@ -226,9 +230,11 @@ call s:define_pred('true?', 'timl#true#test')
 call timl#type#define(s:vimns, timl#symbol('Funcref'), g:timl#nil)
 
 call s:implement('timl.lang/Function',
+      \ 'hash', 'timl#function#hash',
       \ 'call', 'timl#function#call')
 
 call s:implement('timl.lang/MultiFn',
+      \ 'hash', 'timl#function#hash',
       \ 'call', 'timl#type#dispatch')
 
 call s:implement('vim/Funcref',
@@ -363,14 +369,7 @@ call s:implement('timl.lang/HashMap',
 call s:implement('timl.lang/HashMap',
       \ 'assoc', 'timl#map#assoc',
       \ 'dissoc', 'timl#map#dissoc',
-      \ 'transient', 'timl#map#transient',
       \ 'call', 'timl#map#call')
-
-call s:implement('timl.lang/HashMap',
-      \ 'conj!', 'timl#map#conjb',
-      \ 'assoc!', 'timl#map#assocb',
-      \ 'dissoc!', 'timl#map#dissocb',
-      \ 'persistent!', 'timl#map#persistentb')
 
 call s:define_pred('map?', 'timl#map#test')
 call s:define_apply('hash-map', 'timl#map#create')

@@ -51,4 +51,5 @@ call timl#type#core_define('Nil', g:timl#nil, {
       \ 'conj': 'timl#nil#cons',
       \ 'assoc': 'timl#nil#assoc',
       \ 'length': 'timl#nil#length',
+      \ 'hash': 'timl#nil#length',
       \ 'lookup': 'timl#nil#lookup'})

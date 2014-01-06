@@ -9,38 +9,13 @@ function! timl#map#test(coll)
   return timl#type#canp(a:coll, g:timl#core#dissoc)
 endfunction
 
-function! timl#map#key(key) abort
-  if type(a:key) == type(0)
-    return string(a:key)
-  elseif timl#keyword#test(a:key) && a:key[0][0:1] !=# '__'
-    return a:key[0]
-  elseif a:key is# g:timl#nil
-    return ' '
-  else
-    return ' '.timl#printer#string(a:key)
-  endif
-endfunction
-
-function! timl#map#dekey(key)
-  if a:key ==# ' '
-    return g:timl#nil
-  elseif a:key =~# '^ '
-    return timl#reader#read_string(a:key[1:-1])
-  elseif a:key =~# '^[-+]\=\d'
-    return timl#reader#read_string(a:key)
-  else
-    return timl#keyword(a:key)
-  endif
-endfunction
-
 let s:type = timl#type#core_create('HashMap')
 function! timl#map#create(_) abort
   let keyvals = len(a:_) == 1 ? a:_[0] : a:_
-  let map = {}
-  for i in range(0, len(keyvals)-1, 2)
-    let map[timl#map#key(keyvals[i])] = get(keyvals, i+1, g:timl#nil)
+  let map = s:empty
+  for i in range(0, len(keyvals)-1, 16)
+    let map = call('timl#map#assoc', [map] + keyvals[i : i+15])
   endfor
-  call timl#type#bless(s:type, map)
   lockvar 1 map
   return map
 endfunction
@@ -65,11 +40,11 @@ function! timl#map#soft_coerce(coll) abort
 endfunction
 
 function! timl#map#to_array(this) abort
-  return map(filter(items(a:this), 'v:val[0][0:1] !=# "__"'), '[timl#map#dekey(v:val[0]), v:val[1]]')
+  return map(filter(items(a:this), 'v:val[0][0:1] !=# "__"'), '[timl#keyword#intern(v:val[0]), v:val[1]]') + timl#hash#items(a:this.__root)
 endfunction
 
 function! timl#map#length(this) abort
-  return len(timl#map#to_array(a:this))
+  return a:this.__length
 endfunction
 
 function! timl#map#equal(this, that)
@@ -98,11 +73,15 @@ function! timl#map#seq(this) abort
 endfunction
 
 function! timl#map#lookup(this, key, ...) abort
-  return get(a:this, timl#map#key(a:key), a:0 ? a:1 : g:timl#nil)
+  if timl#keyword#test(a:key) && a:key.str !~# '^__'
+    return get(a:this, a:key.str, a:0 ? a:1 : g:timl#nil)
+  else
+    return get(timl#hash#find(a:this, a:key), 1, a:0 ? a:1 : g:timl#nil)
+  endif
 endfunction
 
 if !exists('s:empty')
-  let s:empty = timl#type#bless(s:type)
+  let s:empty = timl#type#bless(s:type, {'__root': {}, '__length': 0})
   lockvar s:empty
 endif
 function! timl#map#empty(this) abort
@@ -110,71 +89,47 @@ function! timl#map#empty(this) abort
 endfunction
 
 function! timl#map#conj(this, ...) abort
-  let this = copy(a:this)
   let _ = {}
+  let this = a:this
   for _.e in a:000
-    let this[timl#map#key(timl#coll#first(_.e))] = timl#coll#fnext(_.e)
+    let this = timl#map#assoc(this, timl#coll#first(_.e), timl#coll#fnext(_.e))
   endfor
-  lockvar 1 this
   return this
-endfunction
-
-function! timl#map#conjb(this, ...) abort
-  let _ = {}
-  for _.e in a:000
-    let a:this[timl#map#key(timl#coll#first(_.e))] = timl#coll#fnext(_.e)
-  endfor
-  return a:this
 endfunction
 
 function! timl#map#assoc(this, ...) abort
   let this = copy(a:this)
   for i in range(0, len(a:000)-2, 2)
-    let this[timl#map#key(a:000[i])] = a:000[i+1]
+    if timl#keyword#test(a:000[i]) && a:000[i].str !~# '^__'
+      if !has_key(this, a:000[i].str)
+        let this.__length += 1
+      endif
+      let this[a:000[i].str] = a:000[i+1]
+    else
+      let [this.__root, c] = timl#hash#assoc(this.__root, a:000[i], a:000[i+1])
+      let this.__length += c
+    endif
   endfor
   lockvar 1 this
   return this
-endfunction
-
-function! timl#map#assocb(this, ...) abort
-  for i in range(0, len(a:000)-2, 2)
-    let a:this[timl#map#key(a:000[i])] = a:000[i+1]
-  endfor
-  return a:this
 endfunction
 
 function! timl#map#dissoc(this, ...) abort
   let _ = {}
   let this = copy(a:this)
   for _.x in a:000
-    let key = timl#map#key(_.x)
-    if has_key(this, key)
-      call remove(this, key)
+    if timl#keyword#test(_.x) && _.x.str !~# '^__'
+      if has_key(this, _.x.str)
+        call remove(this, _.x.str)
+        let this.__length -= 1
+      endif
+    else
+      let [this.__root, c] = timl#hash#dissoc(this.__root, _.x)
+      let this.__length -= c
     endif
   endfor
   lockvar 1 this
   return this
-endfunction
-
-function! timl#map#dissocb(this, ...) abort
-  let _ = {}
-  for _.x in a:000
-    let key = timl#map#key(_.x)
-    if has_key(a:this, key)
-      call remove(a:this, key)
-    endif
-  endfor
-  return a:this
-endfunction
-
-function! timl#map#transient(this) abort
-  let this = a:this
-  return islocked('this') ? copy(this) : this
-endfunction
-
-function! timl#map#persistentb(this) abort
-  lockvar 1 a:this
-  return a:this
 endfunction
 
 function! timl#map#call(this, _) abort
