@@ -76,7 +76,7 @@ function! timl#map#lookup(this, key, ...) abort
   if timl#keyword#test(a:key) && a:key.str !~# '^__'
     return get(a:this, a:key.str, a:0 ? a:1 : g:timl#nil)
   else
-    return get(timl#hash#find(a:this, a:key), 1, a:0 ? a:1 : g:timl#nil)
+    return get(timl#hash#find(a:this.__root, a:key), 1, a:0 ? a:1 : g:timl#nil)
   endif
 endfunction
 
