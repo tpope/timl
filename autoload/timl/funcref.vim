@@ -21,3 +21,15 @@ endfunction
 function! timl#funcref#hash(this) abort
   return timl#hash#string(string(a:this))
 endfunction
+
+function! timl#funcref#exists(name) abort
+  return exists(a:name =~# '^\d\+$' ? '*{'.a:name.'}' : '*'.a:name)
+endfunction
+
+function! timl#funcref#anonymous() abort
+  let d = {}
+  function! d.f() abort
+    return +matchstr(expand('<sfile>'), '\d\+$')
+  endfunction
+  return d.f
+endfunction

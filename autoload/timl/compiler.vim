@@ -716,11 +716,9 @@ endfunction
 
 function! s:function_gc()
   for fn in keys(g:timl_functions)
-    try
-      call function('{'.fn.'}')
-    catch /^Vim.*E700/
+    if !timl#funcref#exists(fn)
       call remove(g:timl_functions, fn)
-    endtry
+    endif
   endfor
 endfunction
 
