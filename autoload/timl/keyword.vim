@@ -34,6 +34,18 @@ function! timl#keyword#cast(keyword) abort
   throw 'timl: keyword expected but received '.timl#type#string(a:keyword)
 endfunction
 
+function! timl#keyword#to_string(this) abort
+  return a:this.str
+endfunction
+
+function! timl#keyword#name(this) abort
+  return a:this.name
+endfunction
+
+function! timl#keyword#namespace(this) abort
+  return a:this.namespace
+endfunction
+
 function! timl#keyword#call(this, _) abort
   if len(a:_) < 1 || len(a:_) > 2
     throw 'timl: arity error'

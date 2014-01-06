@@ -125,6 +125,8 @@ call timl#nil#identity()
 " Section: Number
 
 call timl#type#define(s:vimns, timl#symbol('Number'), g:timl#nil)
+call s:implement('vim/Number',
+      \ 'to-string', 'string')
 
 call s:define_call('num', 'timl#num#coerce')
 call s:define_call('int', 'timl#number#int')
@@ -170,6 +172,8 @@ call s:define_pred('even?', 'timl#number#evenp')
 call s:define_call('str2nr', 'str2nr')
 if has('float')
   call timl#type#define(s:vimns, timl#symbol('Float'), g:timl#nil)
+  call s:implement('vim/Float',
+        \ 'to-string', 'string')
   call s:define_call('str2float', 'str2float')
   call s:define_call('float2nr', 'float2nr')
 endif
@@ -179,6 +183,7 @@ endif
 call timl#type#define(s:vimns, timl#symbol('String'), g:timl#nil)
 
 call s:implement('vim/String',
+      \ 'to-string', 'timl#function#identity',
       \ 'funcref', 'function',
       \ 'seq', 'timl#string#seq',
       \ 'lookup', 'timl#string#lookup',

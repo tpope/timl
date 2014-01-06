@@ -22,6 +22,10 @@ function! timl#nil#length(...) abort
   return 0
 endfunction
 
+function! timl#nil#to_string(...) abort
+  return ''
+endfunction
+
 function! timl#nil#test(this) abort
   return a:this is# g:timl#nil
 endfunction
@@ -40,6 +44,7 @@ endfunction
 
 call timl#type#core_define('Nil', g:timl#nil, {
       \ 'seq': 'timl#nil#identity',
+      \ 'to-string': 'timl#nil#to_string',
       \ 'empty': 'timl#nil#identity',
       \ 'car': 'timl#nil#identity',
       \ 'cdr': 'timl#list#empty',

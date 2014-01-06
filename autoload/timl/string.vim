@@ -19,8 +19,8 @@ function! timl#string#coerce(val) abort
     return substitute(join([a:val]), '[{}]', '', 'g')
   elseif timl#symbol#test(a:val) || timl#keyword#test(a:val)
     return a:val.str
-  elseif type(a:val) == type([])
-    return join(map(copy(a:val), 'timl#string#coerce(v:val)'), ',').','
+  elseif timl#type#canp(a:val, g:timl#core#to_string)
+    return timl#invoke(g:timl#core#to_string, a:val)
   else
     return '#<'.timl#type#string(a:val).'>'
   endif

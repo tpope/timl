@@ -149,5 +149,12 @@ call timl#type#core_define('Symbol', g:timl#nil, {
       \ 'get-meta': 'timl#meta#from_attribute',
       \ 'with-meta': 'timl#meta#copy_assign_lock',
       \ 'equiv': 'timl#symbol#equal',
+      \ 'to-string': 'timl#keyword#to_string',
+      \ 'name': 'timl#keyword#name',
+      \ 'namespace': 'timl#keyword#namespace',
       \ 'call': 'timl#keyword#call'})
-call timl#type#core_define('Keyword', g:timl#nil, {'call': 'timl#keyword#call'})
+call timl#type#core_define('Keyword', g:timl#nil, {
+      \ 'to-string': 'timl#keyword#to_string',
+      \ 'name': 'timl#keyword#name',
+      \ 'namespace': 'timl#keyword#namespace',
+      \ 'call': 'timl#keyword#call'})
