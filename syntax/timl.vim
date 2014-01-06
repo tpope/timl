@@ -67,6 +67,9 @@ syntax match timlSymbol '\<%&\=\>'
 
 syntax match timlComment "\<#_"
 syntax match timlComment ";.*$"
+syntax match timlComment ";= "
+syntax match timlComment ";! " nextgroup=timlError
+syntax match timlError ".*$" contained
 syntax match timlComment "#!.*$"
 syntax match timlComment ";;.*$" contains=@Spell
 
@@ -102,6 +105,7 @@ hi def link timlDeref Special
 hi def link timlMeta Special
 hi def link timlGroup Special
 hi def link timlComment Comment
+hi def link timlError WarningMsg
 
 hi def link timlVimFunction Function
 hi def link timlVimOption Type

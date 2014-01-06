@@ -130,7 +130,7 @@ function! timl#interactive#eval_opfunc(type) abort
 endfunction
 
 function! timl#interactive#return() abort
-  if !empty(getline('.')[col('.')]) || synIDattr(synID(line('.'), col('.')-1, 1), 'name') =~? s:skip
+  if !empty(getline('.')[col('.')]) || synIDattr(synID(line('.'), col('.')-1, 1), 'name') =~? s:skip || getline('.') =~# '^\s*\%(;.*\)\=$'
     return "\<CR>"
   endif
   let beg = s:beginning_of_sexp()
@@ -147,14 +147,14 @@ function! timl#interactive#return() abort
   let port = timl#reader#open_string(string, expand('%:p'))
   try
     let g:timl#core#_STAR_ns_STAR_ = timl#namespace#find(timl#symbol#intern(timl#interactive#ns_for_cursor()))
-    let body = ";=" . timl#printer#string(timl#loader#consume(port))
+    let body = ";= " . timl#printer#string(timl#loader#consume(port))
     call setloclist(0, [])
     let &syntax = &syntax
   catch //
     unlet! g:timl#core#_STAR_e
     let g:timl#core#_STAR_e = timl#exception#build(v:exception, v:throwpoint)
     call setloclist(0, g:timl#core#_STAR_e.qflist)
-    let body = ";!" . timl#printer#string(g:timl#core#_STAR_e)
+    let body = ";! " . timl#printer#string(g:timl#core#_STAR_e)
   finally
     call timl#reader#close(port)
     let g:timl#core#_STAR_ns_STAR_ = ns
