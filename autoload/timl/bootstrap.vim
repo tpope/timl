@@ -239,6 +239,8 @@ call s:implement('timl.lang/MultiFn',
 
 call s:implement('vim/Funcref',
       \ 'funcref', 'timl#function#identity',
+      \ 'to-string', 'timl#funcref#string',
+      \ 'hash', 'timl#funcref#hash',
       \ 'call', 'timl#funcref#call')
 
 call s:define_pred('funcref?', 'timl#funcref#test')

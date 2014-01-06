@@ -13,3 +13,11 @@ let s:type = type(function('tr'))
 function! timl#funcref#test(this) abort
   return type(a:this) == s:type
 endfunction
+
+function! timl#funcref#string(this) abort
+  return join([a:this])
+endfunction
+
+function! timl#funcref#hash(this) abort
+  return timl#hash#string(string(a:this))
+endfunction

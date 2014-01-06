@@ -15,8 +15,6 @@ function! timl#string#coerce(val) abort
     return a:val
   elseif type(a:val) == type(0) || type(a:val) == 5
     return ''.a:val
-  elseif type(a:val) == type(function('tr'))
-    return substitute(join([a:val]), '[{}]', '', 'g')
   elseif timl#symbol#test(a:val) || timl#keyword#test(a:val)
     return a:val.str
   elseif timl#type#canp(a:val, g:timl#core#to_string)
