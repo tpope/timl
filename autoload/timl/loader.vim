@@ -100,7 +100,7 @@ function! timl#loader#all_relative(paths)
     if path[0] ==# '/'
       let path = path[1:-1]
     else
-      let path = substitute(tr(g:timl#core#_STAR_ns_STAR_.name[0], '.-', '/_'), '[^/]*$', '', '') . path
+      let path = substitute(tr(timl#namespace#name(g:timl#core#_STAR_ns_STAR_).str, '.-', '/_'), '[^/]*$', '', '') . path
     endif
     call timl#loader#relative(path)
   endfor

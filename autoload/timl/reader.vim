@@ -195,7 +195,7 @@ function! s:read(port, ...) abort
       return timl#keyword#intern(timl#namespace#the(ns).name[0].matchstr(token, '.*\zs/.\+'))
     endif
   elseif token =~# '^::.'
-    return timl#keyword#intern(g:timl#core#_STAR_ns_STAR_.name[0].'/'.token[2:-1])
+    return timl#keyword#intern(timl#namespace#name(g:timl#core#_STAR_ns_STAR_).str.'/'.token[2:-1])
   elseif token =~# '^:.'
     return timl#keyword#intern(token[1:-1])
   elseif token =~# '^'.s:iskeyword
@@ -260,7 +260,7 @@ function! timl#reader#syntax_quote(form, gensyms) abort
       return timl#list(s:quote, timl#symbol(timl#namespace#maybe_resolve(
             \ g:timl#core#_STAR_ns_STAR_,
             \ a:form,
-            \ {'str': (a:form[0] =~# '/.' ? '' : g:timl#core#_STAR_ns_STAR_.name[0].'/').a:form[0]}).str))
+            \ {'str': (a:form[0] =~# '/.' ? '' : timl#namespace#name(g:timl#core#_STAR_ns_STAR_).str.'/').a:form[0]}).str))
     else
       return timl#list(s:quote, a:form)
     endif

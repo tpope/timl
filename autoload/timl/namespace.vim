@@ -112,7 +112,7 @@ endfunction
 
 function! timl#namespace#intern(ns, name, ...)
   let ns = timl#namespace#the(a:ns)
-  let str = ns.name[0].'/'.timl#symbol#cast(a:name)[0]
+  let str = timl#namespace#name(ns).str.'/'.timl#symbol#cast(a:name)[0]
   let munged = timl#munge(str)
   let meta = copy(a:name.meta is# g:timl#nil ? timl#map#create([]) : a:name.meta)
   let meta.name = a:name

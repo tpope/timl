@@ -204,10 +204,10 @@ function! timl#interactive#repl(...) abort
   try
     set nomore
     call timl#loader#require(timl#symbol#intern('timl.repl'))
-    if g:timl#core#_STAR_ns_STAR_.name[0] ==# 'user'
+    if timl#namespace#name(g:timl#core#_STAR_ns_STAR_).str ==# 'user'
       call timl#namespace#refer(timl#symbol#intern('timl.repl'))
     endif
-    let input = input(g:timl#core#_STAR_ns_STAR_.name[0].'=> ', '', cmpl)
+    let input = input(timl#namespace#name(g:timl#core#_STAR_ns_STAR_).str.'=> ', '', cmpl)
     if input =~# '^:q\%[uit]'
       return ''
     elseif input =~# '^:'
@@ -222,7 +222,7 @@ function! timl#interactive#repl(...) abort
             let read = timl#reader#read_string_all(input)
             break
           catch /^timl#reader: unexpected EOF/
-            let space = repeat(' ', len(g:timl#core#_STAR_ns_STAR_.name[0])-2)
+            let space = repeat(' ', len(timl#namespace#name(g:timl#core#_STAR_ns_STAR_).str)-2)
             let input .= "\n" . input(space.'#_=> ', '', cmpl)
             echo "\n"
           endtry
@@ -245,7 +245,7 @@ function! timl#interactive#repl(...) abort
         echo v:exception
         echohl NONE
       endtry
-      let input = input(g:timl#core#_STAR_ns_STAR_.name[0].'=> ', '', cmpl)
+      let input = input(timl#namespace#name(g:timl#core#_STAR_ns_STAR_).str.'=> ', '', cmpl)
     endwhile
     return input
   finally

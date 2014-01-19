@@ -40,7 +40,7 @@ function! timl#printer#string(x)
           \ . ' multi>'
 
   elseif type ==# 'timl.lang/Namespace'
-    return '#<Namespace '.get(a:x, 'name', '')[0].'>'
+    return '#<Namespace '.get(a:x, '__name__', '')[0].'>'
 
   elseif type ==# 'timl.lang/Var'
     return "#'".a:x.str
