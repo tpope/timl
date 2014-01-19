@@ -54,6 +54,9 @@ command! -bang -nargs=? -complete=file TLsource
       \ endif
 
 function! s:load_filetype(ft) abort
+  if empty(a:ft)
+    return ''
+  endif
   let ft = split(a:ft)[0]
   for kind in ['ftplugin', 'indent']
     for file in findfile(kind.'/'.ft.'.tim', &rtp, -1)
