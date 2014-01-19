@@ -86,6 +86,7 @@ call s:define_call('intern', 'timl#namespace#intern')
 call s:define_call('var-get', 'timl#var#get')
 call s:define_call('find-var', 'timl#var#find')
 call s:define_pred('var?', 'timl#var#test')
+call s:define_call('munge', 'timl#var#munge')
 
 " Section: Type Sytem
 
@@ -109,10 +110,6 @@ call s:define_call('keyword', 'timl#keyword#intern')
 call s:define_call('gensym', 'timl#symbol#gen')
 call s:define_pred('symbol?', 'timl#symbol#test')
 call s:define_pred('keyword?', 'timl#keyword#test')
-
-" Section: Utility
-
-call s:define_call('munge', 'timl#munge')
 
 " Section: Equality
 

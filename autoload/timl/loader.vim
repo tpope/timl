@@ -168,6 +168,10 @@ endfunction
 function! timl#loader#init() abort
 endfunction
 
+if !exists('g:autoloaded_timl_bootstrap')
+  runtime! autoload/timl/bootstrap.vim
+endif
+
 let s:core = timl#namespace#create(timl#symbol#intern('timl.core'))
 let s:user = timl#namespace#create(timl#symbol#intern('user'))
 call timl#namespace#intern(s:core, timl#symbol#intern('*ns*'), s:user)

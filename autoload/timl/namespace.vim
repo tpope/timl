@@ -9,6 +9,10 @@ if !exists('g:timl#namespaces')
   let g:timl#namespaces = {}
 endif
 
+function! timl#namespace#munge(str) abort
+  return tr(a:str, '-.', '_#')
+endfunction
+
 function! timl#namespace#create(name) abort
   let name = timl#symbol#cast(a:name)
   if !has_key(g:timl#namespaces, name[0])
@@ -120,8 +124,11 @@ endfunction
 
 function! timl#namespace#intern(ns, name, ...)
   let ns = timl#namespace#the(a:ns)
-  let str = timl#namespace#name(ns).str.'/'.timl#symbol#cast(a:name)[0]
-  let munged = timl#munge(str)
+  let nsname = timl#namespace#name(ns).str
+  let str = nsname.'/'.timl#symbol#cast(a:name).str
+  let nsglobal = timl#namespace#munge(nsname)
+  let key = timl#var#munge(a:name.str)
+  let munged = nsglobal.'#'.key
   let meta = copy(a:name.meta is# g:timl#nil ? timl#map#create([]) : a:name.meta)
   let meta.name = a:name
   let meta.ns = ns

@@ -32,7 +32,7 @@ endfunction
 
 function! timl#compiler#resolve(sym) abort
   if a:sym[0] =~# '^\w:'
-    return {'location': timl#munge(a:sym[0])}
+    return {'location': timl#var#munge(a:sym[0])}
   elseif a:sym[0][0] ==# '$'
     return {'location': "(exists('".a:sym[0]."') ? ".a:sym[0]." : g:timl#nil)"}
   elseif (a:sym[0] =~# '^&\w' && exists(a:sym[0]))
@@ -624,7 +624,7 @@ function! s:emit(file, env, form) abort
       if timl#symbol#is(First, '.')
         let expr = s:expr_dot(a:file, env, a:form)
       elseif timl#symbol#test(First)
-        let munged = timl#munge(First[0])
+        let munged = timl#var#munge(First[0])
         if env.context ==# 'expr' && exists('*s:expr_sf_'.munged)
           let expr = s:expr_sf_{munged}(a:file, env, a:form)
         elseif exists('*s:emit_sf_'.munged)
@@ -650,7 +650,7 @@ function! s:emit(file, env, form) abort
       else
         let args = s:expr_args(a:file, env, timl#coll#next(a:form))
         if timl#coll#seqp(First) && timl#symbol#is(timl#coll#first(First), 'function')
-          let expr = timl#munge(timl#coll#fnext(First)).'('.args.')'
+          let expr = timl#var#munge(timl#coll#fnext(First)).'('.args.')'
         elseif type(First) == type(function('tr'))
           let expr = join([First]).'('.args.')'
         else

@@ -178,7 +178,7 @@ function! s:read(port, ...) abort
     if token !~# '[/.]'
       let token = 'timl.lang/'.token
     endif
-    let munged = timl#munge(token)
+    let munged = timl#var#munge(token)
     if timl#map#test(next) && exists("g:".substitute(munged, '.*\zs#', '#map__GT_', ''))
       return timl#invoke(g:{substitute(munged, '.*\zs#', '#map__GT_', '')}, next)
     elseif timl#vector#test(next) && exists("g:".substitute(munged, '.*\zs#', '#__GT_', ''))
