@@ -12,22 +12,22 @@ endif
 function! timl#namespace#create(name) abort
   let name = timl#symbol#cast(a:name)
   if !has_key(g:timl#namespaces, name[0])
-    let g:timl#namespaces[name[0]] = timl#type#bless(s:type, {'name': name, 'aliases': {}, 'mappings': {}})
+    let g:timl#namespaces[name[0]] = timl#type#bless(s:type, {'__name__': name, '__aliases__': {}, '__mappings__': {}})
   endif
   let ns = g:timl#namespaces[name[0]]
   return ns
 endfunction
 
 function! timl#namespace#name(ns) abort
-  return timl#namespace#the(a:ns).name
+  return timl#namespace#the(a:ns).__name__
 endfunction
 
 function! timl#namespace#map(ns) abort
-  return timl#namespace#the(a:ns).mappings
+  return timl#namespace#the(a:ns).__mappings__
 endfunction
 
 function! timl#namespace#aliases(ns) abort
-  return timl#namespace#the(a:ns).aliases
+  return timl#namespace#the(a:ns).__aliases__
 endfunction
 
 function! timl#namespace#select(name) abort
@@ -40,7 +40,7 @@ function! timl#namespace#refer(name, ...) abort
   let sym = timl#symbol#cast(a:name)
   let ns = timl#namespace#find(sym)
   let i = 0
-  let only = keys(ns.mappings)
+  let only = keys(ns.__mappings__)
   let exclude = []
   if !exists('s:k_only')
     let s:k_only = timl#keyword#intern('only')
@@ -61,13 +61,13 @@ function! timl#namespace#refer(name, ...) abort
   endwhile
   let _ = {}
   for name in only
-    if !has_key(ns.mappings, name)
+    if !has_key(ns.__mappings__, name)
       throw 'timl#namespace: no such mapping '.name
     endif
-    let var = ns.mappings[name]
+    let var = ns.__mappings__[name]
     let _.private = get(var.meta, 'private', g:timl#nil)
     if var.ns is# ns && (_.private is# g:timl#false || _.private is# g:timl#nil) && index(exclude, name) == -1
-      let me.mappings[name] = var
+      let me.__mappings__[name] = var
     endif
   endfor
   return g:timl#nil
@@ -75,7 +75,7 @@ endfunction
 
 function! timl#namespace#alias(alias, name) abort
   let me = g:timl#core#_STAR_ns_STAR_
-  let me.aliases[timl#symbol#cast(a:alias).name] = a:name
+  let me.__aliases__[timl#symbol#cast(a:alias).name] = a:name
   return g:timl#nil
 endfunction
 
@@ -97,18 +97,18 @@ endfunction
 function! timl#namespace#maybe_resolve(ns, sym, ...)
   let ns = timl#namespace#the(a:ns)
   let sym = timl#symbol#cast(a:sym)
-  if has_key(ns.mappings, sym.str)
-    return ns.mappings[sym.str]
+  if has_key(ns.__mappings__, sym.str)
+    return ns.__mappings__[sym.str]
   endif
   if !empty(sym.namespace)
-    if has_key(ns.aliases, sym.namespace)
-      let aliasns = timl#namespace#the(ns.aliases[sym.namespace])
-      if has_key(aliasns.mappings, sym.name)
-        return aliasns.mappings[sym.name]
+    if has_key(ns.__aliases__, sym.namespace)
+      let aliasns = timl#namespace#the(ns.__aliases__[sym.namespace])
+      if has_key(aliasns.__mappings__, sym.name)
+        return aliasns.__mappings__[sym.name]
       endif
     endif
-    if has_key(g:timl#namespaces, sym.namespace) && has_key(g:timl#namespaces[sym.namespace].mappings, sym.name)
-      return g:timl#namespaces[sym.namespace].mappings[sym.name]
+    if has_key(g:timl#namespaces, sym.namespace) && has_key(g:timl#namespaces[sym.namespace].__mappings__, sym.name)
+      return g:timl#namespaces[sym.namespace].__mappings__[sym.name]
     endif
   endif
   return a:0 ? a:1 : g:timl#nil
@@ -126,8 +126,8 @@ function! timl#namespace#intern(ns, name, ...)
   let meta.name = a:name
   let meta.ns = ns
   lockvar 1 meta
-  if has_key(ns.mappings, a:name[0]) && ns.mappings[a:name[0]].ns is# ns
-    let var = ns.mappings[a:name[0]]
+  if has_key(ns.__mappings__, a:name[0]) && ns.__mappings__[a:name[0]].ns is# ns
+    let var = ns.__mappings__[a:name[0]]
     let var.meta = meta
   else
     let var = timl#type#bless(s:var_type, {'ns': ns, 'str': str, 'munged': munged, 'location': 'g:'.munged, 'meta': meta})
@@ -138,7 +138,7 @@ function! timl#namespace#intern(ns, name, ...)
   elseif !exists('g:'.munged)
     let g:{munged} = g:timl#nil
   endif
-  let ns.mappings[a:name[0]] = var
+  let ns.__mappings__[a:name[0]] = var
   return var
 endfunction
 

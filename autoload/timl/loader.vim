@@ -171,7 +171,7 @@ endfunction
 let s:core = timl#namespace#create(timl#symbol#intern('timl.core'))
 let s:user = timl#namespace#create(timl#symbol#intern('user'))
 call timl#namespace#intern(s:core, timl#symbol#intern('*ns*'), s:user)
-let s:user.mappings['in-ns'] = s:core.mappings['in-ns']
+let s:user.__mappings__['in-ns'] = s:core.__mappings__['in-ns']
 call timl#loader#require(timl#symbol#intern('timl.core'))
 call timl#namespace#refer(timl#symbol#intern('timl.core'))
 
