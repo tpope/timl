@@ -16,10 +16,11 @@ endfunction
 function! timl#namespace#create(name) abort
   let name = timl#symbol#cast(a:name)
   if !has_key(g:timl#namespaces, name[0])
-    let g:timl#namespaces[name[0]] = timl#type#bless(s:type, {'__name__': name, '__aliases__': {}, '__mappings__': {}})
+    let ns = timl#type#bless(s:type, {'__name__': name, '__aliases__': {}, '__mappings__': {}})
+    let g:timl#namespaces[name[0]] = ns
+    let g:{timl#namespace#munge(name[0])} = ns
   endif
-  let ns = g:timl#namespaces[name[0]]
-  return ns
+  return g:timl#namespaces[name[0]]
 endfunction
 
 function! timl#namespace#name(ns) abort
@@ -146,6 +147,7 @@ function! timl#namespace#intern(ns, name, ...)
     let g:{munged} = g:timl#nil
   endif
   let ns.__mappings__[a:name[0]] = var
+  let ns[key] = g:{munged}
   return var
 endfunction
 
