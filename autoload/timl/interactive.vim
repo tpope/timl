@@ -176,7 +176,7 @@ function! timl#interactive#omnicomplete(findstart, base) abort
   if timl#namespace#find(ns) is g:timl#nil
     let ns = 'user'
   endif
-  let results = map(keys(timl#namespace#find(ns).mappings), '{"word": v:val}')
+  let results = map(keys(timl#namespace#map(timl#namespace#find(ns))), '{"word": v:val}')
   return filter(results, 'v:val.word[0] !=# "#" && (a:base ==# "" || a:base ==# v:val.word[0 : strlen(a:base)-1])')
 endfunction
 

@@ -19,7 +19,15 @@ function! timl#namespace#create(name) abort
 endfunction
 
 function! timl#namespace#name(ns) abort
-  return a:ns.name
+  return timl#namespace#the(a:ns).name
+endfunction
+
+function! timl#namespace#map(ns) abort
+  return timl#namespace#the(a:ns).mappings
+endfunction
+
+function! timl#namespace#aliases(ns) abort
+  return timl#namespace#the(a:ns).aliases
 endfunction
 
 function! timl#namespace#select(name) abort

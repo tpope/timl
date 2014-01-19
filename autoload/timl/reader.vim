@@ -188,7 +188,7 @@ function! s:read(port, ...) abort
     endif
   elseif token =~# '^::.\+/.'
     let alias = matchstr(token[2:-1], '.*\ze/.')
-    let ns = get(g:timl#core#_STAR_ns_STAR_.aliases, alias, {})
+    let ns = get(timl#namespace#aliases(g:timl#core#_STAR_ns_STAR_), alias, {})
     if empty(ns)
       let error = 'timl#reader: unknown ns alias '.alias.' in keyword'
     else
