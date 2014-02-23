@@ -52,7 +52,7 @@ function! timl#hash#sequential(s) abort
 endfunction
 
 let s:idx = '0123456789abcdefghijklmnopqrstuv'
-function! s:idx_for(hash, level)
+function! s:idx_for(hash, level) abort
   return s:idx[(a:hash/a:level) % 32]
 endfunction
 

@@ -5,7 +5,7 @@ if exists("g:autoloaded_timl_map")
 endif
 let g:autoloaded_timl_map = 1
 
-function! timl#map#test(coll)
+function! timl#map#test(coll) abort
   return timl#type#canp(a:coll, g:timl#core#dissoc)
 endfunction
 
@@ -47,7 +47,7 @@ function! timl#map#length(this) abort
   return a:this.__length
 endfunction
 
-function! timl#map#equal(this, that)
+function! timl#map#equal(this, that) abort
   if a:this is# a:that
     return g:timl#true
   elseif !timl#map#test(a:that)

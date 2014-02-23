@@ -9,7 +9,7 @@ let s:loctype = timl#type#core_create('Location', ['bufnr', 'filename', 'lnum',
       \ 'pattern', 'col', 'vcol', 'nr', 'text', 'type'])
 let s:locproto = timl#type#bless(s:loctype,
       \ {'bufnr': 0, 'filename': '', 'lnum': 0, 'pattern': '', 'col': 0, 'vcol': 0, 'nr': 0, 'text': '', 'type': ''})
-function! timl#exception#loclist(throwpoint)
+function! timl#exception#loclist(throwpoint) abort
   let list = []
   if a:throwpoint !~# '^function '
     call add(list, {"filename": matchstr(a:throwpoint, '^.\{-\}\ze\.\.')})
@@ -38,7 +38,7 @@ function! timl#exception#loclist(throwpoint)
 endfunction
 
 let s:type = timl#type#core_create('Exception')
-function! timl#exception#build(exception, throwpoint)
+function! timl#exception#build(exception, throwpoint) abort
   let dict = {"exception": a:exception, "throwpoint": a:throwpoint}
   let dict.line = +matchstr(a:throwpoint, '\d\+$')
   let dict.qflist = timl#exception#loclist(a:throwpoint)

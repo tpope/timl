@@ -35,23 +35,23 @@ function! timl#io#printf(fmt, ...) abort
   return g:timl#nil
 endfunction
 
-function! timl#io#pr(_)
+function! timl#io#pr(_) abort
   echon join(map(copy(a:_), 'timl#printer#string(v:val)'), ' ')
   return g:timl#nil
 endfunction
 
-function! timl#io#prn(_)
+function! timl#io#prn(_) abort
   echon join(map(copy(a:_), 'timl#printer#string(v:val)'), ' ')."\n"
   return g:timl#nil
 endfunction
 
-function! timl#io#spit(filename, body)
+function! timl#io#spit(filename, body) abort
   if type(body) == type([])
     call writefile(body, a:filename)
   else
     call writefile(split(body, "\n"), a:filename, 'b')
 endfunction
 
-function! timl#io#slurp(filename)
+function! timl#io#slurp(filename) abort
   return join(readfile(a:filename, 'b'), "\n")
 endfunction

@@ -99,7 +99,7 @@ function! timl#namespace#the(name) abort
   throw 'timl: no such namespace '.name
 endfunction
 
-function! timl#namespace#maybe_resolve(ns, sym, ...)
+function! timl#namespace#maybe_resolve(ns, sym, ...) abort
   let ns = timl#namespace#the(a:ns)
   let sym = timl#symbol#cast(a:sym)
   if has_key(ns.__mappings__, sym.str)
@@ -119,11 +119,11 @@ function! timl#namespace#maybe_resolve(ns, sym, ...)
   return a:0 ? a:1 : g:timl#nil
 endfunction
 
-function! timl#namespace#all()
+function! timl#namespace#all() abort
   return timl#coll#seq(values(g:timl#namespaces))
 endfunction
 
-function! timl#namespace#intern(ns, name, ...)
+function! timl#namespace#intern(ns, name, ...) abort
   let ns = timl#namespace#the(a:ns)
   let nsname = timl#namespace#name(ns).str
   let str = nsname.'/'.timl#symbol#cast(a:name).str

@@ -40,11 +40,11 @@ function! timl#cons#conj(this, ...) abort
   return head
 endfunction
 
-function! timl#cons#car(this)
+function! timl#cons#car(this) abort
   return a:this.car
 endfunction
 
-function! timl#cons#cdr(this)
+function! timl#cons#cdr(this) abort
   return a:this.cdr
 endfunction
 

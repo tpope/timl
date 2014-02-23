@@ -87,7 +87,7 @@ function! timl#number#solidus(_) abort
   throw 'timl: arity error'
 endfunction
 
-function! timl#number#gt(_)
+function! timl#number#gt(_) abort
   if empty(a:_)
     throw 'timl: arity error'
   endif
@@ -101,7 +101,7 @@ function! timl#number#gt(_)
   return g:timl#true
 endfunction
 
-function! timl#number#lt(_)
+function! timl#number#lt(_) abort
   if empty(a:_)
     throw 'timl: arity error'
   endif
@@ -115,7 +115,7 @@ function! timl#number#lt(_)
   return g:timl#true
 endfunction
 
-function! timl#number#gteq(_)
+function! timl#number#gteq(_) abort
   if empty(a:_)
     throw 'timl: arity error'
   endif
@@ -129,7 +129,7 @@ function! timl#number#gteq(_)
   return g:timl#true
 endfunction
 
-function! timl#number#lteq(_)
+function! timl#number#lteq(_) abort
   if empty(a:_)
     throw 'timl: arity error'
   endif
@@ -143,7 +143,7 @@ function! timl#number#lteq(_)
   return g:timl#true
 endfunction
 
-function! timl#number#equiv(_)
+function! timl#number#equiv(_) abort
   if empty(a:_)
     throw 'timl: arity error'
   endif
@@ -172,7 +172,7 @@ function! timl#number#quot(x, y) abort
   return type(a:x) == 5 || type(a:y) == 5 ? trunc(a:x/a:y) : timl#number#coerce(a:x)/a:y
 endfunction
 
-function! timl#number#mod(x, y)
+function! timl#number#mod(x, y) abort
   if (timl#number#coerce(a:x) < 0 && timl#number#coerce(a:y) > 0 || timl#number#coerce(a:x) > 0 && timl#number#coerce(a:y) < 0) && a:x % a:y != 0
     return (a:x % a:y) + a:y
   else
@@ -216,7 +216,7 @@ function! timl#number#bit_and_not(_) abort
   return acc
 endfunction
 
-function! timl#number#bit_shift_left(x, n)
+function! timl#number#bit_shift_left(x, n) abort
   let x = timl#number#int(a:x)
   for i in range(timl#number#int(a:n))
     let x = x * 2
@@ -224,7 +224,7 @@ function! timl#number#bit_shift_left(x, n)
   return x
 endfunction
 
-function! timl#number#bit_shift_right(x, n)
+function! timl#number#bit_shift_right(x, n) abort
   let x = timl#number#int(a:x)
   for i in range(timl#number#int(a:n))
     let x = x / 2

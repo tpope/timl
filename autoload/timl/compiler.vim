@@ -26,7 +26,7 @@ let s:specials = {
       \ 'catch': 1,
       \ 'finally': 1}
 
-function! timl#compiler#specialp(sym)
+function! timl#compiler#specialp(sym) abort
   return has_key(s:specials, timl#string#coerce(a:sym))
 endfunction
 
@@ -78,7 +78,7 @@ let s:escapes = {
       \ "\"": '\"',
       \ "\\": '\\'}
 
-function! timl#compiler#serialize(x)
+function! timl#compiler#serialize(x) abort
   " TODO: guard against recursion
   if timl#keyword#test(a:x)
     return 'timl#keyword#intern('.timl#compiler#serialize(a:x[0]).')'
@@ -173,7 +173,7 @@ endfunction
 
 " Section: Emission
 
-function! s:emitln(file, str)
+function! s:emitln(file, str) abort
   call add(a:file, a:str)
   return a:file
 endfunction
@@ -194,7 +194,7 @@ function! s:copy_locals(env) abort
   return env
 endfunction
 
-function! s:let_tmp(file, env, clue, str)
+function! s:let_tmp(file, env, clue, str) abort
   let a:env.temp[a:clue] = get(a:env.temp, a:clue, 0) + 1
   let temp = a:clue . a:env.temp[a:clue]
   call s:emitln(a:file, 'let '.temp.' = '.a:str)
@@ -318,7 +318,7 @@ function! s:emit_sf_do(file, env, form) abort
   call s:emit(a:file, a:env, ary[-1])
 endfunction
 
-function! s:expr_sf_if(file, env, form)
+function! s:expr_sf_if(file, env, form) abort
   let ary = timl#array#coerce(timl#coll#next(a:form))
   return 'timl#truth('.s:emit(a:file, a:env, ary[0]) . ')'
         \ . ' ? ' . s:emit(a:file, a:env, get(ary, 1, g:timl#nil))
@@ -598,7 +598,7 @@ function! s:expr_dot(file, env, form) abort
   endif
 endfunction
 
-function! s:expr_map(file, env, form)
+function! s:expr_map(file, env, form) abort
   let kvs = []
   let _ = {'seq': timl#coll#seq(a:form)}
   while _.seq isnot# g:timl#nil
@@ -608,7 +608,7 @@ function! s:expr_map(file, env, form)
   return 'timl#map#create(['.join(map(kvs, 's:emit(a:file, s:with_context(a:env, "expr"), v:val)'), ', ').'])'
 endfunction
 
-function! s:expr_args(file, env, form)
+function! s:expr_args(file, env, form) abort
   return join(map(copy(timl#array#coerce(a:form)), 's:emit(a:file, s:with_context(a:env, "expr"), v:val)'), ', ')
 endfunction
 
@@ -705,7 +705,7 @@ if !exists('g:timl_functions')
   let g:timl_functions = {}
 endif
 
-function! timl#compiler#location_meta(file, form)
+function! timl#compiler#location_meta(file, form) abort
   let meta = timl#meta#get(a:form)
   if type(meta) == type({}) && has_key(meta, 'line') && a:file isnot# 'NO_SOURCE_PATH'
     return {'file': a:file, 'line': meta.line}
@@ -714,7 +714,7 @@ function! timl#compiler#location_meta(file, form)
   endif
 endfunction
 
-function! s:function_gc()
+function! s:function_gc() abort
   for fn in keys(g:timl_functions)
     if !timl#funcref#exists(fn)
       call remove(g:timl_functions, fn)

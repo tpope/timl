@@ -54,7 +54,7 @@ let s:dot = timl#symbol('.')
 let s:form = timl#symbol('&form')
 let s:env = timl#symbol('&env')
 
-function! timl#function#destructure(params, body)
+function! timl#function#destructure(params, body) abort
   let lets = []
   let params = []
   let _ = {}

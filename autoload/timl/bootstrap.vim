@@ -42,7 +42,7 @@ function! s:predicate(_) dict abort
 endfunction
 
 let s:k_help = timl#keyword#intern('help')
-function! s:define_call(name, fn)
+function! s:define_call(name, fn) abort
   if a:fn =~# '^[a-z0-9_]\+$'
     let name = timl#symbol#intern_with_meta(a:name, timl#map#create([s:k_help, a:fn.'()']))
   else
@@ -51,7 +51,7 @@ function! s:define_call(name, fn)
   call s:intern_fn(name, 's:apply', {'invoke': s:function(a:fn)})
 endfunction
 
-function! s:define_pred(name, fn)
+function! s:define_pred(name, fn) abort
   if a:fn =~# '^[a-z0-9_]\+$'
     let name = timl#symbol#intern_with_meta(a:name, timl#map#create([s:k_help, a:fn.'()']))
   else

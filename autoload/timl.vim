@@ -11,11 +11,11 @@ function! timl#truth(val) abort
   return a:val isnot# g:timl#nil && a:val isnot# g:timl#false
 endfunction
 
-function! timl#keyword(str)
+function! timl#keyword(str) abort
   return timl#keyword#intern(a:str)
 endfunction
 
-function! timl#symbol(str)
+function! timl#symbol(str) abort
   return timl#symbol#intern(a:str)
 endfunction
 

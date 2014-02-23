@@ -12,7 +12,7 @@ let s:escapes = {
       \ "\"": '\"',
       \ "\\": '\\'}
 
-function! timl#printer#string(x)
+function! timl#printer#string(x) abort
   " TODO: guard against recursion
   let type = timl#type#string(a:x)
   if type ==# 'timl.lang/Symbol'

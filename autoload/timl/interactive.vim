@@ -58,7 +58,7 @@ function! timl#interactive#ns_for_cursor(...) abort
 endfunction
 
 let s:skip = "comment\\|string\\|regex\\|character"
-function! s:beginning_of_sexp()
+function! s:beginning_of_sexp() abort
   let open = '[[{(]'
   let close = '[]})]'
   let skip = 'synIDattr(synID(line("."),col("."),1),"name") =~? s:skip'

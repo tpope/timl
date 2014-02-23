@@ -5,7 +5,7 @@ if exists("g:autoloaded_timl_dictionary")
 endif
 let g:autoloaded_timl_dictionary = 1
 
-function! timl#dictionary#test(coll)
+function! timl#dictionary#test(coll) abort
   return timl#type#string(a:coll) ==# 'vim/Dictionary'
 endfunction
 

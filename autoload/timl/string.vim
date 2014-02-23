@@ -63,7 +63,7 @@ function! timl#string#re_quote_replacement(re) abort
   return escape(a:re, '\~&')
 endfunction
 
-function! timl#string#re_find(re, s)
+function! timl#string#re_find(re, s) abort
   let result = matchlist(a:s, '\C'.a:re)
   return empty(result) ? g:timl#nil : timl#vector#claim(result)
 endfunction

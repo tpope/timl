@@ -39,7 +39,7 @@ function! timl#list#emptyp(obj) abort
   return type(a:obj) == type({}) && get(a:obj, '__type__') is# s:empty_type
 endfunction
 
-function! timl#list#test(obj)
+function! timl#list#test(obj) abort
   return type(a:obj) == type({}) && (get(a:obj, '__type__') is# s:cons_type || get(a:obj, '__type__') is# s:empty_type)
 endfunction
 

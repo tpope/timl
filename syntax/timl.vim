@@ -21,7 +21,7 @@ let b:syntax_vars = keys(timl#namespace#map(timl#namespace#find(b:syntax_ns_str)
 
 let b:current_syntax = "timl"
 
-function! s:syn_keyword(group, keywords)
+function! s:syn_keyword(group, keywords) abort
   if !empty(a:keywords)
     exe 'syntax keyword '.a:group.' '.join(a:keywords, ' ')
   endif

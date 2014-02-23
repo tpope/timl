@@ -9,7 +9,7 @@ function! timl#loader#eval(x) abort
   return timl#compiler#build(a:x).call()
 endfunction
 
-function! timl#loader#consume(port)
+function! timl#loader#consume(port) abort
   let _ = {'result': g:timl#nil}
   let eof = []
   let _.read = timl#reader#read(a:port, eof)
@@ -24,7 +24,7 @@ let s:dir = (has('win32') ? '$APPCACHE/Vim' :
       \ match(system('uname'), "Darwin") > -1 ? '~/Library/Vim' :
       \ empty($XDG_CACHE_HOME) ? '~/.cache/vim' : '$XDG_CACHE_HOME/vim').'/timl'
 
-function! s:cache_filename(path)
+function! s:cache_filename(path) abort
   let base = expand(s:dir)
   if !isdirectory(base)
     call mkdir(base, 'p')
@@ -39,7 +39,7 @@ if !exists('g:timl_functions')
   let g:timl_functions = {}
 endif
 
-function! timl#loader#source(filename)
+function! timl#loader#source(filename) abort
   let path = fnamemodify(a:filename, ':p')
   let old_ns = g:timl#core#_STAR_ns_STAR_
   let cache = s:cache_filename(path)
@@ -95,7 +95,7 @@ function! timl#loader#relative(path) abort
   throw 'timl: could not load '.a:path
 endfunction
 
-function! timl#loader#all_relative(paths)
+function! timl#loader#all_relative(paths) abort
   for path in timl#array#coerce(a:paths)
     if path[0] ==# '/'
       let path = path[1:-1]

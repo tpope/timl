@@ -5,11 +5,11 @@ if exists("g:autoloaded_timl_set")
 endif
 let g:autoloaded_timl_set = 1
 
-function! timl#set#test(coll)
+function! timl#set#test(coll) abort
   return timl#type#canp(a:coll, g:timl#core#disj)
 endfunction
 
-function! timl#set#key(key)
+function! timl#set#key(key) abort
   if type(a:key) == type(0)
     return string(a:key)
   elseif timl#keyword#test(a:key) && a:key[0][0:1] !=# '__'
@@ -58,7 +58,7 @@ function! timl#set#seq(this) abort
   return empty(items) ? g:timl#nil : timl#array_seq#create(items)
 endfunction
 
-function! timl#set#equal(this, that)
+function! timl#set#equal(this, that) abort
   if a:this is# a:that
     return g:timl#true
   elseif !timl#set#test(a:that)

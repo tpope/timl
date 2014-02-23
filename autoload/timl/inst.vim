@@ -10,7 +10,7 @@ function! timl#inst#sleep(msec) abort
   return g:timl#nil
 endfunction
 
-function! timl#inst#create(...)
+function! timl#inst#create(...) abort
   if !a:0
     return timl#inst#now()
   elseif type(a:1) == type('')
@@ -26,7 +26,7 @@ function! timl#inst#create(...)
 endfunction
 
 " In Vim, -4 / 3 == -1.  Let's return -2 instead.
-function! s:div(a,b)
+function! s:div(a,b) abort
   if a:a < 0 && a:b > 0
     return (a:a-a:b+1)/a:b
   elseif a:a > 0 && a:b < 0
@@ -64,7 +64,7 @@ function! timl#inst#parse(str) abort
   throw "timl: invalid date string ".str
 endfunction
 
-function! timl#inst#from_ts(sec, ...)
+function! timl#inst#from_ts(sec, ...) abort
   let t = {'unix': a:sec, 'usec': a:0 ? a:1 : 0}
   let components = map(split(strftime("%Y %m %d %H %M %S", t.unix), ' '), 'str2nr(v:val)')
   let t.offset = (call('timl#inst#ts', components) - t.unix)/60

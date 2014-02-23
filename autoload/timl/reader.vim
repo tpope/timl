@@ -19,7 +19,7 @@ function! s:read_token(port) abort
   return [match, pos, line]
 endfunction
 
-function! timl#reader#eofp(port)
+function! timl#reader#eofp(port) abort
   return a:port.pos >= len(a:port.str)
 endfunction
 
@@ -41,7 +41,7 @@ function! timl#reader#read(port, ...) abort
 endfunction
 
 let s:found = {}
-function! s:read_until(port, char)
+function! s:read_until(port, char) abort
   let list = []
   let _ = {}
   let _.read = s:read(a:port, a:char)
@@ -327,7 +327,7 @@ function! timl#reader#open_string(string, ...) abort
   return port
 endfunction
 
-function! timl#reader#close(port)
+function! timl#reader#close(port) abort
   return a:port
 endfunction
 

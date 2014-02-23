@@ -125,19 +125,19 @@ call timl#type#bless(s:type_type, s:type_type)
 " Section: Hierarchy
 " Cribbed from clojure.core
 
-function! timl#type#parents(key)
+function! timl#type#parents(key) abort
   return timl#set#coerce(values(get(g:timl_hierarchy.parents, timl#string#coerce(a:key), {})))
 endfunction
 
-function! timl#type#ancestors(key)
+function! timl#type#ancestors(key) abort
   return timl#set#coerce(values(get(g:timl_hierarchy.ancestors, timl#string#coerce(a:key), {})))
 endfunction
 
-function! timl#type#descendants(key)
+function! timl#type#descendants(key) abort
   return timl#set#coerce(values(get(g:timl_hierarchy.descendants, timl#string#coerce(a:key), {})))
 endfunction
 
-function! s:tf(m, source, sources, target, targets)
+function! s:tf(m, source, sources, target, targets) abort
   for k in [a:source] + values(get(a:sources, a:source[0], {}))
     if !has_key(a:targets, k[0])
       let a:targets[k[0]] = {}
@@ -149,16 +149,16 @@ function! s:tf(m, source, sources, target, targets)
   endfor
 endfunction
 
-function! s:isap(tag, parent)
+function! s:isap(tag, parent) abort
   return a:tag ==# a:parent || has_key(get(g:timl_hierarchy.ancestors, a:tag, {}), a:parent)
 endfunction
 
-function! timl#type#isap(tag, parent)
+function! timl#type#isap(tag, parent) abort
   return timl#keyword#cast(a:tag) is# timl#keyword#cast(a:parent)
         \ || has_key(get(g:timl_hierarchy.ancestors, a:tag[0], {}), a:parent[0])
 endfunction
 
-function! timl#type#derive(tag, parent)
+function! timl#type#derive(tag, parent) abort
   let tp = g:timl_hierarchy.parents
   let td = g:timl_hierarchy.descendants
   let ta = g:timl_hierarchy.ancestors
@@ -184,11 +184,11 @@ endfunction
 
 " Section: Dispatch
 
-function! timl#type#canp(obj, this)
+function! timl#type#canp(obj, this) abort
   return s:get_method(a:this, timl#type#string(a:obj)) isnot# g:timl#nil
 endfunction
 
-function! s:get_method(this, type)
+function! s:get_method(this, type) abort
   if a:this.hierarchy isnot# g:timl_hierarchy
     let a:this.cache = {}
     let a:this.hierarchy = g:timl_hierarchy
