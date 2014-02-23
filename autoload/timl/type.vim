@@ -117,7 +117,7 @@ function! timl#type#bless(type, ...) abort
 endfunction
 
 function! timl#type#dispatch_call(_) dict
-  return g:timl#core#call.__call__([self, a:_])
+  return g:timl#core.call.__call__([self, a:_])
 endfunction
 
 call timl#type#bless(s:type_type, s:type_type)

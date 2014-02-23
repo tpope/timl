@@ -6,11 +6,11 @@ endif
 let g:timl_autoloaded_coll = 1
 
 function! timl#coll#test(coll) abort
-  return timl#type#canp(a:coll, g:timl#core#conj)
+  return timl#type#canp(a:coll, g:timl#core.conj)
 endfunction
 
 function! timl#coll#seq(coll) abort
-  return timl#invoke(g:timl#core#seq, a:coll)
+  return timl#invoke(g:timl#core.seq, a:coll)
 endfunction
 
 function! timl#coll#emptyp(seq) abort
@@ -18,12 +18,12 @@ function! timl#coll#emptyp(seq) abort
 endfunction
 
 function! timl#coll#sequentialp(coll) abort
-  return a:coll isnot# g:timl#nil && timl#type#canp(a:coll, g:timl#core#car)
+  return a:coll isnot# g:timl#nil && timl#type#canp(a:coll, g:timl#core.car)
 endfunction
 
 function! timl#coll#seqp(obj) abort
   return timl#type#string(a:obj) =~# '^timl\.lang/\%(Cons\|EmptyList\)$' ||
-        \ (timl#type#canp(a:obj, g:timl#core#car) && !timl#vector#test(a:obj))
+        \ (timl#type#canp(a:obj, g:timl#core.car) && !timl#vector#test(a:obj))
 endfunction
 
 function! timl#coll#first(coll) abort
@@ -31,20 +31,20 @@ function! timl#coll#first(coll) abort
     return a:coll.car
   elseif type(a:coll) == type([])
     return get(a:coll, 0, g:timl#nil)
-  elseif timl#type#canp(a:coll, g:timl#core#car)
-    return timl#invoke(g:timl#core#car, a:coll)
+  elseif timl#type#canp(a:coll, g:timl#core.car)
+    return timl#invoke(g:timl#core.car, a:coll)
   else
-    return timl#invoke(g:timl#core#car, timl#coll#seq(a:coll))
+    return timl#invoke(g:timl#core.car, timl#coll#seq(a:coll))
   endif
 endfunction
 
 function! timl#coll#rest(coll) abort
   if timl#cons#test(a:coll)
     return a:coll.cdr
-  elseif timl#type#canp(a:coll, g:timl#core#cdr)
-    return timl#invoke(g:timl#core#cdr, a:coll)
+  elseif timl#type#canp(a:coll, g:timl#core.cdr)
+    return timl#invoke(g:timl#core.cdr, a:coll)
   else
-    return timl#invoke(g:timl#core#cdr, timl#coll#seq(a:coll))
+    return timl#invoke(g:timl#core.cdr, timl#coll#seq(a:coll))
   endif
 endfunction
 
@@ -70,12 +70,12 @@ function! timl#coll#nnext(seq) abort
 endfunction
 
 function! timl#coll#chunked_seqp(coll) abort
-  return timl#type#canp(a:coll, g:timl#core#chunk_first)
+  return timl#type#canp(a:coll, g:timl#core.chunk_first)
 endfunction
 
 function! timl#coll#get(coll, key, ...) abort
-  if timl#type#canp(a:coll, g:timl#core#lookup)
-    return timl#invoke(g:timl#core#lookup, a:coll, a:key, a:0 ? a:1 : g:timl#nil)
+  if timl#type#canp(a:coll, g:timl#core.lookup)
+    return timl#invoke(g:timl#core.lookup, a:coll, a:key, a:0 ? a:1 : g:timl#nil)
   else
     return a:0 ? a:1 : g:timl#nil
   endif
@@ -87,31 +87,31 @@ function! timl#coll#containsp(coll, val) abort
 endfunction
 
 function! timl#coll#count(counted) abort
-  if timl#type#canp(a:counted, g:timl#core#length)
-    return timl#invoke(g:timl#core#length, a:counted)
+  if timl#type#canp(a:counted, g:timl#core.length)
+    return timl#invoke(g:timl#core.length, a:counted)
   endif
   let _ = {'seq': timl#coll#seq(a:counted)}
   let c = 0
-  while !timl#type#canp(_.seq, g:timl#core#length)
+  while !timl#type#canp(_.seq, g:timl#core.length)
     let _.seq = timl#coll#next(_.seq)
     let c += 1
   endwhile
-  return c + timl#invoke(g:timl#core#length, _.seq)
+  return c + timl#invoke(g:timl#core.length, _.seq)
 endfunction
 
 function! timl#coll#into(coll, seq) abort
   let t = timl#type#string(a:coll)
-  if timl#type#canp(a:coll, g:timl#core#transient)
-    let _ = {'coll': timl#invoke(g:timl#core#transient, a:coll), 'seq': timl#coll#seq(a:seq)}
+  if timl#type#canp(a:coll, g:timl#core.transient)
+    let _ = {'coll': timl#invoke(g:timl#core.transient, a:coll), 'seq': timl#coll#seq(a:seq)}
     while _.seq isnot# g:timl#nil
-      let _.coll = timl#invoke(g:timl#core#conj_BANG_, _.coll, timl#coll#first(_.seq))
+      let _.coll = timl#invoke(g:timl#core.conj_BANG_, _.coll, timl#coll#first(_.seq))
       let _.seq = timl#coll#next(_.seq)
     endwhile
-    return timl#invoke(g:timl#core#persistent_BANG_, _.coll)
+    return timl#invoke(g:timl#core.persistent_BANG_, _.coll)
   else
     let _ = {'coll': a:coll, 'seq': timl#coll#seq(a:seq)}
     while _.seq isnot# g:timl#nil
-      let _.coll = timl#invoke(g:timl#core#conj, _.coll, timl#coll#first(_.seq))
+      let _.coll = timl#invoke(g:timl#core.conj, _.coll, timl#coll#first(_.seq))
       let _.seq = timl#coll#next(_.seq)
     endwhile
     return _.coll

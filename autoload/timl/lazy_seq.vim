@@ -30,7 +30,7 @@ function! timl#lazy_seq#seq(lseq) abort
       let i += 1
       let _.seq = s:val(_.seq)
     endwhile
-    let a:lseq.seq = timl#invoke(g:timl#core#seq, _.seq)
+    let a:lseq.seq = timl#invoke(g:timl#core.seq, _.seq)
   endif
   return a:lseq.seq
 endfunction

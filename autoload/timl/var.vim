@@ -19,7 +19,7 @@ endfunction
 
 function! timl#var#find(sym) abort
   let sym = timl#symbol#cast(a:sym)
-  let ns = empty(sym.namespace) ? timl#namespace#name(g:timl#core#_STAR_ns_STAR_).str : sym.namespace
+  let ns = empty(sym.namespace) ? timl#namespace#name(g:timl#core._STAR_ns_STAR_).str : sym.namespace
   return get(timl#namespace#find(ns).__mappings__, sym.name, g:timl#nil)
 endfunction
 

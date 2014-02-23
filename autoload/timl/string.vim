@@ -17,8 +17,8 @@ function! timl#string#coerce(val) abort
     return ''.a:val
   elseif timl#symbol#test(a:val) || timl#keyword#test(a:val)
     return a:val.str
-  elseif timl#type#canp(a:val, g:timl#core#to_string)
-    return timl#invoke(g:timl#core#to_string, a:val)
+  elseif timl#type#canp(a:val, g:timl#core.to_string)
+    return timl#invoke(g:timl#core.to_string, a:val)
   else
     return '#<'.timl#type#string(a:val).'>'
   endif

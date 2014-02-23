@@ -6,7 +6,7 @@ endif
 let g:autoloaded_timl_set = 1
 
 function! timl#set#test(coll) abort
-  return timl#type#canp(a:coll, g:timl#core#disj)
+  return timl#type#canp(a:coll, g:timl#core.disj)
 endfunction
 
 function! timl#set#key(key) abort

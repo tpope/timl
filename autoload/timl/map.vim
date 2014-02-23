@@ -6,7 +6,7 @@ endif
 let g:autoloaded_timl_map = 1
 
 function! timl#map#test(coll) abort
-  return timl#type#canp(a:coll, g:timl#core#dissoc)
+  return timl#type#canp(a:coll, g:timl#core.dissoc)
 endfunction
 
 let s:type = timl#type#core_create('HashMap')

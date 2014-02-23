@@ -13,7 +13,7 @@ endfunction
 
 function! timl#function#birth(locals, ...) abort
   return timl#type#bless(s:type, {
-        \ 'ns': g:timl#core#_STAR_ns_STAR_,
+        \ 'ns': g:timl#core._STAR_ns_STAR_,
         \ 'name': a:0 ? a:1 : g:timl#nil,
         \ 'locals': a:locals,
         \ '__call__': function('timl#function#unimplemented')})
@@ -113,7 +113,7 @@ function! timl#function#defmacro(form, env, name, params, ...) abort
     endfor
   endif
   let name = copy(a:name)
-  let name.meta = timl#invoke(g:timl#core#assoc, get(a:name, 'meta', g:timl#nil), s:kmacro, g:timl#true)
+  let name.meta = timl#invoke(g:timl#core.assoc, get(a:name, 'meta', g:timl#nil), s:kmacro, g:timl#true)
   let fn = timl#symbol#gen('fn')
   return timl#list#create([s:defn, name] + body)
 endfunction

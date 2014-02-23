@@ -41,8 +41,8 @@ command! -nargs=1 -complete=customlist,timl#interactive#input_complete TLeval
       \ try |
       \    echo timl#rep(<q-args>) |
       \ catch |
-      \    unlet! g:timl#core#_STAR_e |
-      \    let g:timl#core#_STAR_e = timl#exception#build(v:exception, v:throwpoint) |
+      \    unlet! g:timl#core._STAR_e |
+      \    let g:timl#core._STAR_e = timl#exception#build(v:exception, v:throwpoint) |
       \    echoerr v:exception |
       \ endtry
 command! -bar TLcopen :call timl#interactive#copen(get(g:, 'timl#core#_STAR_e', []))
@@ -63,8 +63,8 @@ function! s:load_filetype(ft) abort
       try
         call timl#loader#source(file)
       catch
-        unlet! g:timl#core#_STAR_e
-        let g:timl#core#_STAR_e = timl#exception#build(v:exception, v:throwpoint) |
+        unlet! g:timl#core._STAR_e
+        let g:timl#core._STAR_e = timl#exception#build(v:exception, v:throwpoint) |
         echohl WarningMSG
         echomsg v:exception
         echohl NONE
@@ -103,7 +103,7 @@ function! s:autoload(function) abort
       endfor
     endif
   endif
-  if has_key(g:, a:function) && timl#type#canp(g:{a:function}, g:timl#core#call)
+  if has_key(g:, a:function) && timl#type#canp(g:{a:function}, g:timl#core.call)
     let body = ["function ".a:function."(...)",
           \ "  return timl#call(g:".a:function.", a:000)",
           \ "endfunction"]

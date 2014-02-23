@@ -6,8 +6,8 @@ endif
 let g:autoloaded_timl_equality = 1
 
 function! timl#equality#test(x, y) abort
-  if timl#type#canp(a:x, g:timl#core#equiv)
-    return timl#truth(timl#invoke(g:timl#core#equiv, a:x, a:y))
+  if timl#type#canp(a:x, g:timl#core.equiv)
+    return timl#truth(timl#invoke(g:timl#core.equiv, a:x, a:y))
   else
     return type(a:x) ==# type(a:y) && a:x ==# a:y
   endif

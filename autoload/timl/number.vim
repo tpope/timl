@@ -233,19 +233,19 @@ function! timl#number#bit_shift_right(x, n) abort
 endfunction
 
 function! timl#number#bit_flip(x, n) abort
-  return xor(a:x, g:timl#core#bit_shift_left.call(1, a:n))
+  return xor(a:x, g:timl#core.bit_shift_left.call(1, a:n))
 endfunction
 
 function! timl#number#bit_set(x, n) abort
-  return or(a:x, g:timl#core#bit_shift_left.call(1, a:n))
+  return or(a:x, g:timl#core.bit_shift_left.call(1, a:n))
 endfunction
 
 function! timl#number#bit_clear(x, n) abort
-  return and(a:x, invert(g:timl#core#bit_shift_left.call(1, a:n)))
+  return and(a:x, invert(g:timl#core.bit_shift_left.call(1, a:n)))
 endfunction
 
 function! timl#number#bit_test(x, n) abort
-  return and(a:x, g:timl#core#bit_shift_left.call(1, a:n))
+  return and(a:x, g:timl#core.bit_shift_left.call(1, a:n))
 endfunction
 
 function! timl#number#not_negative(x) abort

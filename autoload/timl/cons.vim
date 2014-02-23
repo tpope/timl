@@ -10,7 +10,7 @@ function! timl#cons#test(obj) abort
 endfunction
 
 function! timl#cons#create(car, cdr, ...) abort
-  if timl#type#canp(a:cdr, g:timl#core#seq)
+  if timl#type#canp(a:cdr, g:timl#core.seq)
     let cons = timl#type#bless(s:type, {'car': a:car, 'cdr': a:cdr is# g:timl#nil ? g:timl#empty_list : a:cdr, 'meta': a:0 ? a:1 : g:timl#nil})
     lockvar 1 cons
     return cons
@@ -21,7 +21,7 @@ endfunction
 function! timl#cons#spread(array) abort
   if empty(a:array)
     throw 'timl: arity error'
-  elseif !timl#type#canp(a:array[-1], g:timl#core#seq)
+  elseif !timl#type#canp(a:array[-1], g:timl#core.seq)
     throw 'timl: seq required'
   endif
   let _ = {'cdr': a:array[-1]}

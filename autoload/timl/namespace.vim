@@ -36,12 +36,12 @@ function! timl#namespace#aliases(ns) abort
 endfunction
 
 function! timl#namespace#select(name) abort
-  let g:timl#core#_STAR_ns_STAR_ = timl#namespace#create(a:name)
-  return g:timl#core#_STAR_ns_STAR_
+  let g:timl#core._STAR_ns_STAR_ = timl#namespace#create(a:name)
+  return g:timl#core._STAR_ns_STAR_
 endfunction
 
 function! timl#namespace#refer(name, ...) abort
-  let me = g:timl#core#_STAR_ns_STAR_
+  let me = g:timl#core._STAR_ns_STAR_
   let sym = timl#symbol#cast(a:name)
   let ns = timl#namespace#find(sym)
   let i = 0
@@ -79,7 +79,7 @@ function! timl#namespace#refer(name, ...) abort
 endfunction
 
 function! timl#namespace#alias(alias, name) abort
-  let me = g:timl#core#_STAR_ns_STAR_
+  let me = g:timl#core._STAR_ns_STAR_
   let me.__aliases__[timl#symbol#cast(a:alias).name] = a:name
   return g:timl#nil
 endfunction

@@ -38,7 +38,7 @@ function! timl#compiler#resolve(sym) abort
   elseif (a:sym[0] =~# '^&\w' && exists(a:sym[0]))
     return {'location': a:sym[0]}
   endif
-  let var = timl#namespace#maybe_resolve(g:timl#core#_STAR_ns_STAR_, a:sym)
+  let var = timl#namespace#maybe_resolve(g:timl#core._STAR_ns_STAR_, a:sym)
   if var isnot# g:timl#nil
     return var
   endif
@@ -50,7 +50,7 @@ endfunction
 let s:kmacro = timl#keyword#intern('macro')
 function! timl#compiler#macroexpand_1(form) abort
   if timl#coll#seqp(a:form) && timl#symbol#test(timl#coll#first(a:form)) && !timl#compiler#specialp(timl#coll#first(a:form))
-    let var = timl#namespace#maybe_resolve(g:timl#core#_STAR_ns_STAR_, timl#coll#first(a:form))
+    let var = timl#namespace#maybe_resolve(g:timl#core._STAR_ns_STAR_, timl#coll#first(a:form))
     if var isnot# g:timl#nil && timl#truth(timl#coll#get(var.meta, s:kmacro))
       return timl#call(timl#var#get(var), [a:form, {}] + timl#array#coerce(timl#coll#next(a:form)))
     endif
@@ -348,7 +348,7 @@ endfunction
 
 function! s:expr_sf_var(file, env, form) abort
   let sym = timl#symbol#cast(timl#coll#fnext(a:form))
-  let var = timl#namespace#maybe_resolve(g:timl#core#_STAR_ns_STAR_, sym)
+  let var = timl#namespace#maybe_resolve(g:timl#core._STAR_ns_STAR_, sym)
   if var isnot# g:timl#nil
     return timl#compiler#serialize(var)
   endif
@@ -568,13 +568,13 @@ function! s:expr_sf_def(file, env, form) abort
   let rest = timl#coll#next(a:form)
   let var = timl#symbol#cast(timl#coll#first(rest))
   if has_key(a:env, 'file')
-    let var = timl#meta#vary(var, g:timl#core#assoc, s:kline, a:env.line, s:kfile, a:env.file)
+    let var = timl#meta#vary(var, g:timl#core.assoc, s:kline, a:env.line, s:kfile, a:env.file)
   endif
   if timl#coll#next(rest) isnot# g:timl#nil
     let val = s:expr(a:file, a:env, timl#coll#fnext(rest))
-    return 'timl#namespace#intern(g:timl#core#_STAR_ns_STAR_, '.timl#compiler#serialize(var).', '.val.')'
+    return 'timl#namespace#intern(g:timl#core._STAR_ns_STAR_, '.timl#compiler#serialize(var).', '.val.')'
   else
-    return 'timl#namespace#intern(g:timl#core#_STAR_ns_STAR_, '.timl#compiler#serialize(var).')'
+    return 'timl#namespace#intern(g:timl#core._STAR_ns_STAR_, '.timl#compiler#serialize(var).')'
   endif
 endfunction
 
@@ -583,9 +583,9 @@ function! s:expr_sf_deftype_STAR_(file, env, form) abort
   let var = timl#symbol#cast(timl#coll#first(rest))
   let slots = timl#array#coerce(timl#coll#fnext(rest))
   if has_key(a:env, 'file')
-    let var = timl#meta#vary(var, g:timl#core#assoc, s:kline, a:env.line, s:kfile, a:env.file)
+    let var = timl#meta#vary(var, g:timl#core.assoc, s:kline, a:env.line, s:kfile, a:env.file)
   endif
-  return 'timl#type#define(g:timl#core#_STAR_ns_STAR_, '.timl#compiler#serialize(var).', '.timl#compiler#serialize(slots).')'
+  return 'timl#type#define(g:timl#core._STAR_ns_STAR_, '.timl#compiler#serialize(var).', '.timl#compiler#serialize(slots).')'
 endfunction
 
 function! s:expr_dot(file, env, form) abort

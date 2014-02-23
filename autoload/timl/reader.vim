@@ -188,14 +188,14 @@ function! s:read(port, ...) abort
     endif
   elseif token =~# '^::.\+/.'
     let alias = matchstr(token[2:-1], '.*\ze/.')
-    let ns = get(timl#namespace#aliases(g:timl#core#_STAR_ns_STAR_), alias, {})
+    let ns = get(timl#namespace#aliases(g:timl#core._STAR_ns_STAR_), alias, {})
     if empty(ns)
       let error = 'timl#reader: unknown ns alias '.alias.' in keyword'
     else
       return timl#keyword#intern(timl#namespace#the(ns).name[0].matchstr(token, '.*\zs/.\+'))
     endif
   elseif token =~# '^::.'
-    return timl#keyword#intern(timl#namespace#name(g:timl#core#_STAR_ns_STAR_).str.'/'.token[2:-1])
+    return timl#keyword#intern(timl#namespace#name(g:timl#core._STAR_ns_STAR_).str.'/'.token[2:-1])
   elseif token =~# '^:.'
     return timl#keyword#intern(token[1:-1])
   elseif token =~# '^'.s:iskeyword
@@ -258,9 +258,9 @@ function! timl#reader#syntax_quote(form, gensyms) abort
       return timl#list(s:quote, a:gensyms[a:form[0]])
     elseif !timl#compiler#specialp(a:form[0]) && a:form[0] !~# ':\|^[&$]'
       return timl#list(s:quote, timl#symbol(timl#namespace#maybe_resolve(
-            \ g:timl#core#_STAR_ns_STAR_,
+            \ g:timl#core._STAR_ns_STAR_,
             \ a:form,
-            \ {'str': (a:form[0] =~# '/.' ? '' : timl#namespace#name(g:timl#core#_STAR_ns_STAR_).str.'/').a:form[0]}).str))
+            \ {'str': (a:form[0] =~# '/.' ? '' : timl#namespace#name(g:timl#core._STAR_ns_STAR_).str.'/').a:form[0]}).str))
     else
       return timl#list(s:quote, a:form)
     endif

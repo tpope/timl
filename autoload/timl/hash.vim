@@ -10,12 +10,12 @@ function! timl#hash#compute(obj) abort
     let hash = timl#hash#string(a:obj)
   elseif type(a:obj) == type(0)
     let hash = a:obj
-  elseif timl#type#canp(a:obj, g:timl#core#hash)
-    let hash = timl#invoke(g:timl#core#hash, a:obj)
-  elseif timl#type#canp(a:obj, g:timl#core#seq)
+  elseif timl#type#canp(a:obj, g:timl#core.hash)
+    let hash = timl#invoke(g:timl#core.hash, a:obj)
+  elseif timl#type#canp(a:obj, g:timl#core.seq)
     let hash = timl#hash#sequential(a:obj)
   else
-    let hash = timl#invoke(g:timl#core#hash, a:obj)
+    let hash = timl#invoke(g:timl#core.hash, a:obj)
   endif
   if exists('hash')
     let hash = hash % 0x40000000

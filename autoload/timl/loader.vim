@@ -41,10 +41,10 @@ endif
 
 function! timl#loader#source(filename) abort
   let path = fnamemodify(a:filename, ':p')
-  let old_ns = g:timl#core#_STAR_ns_STAR_
+  let old_ns = g:timl#core._STAR_ns_STAR_
   let cache = s:cache_filename(path)
   try
-    let g:timl#core#_STAR_ns_STAR_ = timl#namespace#find(timl#symbol#intern('user'))
+    let g:timl#core._STAR_ns_STAR_ = timl#namespace#find(timl#symbol#intern('user'))
     let ftime = getftime(cache)
     if !exists('$TIML_EXPIRE_CACHE') && ftime > getftime(path) && ftime > s:myftime
       try
@@ -76,7 +76,7 @@ function! timl#loader#source(filename) abort
     call writefile(split(join(strs, "\n"), "\n"), cache)
   catch /^Vim\%((\a\+)\)\=:E168/
   finally
-    let g:timl#core#_STAR_ns_STAR_ = old_ns
+    let g:timl#core._STAR_ns_STAR_ = old_ns
     if exists('file')
       call timl#reader#close(file)
     endif
@@ -100,7 +100,7 @@ function! timl#loader#all_relative(paths) abort
     if path[0] ==# '/'
       let path = path[1:-1]
     else
-      let path = substitute(tr(timl#namespace#name(g:timl#core#_STAR_ns_STAR_).str, '.-', '/_'), '[^/]*$', '', '') . path
+      let path = substitute(tr(timl#namespace#name(g:timl#core._STAR_ns_STAR_).str, '.-', '/_'), '[^/]*$', '', '') . path
     endif
     call timl#loader#relative(path)
   endfor

@@ -111,21 +111,21 @@ function! timl#interactive#eval_opfunc(type) abort
     let &clipboard = clipboard
     let @@ = reg
   endtry
-  let ns = g:timl#core#_STAR_ns_STAR_
+  let ns = g:timl#core._STAR_ns_STAR_
   let port = timl#reader#open_string(string, expand('%:p'))
   try
-    let g:timl#core#_STAR_ns_STAR_ = timl#namespace#find(timl#symbol#intern(timl#interactive#ns_for_cursor()))
+    let g:timl#core._STAR_ns_STAR_ = timl#namespace#find(timl#symbol#intern(timl#interactive#ns_for_cursor()))
     echo timl#printer#string(timl#loader#consume(port))
     let &syntax = &syntax
   catch //
     echohl ErrorMsg
     echo v:exception
     echohl NONE
-    unlet! g:timl#core#_STAR_e
-    let g:timl#core#_STAR_e = timl#exception#build(v:exception, v:throwpoint)
+    unlet! g:timl#core._STAR_e
+    let g:timl#core._STAR_e = timl#exception#build(v:exception, v:throwpoint)
   finally
     call timl#reader#close(port)
-    let g:timl#core#_STAR_ns_STAR_ = ns
+    let g:timl#core._STAR_ns_STAR_ = ns
   endtry
 endfunction
 
@@ -143,21 +143,21 @@ function! timl#interactive#return() abort
           \ . getline(end[1])[0 : end[2]-1]
   endif
   let string = repeat("\n", beg[1]-1) . repeat(" ", beg[2]-1) . string
-  let ns = g:timl#core#_STAR_ns_STAR_
+  let ns = g:timl#core._STAR_ns_STAR_
   let port = timl#reader#open_string(string, expand('%:p'))
   try
-    let g:timl#core#_STAR_ns_STAR_ = timl#namespace#find(timl#symbol#intern(timl#interactive#ns_for_cursor()))
+    let g:timl#core._STAR_ns_STAR_ = timl#namespace#find(timl#symbol#intern(timl#interactive#ns_for_cursor()))
     let body = ";= " . timl#printer#string(timl#loader#consume(port))
     call setloclist(0, [])
     let &syntax = &syntax
   catch //
-    unlet! g:timl#core#_STAR_e
-    let g:timl#core#_STAR_e = timl#exception#build(v:exception, v:throwpoint)
-    call setloclist(0, g:timl#core#_STAR_e.qflist)
-    let body = ";! " . timl#printer#string(g:timl#core#_STAR_e)
+    unlet! g:timl#core._STAR_e
+    let g:timl#core._STAR_e = timl#exception#build(v:exception, v:throwpoint)
+    call setloclist(0, g:timl#core._STAR_e.qflist)
+    let body = ";! " . timl#printer#string(g:timl#core._STAR_e)
   finally
     call timl#reader#close(port)
-    let g:timl#core#_STAR_ns_STAR_ = ns
+    let g:timl#core._STAR_ns_STAR_ = ns
   endtry
   if len(substitute(body.getline('.'), '.', '.', 'g')) < 80
     return " ".body."\<CR>"
@@ -188,14 +188,14 @@ endfunction
 
 function! timl#interactive#repl(...) abort
   if a:0
-    let ns = g:timl#core#_STAR_ns_STAR_
+    let ns = g:timl#core._STAR_ns_STAR_
     try
-      let g:timl#core#_STAR_ns_STAR_ = timl#namespace#create(timl#symbol#intern(a:1))
+      let g:timl#core._STAR_ns_STAR_ = timl#namespace#create(timl#symbol#intern(a:1))
       call timl#loader#require(timl#symbol#intern('timl.repl'))
       call timl#namespace#refer(timl#symbol#intern('timl.repl'))
       return timl#interactive#repl()
     finally
-      let g:timl#core#_STAR_ns_STAR_ = ns
+      let g:timl#core._STAR_ns_STAR_ = ns
     endtry
   endif
 
@@ -204,10 +204,10 @@ function! timl#interactive#repl(...) abort
   try
     set nomore
     call timl#loader#require(timl#symbol#intern('timl.repl'))
-    if timl#namespace#name(g:timl#core#_STAR_ns_STAR_).str ==# 'user'
+    if timl#namespace#name(g:timl#core._STAR_ns_STAR_).str ==# 'user'
       call timl#namespace#refer(timl#symbol#intern('timl.repl'))
     endif
-    let input = input(timl#namespace#name(g:timl#core#_STAR_ns_STAR_).str.'=> ', '', cmpl)
+    let input = input(timl#namespace#name(g:timl#core._STAR_ns_STAR_).str.'=> ', '', cmpl)
     if input =~# '^:q\%[uit]'
       return ''
     elseif input =~# '^:'
@@ -222,15 +222,15 @@ function! timl#interactive#repl(...) abort
             let read = timl#reader#read_string_all(input)
             break
           catch /^timl#reader: unexpected EOF/
-            let space = repeat(' ', len(timl#namespace#name(g:timl#core#_STAR_ns_STAR_).str)-2)
+            let space = repeat(' ', len(timl#namespace#name(g:timl#core._STAR_ns_STAR_).str)-2)
             let input .= "\n" . input(space.'#_=> ', '', cmpl)
             echo "\n"
           endtry
         endwhile
         let _.val = timl#loader#eval(timl#cons#create(timl#symbol#intern('do'), read))
         call extend(g:, {
-              \ 'timl#core#_STAR_3': g:timl#core#_STAR_2,
-              \ 'timl#core#_STAR_2': g:timl#core#_STAR_1,
+              \ 'timl#core#_STAR_3': g:timl#core._STAR_2,
+              \ 'timl#core#_STAR_2': g:timl#core._STAR_1,
               \ 'timl#core#_STAR_1': _.val})
         echo timl#printer#string(_.val)
       catch /^timl#repl: exit/
@@ -239,13 +239,13 @@ function! timl#interactive#repl(...) abort
       catch /^Vim\%((\a\+)\)\=:E168/
         return ''
       catch
-        unlet! g:timl#core#_STAR_e
-        let g:timl#core#_STAR_e = timl#exception#build(v:exception, v:throwpoint)
+        unlet! g:timl#core._STAR_e
+        let g:timl#core._STAR_e = timl#exception#build(v:exception, v:throwpoint)
         echohl ErrorMSG
         echo v:exception
         echohl NONE
       endtry
-      let input = input(timl#namespace#name(g:timl#core#_STAR_ns_STAR_).str.'=> ', '', cmpl)
+      let input = input(timl#namespace#name(g:timl#core._STAR_ns_STAR_).str.'=> ', '', cmpl)
     endwhile
     return input
   finally
