@@ -239,7 +239,7 @@ endfunction
 
 function! timl#type#define_method(ns, name, type, fn) abort
   let var = timl#namespace#maybe_resolve(a:ns, timl#symbol#cast(a:name))
-  if var is# g:timl#nil || timl#type#string(g:{var.munged}) isnot# 'timl.lang/MultiFn'
+  if var is# g:timl#nil || timl#type#string(timl#var#get(var)) isnot# 'timl.lang/MultiFn'
     unlet var
     if !empty(a:name.namespace)
       throw "timl: no such method ".a:name.str
@@ -253,7 +253,7 @@ function! timl#type#define_method(ns, name, type, fn) abort
           \ 'methods': {}})
     let var = timl#namespace#intern(a:ns, a:name, fn)
   endif
-  let multi = g:{var.munged}
+  let multi = timl#var#get(var)
   let multi.methods[a:type is# g:timl#nil ? ' ' : a:type.str] = a:fn
   let multi.cache = {}
   return var

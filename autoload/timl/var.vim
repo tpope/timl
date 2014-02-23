@@ -6,11 +6,11 @@ endif
 let g:autoloaded_timl_var = 1
 
 function! timl#var#get(var) abort
-  return g:{a:var.munged}
+  return eval(a:var.location)
 endfunction
 
 function! timl#var#call(var, _) abort
-  return timl#call(g:{a:var.munged}, a:_)
+  return timl#call(eval(a:var.location), a:_)
 endfunction
 
 function! timl#var#test(this) abort
@@ -69,7 +69,7 @@ unlet! s:key
 
 function! timl#var#munge(var) abort
   let var = type(a:var) == type('') ? a:var : a:var[0]
-  return tr(substitute(substitute(var, '[^[:alnum:]:#_-]', '\=get(s:munge,submatch(0), submatch(0))', 'g'), '_SLASH_\ze.', '#', ''), '-', '_')
+  return tr(substitute(substitute(var, '[^[:alnum:]:#_-]', '\=get(s:munge,submatch(0), submatch(0))', 'g'), '_SLASH_\ze.', '.', ''), '-', '_')
 endfunction
 
 function! timl#var#demunge(var) abort

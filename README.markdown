@@ -26,7 +26,7 @@ Too many omissions to list, but:
 * TimL functions are actually VimL dictionaries (objects) containing a
   dictionary function (method) and a reference to the enclosing scope.
 * Defining a symbol `baz` in namespace `foo.bar` actually defines
-  `g:foo#bar#baz`.  If that symbol refers to something callable (like a
+  `g:foo#bar.baz`.  If that symbol refers to something callable (like a
   function), calling `foo#bar#baz()` on the VimL side will invoke it.
 * Arbitrary Vim variables and options can be referred to using VimL notation:
   `b:did_ftplugin`, `v:version`, `&expandtab`. You can also change them with

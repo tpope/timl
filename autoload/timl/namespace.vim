@@ -129,7 +129,6 @@ function! timl#namespace#intern(ns, name, ...)
   let str = nsname.'/'.timl#symbol#cast(a:name).str
   let nsglobal = timl#namespace#munge(nsname)
   let key = timl#var#munge(a:name.str)
-  let munged = nsglobal.'#'.key
   let meta = copy(a:name.meta is# g:timl#nil ? timl#map#create([]) : a:name.meta)
   let meta.name = a:name
   let meta.ns = ns
@@ -138,16 +137,16 @@ function! timl#namespace#intern(ns, name, ...)
     let var = ns.__mappings__[a:name[0]]
     let var.meta = meta
   else
-    let var = timl#type#bless(s:var_type, {'ns': ns, 'str': str, 'munged': munged, 'location': 'g:'.munged, 'meta': meta})
+    let var = timl#type#bless(s:var_type, {'ns': ns, 'str': str, 'funcname': nsglobal.'#'.key, 'location': 'g:'.nsglobal.'.'.key, 'meta': meta})
   endif
   if a:0
-    unlet! g:{munged}
-    let g:{munged} = a:1
-  elseif !exists('g:'.munged)
-    let g:{munged} = g:timl#nil
+    let ns[key] = a:1
+  elseif !has_key(ns, key)
+    let ns[key] = g:timl#nil
   endif
   let ns.__mappings__[a:name[0]] = var
-  let ns[key] = g:{munged}
+  unlet! g:{var.funcname}
+  let g:{var.funcname} = ns[key]
   return var
 endfunction
 
