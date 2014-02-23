@@ -29,7 +29,7 @@ function! timl#printer#string(x)
 
   elseif type ==# 'timl.lang/Function'
     return '#<'
-          \ . get(a:x, 'ns', {'name': ['...']}).name[0] . '/'
+          \ . get(a:x, 'ns', {'name': ['...']}).__name__[0] . '/'
           \ . (get(a:x, 'name', g:timl#nil) is g:timl#nil ? '...' : a:x.name.name)
           \ . ' #*'.join([get(a:x, '__call__', '???')]).'>'
 
