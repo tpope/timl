@@ -26,7 +26,7 @@ function! timl#lazy_seq#seq(lseq) abort
   if a:lseq.seq is# s:placeholder
     let _ = {'seq': a:lseq}
     let i = 0
-    while timl#type#string(_.seq) ==# 'timl.lang/LazySeq'
+    while timl#type#string(_.seq) ==# s:type.str
       let i += 1
       let _.seq = s:val(_.seq)
     endwhile

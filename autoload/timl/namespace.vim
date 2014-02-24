@@ -89,7 +89,7 @@ function! timl#namespace#find(name) abort
 endfunction
 
 function! timl#namespace#the(name) abort
-  if timl#type#string(a:name) ==# 'timl.lang/Namespace'
+  if timl#type#string(a:name) ==# s:type.str
     return a:name
   endif
   let name = type(a:name) == type('') ? a:name : a:name.name

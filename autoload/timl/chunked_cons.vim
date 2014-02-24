@@ -31,7 +31,7 @@ endfunction
 function! timl#chunked_cons#length(this) abort
   let c = len(a:this.array) - a:this.i
   let _ = {'next': timl#coll#seq(a:this.rest)}
-  while timl#type#string(_.next) ==# 'timl.lang/ChunkedCons'
+  while timl#type#string(_.next) ==# s:type.str
     let c += len(_.next.array) - _.next.i
     let _.next = timl#coll#seq(timl#chunked_cons#chunk_rest(_.next))
   endwhile

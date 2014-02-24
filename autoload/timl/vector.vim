@@ -22,7 +22,7 @@ function! timl#vector#coerce(seq) abort
     return s:empty
   elseif type(a:seq) ==# type([])
     return timl#vector#claim(copy(a:seq))
-  elseif timl#type#string(a:seq) ==# 'timl.lang/Vector'
+  elseif timl#type#string(a:seq) ==# s:type.str
     return a:seq
   endif
   let array = []
