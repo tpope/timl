@@ -30,14 +30,16 @@ function! timl#type#find(name) abort
 endfunction
 
 function! timl#type#create(name, ...) abort
+  let munged = tr(a:name, '-./', '_##')
   if !has_key(s:types, a:name)
     let s:types[a:name] = timl#type#bless(s:type_type, {
           \ 'str': a:name,
+          \ 'location': 'g:'.munged,
           \ 'slots': g:timl#nil,
           \ '__call__': function('timl#type#constructor')})
   endif
   let s:types[a:name].slots = a:0 ? a:1 : g:timl#nil
-  let g:{tr(a:name, '-./', '_##')} = s:types[a:name]
+  let g:{munged} = s:types[a:name]
   return s:types[a:name]
 endfunction
 
@@ -69,7 +71,11 @@ function! timl#type#constructor(_) dict abort
 endfunction
 
 if !has_key(s:types, 'timl.lang/Type')
-  let s:types['timl.lang/Type'] = {'str': 'timl.lang/Type', 'slots': g:timl#nil, '__call__': function('timl#type#constructor')}
+  let s:types['timl.lang/Type'] = {
+        \ 'str': 'timl.lang/Type',
+        \ 'location': 'g:timl#lang#Type',
+        \ 'slots': g:timl#nil,
+        \ '__call__': function('timl#type#constructor')}
 endif
 let s:type_type = s:types['timl.lang/Type']
 function! timl#type#define(ns, var, slots) abort
