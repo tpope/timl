@@ -37,6 +37,8 @@ function! timl#compiler#resolve(sym) abort
     return {'location': "(exists('".a:sym[0]."') ? ".a:sym[0]." : g:timl#nil)"}
   elseif (a:sym[0] =~# '^&\w' && exists(a:sym[0]))
     return {'location': a:sym[0]}
+  elseif a:sym[0] =~# '\.[^/]\+$'
+    return {'location': 'g:'.timl#namespace#munge(a:sym[0])}
   endif
   let var = timl#namespace#maybe_resolve(g:timl#core._STAR_ns_STAR_, a:sym)
   if var isnot# g:timl#nil
