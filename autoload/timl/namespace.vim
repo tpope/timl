@@ -145,8 +145,6 @@ function! timl#namespace#intern(ns, name, ...) abort
     let ns[key] = g:timl#nil
   endif
   let ns.__mappings__[a:name[0]] = var
-  unlet! g:{var.funcname}
-  let g:{var.funcname} = ns[key]
   return var
 endfunction
 
