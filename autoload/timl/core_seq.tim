@@ -57,3 +57,12 @@
     (if (next s)
       (recur (conj ret (first s)) (next s))
       ret)))
+
+(defn remove
+  [pred coll]
+  (filter (complement pred) coll))
+
+(defn some
+  [pred coll]
+  (when (seq coll)
+    (or (pred (first coll)) (recur pred (next coll)))))
