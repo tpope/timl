@@ -89,7 +89,8 @@ function! s:file4ns(ns) abort
 endfunction
 
 function! s:autoload(function) abort
-  let ns = tr(matchstr(a:function, '.*\ze#'), '#_', '.-')
+  let var = matchstr(a:function, '.*\ze#')
+  let ns = tr(var, '#_', '.-')
   let base = tr(ns, '.-', '/_')
 
   if !has_key(g:timl_requires, ns)
@@ -103,9 +104,11 @@ function! s:autoload(function) abort
       endfor
     endif
   endif
-  if has_key(g:, a:function) && timl#type#canp(g:{a:function}, g:timl#core.call)
+
+  let key = matchstr(a:function, '.*#\zs.*')
+  if has_key(g:, var) && has_key(g:{var}, key) && timl#type#canp(g:{var}[key], g:timl#core.call)
     let body = ["function ".a:function."(...)",
-          \ "  return timl#call(g:".a:function.", a:000)",
+          \ "  return timl#call(g:".var.".".key.", a:000)",
           \ "endfunction"]
     let file = s:file4ns(base)
     call writefile(body, file)
