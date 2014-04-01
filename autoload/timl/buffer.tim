@@ -1,0 +1,10 @@
+(ns timl.buffer)
+
+(deftype Buffer [nr])
+
+(defmethod lookup Buffer [self key not-found]
+  (get (#*getbufvar (. self nr) "") (str key) not-found))
+
+(defmethod buffer Buffer [buf] buf)
+(defmethod buffer vim/Number [nr] (when (nonzero? (#*bufexists nr)) (Buffer nr)))
+(defmethod buffer vim/String [name] (when-let [nr (not-negative (#*bufnr name))] (Buffer nr)))

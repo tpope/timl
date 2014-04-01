@@ -1,0 +1,41 @@
+(ns timl.file)
+
+(defn slash [] (if (and (exists? "+shellslash") (not &shellslash)) "\\" "/"))
+
+(defn ^{:help "filereadable()"} filereadable? [f] (nonzero? (#*filereadable f)))
+(defn filewritable? [f] (nonzero? (#*filewritable f)))
+(defn directory? [f] (nonzero? (#*isdirectory f)))
+(defn ftype [f]
+  (let [type (#*getftype f)] (when (not= "" type) (keyword type))))
+(defn file? [f] (= "file" (#*getftype f)))
+(defn mtime [f] (let [time (#*getftime f)] (when (not= -1 time) (inst time))))
+(defn fsize [f] (not-negative (#*getfsize f)))
+(defn expand [f] (#*expand f))
+(defn delete [f] (zero? (#*delete f)))
+(defn rename [from to] (zero? (#*rename from to)))
+
+(defn absolute [f] (#*fnamemodify f ":p"))
+(defn relative [f] (#*fnamemodify f ":."))
+(defn basename [f] (#*fnamemodify f ":t"))
+(defn dirname [f] (#*fnamemodify f ":h"))
+(defn shortname [f] (#*fnamemodify f ":~:."))
+(defn extname [f] (#*fnamemodify f ":e"))
+(defn rootname [f] (#*fnamemodify f ":r"))
+
+(defn join-path [path]
+  (if (string? path)
+    path
+    (join "," (map #(#*escape % ",") path))))
+(defn glob [pat]
+  (binding [&suffixes ""
+            &wildignore ""]
+    (split (#*glob pat) "\n")))
+(defn glob-path [path pat]
+  (binding [&suffixes ""
+            &wildignore ""]
+    (split (#*globpath (join-path path) pat) "\n")))
+; TODO: findfile, finddir
+
+(defn help-topics [pattern]
+  (binding [&tags (#*escape (join-path (map #(str % "/doc/tags") (split &runtimepath ","))) " ")]
+    (#*taglist pattern)))
