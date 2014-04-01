@@ -381,6 +381,7 @@ call s:define_call('zipmap', 'timl#map#zip')
 call s:define_pred('set?', 'timl#set#test')
 call s:define_call('set', 'timl#set#coerce')
 call s:define_apply('hash-set', 'timl#set#coerce')
+runtime! autoload/timl/set.vim
 
 " Section: Collection
 
