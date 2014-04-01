@@ -50,7 +50,7 @@ true        |timl-boolean|
 `           |timl-syntax-quote|
 ~           |timl-unquote|
 ~@          |timl-unquote-splicing|
-@           |g:timl#core#deref|
+@           |g:timl#core.deref|
 
 TYPES                                           *timl-types*
 
@@ -77,7 +77,7 @@ Arrays participate in the expected collection abstractions, but be aware they
 mutate, and thus are best avoided except when dealing with interop.
 
 Arrays are shown as #*[...] when printed.  The reader respects this syntax,
-but it is preferrable to use |g:timl#core#array| to create a array.
+but it is preferrable to use |g:timl#core.array| to create a array.
 
                                 *timl-dictionary* *timl-dictionaries*
 Dictionaries ~
@@ -87,7 +87,7 @@ that has not been blessed as any particular type.  Dictionaries can be treated
 as maps with forced string keys.
 
 Dictionaries are shown as #*{...} when printed.  The reader respects this
-syntax, but it is preferrable to use |g:timl#core#dict| to create a
+syntax, but it is preferrable to use |g:timl#core.dict| to create a
 dictionary.
 
                                                 *timl-funcrefs*
@@ -107,7 +107,7 @@ Booleans ~
 Booleans are the canonical truth values.  There's a literal for each: "true"
 and "false".  Nil and false are the only false values in TimL.  Note that in
 VimL, zero is false, and built-in Vim functions return that as their false
-value.  Compose with |g:timl#core#nonzero_QMARK_| if you want to use the
+value.  Compose with |g:timl#core.nonzero_QMARK_| if you want to use the
 result of a built-in Vim function in a conditional.
 
                                                 *timl-symbols*
@@ -125,14 +125,14 @@ Keywords ~
 Keywords look like symbols preceded by a colon.  Unlike symbols, they evaluate
 to themselves, making them good |timl-map| keys.  Calling a keyword as a
 function tries to retrieve it from the given collection using
-|g:timl#core#get|.
+|g:timl#core.get|.
 
                                                 *timl-lists*
 Lists ~
 Lists are linked lists under the hood, and have a syntax literal of zero or more forms enclosed in parentheses ().  Lists evaluate to a function
 call of the first element with the remaining elements as args.  To create a
 list value, |timl-quote| it (also prevents evaluation of elements) or use
-|g:timl#core#list|.
+|g:timl#core.list|.
 
                                                 *timl-vectors*
 Vectors ~
@@ -143,13 +143,13 @@ evaluation of the contained elements.
                                                 *timl-maps*
 Maps ~
 Maps are associative, unordered collections.  The syntax literal is {...}.
-The definining method of a map is |g:timl#core#dissoc|.
+The definining method of a map is |g:timl#core.dissoc|.
 
                                                 *timl-sets*
 Sets ~
 A set is an unordered collection of values, and can be thought of as a map
 where the keys and values are the same.  The syntax literal is #{...}.  The
-defining method of a set is |g:timl#core#disj|.
+defining method of a set is |g:timl#core.disj|.
 
 EVALUATION                                      *timl-evaluation*
 

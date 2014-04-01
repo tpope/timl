@@ -51,7 +51,7 @@ function! timl#atom#get_validator(this) abort
 endfunction
 
 let s:type = timl#type#core_define('Atom', ['state', 'meta', 'validator', 'watches'], {
-      \ 'meta': 'timl#meta#from_attribute',
+      \ 'get-meta': 'timl#meta#from_attribute',
       \ 'reset!': 'timl#atom#reset',
       \ 'swap!': 'timl#atom#swap',
       \ 'compare-and-set!': 'timl#atom#compare_and_set',

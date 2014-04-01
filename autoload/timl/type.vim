@@ -233,7 +233,7 @@ function! timl#type#apply(_) dict abort
   elseif t == s:t_dict
     return Dispatch.__call__(a:_)
   endif
-  throw 'timl#type: no '.self.ns.name[0].'/'.self.name[0].' dispatch for '.type
+  throw 'timl#type: no '.self.ns.__name__[0].'/'.self.name[0].' dispatch for '.type
 endfunction
 
 function! timl#type#dispatch(this, _) abort

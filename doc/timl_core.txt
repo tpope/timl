@@ -1,7 +1,7 @@
-                                                *g:timl#core#array*
+                                                *g:timl#core.array*
 (timl.core/array & elems)       Create a |timl-array| containing elems.
 
-                                                *g:timl#core#dict*
+                                                *g:timl#core.dict*
 (timl.core/dict map)            Convert a map to a |timl-dictionary|.
 (timl.core/dict keyvals)        Create a |timl-dictionary| from keyvals.
 (timl.core/dict & keyvals)      Create a |timl-dictionary| from keyvals.

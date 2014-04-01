@@ -35,7 +35,7 @@ function! timl#printer#string(x) abort
 
   elseif type ==# 'timl.lang/MultiFn'
     return '#<'
-          \ . get(a:x, 'ns', {'name': ['...']}).name[0] . '/'
+          \ . get(a:x, 'ns', {'__name__': ['...']}).__name__[0] . '/'
           \ . (get(a:x, 'name', g:timl#nil) is g:timl#nil ? '...' : a:x.name.name)
           \ . ' multi>'
 
