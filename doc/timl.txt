@@ -2,7 +2,7 @@
 
 Author:  Tim Pope <http://tpo.pe/>
 Repo:    https://github.com/tpope/timl
-License: Same terms as Vim itself (see |license|)
+License: EPL (http://opensource.org/licenses/eclipse-1.0.php)
 
 USAGE                                           *timl*
 
