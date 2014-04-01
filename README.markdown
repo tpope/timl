@@ -3,23 +3,29 @@
 TimL is a Lisp dialect implemented in and compiling down to VimL, the
 scripting language provided by the Vim text editor.  Think Clojure meets VimL.
 
-## Clojure similarities
+## Is this a joke?
 
-* Lexical scope with closures.
+If you mean the 6,000 lines of working code, then no, I poured hundreds upon
+hundreds of very serious hours into that.  But if you're referring to the fact
+it's woefully underdocumented, adds considerable overhead to an already slow
+host platform, and ultimately unlikely to gain any traction, then yeah,
+probably.
+
+## Language features
+
+* Clojure like syntax and API, including everything from rich syntax literals
+  to destructuring.
 * Namespaces, including `refer` and `alias`.  (Higher abstractions like the
   full `ns` macro don't exist yet, so you'll make do with these for now.)
 * `timl.core`, a tiny but growing API resembling `clojure.core`.
-* The same collection types and interfaces (although currently lacking many of
-  the performance guarantees).
+* The same persistent collection types and interfaces, including vectors, hash
+  maps, hash sets, lists, and lazy sequences.
 * Macros, including syntax quoting and the implicit `&form` and `&env`.
-* Metadata.
-* Reference types (just var so far).
-
-## Clojure differences
-
-Too many omissions to list, but:
-
-* Fuck `clojure.string/join`, that shit is in core.
+* Metadata.  (Some collection types don't support it yet.)
+* Reference types, including vars, atoms, futures.
+* Extensible type system, including `defmethod` for duck typing.  (This is the
+  most significant departure from Clojure.)
+* Caching compiler generates real VimL.
 
 ## VimL interop
 
@@ -32,8 +38,12 @@ Too many omissions to list, but:
   `b:did_ftplugin`, `v:version`, `&expandtab`. You can also change them with
   `set!`: `(set! &filetype "timl")`.
 * `#*function` returns a reference to a built-in or user defined function.
-  You can call it like any other function: `(#*toupper "TimL Rocks!")`.
+  You can call it like any other function: `(#*toupper "TimL is pretty neat")`.
+* Interact with VimL exceptions with `throw`/`try`/`catch`/`finally`.
 * Call a Vim command with `execute`: `(execute "wq")`.
+* Lisp macros are a wonderful way to encapsulate and hide a lot of the pain
+  points of VimL.  The current standard library barely scratches the surface
+  here.
 
 ## Getting started
 
@@ -44,12 +54,14 @@ then simply copy and paste:
     cd ~/.vim/bundle
     git clone git://github.com/tpope/timl.git
 
-Once help tags have been generated, you can view the manual with
-`:help timl`.  With pathogen.vim, generate help tags with `:Helptags`.
+Once help tags have been generated, you can view the manual with `:help timl`.
+There's not a whole lot there, yet.  If you know Clojure, you can probably
+guess a bunch of the function names.
 
-Start a repl with `:TLrepl`.  The first time may take several seconds (if your
-computer is a piece of shit), but compilation is cached, so subsequent
-invocations will be super quick, even if Vim is restarted.
+Start a repl with `:TLrepl`.  Tab complete is your friend.  The first time may
+take several seconds (if your computer is a piece of shit), but compilation is
+cached, so subsequent invocations will be super quick, even if Vim is
+restarted.
 
 You can use Clojure's `ns`, `in-ns`, `require`, `refer`, `alias`, and `use`,
 but currently they are all limited to their single argument forms, so expect a
@@ -60,10 +72,7 @@ bit more legwork:
     (require 'timl.file)
     (alias 'file 'timl.file)
 
-Put files in `autoload/*.tim` and they will be requirable.
-
-See `:help timl` for the language specification, or [read it
-online](https://github.com/tpope/timl/tree/master/doc).
+Put files in `autoload/*.tim` in the runtime path and they will be requirable.
 
 ## License
 
