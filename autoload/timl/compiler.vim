@@ -132,7 +132,7 @@ function! timl#compiler#serialize(x) abort
       call add(keyvals, timl#coll#first(_.seq))
       let _.seq = timl#coll#next(_.seq)
     endwhile
-    return 'timl#set#create('.timl#compiler#serialize(keyvals).')'
+    return 'timl#set#coerce('.timl#compiler#serialize(keyvals).')'
 
   elseif timl#type#string(a:x) ==# 'timl.lang/Cons'
     return 'timl#cons#create('
