@@ -23,3 +23,8 @@
   ([op xs]
    (let [cmp (comparator op)]
      (#*sort (to-array xs) #*timl#function#invoke_self cmp))))
+
+(defn merge
+  [& maps]
+  (when (some identity maps)
+    (reduce #(conj (or %1 {}) %2) maps)))

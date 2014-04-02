@@ -25,3 +25,9 @@
 (defn comp
   ([f] f)
   ([f & fns] (fn [& args] (f (apply (apply comp fns) args)))))
+
+(defn max-key
+  ([k x] x)
+  ([k x y] (if (> (k x) (k y)) x y))
+  ([k x y & more]
+   (reduce #(max-key k %1 %2) (max-key k x y) more)))
