@@ -47,3 +47,5 @@
         result# (do ~@body)]
      (printf "Elapsed time: %s secs\n" (#*reltimestr (#*reltime reltime#)))
      result#))
+
+(defmacro comment [& body])
