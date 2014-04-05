@@ -133,12 +133,30 @@
   (let [bindings (partition 2 flat)]
     `((fn ~(vec (map first bindings)) ~@body) ~@(vec (map (fn [x] (first (rest x))) bindings)))))
 
-(defn refer-timl []
-  (refer 'timl.core))
-(defmacro ns [name]
+(defn some
+  [pred coll]
+  (when (seq coll)
+    (or (pred (first coll)) (recur pred (next coll)))))
+
+(defn refer-timl [& args]
+  (apply refer 'timl.core args))
+(defmacro ns [name & args]
   `(do
      (in-ns '~name)
-     (refer-timl)))
+     ~(if (some #{:refer-timl} (map first args))
+        `nil
+        `(refer-timl))
+     ~@(map (fn [[cmd & args]]
+              (or (when (#{:require :use} cmd)
+                    (let [qsym (if (#{:require} cmd)
+                                 `require
+                                 `use)]
+                      `(do ~@(map (fn [a1] `(~qsym '~a1)) args))))
+                  (when (#{:refer} cmd)
+                    `(refer ~@(map (fn [a] `'~a) args)))
+                  (when (#{:refer-timl} cmd)
+                    `(refer-timl ~@(map (fn [a] `'~a) args)))))
+            args)))
 
 (defn ns-resolve
   ([ns sym] (#*timl#namespace#maybe_resolve ns sym))

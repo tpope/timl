@@ -229,7 +229,7 @@ Run the given string with |:execute|.
 (. {dict} -{key}) ~
 Retrieve the given key of the given dict.
 
-NAMESPACES                                      *timl-namespaces*
+NAMESPACES                                      *timl-namespaces* *timl-ns*
 
 Namespaces take the Clojure model and adapt it to fit the VimL |autoload|
 feature.
@@ -242,6 +242,13 @@ feature.
         quux/baz               ; evaluates to 1
         (refer 'foo.bar)
         baz                    ; evaluates to 1
+<
+You can also use the ns macro from Clojure.
+>
+        (ns my.ns
+          (:refer-timl :exclude [+])
+          (:use timl.repl)
+          (:require [timl.file :as file]))
 <
 TimL files placed in the |autoload| directory will automatically be loaded in
 the correct namespace.

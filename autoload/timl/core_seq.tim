@@ -61,8 +61,3 @@
 (defn remove
   [pred coll]
   (filter (complement pred) coll))
-
-(defn some
-  [pred coll]
-  (when (seq coll)
-    (or (pred (first coll)) (recur pred (next coll)))))
