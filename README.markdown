@@ -15,8 +15,7 @@ probably.
 
 * Clojure like syntax and API, including everything from rich syntax literals
   to destructuring.
-* Namespaces, including `refer` and `alias`.  (Higher abstractions like the
-  full `ns` macro don't exist yet, so you'll make do with these for now.)
+* Namespaces, including `refer` and `alias`.
 * `timl.core`, a tiny but growing API resembling `clojure.core`.
 * The same persistent collection types and interfaces, including vectors, hash
   maps, hash sets, lists, and lazy sequences.
@@ -63,11 +62,20 @@ take several seconds (if your computer is a piece of shit), but compilation is
 cached, so subsequent invocations will be super quick, even if Vim is
 restarted.
 
-You can use Clojure's `ns`, `in-ns`, `require`, `refer`, `alias`, and `use`,
-but currently they are all limited to their single argument forms, so expect a
-bit more legwork:
+The familiar `ns` macro from Clojure is mostly identical in TimL. 
+`:refer-clojure` is now `:refer-timl`, which is identical to 
+`(refer 'timl.core opts)`. `:use` only supports symbol arguments.
 
-    (ns my.ns)
+    (ns my.ns
+      (:refer-timl :exclude [+])
+      (:use timl.repl)
+      (:require [timl.file :as file]
+                [timl.test]))
+
+You can use Clojure's `in-ns`, `require`, `refer`, `alias`, and `use`,
+however `use` and `require` are limited to a single argument.
+
+    (in-ns 'my.ns)
     (use 'timl.repl)
     (require 'timl.file)
     (alias 'file 'timl.file)
