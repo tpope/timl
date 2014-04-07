@@ -10,7 +10,7 @@ function! s:function(name) abort
 endfunction
 
 function! s:lencompare(a, b) abort
-  return len(a:b) - len(a:b)
+  return len(a:a) - len(a:b)
 endfunction
 
 function! timl#interactive#ns_for_file(file) abort
