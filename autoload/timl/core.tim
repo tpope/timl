@@ -109,6 +109,12 @@
                   s)))]
     (lazy-seq (step n coll))))
 
+(defn take-while [pred coll]
+  (lazy-seq
+    (if-let [[head & tail] (seq coll)]
+      (if (pred head)
+        (cons head (take-while pred tail))))))
+
 (defn partition
   ([n coll]
    (partition n n coll))
