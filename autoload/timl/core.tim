@@ -111,9 +111,9 @@
 
 (defn take-while [pred coll]
   (lazy-seq
-    (if-let [[head & tail] (seq coll)]
-      (if (pred head)
-        (cons head (take-while pred tail))))))
+    (when-let [s (seq coll)]
+      (when (pred (first s))
+        (cons (first s) (take-while pred (rest s)))))))
 
 (defn partition
   ([n coll]
