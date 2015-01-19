@@ -25,6 +25,13 @@
           (list form x))))
     x))
 
+(defmacro ->> [x & forms]
+  (if-let [[form & more] (seq forms)]
+    (if (list? form)
+      `(->> (~@form ~x) ~@more)
+      `(->> (~form ~x) ~@more))
+    x))
+
 (defmacro binding [bindings & body]
   (if (seq bindings)
     `(let [old# ~(first bindings)]
